@@ -27,6 +27,7 @@ assignees: ''
 
 ## 환경
 - OS: [예: Ubuntu 20.04]
+- Browser: [예: Chrome 110]
 - Node.js 버전: [예: 18.x]
 - 데이터베이스: [예: PostgreSQL 14]
 
