@@ -21,7 +21,7 @@ EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
 # 테스트 환경에서 캐시 비활성화
 CACHES = {
   "default": {
-    "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+    "BACKEND": "django.core.cache.backends.dummy.DummyCache",
   }
 }
 
