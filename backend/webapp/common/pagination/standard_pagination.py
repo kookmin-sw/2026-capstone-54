@@ -19,6 +19,38 @@ class StandardPagination(PageNumberPagination):
       },
     )
 
+  def get_paginated_response_schema(self, schema):
+    """drf-spectacular용 페이지네이션 응답 스키마 정의"""
+    return {
+      "type": "object",
+      "required": ["count", "totalPagesCount", "results"],
+      "properties": {
+        "count": {
+          "type": "integer",
+          "description": "전체 항목 수",
+          "example": 100,
+        },
+        "totalPagesCount": {
+          "type": "integer",
+          "description": "전체 페이지 수",
+          "example": 10,
+        },
+        "nextPage": {
+          "type": "integer",
+          "nullable": True,
+          "description": "다음 페이지 번호",
+          "example": 2,
+        },
+        "previousPage": {
+          "type": "integer",
+          "nullable": True,
+          "description": "이전 페이지 번호",
+          "example": None,
+        },
+        "results": schema,
+      },
+    }
+
   def get_next_page_number(self):
     """다음 페이지 번호 반환"""
     if self.page.has_next():
