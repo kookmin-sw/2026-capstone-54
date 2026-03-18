@@ -1,5 +1,12 @@
 #!/bin/bash
 
+export MSYS_NO_PATHCONV=1
+if docker compose version >/dev/null 2>&1; then
+  dc() { docker compose "$@"; }
+else
+  dc() { docker-compose "$@"; }
+fi
+
 # 커스텀 Django Management Commands만 실행
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/../../.." && pwd)"
@@ -44,7 +51,7 @@ echo
 echo "Running: python manage.py ${command}${args_line:+ $args_line}"
 
 if [ -n "$args_line" ]; then
-  docker-compose exec webapp python manage.py "$command" $args_line
+  dc exec webapp python manage.py "$command" $args_line
 else
-  docker-compose exec webapp python manage.py "$command"
+  dc exec webapp python manage.py "$command"
 fi

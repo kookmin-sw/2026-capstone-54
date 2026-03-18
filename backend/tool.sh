@@ -2,6 +2,18 @@
 
 set -euo pipefail
 
+# Windows Git Bash: Unix 경로가 Windows 경로로 자동 변환되는 것을 방지
+export MSYS_NO_PATHCONV=1
+
+# Docker Desktop v4+ 는 'docker compose' (플러그인)를 권장
+# 구버전 호환을 위해 'docker-compose' (standalone) 도 fallback 지원
+if docker compose version >/dev/null 2>&1; then
+  dc() { docker compose "$@"; }
+else
+  dc() { docker-compose "$@"; }
+fi
+export -f dc
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$SCRIPT_DIR"
 COMMANDS_DIR="$ROOT_DIR/environments/development/commands"
@@ -145,7 +157,7 @@ run_docker() {
   echo "Running: $description"
   if (
     cd "$ROOT_DIR" || exit 1
-    docker-compose $args
+    dc $args
   ); then
     echo "Done."
   else

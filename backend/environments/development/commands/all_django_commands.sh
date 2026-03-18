@@ -1,5 +1,12 @@
 #!/bin/bash
 
+export MSYS_NO_PATHCONV=1
+if docker compose version >/dev/null 2>&1; then
+  dc() { docker compose "$@"; }
+else
+  dc() { docker-compose "$@"; }
+fi
+
 # 모든 Django Management Commands 실행
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 
@@ -8,8 +15,9 @@ echo "Fetching all Django management commands..."
 echo "(All available commands)"
 
 # 모든 Django commands 가져오기
+# gsub(/\r/,"") : Windows 환경에서 docker exec 출력에 \r 이 포함될 수 있어 제거
 commands=($(
-  docker-compose exec webapp python manage.py help --commands 2>/dev/null | grep -v "^\[" | awk '{print $1}' | sort
+  dc exec webapp python manage.py help --commands 2>/dev/null | grep -v "^\[" | awk '{gsub(/\r/,""); print $1}' | sort
 ))
 
 if [ ${#commands[@]} -eq 0 ]; then
@@ -44,7 +52,7 @@ echo
 echo "Running: python manage.py ${command}${args_line:+ $args_line}"
 
 if [ -n "$args_line" ]; then
-  docker-compose exec webapp python manage.py "$command" $args_line
+  dc exec webapp python manage.py "$command" $args_line
 else
-  docker-compose exec webapp python manage.py "$command"
+  dc exec webapp python manage.py "$command"
 fi

@@ -1,9 +1,16 @@
 #!/bin/bash
 
+export MSYS_NO_PATHCONV=1
+if docker compose version >/dev/null 2>&1; then
+  dc() { docker compose "$@"; }
+else
+  dc() { docker-compose "$@"; }
+fi
+
 APP_NAME=${1:-}
 
 if [ -z "$APP_NAME" ]; then
-  docker-compose exec webapp python manage.py makemigrations
+  dc exec webapp python manage.py makemigrations
 else
-  docker-compose exec webapp python manage.py makemigrations "$APP_NAME"
+  dc exec webapp python manage.py makemigrations "$APP_NAME"
 fi
