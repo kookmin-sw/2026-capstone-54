@@ -1,5 +1,6 @@
 from .base_exception import BaseException
 from .conflict_exception import ConflictException
+from .handler import custom_exception_handler
 from .not_found_exception import NotFoundException
 from .permission_denied_exception import PermissionDeniedException
 from .rate_limit_exception import RateLimitException
@@ -16,4 +17,5 @@ __all__ = [
   "ConflictException",
   "RateLimitException",
   "ServiceUnavailableException",
+  "custom_exception_handler",
 ]

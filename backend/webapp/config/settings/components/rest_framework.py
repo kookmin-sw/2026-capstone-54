@@ -30,6 +30,7 @@ REST_FRAMEWORK = {
     "rest_framework.filters.SearchFilter",
   ),
   "DEFAULT_PAGINATION_CLASS": "common.pagination.StandardPagination",
+  "EXCEPTION_HANDLER": "common.exceptions.handler.custom_exception_handler",
 }
 
 SPECTACULAR_SETTINGS = {
