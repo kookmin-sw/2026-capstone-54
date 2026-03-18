@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
+from .components.admin import *
 from .components.auth import *
 from .components.common import *
 from .components.database import *

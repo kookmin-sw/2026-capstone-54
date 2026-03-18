@@ -7,7 +7,9 @@ requires-python = ">=3.12"
 dependencies = [
     "django>=6.0.3",
     "django-environ>=0.13.0",
+    "django-import-export>=4.4.0",
     "django-postgres-extra>=2.0.4",
+    "django-unfold>=0.85.0",
     "pre-commit>=4.5.1",
     "psycopg[binary]>=3.3.3",
 ]
