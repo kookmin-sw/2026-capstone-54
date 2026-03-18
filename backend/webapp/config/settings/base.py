@@ -12,19 +12,20 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 
+import environ
+
+env = environ.Env()
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-6c2(@3&p-nqvh9=z6i7^+p383wpcr%+85gdfjv4q#f-f1y#np-'
+SECRET_KEY = env("SECRET_KEY")
+DEBUG = env.bool("DEBUG", default=False)
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
 
 # Application definition
 
@@ -70,10 +71,34 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+DATABASE_ENGINE = env.str("DATABASE_ENGINE", default="psqlextra.backend")
+DATABASE_NAME = env.str("DATABASE_NAME")
+POSTGRES_USER = env.str("POSTGRES_USER")
+POSTGRES_PASSWORD = env.str("POSTGRES_PASSWORD")
+POSTGRES_HOST = env.str("POSTGRES_HOST")
+POSTGRES_PORT = env.str("POSTGRES_PORT", default="5432")
+
 DATABASES = {
-  'default': {
-    'ENGINE': 'django.db.backends.sqlite3',
-    'NAME': BASE_DIR / 'db.sqlite3',
+  "default": {
+    "ENGINE": DATABASE_ENGINE,
+    "NAME": DATABASE_NAME,
+    "USER": POSTGRES_USER,
+    "PASSWORD": POSTGRES_PASSWORD,
+    "HOST": POSTGRES_HOST,
+    "PORT": POSTGRES_PORT,
+    "ATOMIC_REQUESTS": True,
+    "CONN_MAX_AGE": 600,  # 10분 connection pooling
+    "OPTIONS": {
+      "connect_timeout": 10,
+      "options": "-c statement_timeout=30000",  # 30초 쿼리 타임아웃
+    },
+    "TEST": {
+      "NAME": env("TEST_DATABASE_NAME", default=""),
+      "USER": env("TEST_POSTGRES_USER", default=""),
+      "PASSWORD": env("TEST_POSTGRES_PASSWORD", default=""),
+      "HOST": env("TEST_POSTGRES_HOST", default=""),
+      "PORT": env("TEST_POSTGRES_PORT", default=""),
+    },
   }
 }
 
