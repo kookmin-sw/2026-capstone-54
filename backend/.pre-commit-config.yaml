@@ -1,0 +1,38 @@
+repos:
+- repo: https://github.com/google/yapf
+  rev: v0.40.2
+  hooks:
+  - id: yapf
+    args:
+    - --style={based_on_style:pep8,indent_width:2,continuation_indent_width:2,column_limit:120,dedent_closing_brackets:true,coalesce_brackets:false,split_before_closing_bracket:true}
+    - --parallel
+    - --in-place
+- repo: https://github.com/PyCQA/flake8
+  rev: 7.1.1
+  hooks:
+  - id: flake8
+    args:
+    - --per-file-ignores
+    - "*/__init__.py:F401,webapp/config/settings/*.py:F401,F403,*/migrations/*.py:F401,E501"
+    - --max-complexity=30
+    - --max-line-length=120
+    - --show-source
+    - --statistics
+    - --ignore=E111,E114,E117,E121,E122,E126,E127,E128,E131,E133,E203,W501,W503,F405
+- repo: https://github.com/pycqa/isort
+  rev: "6.0.0"
+  hooks:
+  - id: isort
+    args:
+    - --profile=black
+    - --line-length=120
+    - --indent=2
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v4.4.0
+  hooks:
+  - id: trailing-whitespace
+  - id: end-of-file-fixer
+  - id: check-yaml
+  - id: pretty-format-json
+  - id: check-added-large-files
+    args: [ "--maxkb=500" ]

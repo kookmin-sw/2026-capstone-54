@@ -6,4 +6,5 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "django>=6.0.3",
+    "pre-commit>=4.5.1",
 ]
