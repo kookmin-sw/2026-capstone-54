@@ -1,4 +1,4 @@
-FROM python:3.12-slim-trixie as python-base
+FROM 3.12-slim-bookworm as python-base
 
 ARG PORT=8000
 ENV PORT=${PORT} \
