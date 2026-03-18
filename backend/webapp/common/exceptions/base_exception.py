@@ -27,11 +27,11 @@ class BaseException(APIException):
   default_detail = "서버 내부 오류가 발생했습니다."
 
   def __init__(self, detail=None, error_code=None):
-    if detail is not None:
-      self.default_detail = detail
     if error_code is not None:
       self.error_code = error_code
-    super().__init__(detail=self.default_detail)
+    if detail is None:
+      detail = self.default_detail
+    super().__init__(detail=detail)
 
   def to_response_data(self):
     return {

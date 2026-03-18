@@ -15,6 +15,7 @@ from rest_framework.response import Response
 from rest_framework.views import exception_handler
 
 from .base_exception import BaseException
+from .conflict_exception import ConflictException
 from .validation_exception import ValidationException
 
 
@@ -44,11 +45,10 @@ def custom_exception_handler(exc, context):
   if isinstance(exc, IntegrityError):
     error_str = str(exc).lower()
     if "unique" in error_str:
-      message = "중복된 데이터가 이미 존재합니다."
-    else:
-      message = "데이터 무결성 오류가 발생했습니다."
+      ce = ConflictException(detail="중복된 데이터가 이미 존재합니다.")
+      return Response(ce.to_response_data(), status=ce.status_code)
 
-    ve = ValidationException(detail=message)
+    ve = ValidationException(detail="데이터 무결성 오류가 발생했습니다.")
     return Response(ve.to_response_data(), status=ve.status_code)
 
   # DRF 기본 핸들러
