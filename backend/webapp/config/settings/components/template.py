@@ -17,3 +17,7 @@ TEMPLATES = [
     },
   },
 ]
+
+__all__ = [
+    "TEMPLATES",
+]
