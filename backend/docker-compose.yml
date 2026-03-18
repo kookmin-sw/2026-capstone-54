@@ -14,6 +14,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      test_postgres:
+        condition: service_healthy
 
   postgres:
     image: postgres:18.3
@@ -35,7 +37,7 @@ services:
   test_postgres:
     image: postgres:18.3
     ports:
-      - ${TEST_POSTGRES_PORT}:${TEST_POSTGRES_PORT}
+      - ${TEST_POSTGRES_PORT}:5432
     volumes:
       - test_postgres_data:/var/lib/postgresql
       - ./environments/development/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
@@ -43,6 +45,11 @@ services:
       POSTGRES_DB: ${TEST_DATABASE_NAME}
       POSTGRES_USER: ${TEST_POSTGRES_USER}
       POSTGRES_PASSWORD: ${TEST_POSTGRES_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${TEST_POSTGRES_USER} -d ${TEST_DATABASE_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres_data:
