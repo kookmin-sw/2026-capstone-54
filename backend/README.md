@@ -21,7 +21,7 @@ powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | ie
 설치 후 터미널을 재시작하거나 아래 명령어로 환경변수를 적용하세요.
 
 ```bash
-source $HOME/.local/bin/env  # macOS / Linux
+source $HOME/.local/bin/env  # macOS / Linux (uv 설치 경로에 따라 다를 수 있습니다.)
 ```
 
 ### 2. 의존성 설치
