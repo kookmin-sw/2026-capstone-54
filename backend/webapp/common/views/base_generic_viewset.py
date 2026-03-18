@@ -1,4 +1,4 @@
-from common.views import BaseAPIView
+from .base_api_view import BaseAPIView
 from rest_framework import viewsets
 
 
