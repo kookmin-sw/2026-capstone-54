@@ -5,8 +5,7 @@ DRF Settings
 from .common import SERVICE_NAME
 
 REST_FRAMEWORK = {
-  "DEFAULT_SCHEMA_CLASS":
-  "drf_spectacular.openapi.AutoSchema",
+  "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
   "DEFAULT_PERMISSION_CLASSES": (),
   "DEFAULT_RENDERER_CLASSES": (
     "djangorestframework_camel_case.render.CamelCaseJSONRenderer",
@@ -30,27 +29,20 @@ REST_FRAMEWORK = {
     "rest_framework.filters.OrderingFilter",
     "rest_framework.filters.SearchFilter",
   ),
-  "DEFAULT_PAGINATION_CLASS":
-  "common.pagination.StandardPagination",
+  "DEFAULT_PAGINATION_CLASS": "common.pagination.StandardPagination",
 }
 
 SPECTACULAR_SETTINGS = {
-  "TITLE":
-  f"{SERVICE_NAME} API",
-  "DESCRIPTION":
-  f"API for {SERVICE_NAME} Web Application",
-  "VERSION":
-  "1.0.0",
-  "SERVE_INCLUDE_SCHEMA":
-  False,
-  "SWAGGER_UI_OAUTH2_REDIRECT_URL":
-  "/docs/oauth2-redirect/",
+  "TITLE": f"{SERVICE_NAME} API",
+  "DESCRIPTION": f"API for {SERVICE_NAME} Web Application",
+  "VERSION": "1.0.0",
+  "SERVE_INCLUDE_SCHEMA": False,
+  "SWAGGER_UI_OAUTH2_REDIRECT_URL": "/docs/oauth2-redirect/",
   "CONTACT": {
     "name": "shinkeonkim",
     "email": "dev.shinkeonkim@gmail.com",
   },
-  "CAMELIZE_NAMES":
-  True,
+  "CAMELIZE_NAMES": True,
   "POSTPROCESSING_HOOKS": [
     "drf_spectacular.contrib.djangorestframework_camel_case.camelize_serializer_fields",
     "drf_spectacular.hooks.postprocess_schema_enums",
