@@ -47,6 +47,7 @@ SPECTACULAR_SETTINGS = {
   "POSTPROCESSING_HOOKS": [
     "drf_spectacular.contrib.djangorestframework_camel_case.camelize_serializer_fields",
     "drf_spectacular.hooks.postprocess_schema_enums",
+    "common.exceptions.schema.inject_error_responses",
   ],
 }
 
