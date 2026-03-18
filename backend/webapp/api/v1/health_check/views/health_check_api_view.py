@@ -6,7 +6,7 @@ from rest_framework.response import Response
 
 class HealthCheckAPIView(BaseAPIView):
   """서버 상태 확인용 헬스체크 API"""
-  permission_classes = []
+  permission_classes = [AllowAny]
 
   @extend_schema(
     summary="Health Check",
