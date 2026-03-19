@@ -39,3 +39,11 @@ LOGGING = {
     "level": "CRITICAL",
   },
 }
+
+CELERY_TASK_ALWAYS_EAGER = True
+CELERY_TASK_EAGER_PROPAGATES = True
+CELERY_BROKER_URL = "memory://"
+CELERY_RESULT_BACKEND = "cache+memory://"
+
+# Disable Celery Beat scheduler for tests
+CELERY_BEAT_SCHEDULER = None

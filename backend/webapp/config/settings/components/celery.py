@@ -1,0 +1,33 @@
+from .common import env
+from .i18n import TIME_ZONE
+
+REDIS_HOST = env.str("REDIS_HOST", default="redis")
+REDIS_PORT = env.str("REDIS_PORT", default="6379")
+
+CELERY_BROKER_URL = env.str(
+  "CELERY_BROKER_URL",
+  default=f"redis://{REDIS_HOST}:{REDIS_PORT}/0",
+)
+
+CELERY_RESULT_BACKEND = env.str("CELERY_RESULT_BACKEND", default="django-db")
+CELERY_RESULT_EXTENDED = True
+CELERY_CACHE_BACKEND = "django-cache"
+CELERY_ACCEPT_CONTENT = ["application/json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = TIME_ZONE
+
+# Celery Beat 설정
+CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
+
+__all__ = [
+  "CELERY_BROKER_URL",
+  "CELERY_RESULT_BACKEND",
+  "CELERY_RESULT_EXTENDED",
+  "CELERY_CACHE_BACKEND",
+  "CELERY_ACCEPT_CONTENT",
+  "CELERY_TASK_SERIALIZER",
+  "CELERY_RESULT_SERIALIZER",
+  "CELERY_TIMEZONE",
+  "CELERY_BEAT_SCHEDULER",
+]
