@@ -1,6 +1,7 @@
 from api.v1.health_check.serializers import HealthCheckSerializer
 from common.views import BaseAPIView
 from drf_spectacular.utils import extend_schema
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 
