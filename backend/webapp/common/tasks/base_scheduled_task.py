@@ -11,12 +11,14 @@ Usage::
   from common.tasks.base_scheduled_task import BaseScheduledTask
   from myapp.services import DailyReportService
 
-  @app.task(bind=True, base=BaseScheduledTask)
   class DailyReportTask(BaseScheduledTask):
       schedule = crontab(hour=0, minute=0)  # 매일 자정
 
       def run(self):
           return DailyReportService().perform()
+
+  # Celery 5.x 에서는 클래스 기반 태스크를 명시적으로 등록해야 한다.
+  RegisteredDailyReportTask = app.register_task(DailyReportTask())
 
   # celery_beat.py 에 등록:
   #
@@ -85,6 +87,3 @@ class BaseScheduledTask(BaseTask):
         "options": options or {},
       }
     }
-
-  def run(self, *args, **kwargs):
-    raise NotImplementedError

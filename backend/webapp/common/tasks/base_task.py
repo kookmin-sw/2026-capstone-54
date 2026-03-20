@@ -10,16 +10,18 @@ Usage::
   from common.tasks.base_task import BaseTask
   from myapp.services import CreateSomethingService
 
-  @app.task(bind=True, base=BaseTask)
   class CreateSomethingTask(BaseTask):
       def run(self, user_id: int, **kwargs):
           return CreateSomethingService(user_id=user_id, **kwargs).perform()
 
+  # Celery 5.x 에서는 클래스 기반 태스크를 명시적으로 등록해야 한다.
+  RegisteredCreateSomethingTask = app.register_task(CreateSomethingTask())
+
   # 비동기 실행
-  CreateSomethingTask.delay(user_id=1)
+  RegisteredCreateSomethingTask.delay(user_id=1)
 
   # 지연 실행
-  CreateSomethingTask.apply_async(kwargs={"user_id": 1}, countdown=10)
+  RegisteredCreateSomethingTask.apply_async(kwargs={"user_id": 1}, countdown=10)
 """
 
 import logging
