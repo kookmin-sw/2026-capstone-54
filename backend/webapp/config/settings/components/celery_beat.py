@@ -7,7 +7,7 @@ Celery Beat 주기적 작업 스케줄 설정.
       태스크는 반드시 문자열(모듈 경로)로 참조해야 한다.
 """
 
-from celery.schedules import crontab
+# from celery.schedules import crontab
 
 # Celery Beat 스케줄 설정
 CELERY_BEAT_SCHEDULE = {
