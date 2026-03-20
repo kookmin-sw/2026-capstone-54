@@ -12,14 +12,18 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 
 # 커스텀 command 파일 목록 가져오기
-commands=($(
+commands=()
+while IFS= read -r cmd; do
+  [ -z "$cmd" ] && continue
+  commands+=("$cmd")
+done < <(
   find "$ROOT_DIR/webapp" -type f -path "*/management/commands/*.py" -not -name "__init__.py" | \
     xargs -n1 basename | \
     sed 's/\.py$//' | \
     sort
-))
+)
 
-if [ ${#commands[@]} -eq 0 ]; then
+if [ "${#commands[@]}" -eq 0 ]; then
   echo "No custom Django commands found."
   exit 1
 fi
@@ -27,7 +31,7 @@ fi
 echo
 echo "Available custom Django management commands:"
 for idx in "${!commands[@]}"; do
-  printf "  %2d) %s\n" $((idx + 1)) "${commands[$idx]}"
+  printf "  %2d) %s\n" "$((idx + 1))" "${commands[$idx]}"
 done
 
 read -r -p "Select a Django command: " choice || exit 1
@@ -38,7 +42,7 @@ if [[ ! "$choice" =~ ^[0-9]+$ ]]; then
 fi
 
 cmd_idx=$((choice - 1))
-if [ "$cmd_idx" -lt 0 ] || [ "$cmd_idx" -ge ${#commands[@]} ]; then
+if [ "$cmd_idx" -lt 0 ] || [ "$cmd_idx" -ge "${#commands[@]}" ]; then
   echo "Invalid selection."
   exit 1
 fi

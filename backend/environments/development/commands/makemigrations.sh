@@ -7,7 +7,7 @@ else
   dc() { docker-compose "$@"; }
 fi
 
-APP_NAME=${1:-}
+APP_NAME="${1:-}"
 
 if [ -z "$APP_NAME" ]; then
   dc exec webapp python manage.py makemigrations

@@ -80,14 +80,14 @@ docker_args=(
 )
 
 show_menu() {
-  local script_count=${#scripts[@]}
-  local docker_count=${#docker_args[@]}
+  local script_count="${#scripts[@]}"
+  local docker_count="${#docker_args[@]}"
 
   echo
   echo "Available actions:"
-  if [ $script_count -gt 0 ]; then
+  if [ "$script_count" -gt 0 ]; then
     for idx in "${!scripts[@]}"; do
-      printf "  %2d) %s\n" $((idx + 1)) "${script_labels[$idx]}"
+      printf "  %2d) %s\n" "$((idx + 1))" "${script_labels[$idx]}"
     done
   else
     echo "  (No command scripts found in environments/development/commands)"
@@ -95,7 +95,7 @@ show_menu() {
 
   local docker_offset=$((script_count + 1))
   for idx in "${!docker_descriptions[@]}"; do
-    printf "  %2d) %s\n" $((docker_offset + idx)) "${docker_descriptions[$idx]}"
+    printf "  %2d) %s\n" "$((docker_offset + idx))" "${docker_descriptions[$idx]}"
   done
   echo "  q) Quit"
 }
@@ -151,13 +151,14 @@ run_script() {
 run_docker() {
   local idx="$1"
   local description="${docker_descriptions[$idx]}"
-  local args="${docker_args[$idx]}"
+  local -a args
+  read -r -a args <<< "${docker_args[$idx]}"
 
   echo
   echo "Running: $description"
   if (
     cd "$ROOT_DIR" || exit 1
-    dc $args
+    dc "${args[@]}"
   ); then
     echo "Done."
   else
@@ -184,10 +185,10 @@ main() {
         ;;
     esac
 
-    local selection=$((choice))
-    local script_count=${#scripts[@]}
-    local docker_count=${#docker_args[@]}
-    local max_option=$((script_count + docker_count))
+    local selection="$((choice))"
+    local script_count="${#scripts[@]}"
+    local docker_count="${#docker_args[@]}"
+    local max_option="$((script_count + docker_count))"
 
     if [ "$selection" -lt 1 ] || [ "$selection" -gt "$max_option" ]; then
       echo "Invalid selection."
@@ -195,9 +196,9 @@ main() {
     fi
 
     if [ "$selection" -le "$script_count" ]; then
-      run_script $((selection - 1))
+      run_script "$((selection - 1))"
     else
-      run_docker $((selection - script_count - 1))
+      run_docker "$((selection - script_count - 1))"
     fi
   done
 }
