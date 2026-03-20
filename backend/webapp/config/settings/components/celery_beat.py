@@ -12,8 +12,8 @@ Celery Beat 주기적 작업 스케줄 설정.
 # Celery Beat 스케줄 설정
 CELERY_BEAT_SCHEDULE = {
   #  Example
-  #   "common.tasks.ping_task.PingScheduledTask": {
-  #     "task": "common.tasks.ping_task.PingScheduledTask",
+  #   "common.tasks.ping_task.RegisteredPingScheduledTask": {
+  #     "task": "common.tasks.ping_task.RegisteredPingScheduledTask",
   #     "schedule": crontab(minute="*"),
   #     "args": (),
   #     "kwargs": {},
