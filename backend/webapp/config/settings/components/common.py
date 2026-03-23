@@ -8,12 +8,12 @@ import environ
 
 env = environ.Env()
 
-SERVICE_NAME = env("SERVICE_NAME", default="MeFit")
+SERVICE_NAME = env.str("SERVICE_NAME", default="MeFit")
 # FIXME: 현재는 서비스명 미정
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent
 
-SECRET_KEY = env("SECRET_KEY")
+SECRET_KEY = env.str("SECRET_KEY")
 
 DEBUG = env.bool("DEBUG", default=False)
 
