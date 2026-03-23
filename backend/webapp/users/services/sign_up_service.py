@@ -18,4 +18,4 @@ class SignUpService(BaseService):
     user = User.objects.create_user(email=email, password=password, name=name)
     RegisteredSendVerificationEmailTask.delay(user_id=user.id)
     token = RefreshToken.for_user(user)
-    return token
+    return token, user

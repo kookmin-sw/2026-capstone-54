@@ -4,7 +4,6 @@ from common.views import BaseAPIView
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.response import Response
-from users.models import User
 from users.services import SignUpService
 
 
@@ -23,12 +22,11 @@ class SignUpAPIView(BaseAPIView):
     serializer = SignUpSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     data = serializer.validated_data
-    token = SignUpService(
+    token, user = SignUpService(
       email=data["email"],
       password=data["password1"],
       name=data["name"],
     ).perform()
-    user = User.objects.get(id=token["user_id"])
     response_data = {
       "access": str(token.access_token),
       "refresh": str(token),
