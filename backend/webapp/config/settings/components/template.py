@@ -19,5 +19,5 @@ TEMPLATES = [
 ]
 
 __all__ = [
-    "TEMPLATES",
+  "TEMPLATES",
 ]

@@ -1,5 +1,6 @@
-from .base_api_view import BaseAPIView
 from rest_framework import viewsets
+
+from .base_api_view import BaseAPIView
 
 
 class BaseViewSet(BaseAPIView, viewsets.ModelViewSet):
