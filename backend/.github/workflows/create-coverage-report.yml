@@ -1,0 +1,116 @@
+name: Create Coverage Report
+
+on:
+  push:
+    branches:
+      - develop
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  SECRET_KEY: ${{ secrets.CI_DJANGO_KEY }}
+  DEBUG: "True"
+  ALLOWED_HOSTS: localhost,127.0.0.1,0.0.0.0
+  PORT: 8000
+  DJANGO_SETTINGS_MODULE: config.settings.test
+  POSTGRES_PORT: 5432
+  DATABASE_NAME: test_db
+  POSTGRES_USER: test_user
+  POSTGRES_PASSWORD: ${{ secrets.CI_POSTGRES_PASSWORD }}
+  POSTGRES_HOST: localhost
+
+jobs:
+  generate-coverage:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_DB: ${{ env.DATABASE_NAME }}
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.CI_POSTGRES_PASSWORD }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Cache uv dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('**/uv.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-
+
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "${HOME}/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies via uv
+        run: |
+          uv sync --frozen --group test
+
+      - name: Wait for PostgreSQL to be ready
+        run: |
+          for i in {1..10}; do
+            pg_isready -h localhost -p 5432 && break
+            sleep 5
+          done
+
+      - name: Run Django migrations
+        working-directory: webapp
+        run: uv run python manage.py migrate
+
+      - name: Generate test coverage report
+        working-directory: webapp
+        run: |
+          uv run coverage run --source='.' manage.py test
+          uv run coverage report
+          uv run coverage html
+
+      - name: Commit and push coverage report to coverage-docs branch
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions@github.com"
+
+          # Fetch existing coverage-docs branch if it exists
+          git fetch origin coverage-docs:coverage-docs 2>/dev/null || true
+
+          # Create orphan branch locally (does not affect remote yet)
+          git checkout --orphan coverage-docs-new
+
+          # Stage only the htmlcov output
+          git rm -rf . 2>/dev/null || true
+          cp -r webapp/htmlcov/* .
+
+          # Clean up unwanted files
+          find . -name "*.pyc" -delete
+          find . -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
+
+          git add .
+
+          if git diff --cached --quiet; then
+            echo "✅ No changes in coverage report. Skipping commit & push."
+            exit 0
+          fi
+
+          git commit -m "Coverage Report - $(date '+%Y-%m-%d %H:%M:%S')"
+
+          # Force push to coverage-docs without deleting the branch first
+          # This preserves the GitHub Pages branch association
+          git push origin coverage-docs-new:coverage-docs --force
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
