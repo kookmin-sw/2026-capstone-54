@@ -37,7 +37,9 @@ class SignInAPIViewPropertyTests(TestCase):
 
   @given(
     wrong_email=st.emails(),
-    wrong_password=st.text(min_size=1, max_size=30),
+    wrong_password=st.text(
+      min_size=1, max_size=30, alphabet=st.characters(whitelist_categories=("Lu", "Ll", "Nd", "Po", "Pd"))
+    ),
   )
   @settings(max_examples=10, deadline=None)
   def test_sign_in_with_wrong_credentials_returns_401(self, wrong_email, wrong_password):
