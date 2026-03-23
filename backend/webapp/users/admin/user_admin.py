@@ -13,7 +13,7 @@ class UserAdmin(BaseUserAdmin, ModelAdmin):
 
   fieldsets = (
     (None, {
-      "fields": ("email", "password", "name")
+      "fields": ("email", "name")
     }),
     ("인증 상태", {
       "fields": ("email_confirmed_at", "profile_completed_at")
