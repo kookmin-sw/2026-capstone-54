@@ -89,10 +89,12 @@ dependencies = [
     { name = "drf-extensions" },
     { name = "drf-spectacular" },
     { name = "drf-writable-nested" },
+    { name = "nplusone" },
     { name = "pre-commit" },
     { name = "psycopg", extra = ["binary"] },
     { name = "redis" },
     { name = "requests" },
+    { name = "slack-sdk" },
     { name = "uvicorn", extra = ["standard"] },
 ]
 
@@ -123,10 +125,12 @@ requires-dist = [
     { name = "drf-extensions", specifier = ">=0.7.1" },
     { name = "drf-spectacular", specifier = ">=0.29.0" },
     { name = "drf-writable-nested", specifier = ">=0.7.2" },
+    { name = "nplusone", specifier = ">=1.0.0" },
     { name = "pre-commit", specifier = ">=4.5.1" },
     { name = "psycopg", extras = ["binary"], specifier = ">=3.3.3" },
     { name = "redis", specifier = ">=7.3.0" },
     { name = "requests", specifier = ">=2.32.5" },
+    { name = "slack-sdk", specifier = ">=3.41.0" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.42.0" },
 ]
 
@@ -155,6 +159,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/07/18/3c8523962314be6bf4c8989c79ad9531c825210dd13a8669f6b84336e8bd/bleach-6.3.0.tar.gz", hash = "sha256:6f3b91b1c0a02bb9a78b5a454c92506aa0fdf197e1d5e114d2e00c6f64306d22", size = 203533, upload-time = "2025-10-27T17:57:39.211Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/cd/3a/577b549de0cc09d95f11087ee63c739bba856cd3952697eec4c4bb91350a/bleach-6.3.0-py3-none-any.whl", hash = "sha256:fe10ec77c93ddf3d13a73b035abaac7a9f5e436513864ccdad516693213c65d6", size = 164437, upload-time = "2025-10-27T17:57:37.538Z" },
+]
+
+[[package]]
+name = "blinker"
+version = "1.9.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/21/28/9b3f50ce0e048515135495f198351908d99540d69bfdc8c1d15b73dc55ce/blinker-1.9.0.tar.gz", hash = "sha256:b4ce2265a7abece45e7cc896e98dbebe6cead56bcf805a3d23136d145f5445bf", size = 22460, upload-time = "2024-11-08T17:25:47.436Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/10/cb/f2ad4230dc2eb1a74edf38f1a38b9b52277f75bef262d8908e60d957e13c/blinker-1.9.0-py3-none-any.whl", hash = "sha256:ba0efaa9080b619ff2f3459d1d500c57bddea4a6b424b60a91141db6fd2f08bc", size = 8458, upload-time = "2024-11-08T17:25:46.184Z" },
 ]
 
 [[package]]
@@ -825,6 +838,19 @@ wheels = [
 ]
 
 [[package]]
+name = "nplusone"
+version = "1.0.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "blinker" },
+    { name = "six" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/26/da/663f551cdda166eaf75a564f64d022c6eb03c710ba83c3fb0f4ac664ebde/nplusone-1.0.0.tar.gz", hash = "sha256:1726c0a10c0aa7eabb04e24db2882ff97b6b7ee29d729a8d97dcbd12ef5a5651", size = 13501, upload-time = "2018-05-21T03:40:25.01Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/13/6b/9721ba7c68036316bd8aeb596b397253590c87d7045c9d6fc82b7364eff4/nplusone-1.0.0-py2.py3-none-any.whl", hash = "sha256:96b1e6e29e6af3e71b67d0cc012a5ec8c97c6a2f5399f4ba41a2bbe0e253a9ac", size = 15920, upload-time = "2018-05-21T03:40:23.69Z" },
+]
+
+[[package]]
 name = "packaging"
 version = "26.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1161,6 +1187,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/94/e7/b2c673351809dca68a0e064b6af791aa332cf192da575fd474ed7d6f16a2/six-1.17.0.tar.gz", hash = "sha256:ff70335d468e7eb6ec65b95b99d3a2836546063f63acc5171de367e834932a81", size = 34031, upload-time = "2024-12-04T17:35:28.174Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl", hash = "sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274", size = 11050, upload-time = "2024-12-04T17:35:26.475Z" },
+]
+
+[[package]]
+name = "slack-sdk"
+version = "3.41.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/22/35/fc009118a13187dd9731657c60138e5a7c2dea88681a7f04dc406af5da7d/slack_sdk-3.41.0.tar.gz", hash = "sha256:eb61eb12a65bebeca9cb5d36b3f799e836ed2be21b456d15df2627cfe34076ca", size = 250568, upload-time = "2026-03-12T16:10:11.381Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a1/df/2e4be347ff98281b505cc0ccf141408cdd25eb5ca9f3830deb361b2472d3/slack_sdk-3.41.0-py2.py3-none-any.whl", hash = "sha256:bb18dcdfff1413ec448e759cf807ec3324090993d8ab9111c74081623b692a89", size = 313885, upload-time = "2026-03-12T16:10:09.811Z" },
 ]
 
 [[package]]
