@@ -45,6 +45,10 @@ PACKAGE_APPS = [
   # Auth
   "dj_rest_auth",
   "dj_rest_auth.registration",
+
+  # Celery
+  "django_celery_beat",
+  "django_celery_results",
 ]
 
 PROJECT_APPS = [

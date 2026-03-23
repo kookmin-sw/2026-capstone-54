@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from .components.admin import *
 from .components.auth import *
+from .components.celery import *
+from .components.celery_beat import *
 from .components.common import *
 from .components.database import *
 from .components.file import *
