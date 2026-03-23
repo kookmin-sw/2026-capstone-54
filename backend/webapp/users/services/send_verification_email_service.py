@@ -1,4 +1,4 @@
-import random
+import secrets
 import string
 from datetime import timedelta
 
@@ -25,7 +25,7 @@ class SendVerificationEmailService(BaseService):
 
   def _generate_code(self):
     charset = string.ascii_uppercase + string.digits
-    return "".join(random.choices(charset, k=6))
+    return "".join(secrets.choice(charset) for _ in range(6))
 
   def _send_email(self, user, code):
     html_message = render_to_string(

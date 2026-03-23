@@ -27,8 +27,9 @@ class VerifyEmailService(BaseService):
     self._code_obj = code_obj
 
   def execute(self):
-    self._code_obj.used_at = timezone.now()
+    now = timezone.now()
+    self._code_obj.used_at = now
     self._code_obj.save(update_fields=["used_at"])
 
-    self.user.email_confirmed_at = timezone.now()
+    self.user.email_confirmed_at = now
     self.user.save(update_fields=["email_confirmed_at"])
