@@ -21,10 +21,15 @@ dependencies = [
     "drf-extensions>=0.7.1",
     "drf-spectacular>=0.29.0",
     "drf-writable-nested>=0.7.2",
-    "hypothesis>=6.151.9",
     "pre-commit>=4.5.1",
     "psycopg[binary]>=3.3.3",
     "redis>=7.3.0",
     "requests>=2.32.5",
     "uvicorn[standard]>=0.42.0",
+]
+
+[dependency-groups]
+test = [
+    "coverage>=7.0",
+    "hypothesis>=6.151.9",
 ]
