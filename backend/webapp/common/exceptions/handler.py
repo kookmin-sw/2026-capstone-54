@@ -7,8 +7,13 @@ settings.py에 아래와 같이 등록한다::
   REST_FRAMEWORK = {
     "EXCEPTION_HANDLER": "common.exceptions.handler.custom_exception_handler",
   }
+
+5xx 에러 발생 시 Slack 에 비동기로 알림을 전송한다.
 """
 
+import traceback
+
+import structlog
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import IntegrityError
 from rest_framework.response import Response
@@ -17,6 +22,27 @@ from rest_framework.views import exception_handler
 from .base_exception import BaseException
 from .conflict_exception import ConflictException
 from .validation_exception import ValidationException
+
+logger = structlog.get_logger(__name__)
+
+
+def _notify_slack_error(exc: Exception, context: dict) -> None:
+  """5xx 에러를 Slack 에 비동기로 알린다. 실패해도 응답에 영향을 주지 않는다."""
+  try:
+    from common.tasks.send_error_alert_task import RegisteredSendErrorAlertTask
+
+    request = context.get("request")
+
+    RegisteredSendErrorAlertTask.delay(
+      error_type=type(exc).__name__,
+      error_message=str(exc),
+      path=request.path if request else "",
+      method=request.method if request else "",
+      traceback=traceback.format_exc(),
+    )
+
+  except Exception:
+    logger.warning("slack_error_notify_failed", exc_info=True)
 
 
 def custom_exception_handler(exc, context):
@@ -54,6 +80,8 @@ def custom_exception_handler(exc, context):
   # DRF 기본 핸들러
   response = exception_handler(exc, context)
   if response is None:
+    # DRF 가 처리하지 못한 예외 (= 500) → Slack 알림
+    _notify_slack_error(exc, context)
     return None
 
   detail = response.data
@@ -69,6 +97,10 @@ def custom_exception_handler(exc, context):
     )
     response.data = ve.to_response_data()
   else:
+    # 5xx 응답 → Slack 알림
+    if response.status_code >= 500:
+      _notify_slack_error(exc, context)
+
     message = (detail.get("detail", "오류가 발생했습니다.") if isinstance(detail, dict) else str(detail))
     response.data = {
       "error_code": f"HTTP_{response.status_code}",
