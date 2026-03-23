@@ -22,12 +22,15 @@ SITE_ID = 1
 WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
 
+DEVELOPER = env.str("DEVELOPER", "Mefit")
+
 __all__ = [
   "env",
   "BASE_DIR",
   "SECRET_KEY",
   "DEBUG",
   "SERVICE_NAME",
+  "DEVELOPER",
   "SITE_ID",
   "WSGI_APPLICATION",
   "ASGI_APPLICATION",

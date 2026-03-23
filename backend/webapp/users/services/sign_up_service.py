@@ -9,6 +9,7 @@ class SignUpService(BaseService):
 
   def execute(self):
     from users.models import User
+    from users.tasks.send_sign_up_event_task import RegisteredSendSignUpEventTask
     from users.tasks.send_verification_email_task import RegisteredSendVerificationEmailTask
 
     email = self.kwargs["email"]
@@ -17,5 +18,7 @@ class SignUpService(BaseService):
 
     user = User.objects.create_user(email=email, password=password, name=name)
     RegisteredSendVerificationEmailTask.delay(user_id=user.id)
+    RegisteredSendSignUpEventTask.delay(email=email, name=name)
     token = RefreshToken.for_user(user)
+
     return token, user
