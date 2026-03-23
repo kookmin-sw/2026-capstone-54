@@ -110,6 +110,51 @@ LOGGING = {
   },
 }
 
+# ---------------------------------------------------------------------------
+# DRF API Logger 설정
+# ---------------------------------------------------------------------------
+
+# DB에 request/response 기록 (admin 대시보드에서 조회 가능)
+DRF_API_LOGGER_DATABASE = True
+
+# logging하는 Content-Type
+DRF_API_LOGGER_CONTENT_TYPES = [
+  "application/json",
+  "application/json; charset=utf-8",
+  "application/vnd.api+json",
+]
+
+# 민감 필드 자동 마스킹
+DRF_API_LOGGER_EXCLUDE_KEYS = ['password', 'password1', 'password2', 'token', 'access', 'refresh', 'secret']
+
+# 200ms 이상 걸리는 API를 slow로 표시
+DRF_API_LOGGER_SLOW_API_ABOVE = 200
+
+# URL 저장 형식
+DRF_API_LOGGER_PATH_TYPE = 'FULL_PATH'
+
+# 큐 설정 (배치 DB 삽입)
+DRF_LOGGER_QUEUE_MAX_SIZE = 50
+DRF_LOGGER_INTERVAL = 10
+
+# 응답 바디 크기 제한 (bytes)
+DRF_API_LOGGER_MAX_REQUEST_BODY_SIZE = 4096
+DRF_API_LOGGER_MAX_RESPONSE_BODY_SIZE = 4096
+
+# admin 패널 로그 제외 (기본값이지만 명시)
+DRF_API_LOGGER_SKIP_NAMESPACE = ['admin']
+
 __all__ = [
   "LOGGING",
+  "DRF_API_LOGGER_DATABASE",
+  "DRF_API_LOGGER_CONTENT_TYPES",
+  "DRF_API_LOGGER_DATABASE",
+  "DRF_API_LOGGER_EXCLUDE_KEYS",
+  "DRF_API_LOGGER_SLOW_API_ABOVE",
+  "DRF_API_LOGGER_PATH_TYPE",
+  "DRF_LOGGER_QUEUE_MAX_SIZE",
+  "DRF_LOGGER_INTERVAL",
+  "DRF_API_LOGGER_MAX_REQUEST_BODY_SIZE",
+  "DRF_API_LOGGER_MAX_RESPONSE_BODY_SIZE",
+  "DRF_API_LOGGER_SKIP_NAMESPACE",
 ]

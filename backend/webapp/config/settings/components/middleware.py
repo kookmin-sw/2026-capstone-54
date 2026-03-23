@@ -14,6 +14,8 @@ MIDDLEWARE = [
   'django_guid.middleware.GuidMiddleware',
   # Structured logging — request/response 메타데이터 자동 기록
   'django_structlog.middlewares.RequestMiddleware',
+  # API request/response DB 기록
+  'drf_api_logger.middleware.api_logger_middleware.APILoggerMiddleware',
   "common.middlewares.CamelCaseMiddleware",
 ]
 

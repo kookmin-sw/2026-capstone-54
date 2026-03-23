@@ -48,6 +48,7 @@ PACKAGE_APPS = [
   # Logging
   "django_guid",
   "django_structlog",
+  "drf_api_logger",
 ]
 
 PROJECT_APPS = [
