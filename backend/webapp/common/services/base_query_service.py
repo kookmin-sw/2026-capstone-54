@@ -19,26 +19,14 @@ Usage::
   ).perform()
 """
 
-from abc import ABC, abstractmethod
+from .base_service import BaseService
 
 
-class BaseQueryService(ABC):
+class BaseQueryService(BaseService):
   """읽기 전용 서비스의 공통 베이스 클래스. 트랜잭션 없이 perform()으로 실행한다."""
 
-  def __init__(self, user=None, **kwargs):
-    self.user = user
-    self.kwargs = kwargs
-
   def perform(self):
-    """validate → execute 순서로 실행한다."""
+    """validate → execute 순서로 실행한다. 트랜잭션 없음."""
+    self._validate_kwargs()
     self.validate()
     return self.execute()
-
-  def validate(self):
-    """조회 조건 검증. 필요 시 오버라이드한다."""
-    pass
-
-  @abstractmethod
-  def execute(self):
-    """실제 조회 로직. 반드시 구현해야 한다."""
-    raise NotImplementedError
