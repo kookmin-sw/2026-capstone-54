@@ -53,14 +53,14 @@ class UserModelTests(TestCase):
     self.user.delete()
     self.assertTrue(User.all_objects.filter(pk=self.user.pk).exists())
 
-  def test_update_attributes_정상_동작(self):
-    self.user.update_attributes({
+  def test_assign_attributes_정상_동작(self):
+    self.user.assign_attributes({
       "name": "새이름",
       "email": "new@example.com",
     })
     self.assertEqual(self.user.name, "새이름")
     self.assertEqual(self.user.email, "new@example.com")
 
-  def test_update_attributes_잘못된_필드명_에러(self):
+  def test_assign_attributes_잘못된_필드명_에러(self):
     with self.assertRaises(AttributeError):
-      self.user.update_attributes({"invalid_field": "value"})
+      self.user.assign_attributes({"invalid_field": "value"})

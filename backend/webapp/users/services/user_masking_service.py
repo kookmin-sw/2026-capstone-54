@@ -20,7 +20,7 @@ class UserMaskingService(BaseService):
 
   def execute(self):
     user = self.user
-    user.update_attributes(
+    user.assign_attributes(
       {
         "name": f"deleted_user+{user.pk}",
         "email": f"deleted_user+{user.pk}@mefit.chat",

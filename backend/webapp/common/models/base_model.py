@@ -28,3 +28,14 @@ class BaseModel(models.Model):
 
   created_at = models.DateTimeField(auto_now_add=True)
   updated_at = models.DateTimeField(auto_now=True)
+
+  def assign_attributes(self, attrs: dict[str, any]) -> None:
+    self._validate_field_names(attrs)
+    for key, value in attrs.items():
+      setattr(self, key, value)
+
+  def _validate_field_names(self, attrs: dict[str, any]) -> None:
+    model_fields = {f.name for f in self._meta.get_fields()}
+    invalid_keys = attrs.keys() - model_fields
+    if invalid_keys:
+      raise AttributeError(f"Invalid field(s): {invalid_keys}")
