@@ -23,12 +23,33 @@ PACKAGE_APPS = [
   # Django Postgres
   "django.contrib.postgres",
   "psqlextra",
+
   # Django ADMIN Import Export
   "import_export",
+
+  # Django Extensions
+  "django_extensions",
+
+  # REST Framework
+  "rest_framework",
+  "rest_framework.authtoken",
+  "rest_framework_simplejwt",
+  "rest_framework_simplejwt.token_blacklist",
+
+  # Swagger Docs
+  "drf_spectacular",
+
+  # Django Filters
+  "django_filters",
+
+  # Auth
+  "dj_rest_auth",
+  "dj_rest_auth.registration",
 ]
 
 PROJECT_APPS = [
   # 프로젝트 앱
+  "common",
 ]
 
 INSTALLED_APPS = ADMIN_APPS + DJANGO_APPS + PACKAGE_APPS + PROJECT_APPS

@@ -16,6 +16,10 @@ media
 # <django-project-name>/staticfiles/
 
 ### Django.Python Stack ###
+
+# Django static files
+staticfiles
+
 # Byte-compiled / optimized / DLL files
 *.py[cod]
 *$py.class
