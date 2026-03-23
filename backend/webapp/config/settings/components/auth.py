@@ -3,6 +3,7 @@ Django User Authentication Settings
 """
 
 from datetime import timedelta
+
 from .common import env
 
 # Custom User Model

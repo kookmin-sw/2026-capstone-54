@@ -13,7 +13,7 @@ repos:
   - id: flake8
     args:
     - --per-file-ignores
-    - "*/__init__.py:F401,webapp/config/settings/*.py:F401,F403,*/migrations/*.py:F401,E501"
+    - "*/__init__.py:F401,webapp/config/settings/*.py:F401,F403,*/migrations/*.py:F401,E501,E251"
     - --max-complexity=30
     - --max-line-length=120
     - --show-source
