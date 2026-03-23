@@ -3,7 +3,6 @@ from common.permissions import AllowAny
 from common.views import BaseAPIView
 from drf_spectacular.utils import extend_schema
 from rest_framework.response import Response
-from users.models import User
 from users.services import SignInService
 
 
@@ -22,11 +21,10 @@ class SignInAPIView(BaseAPIView):
     serializer = SignInSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     data = serializer.validated_data
-    token = SignInService(
+    token, user = SignInService(
       email=data["email"],
       password=data["password"],
     ).perform()
-    user = User.objects.get(id=token["user_id"])
     response_data = {
       "access": str(token.access_token),
       "refresh": str(token),

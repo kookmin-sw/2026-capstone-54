@@ -20,4 +20,4 @@ class SignInService(BaseService):
     self._user = user
 
   def execute(self):
-    return RefreshToken.for_user(self._user)
+    return RefreshToken.for_user(self._user), self._user
