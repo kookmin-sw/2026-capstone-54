@@ -19,6 +19,7 @@ from .components.database import *
 from .components.file import *
 from .components.i18n import *
 from .components.installed_app import *
+from .components.logging import *
 from .components.middleware import *
 from .components.rest_framework import *
 from .components.template import *
