@@ -9,6 +9,8 @@ from __future__ import annotations
 
 import re
 
+from django.db import connection
+
 _MAX_SQL_ENTRIES = 5
 
 
@@ -34,7 +36,6 @@ def collect_sql(model: str, field: str, snapshot_index: int) -> str:
                         — 이전: 부모 모델 조회, 이후: 반복 쿼리 전체
     """
   try:
-    from django.db import connection
     all_queries = connection.queries
     if not all_queries:
       return ""
