@@ -80,7 +80,7 @@ jobs:
 
       - name: Install dependencies via uv
         run: |
-          uv sync --frozen
+          uv sync --frozen --group test
 
       - name: Wait for PostgreSQL to be ready
         run: |
