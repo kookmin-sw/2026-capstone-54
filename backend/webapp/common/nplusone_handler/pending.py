@@ -25,6 +25,11 @@ class PendingAlert:
   method: str
   stacktrace: str
   query_snapshot_index: int
+  registered_at: float = 0.0
+
+  def __post_init__(self) -> None:
+    if not self.registered_at:
+      self.registered_at = time.monotonic()
 
 
 # 모듈 레벨 상태 — 프로세스 수명 동안 유지
@@ -84,8 +89,15 @@ def connect_signal() -> None:
 
 
 def _evict_expired() -> None:
-  """TTL 이 지난 _seen 항목을 제거한다."""
+  """TTL 이 지난 _seen / _pending 항목을 제거한다."""
   cutoff = time.monotonic() - _TTL
-  expired = [k for k, ts in _seen.items() if ts < cutoff]
-  for k in expired:
+
+  # _seen 정리
+  expired_seen = [k for k, ts in _seen.items() if ts < cutoff]
+  for k in expired_seen:
     del _seen[k]
+
+  # _pending 정리 — request_finished 가 호출되지 않아 남은 항목 제거
+  expired_pending = [rid for rid, alerts in _pending.items() if alerts and alerts[0].registered_at < cutoff]
+  for rid in expired_pending:
+    del _pending[rid]

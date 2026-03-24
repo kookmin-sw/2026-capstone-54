@@ -110,3 +110,44 @@ class RegisterAndFlushTest(PendingStateIsolationMixin, TestCase):
     self.assertEqual(call_kwargs["path"], "/debug/nplusone/")
     self.assertEqual(call_kwargs["method"], "GET")
     self.assertEqual(call_kwargs["stacktrace"], "traceback line")
+
+
+class EvictExpiredTest(PendingStateIsolationMixin, TestCase):
+  """_evict_expired TTL 만료 정리 테스트"""
+
+  def _make_alert(self) -> PendingAlert:
+    return PendingAlert(
+      model="User",
+      field="profile",
+      path="/api/test/",
+      method="GET",
+      stacktrace="",
+      query_snapshot_index=0,
+    )
+
+  def test_evict_removes_expired_pending(self):
+    """TTL이 지난 _pending 항목은 _evict_expired()로 제거된다."""
+    alert = self._make_alert()
+    alert.registered_at = 0.0  # 과거 타임스탬프로 강제 만료
+    pending_module._pending["req-expired"] = [alert]
+
+    pending_module._evict_expired()
+
+    self.assertNotIn("req-expired", pending_module._pending)
+
+  def test_evict_keeps_fresh_pending(self):
+    """TTL이 지나지 않은 _pending 항목은 유지된다."""
+    alert = self._make_alert()  # registered_at = time.monotonic() (현재)
+    pending_module._pending["req-fresh"] = [alert]
+
+    pending_module._evict_expired()
+
+    self.assertIn("req-fresh", pending_module._pending)
+
+  def test_evict_removes_expired_seen(self):
+    """TTL이 지난 _seen 항목도 함께 제거된다."""
+    pending_module._seen[("req-old", "User", "profile")] = 0.0
+
+    pending_module._evict_expired()
+
+    self.assertNotIn(("req-old", "User", "profile"), pending_module._seen)
