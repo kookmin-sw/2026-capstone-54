@@ -26,6 +26,40 @@ def _normalize_sql(sql: str) -> str:
   return re.sub(r"\s+", " ", sql).strip()
 
 
+def _collect_related_queries(
+  all_queries: list[dict],
+  model: str,
+  field: str,
+  snapshot_index: int,
+) -> list[dict]:
+  """snapshot 전후에서 model/field 관련 쿼리를 추려 반환한다."""
+  hints = {_to_snake_plural(model), _to_snake_plural(field), field.lower()}
+  before = [q for q in all_queries[:snapshot_index] if any(h in q["sql"].lower() for h in hints)]
+  after = all_queries[snapshot_index:]
+  return before + after or all_queries[-10:]
+
+
+def _compress_queries(related: list[dict]) -> str:
+  """관련 쿼리를 패턴 기준으로 중복 압축한 문자열로 반환한다."""
+  counts: dict[str, int] = {}
+  for q in related:
+    key = _normalize_sql(q["sql"])
+    counts[key] = counts.get(key, 0) + 1
+
+  items = list(counts.items())
+  shown, hidden = items[:_MAX_SQL_ENTRIES], items[_MAX_SQL_ENTRIES:]
+
+  lines: list[str] = []
+  for sql, count in shown:
+    prefix = f"-- ×{count} 반복 (N+1 의심)\n" if count > 1 else ""
+    lines.append(f"{prefix}{sql}")
+
+  if hidden:
+    lines.append(f"-- ... 외 {len(hidden)}개 쿼리 생략")
+
+  return "\n\n".join(lines)
+
+
 def collect_sql(model: str, field: str, snapshot_index: int) -> str:
   """N+1 관련 SQL 을 수집해 압축된 문자열로 반환한다.
 
@@ -39,28 +73,7 @@ def collect_sql(model: str, field: str, snapshot_index: int) -> str:
     all_queries = connection.queries
     if not all_queries:
       return ""
-
-    hints = {_to_snake_plural(model), _to_snake_plural(field), field.lower()}
-    before = [q for q in all_queries[:snapshot_index] if any(h in q["sql"].lower() for h in hints)]
-    after = all_queries[snapshot_index:]
-    related = before + after or all_queries[-10:]
-
-    counts: dict[str, int] = {}
-    for q in related:
-      key = _normalize_sql(q["sql"])
-      counts[key] = counts.get(key, 0) + 1
-
-    items = list(counts.items())
-    shown, hidden = items[:_MAX_SQL_ENTRIES], items[_MAX_SQL_ENTRIES:]
-
-    lines: list[str] = []
-    for sql, count in shown:
-      prefix = f"-- ×{count} 반복 (N+1 의심)\n" if count > 1 else ""
-      lines.append(f"{prefix}{sql}")
-
-    if hidden:
-      lines.append(f"-- ... 외 {len(hidden)}개 쿼리 생략")
-
-    return "\n\n".join(lines)
+    related = _collect_related_queries(all_queries, model, field, snapshot_index)
+    return _compress_queries(related)
   except Exception:
     return ""

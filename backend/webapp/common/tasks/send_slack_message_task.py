@@ -50,7 +50,7 @@ class SendSlackMessageTask(BaseTask):
         """
     raise NotImplementedError
 
-  def run(self, **kwargs) -> None:
+  def run(self, *args, **kwargs) -> None:
     try:
       SlackSender(self.build_channel()).send_all(self.build_messages(**kwargs))
     except Exception as exc:

@@ -9,9 +9,12 @@
 
 의도적으로 500 에러를 발생시켜 **Slack 에러 알림**을 테스트합니다.
 
+- DRF `APIView` 로 구현되어 `custom_exception_handler` 를 경유한다
 - `RuntimeError`를 raise하여 `SLACK_CHANNEL_ERROR` 채널로 알림 전송
 - 메인 메시지: 에러 요약 (에러 유형, 메시지, 경로, 개발자)
 - 스레드 답글: 전체 traceback
+
+> 일반 Django view 함수로 구현하면 DRF exception handler 를 거치지 않아 Slack 알림이 발송되지 않는다.
 
 ### `GET /debug/nplusone/`
 
@@ -43,3 +46,37 @@ DEVELOPER=your-name
 
 `webapp/config/urls.py` — `if settings.DEBUG:` 블록 내부에 정의되어 있습니다.
 제거할 때는 해당 블록 전체를 삭제하면 됩니다.
+
+---
+
+## 실제 구현 코드 (`webapp/config/urls.py`)
+
+`/debug/error/` 는 DRF `APIView` 로 구현해야 `custom_exception_handler` 를 경유하여 Slack 알림이 전송된다.
+일반 Django view 함수는 DRF exception handler 를 거치지 않으므로 알림이 발송되지 않는다.
+
+```python
+if settings.DEBUG:
+  from rest_framework.views import APIView
+  from rest_framework.request import Request
+  from rest_framework.response import Response as DRFResponse
+
+  class DebugErrorView(APIView):
+    """의도적으로 500 에러를 발생시켜 Slack 에러 알림을 테스트한다."""
+    def get(self, request: Request):
+      raise RuntimeError("디버그용 의도적 에러 — Slack 에러 알림 테스트")
+
+  def debug_nplusone(request):
+    from django.http import HttpResponse
+    from users.models import EmailVerificationCode
+    codes = list(EmailVerificationCode.objects.all())
+    for code in codes:
+      _ = code.user.email  # select_related 없이 접근 → N+1 발생
+    return HttpResponse(f"N+1 테스트 완료 — {len(codes)}건 조회")
+
+  urlpatterns += [
+    re_path(r"^media/(?P<path>.*)$", serve, {"document_root": settings.MEDIA_ROOT}),
+    re_path(r"^static/(?P<path>.*)$", serve, {"document_root": settings.STATIC_ROOT}),
+    path("debug/error/", DebugErrorView.as_view()),
+    path("debug/nplusone/", debug_nplusone),
+  ]
+```

@@ -95,7 +95,7 @@ class CollectSqlTest(TestCase):
   @patch("common.nplusone_handler.sql.connection")
   def test_max_entries_limit(self, mock_conn):
     """_MAX_SQL_ENTRIES(5)를 초과하는 쿼리는 생략 메시지로 표시된다."""
-    mock_conn.queries = [self._make_query(f"SELECT * FROM table_{i} WHERE x = {i}") for i in range(10)]
+    mock_conn.queries = [self._make_query(f"SELECT * FROM table_{i} WHERE x = {i}") for i in range(10)]  # nosec B608
     result = collect_sql("Table", "x", 0)
     self.assertIn("생략", result)
 
