@@ -19,7 +19,7 @@ class SignInAPIViewPropertyTests(TestCase):
   @given(name=st.text(min_size=1, max_size=20, alphabet=st.characters(whitelist_categories=("Lu", "Ll", "Nd", "Lo"))), )
   @settings(max_examples=10, deadline=None)
   def test_sign_in_with_valid_credentials_returns_full_response(self, name):
-    """등록된 User의 올바른 email과 password로 로그인하면 access/refresh/email_confirmed/profile_completed 포함된 200 응답이 반환된다."""
+    """등록된 User의 올바른 email과 password로 로그인하면 access/refresh/is_email_confirmed/is_profile_completed 포함된 200 응답이 반환된다."""
     email = "signin_valid_test@example.com"
     password = "ValidPass123!"
 
@@ -32,8 +32,8 @@ class SignInAPIViewPropertyTests(TestCase):
     self.assertEqual(response.status_code, status.HTTP_200_OK)
     self.assertIn("access", response.data)
     self.assertIn("refresh", response.data)
-    self.assertIn("email_confirmed", response.data)
-    self.assertIn("profile_completed", response.data)
+    self.assertIn("is_email_confirmed", response.data)
+    self.assertIn("is_profile_completed", response.data)
 
   @given(
     wrong_email=st.emails(),

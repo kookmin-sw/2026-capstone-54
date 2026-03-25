@@ -5,8 +5,8 @@ class AuthResponseSerializer(serializers.Serializer):
   """로그인/회원가입 공통 응답"""
   access = serializers.CharField()
   refresh = serializers.CharField()
-  email_confirmed = serializers.BooleanField()
-  profile_completed = serializers.BooleanField()
+  is_email_confirmed = serializers.BooleanField()
+  is_profile_completed = serializers.BooleanField()
 
 
 class UserMeSerializer(serializers.Serializer):

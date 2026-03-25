@@ -10,8 +10,8 @@ class AuthResponseSerializerTests(TestCase):
     data = {
       "access": "access-token",
       "refresh": "refresh-token",
-      "email_confirmed": True,
-      "profile_completed": False,
+      "is_email_confirmed": True,
+      "is_profile_completed": False,
     }
     serializer = AuthResponseSerializer(data=data)
     self.assertTrue(serializer.is_valid())

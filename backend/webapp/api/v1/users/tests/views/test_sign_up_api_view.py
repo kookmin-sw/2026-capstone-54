@@ -40,15 +40,15 @@ class SignUpAPIViewPropertyTests(TestCase):
     # User가 DB에 생성되어야 한다 (이메일은 도메인이 소문자로 정규화됨)
     self.assertTrue(User.objects.filter(email=normalized_email).exists())
 
-    # 응답에 access, refresh, email_confirmed, profile_completed 필드가 포함되어야 한다
+    # 응답에 access, refresh, is_email_confirmed, is_profile_completed 필드가 포함되어야 한다
     self.assertIn("access", response.data)
     self.assertIn("refresh", response.data)
-    self.assertIn("email_confirmed", response.data)
-    self.assertIn("profile_completed", response.data)
+    self.assertIn("is_email_confirmed", response.data)
+    self.assertIn("is_profile_completed", response.data)
 
-    # email_confirmed, profile_completed는 False여야 한다
-    self.assertFalse(response.data["email_confirmed"])
-    self.assertFalse(response.data["profile_completed"])
+    # is_email_confirmed, is_profile_completed은 False여야 한다
+    self.assertFalse(response.data["is_email_confirmed"])
+    self.assertFalse(response.data["is_profile_completed"])
 
     # EmailVerificationCode가 생성되어야 한다
     user = User.objects.get(email=normalized_email)
