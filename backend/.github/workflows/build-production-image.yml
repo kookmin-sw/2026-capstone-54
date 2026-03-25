@@ -36,8 +36,8 @@ jobs:
           file: ./environments/production/Dockerfile
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPOSITORY }}:production
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPOSITORY }}:${{ github.sha }}
+            teammefit/mefit-backend:production
+            teammefit/mefit-backend:${{ github.sha }}
           build-args: |
             PORT=8000
           cache-from: type=gha
