@@ -70,8 +70,10 @@ name = "backend"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "boto3" },
     { name = "celery" },
     { name = "django" },
+    { name = "django-allow-cidr" },
     { name = "django-celery-beat" },
     { name = "django-celery-results" },
     { name = "django-environ" },
@@ -79,6 +81,7 @@ dependencies = [
     { name = "django-filter" },
     { name = "django-import-export" },
     { name = "django-postgres-extra" },
+    { name = "django-storages", extra = ["s3"] },
     { name = "django-unfold" },
     { name = "djangorestframework" },
     { name = "djangorestframework-camel-case" },
@@ -96,8 +99,10 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
+    { name = "boto3", specifier = ">=1.38.0" },
     { name = "celery", specifier = ">=5.6.2" },
     { name = "django", specifier = ">=6.0.3" },
+    { name = "django-allow-cidr", specifier = ">=0.8.0" },
     { name = "django-celery-beat", specifier = ">=2.9.0" },
     { name = "django-celery-results", specifier = ">=2.6.0" },
     { name = "django-environ", specifier = ">=0.13.0" },
@@ -105,6 +110,7 @@ requires-dist = [
     { name = "django-filter", specifier = ">=25.2" },
     { name = "django-import-export", specifier = ">=4.4.0" },
     { name = "django-postgres-extra", specifier = ">=2.0.4" },
+    { name = "django-storages", extras = ["s3"], specifier = ">=1.14.0" },
     { name = "django-unfold", specifier = ">=0.85.0" },
     { name = "djangorestframework", specifier = ">=3.16.1" },
     { name = "djangorestframework-camel-case", specifier = ">=1.4.2" },
@@ -127,6 +133,34 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/58/23/b12ac0bcdfb7360d664f40a00b1bda139cbbbced012c34e375506dbd0143/billiard-4.2.4.tar.gz", hash = "sha256:55f542c371209e03cd5862299b74e52e4fbcba8250ba611ad94276b369b6a85f", size = 156537, upload-time = "2025-11-30T13:28:48.52Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/cb/87/8bab77b323f16d67be364031220069f79159117dd5e43eeb4be2fef1ac9b/billiard-4.2.4-py3-none-any.whl", hash = "sha256:525b42bdec68d2b983347ac312f892db930858495db601b5836ac24e6477cde5", size = 87070, upload-time = "2025-11-30T13:28:47.016Z" },
+]
+
+[[package]]
+name = "boto3"
+version = "1.42.75"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "botocore" },
+    { name = "jmespath" },
+    { name = "s3transfer" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/78/1c/f836f5e52095a3374eee9317f980a22d9139477fe6277498ebf4406e35b4/boto3-1.42.75.tar.gz", hash = "sha256:3c7fd95a50c69271bd7707b7eda07dcfddb30e961a392613010f7ee81d91acb3", size = 112812, upload-time = "2026-03-24T21:14:00.529Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/6b/31/c04caef287a0ea507ba634f2280dbe8314d89c1d8da1aef648b661ad1201/boto3-1.42.75-py3-none-any.whl", hash = "sha256:16bc657d16403ee8e11c8b6920c245629e37a36ea60352b919da566f82b4cb4c", size = 140556, upload-time = "2026-03-24T21:13:58.004Z" },
+]
+
+[[package]]
+name = "botocore"
+version = "1.42.75"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "jmespath" },
+    { name = "python-dateutil" },
+    { name = "urllib3" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/9d/05/b16d6ac5eea465d42e65941436eab7d2e6f6ebef01ba4d70b6f5d0b992ce/botocore-1.42.75.tar.gz", hash = "sha256:95c8e716b6be903ee1601531caa4f50217400aa877c18fe9a2c3047d2945d477", size = 15016308, upload-time = "2026-03-24T21:13:48.802Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/04/21/22148ff8d37d8706fc63cdc8ec292f4abbbd18b500d9970f6172f7f3bb30/botocore-1.42.75-py3-none-any.whl", hash = "sha256:915e43b7ac8f50cf3dbc937ba713de5acb999ea48ad8fecd1589d92ad415f787", size = 14689910, upload-time = "2026-03-24T21:13:43.939Z" },
 ]
 
 [[package]]
@@ -340,6 +374,18 @@ wheels = [
 ]
 
 [[package]]
+name = "django-allow-cidr"
+version = "0.8.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/12/e0/d811149809b1e4cb2daf357b44b71f240feea0718549b0a2ab2af3c4f63f/django_allow_cidr-0.8.0.tar.gz", hash = "sha256:d6f80230621dd5b19ec1665b85abf8218b02556ff7cf0ddda41e2607267a3277", size = 6982, upload-time = "2025-04-08T08:52:14.456Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/99/2a/10ebaba1950c113efae2b38dc5e1ec38a86e1141e97b7e729f2fb4bbb87b/django_allow_cidr-0.8.0-py2.py3-none-any.whl", hash = "sha256:724ce76b7b4a25c641ddcd33777e2e95da622dd2c11937f0d76d0cd3d54b1622", size = 4975, upload-time = "2025-04-08T08:52:13.198Z" },
+]
+
+[[package]]
 name = "django-celery-beat"
 version = "2.9.0"
 source = { registry = "https://pypi.org/simple" }
@@ -428,6 +474,23 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/93/b7/0a932e67f2987890c816c4ee64c29b286346f3409e0d4973d8857fccf1d7/django-postgres-extra-2.0.4.tar.gz", hash = "sha256:95030211916fcc782b514ca73bede24aefa0ab73a80b2a7e0b59d6f168db3708", size = 46807, upload-time = "2022-01-30T12:21:55.922Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/6a/07/42583509221f6890caf238e92fde0c6e9d8696185d6cdf0953144f199c46/django_postgres_extra-2.0.4-py3-none-any.whl", hash = "sha256:5c5d35e1edc0d6aa5374a72f92b0d4858ca35f9772c540e3fa8280c086a8c7f7", size = 75905, upload-time = "2022-01-30T12:21:54.399Z" },
+]
+
+[[package]]
+name = "django-storages"
+version = "1.14.6"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/ff/d6/2e50e378fff0408d558f36c4acffc090f9a641fd6e084af9e54d45307efa/django_storages-1.14.6.tar.gz", hash = "sha256:7a25ce8f4214f69ac9c7ce87e2603887f7ae99326c316bc8d2d75375e09341c9", size = 87587, upload-time = "2025-04-02T02:34:55.103Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/1f/21/3cedee63417bc5553eed0c204be478071c9ab208e5e259e97287590194f1/django_storages-1.14.6-py3-none-any.whl", hash = "sha256:11b7b6200e1cb5ffcd9962bd3673a39c7d6a6109e8096f0e03d46fab3d3aabd9", size = 33095, upload-time = "2025-04-02T02:34:53.291Z" },
+]
+
+[package.optional-dependencies]
+s3 = [
+    { name = "boto3" },
 ]
 
 [[package]]
@@ -607,6 +670,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/e1/7e/691d061b7329bc8d54edbf0ec22fbfb2afe61facb681f9aaa9bff7a27d04/inflection-0.5.1.tar.gz", hash = "sha256:1a29730d366e996aaacffb2f1f1cb9593dc38e2ddd30c91250c6dde09ea9b417", size = 15091, upload-time = "2020-08-22T08:16:29.139Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/59/91/aa6bde563e0085a02a435aa99b49ef75b0a4b062635e606dab23ce18d720/inflection-0.5.1-py2.py3-none-any.whl", hash = "sha256:f38b2b640938a4f35ade69ac3d053042959b62a0f1076a5bbaa1b9526605a8a2", size = 9454, upload-time = "2020-08-22T08:16:27.816Z" },
+]
+
+[[package]]
+name = "jmespath"
+version = "1.1.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/d3/59/322338183ecda247fb5d1763a6cbe46eff7222eaeebafd9fa65d4bf5cb11/jmespath-1.1.0.tar.gz", hash = "sha256:472c87d80f36026ae83c6ddd0f1d05d4e510134ed462851fd5f754c8c3cbb88d", size = 27377, upload-time = "2026-01-22T16:35:26.279Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/14/2f/967ba146e6d58cf6a652da73885f52fc68001525b4197effc174321d70b4/jmespath-1.1.0-py3-none-any.whl", hash = "sha256:a5663118de4908c91729bea0acadca56526eb2698e83de10cd116ae0f4e97c64", size = 20419, upload-time = "2026-01-22T16:35:24.919Z" },
 ]
 
 [[package]]
@@ -979,6 +1051,18 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/85/70/92482ccffb96f5441aab93e26c4d66489eb599efdcf96fad90c14bbfb976/rpds_py-0.30.0-cp314-cp314t-musllinux_1_2_x86_64.whl", hash = "sha256:dbd936cde57abfee19ab3213cf9c26be06d60750e60a8e4dd85d1ab12c8b1f40", size = 556030, upload-time = "2025-11-30T20:24:10.956Z" },
     { url = "https://files.pythonhosted.org/packages/20/53/7c7e784abfa500a2b6b583b147ee4bb5a2b3747a9166bab52fec4b5b5e7d/rpds_py-0.30.0-cp314-cp314t-win32.whl", hash = "sha256:dc824125c72246d924f7f796b4f63c1e9dc810c7d9e2355864b3c3a73d59ade0", size = 211570, upload-time = "2025-11-30T20:24:12.735Z" },
     { url = "https://files.pythonhosted.org/packages/d0/02/fa464cdfbe6b26e0600b62c528b72d8608f5cc49f96b8d6e38c95d60c676/rpds_py-0.30.0-cp314-cp314t-win_amd64.whl", hash = "sha256:27f4b0e92de5bfbc6f86e43959e6edd1425c33b5e69aab0984a72047f2bcf1e3", size = 226532, upload-time = "2025-11-30T20:24:14.634Z" },
+]
+
+[[package]]
+name = "s3transfer"
+version = "0.16.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "botocore" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/05/04/74127fc843314818edfa81b5540e26dd537353b123a4edc563109d8f17dd/s3transfer-0.16.0.tar.gz", hash = "sha256:8e990f13268025792229cd52fa10cb7163744bf56e719e0b9cb925ab79abf920", size = 153827, upload-time = "2025-12-01T02:30:59.114Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/fc/51/727abb13f44c1fcf6d145979e1535a35794db0f6e450a0cb46aa24732fe2/s3transfer-0.16.0-py3-none-any.whl", hash = "sha256:18e25d66fed509e3868dc1572b3f427ff947dd2c56f844a5bf09481ad3f3b2fe", size = 86830, upload-time = "2025-12-01T02:30:57.729Z" },
 ]
 
 [[package]]
