@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mefit-production-api
+  namespace: mefit-backend-production
+  labels:
+    app: mefit-production-api
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: mefit-production-api
+  template:
+    metadata:
+      labels:
+        app: mefit-production-api
+    spec:
+      containers:
+        - name: django
+          image: teammefit/mefit-backend:production
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: mefit-production-env
+            - secretRef:
+                name: mefit-production-secret
+          command: ["uvicorn"]
+          args:
+            - "config.asgi:application"
+            - "--host"
+            - "0.0.0.0"
+            - "--port"
+            - "8000"
+            - "--workers"
+            - "2"
+          readinessProbe:
+            httpGet:
+              path: /api/v1/health/
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /api/v1/health/
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 500m
+              memory: 512Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi

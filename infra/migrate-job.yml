@@ -1,0 +1,20 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mefit-production-migrate
+  namespace: mefit-backend-production
+spec:
+  ttlSecondsAfterFinished: 300  # 완료 후 5분 뒤 자동 삭제
+  backoffLimit: 2               # 실패 시 최대 2회 재시도
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: migrate
+          image: teammefit/mefit-backend:production
+          command: ["python", "manage.py", "migrate", "--noinput"]
+          envFrom:
+            - configMapRef:
+                name: mefit-production-env
+            - secretRef:
+                name: mefit-production-secret

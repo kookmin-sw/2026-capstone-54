@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mefit-production-env
+  namespace: mefit-backend-production
+data:
+  DJANGO_SETTINGS_MODULE: "config.settings.production"
+  REDIS_HOST: "mefit-production-redis"
+  REDIS_PORT: "6379"
+  CELERY_BROKER_URL: "redis://mefit-production-redis:6379/0"
+  CELERY_RESULT_BACKEND: "django-db"
+  # 아래 값들은 모두 GitHub Environment secrets로 주입됩니다.
+  # ALLOWED_HOSTS, SECRET_KEY, DEBUG, PORT, BASE_URL
+  # DATABASE_*, EMAIL_* 등

@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mefit-production-celery-beat
+  namespace: mefit-backend-production
+  labels:
+    app: mefit-production-celery-beat
+spec:
+  # Beat는 반드시 1개만 실행 (중복 스케줄 방지)
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: mefit-production-celery-beat
+  template:
+    metadata:
+      labels:
+        app: mefit-production-celery-beat
+    spec:
+      containers:
+        - name: celery-beat
+          image: teammefit/mefit-backend:production
+          envFrom:
+            - configMapRef:
+                name: mefit-production-env
+            - secretRef:
+                name: mefit-production-secret
+          command: ["celery"]
+          args: ["-A", "config", "beat", "-l", "INFO"]
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi

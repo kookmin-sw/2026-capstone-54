@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mefit-production-celery-worker
+  namespace: mefit-backend-production
+  labels:
+    app: mefit-production-celery-worker
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: mefit-production-celery-worker
+  template:
+    metadata:
+      labels:
+        app: mefit-production-celery-worker
+    spec:
+      containers:
+        - name: celery-worker
+          image: teammefit/mefit-backend:production
+          envFrom:
+            - configMapRef:
+                name: mefit-production-env
+            - secretRef:
+                name: mefit-production-secret
+          command: ["celery"]
+          args: ["-A", "config", "worker", "-l", "INFO", "--concurrency", "2"]
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
