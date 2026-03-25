@@ -20,6 +20,8 @@ spec:
       labels:
         app: mefit-production-api
     spec:
+      imagePullSecrets:
+        - name: mefit-production-dockerhub
       containers:
         - name: django
           image: teammefit/mefit-backend:production

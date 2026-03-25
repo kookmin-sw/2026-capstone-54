@@ -20,6 +20,8 @@ spec:
       labels:
         app: mefit-production-celery-worker
     spec:
+      imagePullSecrets:
+        - name: mefit-production-dockerhub
       containers:
         - name: celery-worker
           image: teammefit/mefit-backend:production

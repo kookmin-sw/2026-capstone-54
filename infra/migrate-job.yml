@@ -9,6 +9,8 @@ spec:
   template:
     spec:
       restartPolicy: Never
+      imagePullSecrets:
+        - name: mefit-production-dockerhub
       containers:
         - name: migrate
           image: teammefit/mefit-backend:production

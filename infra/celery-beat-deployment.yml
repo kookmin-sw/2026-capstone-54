@@ -18,6 +18,8 @@ spec:
       labels:
         app: mefit-production-celery-beat
     spec:
+      imagePullSecrets:
+        - name: mefit-production-dockerhub
       containers:
         - name: celery-beat
           image: teammefit/mefit-backend:production
