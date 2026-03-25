@@ -30,7 +30,7 @@ class SignUpAPIView(BaseAPIView):
     response_data = {
       "access": str(token.access_token),
       "refresh": str(token),
-      "email_confirmed": user.is_email_confirmed,
-      "profile_completed": user.is_profile_completed,
+      "is_email_confirmed": user.is_email_confirmed,
+      "is_profile_completed": user.is_profile_completed,
     }
     return Response(response_data, status=status.HTTP_201_CREATED)
