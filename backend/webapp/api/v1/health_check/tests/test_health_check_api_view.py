@@ -18,7 +18,8 @@ class HealthCheckAPIViewTests(APITestCase):
 
   def test_health_check_allows_anonymous_access(self):
     """비인증 사용자도 접근 가능한지 확인"""
-    self.assertEqual(HealthCheckAPIView.permission_classes, [])
+    from rest_framework.permissions import AllowAny
+    self.assertEqual(HealthCheckAPIView.permission_classes, [AllowAny])
 
   def test_health_check_only_allows_get(self):
     """GET 외 메서드는 405를 반환하는지 확인"""

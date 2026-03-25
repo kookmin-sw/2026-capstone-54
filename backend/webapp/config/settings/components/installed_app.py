@@ -32,7 +32,6 @@ PACKAGE_APPS = [
 
   # REST Framework
   "rest_framework",
-  "rest_framework.authtoken",
   "rest_framework_simplejwt",
   "rest_framework_simplejwt.token_blacklist",
 
@@ -42,10 +41,6 @@ PACKAGE_APPS = [
   # Django Filters
   "django_filters",
 
-  # Auth
-  "dj_rest_auth",
-  "dj_rest_auth.registration",
-
   # Celery
   "django_celery_beat",
   "django_celery_results",
@@ -54,6 +49,8 @@ PACKAGE_APPS = [
 PROJECT_APPS = [
   # 프로젝트 앱
   "common",
+  "users",
+  "api",
 ]
 
 INSTALLED_APPS = ADMIN_APPS + DJANGO_APPS + PACKAGE_APPS + PROJECT_APPS

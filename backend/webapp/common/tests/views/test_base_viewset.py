@@ -35,7 +35,7 @@ class BaseViewSetAuthTest(TestCase):
 
   def setUp(self):
     self.user = User.objects.create_user(
-      username="testuser",
+      email="test@example.com",
       password="testpass123",
     )
     self.list_view = DummyViewSet.as_view({"get": "list"})

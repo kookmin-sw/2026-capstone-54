@@ -23,7 +23,7 @@ class BaseGenericViewSetAuthTest(TestCase):
 
   def setUp(self):
     self.user = User.objects.create_user(
-      username="testuser",
+      email="test@example.com",
       password="testpass123",
     )
     self.ping_view = DummyGenericViewSet.as_view({"get": "ping"})
