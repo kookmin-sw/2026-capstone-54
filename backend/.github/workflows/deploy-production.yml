@@ -71,8 +71,8 @@ jobs:
               --dry-run=client -o yaml | kubectl apply -f -
 
             # 배포 실행 (migrate → rollout → collectstatic 순서로 자동 처리)
-            chmod +x ~/infra/backend/scripts/deploy.sh
-            ~/infra/backend/scripts/deploy.sh \
+            chmod +x ~/infra/scripts/deploy.sh
+            ~/infra/scripts/deploy.sh \
               "${{ inputs.image_tag }}" \
               "${{ inputs.target }}"
 
