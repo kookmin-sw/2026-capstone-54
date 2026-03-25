@@ -59,10 +59,18 @@ PROJECT_APPS = [
   "common",
   "users",
   "api",
+  "realtime_docs",
 ]
 
 INSTALLED_APPS = ADMIN_APPS + DJANGO_APPS + PACKAGE_APPS + PROJECT_APPS
 
+# realtime_docs: @ws_consumer / @sse_consumer 데코레이터가 적용된 모듈 목록
+# 앱 시작 시 자동으로 import되어 레지스트리에 등록된다.
+REALTIME_DOCS_CONSUMERS = [
+  "api.v1.demo.consumers",
+]
+
 __all__ = [
   "INSTALLED_APPS",
+  "REALTIME_DOCS_CONSUMERS",
 ]
