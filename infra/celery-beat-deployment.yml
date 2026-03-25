@@ -23,6 +23,7 @@ spec:
       containers:
         - name: celery-beat
           image: teammefit/mefit-backend:production
+          imagePullPolicy: Always
           envFrom:
             - configMapRef:
                 name: mefit-production-env
