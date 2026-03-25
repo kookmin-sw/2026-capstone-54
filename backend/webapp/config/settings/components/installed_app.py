@@ -24,6 +24,9 @@ PACKAGE_APPS = [
   "django.contrib.postgres",
   "psqlextra",
 
+  # CORS
+  "corsheaders",
+
   # Django ADMIN Import Export
   "import_export",
 
