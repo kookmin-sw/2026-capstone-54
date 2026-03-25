@@ -20,8 +20,9 @@ urlpatterns = [
   path("api/", include("api.urls")),
 ]
 
-if settings.DEBUG:
-  urlpatterns += [
-    re_path(r"^media/(?P<path>.*)$", serve, {"document_root": settings.MEDIA_ROOT}),
-    re_path(r"^static/(?P<path>.*)$", serve, {"document_root": settings.STATIC_ROOT}),
-  ]
+# if settings.DEBUG:
+# FIXME: S3 설정 이후에 다시 DEBUG에서만 동작하도록 하기
+urlpatterns += [
+  re_path(r"^media/(?P<path>.*)$", serve, {"document_root": settings.MEDIA_ROOT}),
+  re_path(r"^static/(?P<path>.*)$", serve, {"document_root": settings.STATIC_ROOT}),
+]
