@@ -7,7 +7,7 @@ metadata:
     kubernetes.io/ingress.class: traefik
 spec:
   rules:
-    - host: api.mefit.example.com
+    - host: tw3dznwtj6.execute-api.us-east-1.amazonaws.com
       http:
         paths:
           - path: /
