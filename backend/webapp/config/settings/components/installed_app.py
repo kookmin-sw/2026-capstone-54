@@ -49,6 +49,9 @@ PACKAGE_APPS = [
   "django_guid",
   "django_structlog",
   "drf_api_logger",
+
+  # WebSocket / SSE
+  "channels",
 ]
 
 PROJECT_APPS = [
