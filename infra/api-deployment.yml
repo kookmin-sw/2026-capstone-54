@@ -43,13 +43,13 @@ spec:
             - "2"
           readinessProbe:
             httpGet:
-              path: /api/v1/health/
+              path: /api/v1/health-check/
               port: 8000
             initialDelaySeconds: 10
             periodSeconds: 10
           livenessProbe:
             httpGet:
-              path: /api/v1/health/
+              path: /api/v1/health-check/
               port: 8000
             initialDelaySeconds: 15
             periodSeconds: 20
