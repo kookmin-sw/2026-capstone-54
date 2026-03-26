@@ -1,11 +1,7 @@
 #!/bin/bash
 
-export MSYS_NO_PATHCONV=1
-if docker compose version >/dev/null 2>&1; then
-  dc() { docker compose "$@"; }
-else
-  dc() { docker-compose "$@"; }
-fi
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/_common.sh"
 
 dc exec webapp bash -c "cd /_lock && uv sync --group test"
 
