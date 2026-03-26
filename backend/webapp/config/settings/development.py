@@ -10,6 +10,7 @@ import logging
 from .base import *  # noqa: F401, F403
 
 DEBUG = True
+ENVIRONMENT = "development"
 
 # ---------------------------------------------------------------------------
 # nplusone — 개발 환경 전용 N+1 쿼리 감지

@@ -28,6 +28,11 @@ class SendVerificationEmailService(BaseService):
     return "".join(secrets.choice(charset) for _ in range(6))
 
   def _send_email(self, user, code):
+    # Only send emails in production environment
+    environment = getattr(settings, "ENVIRONMENT", "development")
+    if environment != "production":
+      return
+
     html_message = render_to_string(
       "users/email/verification_code.html",
       {

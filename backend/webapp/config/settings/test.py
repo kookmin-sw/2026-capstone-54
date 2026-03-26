@@ -10,6 +10,8 @@ from .base import *  # noqa: F401, F403
 # 테스트 환경에서는 DEBUG 비활성화
 DEBUG = False
 
+ENVIRONMENT = "test"
+
 # 테스트 실행 속도 향상을 위한 비밀번호 해셔
 PASSWORD_HASHERS = [
   "django.contrib.auth.hashers.MD5PasswordHasher",

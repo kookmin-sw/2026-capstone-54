@@ -40,6 +40,14 @@ class SlackSender:
         thread_reply=True 인 메시지는 직전 메시지의 ts 를 thread_ts 로 사용한다.
         client 또는 channel 이 없으면 조용히 건너뛴다.
         """
+    from django.conf import settings
+
+    # Only send Slack messages in production environment
+    environment = getattr(settings, "ENVIRONMENT", "development")
+    if environment == "test":
+      logger.debug("slack_skipped_in_test", environment=environment)
+      return
+
     from common.slack.client import get_slack_client
 
     client = get_slack_client()
