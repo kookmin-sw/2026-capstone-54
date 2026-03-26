@@ -60,6 +60,11 @@ _formatter_processors = _shared_processors + [
 LOGGING = {
   "version": 1,
   "disable_existing_loggers": False,
+  "filters": {
+    "exclude_health_check": {
+      "()": "common.logging_filters.ExcludeHealthCheckFilter",
+    },
+  },
   "formatters": {
     "structlog": {
       "()": structlog.stdlib.ProcessorFormatter,
@@ -70,6 +75,7 @@ LOGGING = {
     "console": {
       "class": "logging.StreamHandler",
       "formatter": "structlog",
+      "filters": ["exclude_health_check"],
     },
   },
   "root": {
@@ -95,6 +101,13 @@ LOGGING = {
     "django_structlog": {
       "handlers": ["console"],
       "level": "INFO",
+      "propagate": False,
+    },
+    # Uvicorn access logs
+    "uvicorn.access": {
+      "handlers": ["console"],
+      "level": "INFO",
+      "filters": ["exclude_health_check"],
       "propagate": False,
     },
     # 프로젝트 앱 로거
