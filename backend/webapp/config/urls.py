@@ -2,10 +2,8 @@
 URL configuration for backend project.
 """
 
-from django.conf import settings
 from django.contrib import admin
-from django.urls import include, path, re_path
-from django.views.static import serve
+from django.urls import include, path
 from drf_spectacular.views import (
   SpectacularAPIView,
   SpectacularRedocView,
@@ -19,11 +17,4 @@ urlpatterns = [
   path("schema/", SpectacularAPIView.as_view(), name="schema"),
   path("api/", include("api.urls")),
   path("realtime-docs/", include("realtime_docs.urls")),
-]
-
-# if settings.DEBUG:
-# FIXME: S3 설정 이후에 다시 DEBUG에서만 동작하도록 하기
-urlpatterns += [
-  re_path(r"^media/(?P<path>.*)$", serve, {"document_root": settings.MEDIA_ROOT}),
-  re_path(r"^static/(?P<path>.*)$", serve, {"document_root": settings.STATIC_ROOT}),
 ]
