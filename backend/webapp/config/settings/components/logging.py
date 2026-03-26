@@ -6,6 +6,12 @@ Django Logging Settings
 - django-structlog: 로그를 구조화(JSON)하여 request_id, user_id, ip 등 메타데이터 자동 포함
   - DEBUG=True  → 컬러 콘솔 출력 (개발 환경)
   - DEBUG=False → JSON 출력 (프로덕션 환경)
+- drf-api-logger: API 요청/응답을 DB에 기록하고 Django Admin 대시보드에서 조회 가능
+  - DRF_API_LOGGER_DATABASE=True 로 DB 기록 활성화
+  - DRF_API_LOGGER_EXCLUDE_KEYS 로 민감 필드(password, token 등) 자동 마스킹
+  - DRF_API_LOGGER_SLOW_API_ABOVE 로 느린 API(ms 기준) 표시
+  - DRF_API_LOGGER_CONTENT_TYPES 로 기록할 Content-Type 지정
+  - 큐 기반 배치 삽입(DRF_LOGGER_QUEUE_MAX_SIZE, DRF_LOGGER_INTERVAL)으로 DB 부하 최소화
 """
 
 import structlog

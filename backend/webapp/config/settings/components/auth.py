@@ -13,16 +13,16 @@ AUTH_USER_MODEL = "users.User"
 EMAIL_VERIFICATION_CODE_EXPIRY_MINUTES = 10
 
 # Email
-EMAIL_BACKEND = env(
+EMAIL_BACKEND = env.str(
   "EMAIL_BACKEND",
   default="django.core.mail.backends.console.EmailBackend",
 )
-EMAIL_HOST = env("EMAIL_HOST", default="")
+EMAIL_HOST = env.str("EMAIL_HOST", default="")
 EMAIL_PORT = env.int("EMAIL_PORT", default=587)
 EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=True)
-EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="")
-EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
-DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="noreply@mefit.chat")
+EMAIL_HOST_USER = env.str("EMAIL_HOST_USER", default="")
+EMAIL_HOST_PASSWORD = env.str("EMAIL_HOST_PASSWORD", default="")
+DEFAULT_FROM_EMAIL = env.str("DEFAULT_FROM_EMAIL", default="noreply@mefit.chat")
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators

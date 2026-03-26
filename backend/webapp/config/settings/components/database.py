@@ -29,11 +29,11 @@ DATABASES = {
       "options": "-c statement_timeout=30000",  # 30초 쿼리 타임아웃
     },
     "TEST": {
-      "NAME": env("TEST_DATABASE_NAME", default=""),
-      "USER": env("TEST_POSTGRES_USER", default=""),
-      "PASSWORD": env("TEST_POSTGRES_PASSWORD", default=""),
-      "HOST": env("TEST_POSTGRES_HOST", default=""),
-      "PORT": env("TEST_POSTGRES_PORT", default=""),
+      "NAME": env.str("TEST_DATABASE_NAME", default=""),
+      "USER": env.str("TEST_POSTGRES_USER", default=""),
+      "PASSWORD": env.str("TEST_POSTGRES_PASSWORD", default=""),
+      "HOST": env.str("TEST_POSTGRES_HOST", default=""),
+      "PORT": env.str("TEST_POSTGRES_PORT", default=""),
     },
   }
 }

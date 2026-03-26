@@ -7,6 +7,8 @@ SIMPLE_JWT = {
   "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
 }
 
+DEBUG = False
+
 # ── django-allow-cidr ──
 ALLOWED_CIDR_NETS = ["10.42.0.0/16"]
 

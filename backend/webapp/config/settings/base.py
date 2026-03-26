@@ -22,6 +22,7 @@ from .components.installed_app import *
 from .components.logging import *
 from .components.middleware import *
 from .components.rest_framework import *
+from .components.slack import *
 from .components.template import *
 
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
