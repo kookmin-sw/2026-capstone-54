@@ -5,6 +5,7 @@ nplusone_handler.pending 모듈 테스트.
 Celery task 전송은 mock 처리한다.
 """
 
+import time
 from unittest.mock import patch
 
 import common.nplusone_handler.pending as pending_module
@@ -128,7 +129,8 @@ class EvictExpiredTest(PendingStateIsolationMixin, TestCase):
   def test_evict_removes_expired_pending(self):
     """TTL이 지난 _pending 항목은 _evict_expired()로 제거된다."""
     alert = self._make_alert()
-    alert.registered_at = 0.0  # 과거 타임스탬프로 강제 만료
+    # Use a timestamp guaranteed to be expired (current time - TTL - 1)
+    alert.registered_at = time.monotonic() - pending_module._TTL - 1
     pending_module._pending["req-expired"] = [alert]
 
     pending_module._evict_expired()
@@ -146,7 +148,8 @@ class EvictExpiredTest(PendingStateIsolationMixin, TestCase):
 
   def test_evict_removes_expired_seen(self):
     """TTL이 지난 _seen 항목도 함께 제거된다."""
-    pending_module._seen[("req-old", "User", "profile")] = 0.0
+    # Use a timestamp guaranteed to be expired (current time - TTL - 1)
+    pending_module._seen[("req-old", "User", "profile")] = time.monotonic() - pending_module._TTL - 1
 
     pending_module._evict_expired()
 
