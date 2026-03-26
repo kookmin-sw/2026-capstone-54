@@ -27,6 +27,9 @@ PACKAGE_APPS = [
   # CORS
   "corsheaders",
 
+  # S3 스토리지
+  "storages",
+
   # Django ADMIN Import Export
   "import_export",
 
