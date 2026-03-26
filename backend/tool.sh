@@ -26,29 +26,44 @@ fi
 friendly_label() {
   local base="$1"
   case "$base" in
-    createsuperuser)
+    01-all_django_commands)
+      echo "전체 Django 명령어"
+      ;;
+    02-createsuperuser)
       echo "슈퍼유저 생성 (createsuperuser)"
       ;;
-    logs)
-      echo "로그 스트리밍 (logs)"
-      ;;
-    makemigrations)
-      echo "마이그레이션 생성 (makemigrations)"
-      ;;
-    migrate)
-      echo "마이그레이션 적용 (migrate)"
-      ;;
-    shell)
-      echo "Django Shell 접속 (shell)"
-      ;;
-    test)
-      echo "테스트 실행 (test)"
-      ;;
-    custom_django_command)
+    03-custom_django_command)
       echo "커스텀 Django 명령어"
       ;;
-    all_django_commands)
-      echo "전체 Django 명령어"
+    04-logs)
+      echo "로그 스트리밍 (logs)"
+      ;;
+    05-makemigrations)
+      echo "마이그레이션 생성 (makemigrations)"
+      ;;
+    06-migrate)
+      echo "마이그레이션 적용 (migrate)"
+      ;;
+    07-shell)
+      echo "Django Shell 접속 (shell)"
+      ;;
+    08-test)
+      echo "테스트 실행 (test)"
+      ;;
+    09-docker-build-start)
+      echo "docker-compose up -d --build (build & start)"
+      ;;
+    10-docker-start)
+      echo "docker-compose up -d (start)"
+      ;;
+    11-docker-stop)
+      echo "docker-compose down (stop)"
+      ;;
+    12-db-console)
+      echo "PostgreSQL 콘솔 접속 (db-console)"
+      ;;
+    13-db-exec)
+      echo "SQL 명령어 실행 (db-exec)"
       ;;
     *)
       echo "$base ($base)"
@@ -61,27 +76,16 @@ script_labels=()
 script_bases=()
 while IFS= read -r script; do
   [ -z "$script" ] && continue
-  scripts+=("$script")
   base_name="$(basename "$script" .sh)"
+  # _common.sh는 제외
+  [[ "$base_name" == _* ]] && continue
+  scripts+=("$script")
   script_bases+=("$base_name")
   script_labels+=("$(friendly_label "$base_name")")
 done < <(find "$COMMANDS_DIR" -maxdepth 1 -type f -name '*.sh' -print | sort)
 
-docker_descriptions=(
-  "docker-compose up -d --build (build & start)"
-  "docker-compose up -d (start)"
-  "docker-compose down (stop)"
-)
-
-docker_args=(
-  "up -d --build"
-  "up -d"
-  "down"
-)
-
 show_menu() {
   local script_count="${#scripts[@]}"
-  local docker_count="${#docker_args[@]}"
 
   echo
   echo "Available actions:"
@@ -92,11 +96,6 @@ show_menu() {
   else
     echo "  (No command scripts found in environments/development/commands)"
   fi
-
-  local docker_offset=$((script_count + 1))
-  for idx in "${!docker_descriptions[@]}"; do
-    printf "  %2d) %s\n" "$((docker_offset + idx))" "${docker_descriptions[$idx]}"
-  done
   echo "  q) Quit"
 }
 
@@ -111,7 +110,7 @@ run_script() {
 
   local prompt_for_args=true
   case "$base" in
-    logs)
+    04-logs|09-docker-build-start|10-docker-start|11-docker-stop|12-db-console)
       prompt_for_args=false
       ;;
   esac
@@ -148,25 +147,6 @@ run_script() {
   fi
 }
 
-run_docker() {
-  local idx="$1"
-  local description="${docker_descriptions[$idx]}"
-  local -a args
-  read -r -a args <<< "${docker_args[$idx]}"
-
-  echo
-  echo "Running: $description"
-  if (
-    cd "$ROOT_DIR" || exit 1
-    dc "${args[@]}"
-  ); then
-    echo "Done."
-  else
-    local status=$?
-    echo "Docker command exited with status $status"
-  fi
-}
-
 main() {
   while true; do
     show_menu
@@ -187,19 +167,14 @@ main() {
 
     local selection="$((choice))"
     local script_count="${#scripts[@]}"
-    local docker_count="${#docker_args[@]}"
-    local max_option="$((script_count + docker_count))"
+    local max_option="$script_count"
 
     if [ "$selection" -lt 1 ] || [ "$selection" -gt "$max_option" ]; then
       echo "Invalid selection."
       continue
     fi
 
-    if [ "$selection" -le "$script_count" ]; then
-      run_script "$((selection - 1))"
-    else
-      run_docker "$((selection - script_count - 1))"
-    fi
+    run_script "$((selection - 1))"
   done
 }
 

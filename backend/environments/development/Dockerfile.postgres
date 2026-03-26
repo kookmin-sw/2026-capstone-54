@@ -1,0 +1,31 @@
+FROM postgres:18.3
+
+# PostgreSQL 개발 헤더 및 빌드 도구 설치
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    git \
+    postgresql-server-dev-all \
+    libicu-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# pgvector 설치
+RUN cd /tmp && \
+    git clone --branch v0.8.2 https://github.com/pgvector/pgvector.git && \
+    cd pgvector && \
+    make OPTFLAGS="" && \
+    make install && \
+    cd / && \
+    rm -rf /tmp/pgvector
+
+# pg_bigm 설치
+RUN cd /tmp && \
+    git clone https://github.com/pgbigm/pg_bigm.git && \
+    cd pg_bigm && \
+    git checkout REL1_2_STABLE 2>/dev/null || git checkout master && \
+    make USE_PGXS=1 && \
+    make USE_PGXS=1 install && \
+    cd / && \
+    rm -rf /tmp/pg_bigm
+
+# 불필요한 패키지 제거
+RUN apt-get purge -y --auto-remove build-essential git postgresql-server-dev-all

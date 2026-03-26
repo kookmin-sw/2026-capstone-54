@@ -12,6 +12,15 @@ x-celery-base: &celery-base
     - ./environments/development/entrypoint.sh:/app/entrypoint.sh
   entrypoint: []
 
+x-postgres-base: &postgres-base
+  build:
+    context: .
+    dockerfile: ./environments/development/Dockerfile.postgres
+  healthcheck:
+    interval: 10s
+    timeout: 5s
+    retries: 5
+
 services:
   webapp:
     build:
@@ -34,7 +43,7 @@ services:
         condition: service_healthy
 
   postgres:
-    image: postgres:18.3
+    <<: *postgres-base
     ports:
       - ${POSTGRES_PORT}:${POSTGRES_PORT}
     volumes:
@@ -46,12 +55,9 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${DATABASE_NAME}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   test_postgres:
-    image: postgres:18.3
+    <<: *postgres-base
     ports:
       - ${TEST_POSTGRES_PORT}:5432
     volumes:
@@ -63,9 +69,6 @@ services:
       POSTGRES_PASSWORD: ${TEST_POSTGRES_PASSWORD}
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${TEST_POSTGRES_USER} -d ${TEST_DATABASE_NAME}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   redis:
     image: redis:8
