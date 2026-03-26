@@ -179,12 +179,16 @@ export function NotificationBell() {
     }
   }, []);
 
-  const { markRead } = useNotificationWebSocket(accessToken, handleNotification);
+  const { send } = useNotificationWebSocket(accessToken, handleNotification);
+
+  const markRead = (notificationId: number) => {
+    send({ action: "mark_read", notification_id: notificationId });
+  };
 
   return (
     <div>
       {notifications.map((n, i) => (
-        <div key={i} onClick={() => markRead((n as { order_id: number }).order_id)}>
+        <div key={i} onClick={() => markRead((n as { id: number }).id)}>
           {JSON.stringify(n)}
         </div>
       ))}
