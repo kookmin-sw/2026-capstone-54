@@ -348,3 +348,16 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.toptal.com/developers/gitignore/api/dotenv,django,visualstudiocode,macos,python,windows
+
+# AI Tools
+## 개인 설정에 따라 다른 값을 사용하고 있음
+
+.omc
+.kiro
+.vscode
+.claude
+
+docs/.bkit-memory.json
+docs/.pdca-status.json
+
+.commit-generator

@@ -47,6 +47,11 @@ PACKAGE_APPS = [
   # Celery
   "django_celery_beat",
   "django_celery_results",
+
+  # Logging
+  "django_guid",
+  "django_structlog",
+  "drf_api_logger",
 ]
 
 PROJECT_APPS = [
