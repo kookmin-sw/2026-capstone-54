@@ -55,3 +55,8 @@ CSRF_COOKIE_SECURE = True
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "SAMEORIGIN"
+
+# TODO: (신건): S3 작업 시에 아래 내용 삭제
+# WhiteNoise: Production에서는 collectstatic 필수
+# collectstatic을 실행하지 않으면 static 파일 404/500 발생
+WHITENOISE_MANIFEST_STRICT = False

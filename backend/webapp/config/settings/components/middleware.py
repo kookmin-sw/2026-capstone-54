@@ -19,6 +19,9 @@ MIDDLEWARE = [
   # Correlation ID — 반드시 앞쪽에 위치해야 모든 로그에 ID가 첨부됨
   'django_guid.middleware.GuidMiddleware',
 
+  # Health check 로그 제외 — RequestMiddleware 전에 위치
+  'common.middlewares.ExcludeHealthCheckLoggingMiddleware',
+
   # Structured logging — request/response 메타데이터 자동 기록
   'django_structlog.middlewares.RequestMiddleware',
 
