@@ -12,6 +12,13 @@ from .base import *  # noqa: F401, F403
 DEBUG = True
 ENVIRONMENT = "development"
 
+STORAGES = {
+  **STORAGES,  # noqa: F405
+  "staticfiles": {
+    "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+  },
+}
+
 # ---------------------------------------------------------------------------
 # nplusone — 개발 환경 전용 N+1 쿼리 감지
 # ---------------------------------------------------------------------------
@@ -39,3 +46,6 @@ LOGGING["handlers"]["slack_nplusone"
                       "()": "common.nplusone_handler.NPlusOneSlackHandler",
                       "level": "WARN",
                     }
+
+WHITENOISE_USE_FINDERS = True
+WHITENOISE_AUTOREFRESH = True
