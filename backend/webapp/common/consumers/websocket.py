@@ -162,14 +162,16 @@ class UserWebSocketConsumer(BaseWebSocketConsumer):
 
         티켓 발급: POST /api/v1/realtime/ws-ticket/
         """
+    from urllib.parse import parse_qs
+
     from django.contrib.auth import get_user_model
     from django.core.cache import cache
 
     User = get_user_model()
 
     query_string = self.scope.get("query_string", b"").decode()
-    params = dict(pair.split("=", 1) for pair in query_string.split("&") if "=" in pair)
-    ticket = params.get("ticket", "")
+    params = parse_qs(query_string)
+    ticket = params.get("ticket", [""])[0]
     if not ticket:
       logger.warning("ws_auth_missing_ticket")
       return None

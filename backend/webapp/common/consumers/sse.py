@@ -22,9 +22,11 @@ Channels HTTP long-poll consumer 를 이용해 SSE 스트림을 구현한다.
     class NotificationSseConsumer(UserSseConsumer):
         async def stream(self) -> None:
             await self.send_event({"type": "connected"}, event="connected")
+            # 연결 유지 (heartbeat)
+            # 실제 메시지는 sse_push() 핸들러를 통해 group_send로 수신한다
             while not self.disconnected:
-                msg = await self.channel_layer.receive(self.channel_name)
-                await self.send_event(msg.get("payload", {}))
+                await asyncio.sleep(30)
+                await self.send_event("", event="heartbeat")
 
     # 외부(Celery task 등)에서 특정 사용자에게 push:
     from channels.layers import get_channel_layer
@@ -105,12 +107,13 @@ class UserSseConsumer(SseConsumer):
   """인증된 특정 사용자 전용 SSE consumer 베이스.
 
     Authorization: Bearer 헤더의 JWT token 을 검증하고,
-    해당 사용자의 개인 채널(user_{id})에 자동 등록한다.
+    해당 사용자의 개인 그룹(user_{id})에 자동 등록한다.
     인증 실패 시 401 응답을 반환하고 연결을 종료한다.
 
     채널 레이어를 통해 외부(Celery task 등)에서 특정 사용자에게 이벤트를 push할 수 있다.
 
     그룹 이름 규칙: "user_{user_id}"
+    메시지 type 규칙: "sse.push" (Channels는 type의 '.'을 '_'로 변환해 메서드를 호출한다)
     """
 
   _user_group: str = ""
@@ -134,6 +137,13 @@ class UserSseConsumer(SseConsumer):
       self.disconnected = True
       await self.channel_layer.group_discard(self._user_group, self.channel_name)
       logger.info("sse_user_disconnected", channel=self.channel_name, user_id=user.pk)
+
+  # ── 채널 레이어 메시지 핸들러 ────────────────────────────────────────────
+  # group_send({"type": "sse.push", "payload": {...}}) 호출 시 실행된다.
+
+  async def sse_push(self, event: dict) -> None:
+    """채널 레이어에서 수신한 'sse.push' 타입의 메시지를 클라이언트로 전달합니다."""
+    await self.send_event(event.get("payload", {}))
 
   # ── 사용자 재조회 ─────────────────────────────────────────────────────────
 

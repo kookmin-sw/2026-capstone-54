@@ -94,9 +94,10 @@ class NotificationConsumer(UserWebSocketConsumer):
 
     async def _mark_read(self, notification_id: int) -> None:
         from notifications.models import Notification
+        from django.utils import timezone
         await Notification.objects.filter(
             pk=notification_id, user=self.user
-        ).aupdate(read_at=__import__("django.utils.timezone", fromlist=["now"]).now())
+        ).aupdate(read_at=timezone.now())
 ```
 
 ### URL 등록
@@ -184,17 +185,11 @@ class NotificationSseConsumer(UserSseConsumer):
         # 연결 직후 초기 이벤트
         await self.send_event({"type": "connected"}, event="connected")
 
-        # 채널 레이어에서 메시지를 기다린다
+        # 연결 유지 (heartbeat)
+        # 실제 메시지는 sse_push() 핸들러를 통해 group_send로 수신한다
         while not self.disconnected:
-            try:
-                msg = await asyncio.wait_for(
-                    self.channel_layer.receive(self.channel_name),
-                    timeout=30,  # 30초마다 heartbeat
-                )
-                await self.send_event(msg.get("payload", {}))
-            except asyncio.TimeoutError:
-                # 연결 유지용 heartbeat
-                await self.send_event("", event="heartbeat")
+            await asyncio.sleep(30)
+            await self.send_event("", event="heartbeat")
 ```
 
 ### URL 등록
@@ -237,25 +232,41 @@ while (true) {
 
 ### 외부에서 특정 사용자에게 push
 
-SSE consumer 는 `channel_layer.receive(self.channel_name)` 로 직접 수신하므로
-`group_send` 대신 `send` 를 사용한다.
+SSE consumer 도 WebSocket 과 동일하게 `group_send` 를 사용할 수 있다.
 
 ```python
-# 동기 컨텍스트
+# 동기 컨텍스트 (Celery task, Django view 등)
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 
-def push_sse_event(channel_name: str, payload: dict) -> None:
-    """특정 SSE 연결에 직접 push. channel_name 은 연결 시 저장해두어야 한다."""
+def notify_user(user_id: int, payload: dict) -> None:
     channel_layer = get_channel_layer()
-    async_to_sync(channel_layer.send)(
-        channel_name,
+    async_to_sync(channel_layer.group_send)(
+        f"user_{user_id}",
+        {
+            "type": "sse.push",   # → consumer.sse_push() 호출
+            "payload": payload,
+        },
+    )
+
+# 사용 예
+notify_user(42, {"type": "order_completed", "order_id": 123})
+```
+
+```python
+# 비동기 컨텍스트
+from channels.layers import get_channel_layer
+
+async def notify_user_async(user_id: int, payload: dict) -> None:
+    channel_layer = get_channel_layer()
+    await channel_layer.group_send(
+        f"user_{user_id}",
         {"type": "sse.push", "payload": payload},
     )
 ```
 
-> SSE 는 단방향(서버 → 클라이언트)이므로 WebSocket 처럼 그룹 broadcast 보다
-> 개별 channel 에 직접 send 하는 패턴이 더 일반적이다.
+> SSE 는 단방향(서버 → 클라이언트)이지만, 그룹 broadcast 를 통해
+> 동일 사용자의 모든 연결(멀티 탭/기기)에 동시에 메시지를 전달할 수 있다.
 
 ---
 
