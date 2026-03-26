@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Realtime API Docs</title>
+  <link rel="stylesheet" href="https://unpkg.com/@asyncapi/react-component@latest/styles/default.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #0f0f0f; color: #e5e7eb; }
+
+    .layout { display: flex; height: 100vh; overflow: hidden; }
+
+    /* Sidebar */
+    .sidebar {
+      width: 240px; min-width: 240px; background: #1a1a1a;
+      border-right: 1px solid #2d2d2d; overflow-y: auto;
+    }
+    .sidebar-header {
+      padding: 1rem 1.25rem; border-bottom: 1px solid #2d2d2d;
+      font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em;
+      color: #6b7280; text-transform: uppercase;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 0.5rem;
+      padding: 0.55rem 1.25rem; cursor: pointer;
+      font-size: 0.85rem; color: #d1d5db;
+      border-left: 3px solid transparent;
+    }
+    .nav-item:hover { background: #222; }
+    .nav-item.active { background: #1e293b; border-left-color: #3b82f6; color: #fff; }
+    .badge {
+      font-size: 0.6rem; font-weight: 700; padding: 0.1rem 0.35rem;
+      border-radius: 3px; text-transform: uppercase; flex-shrink: 0;
+    }
+    .badge-ws  { background: #1d4ed8; color: #bfdbfe; }
+    .badge-sse { background: #065f46; color: #a7f3d0; }
+
+    /* Main */
+    .main { flex: 1; overflow-y: auto; }
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* AsyncAPI panel */
+    #asyncapi-panel { background: #fff; min-height: 100%; }
+    #asyncapi-root { padding: 1.5rem; color: #111; }
+
+    /* Tester panel */
+    .tester { max-width: 680px; padding: 1.5rem; }
+    .tester-title { font-size: 1.05rem; font-weight: 600; margin-bottom: 0.2rem; }
+    .tester-desc { font-size: 0.82rem; color: #9ca3af; margin-bottom: 1.25rem; }
+
+    .field { display: flex; flex-direction: column; gap: 0.3rem; margin-bottom: 0.75rem; }
+    .field label { font-size: 0.72rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.04em; }
+    .field input, .field textarea {
+      background: #1a1a1a; border: 1px solid #374151; border-radius: 6px;
+      color: #e5e7eb; padding: 0.45rem 0.75rem; font-size: 0.83rem;
+      font-family: monospace; width: 100%;
+    }
+    .field textarea { resize: vertical; min-height: 72px; }
+
+    .status-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: #4b5563; flex-shrink: 0; }
+    .dot.on { background: #22c55e; }
+    .status-text { font-size: 0.78rem; color: #6b7280; }
+
+    .btn-row { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap; }
+    .btn {
+      padding: 0.38rem 0.9rem; border: none; border-radius: 6px;
+      font-size: 0.82rem; font-weight: 500; cursor: pointer;
+    }
+    .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .btn-green  { background: #16a34a; color: #fff; }
+    .btn-red    { background: #dc2626; color: #fff; }
+    .btn-blue   { background: #2563eb; color: #fff; }
+    .btn-gray   { background: #374151; color: #d1d5db; }
+
+    .log {
+      background: #111; border: 1px solid #2d2d2d; border-radius: 8px;
+      padding: 0.6rem 0.75rem; height: 260px; overflow-y: auto;
+      font-family: monospace; font-size: 0.76rem;
+    }
+    .log-line { padding: 0.15rem 0; }
+    .t { color: #4b5563; margin-right: 0.4rem; }
+    .sent     { color: #60a5fa; }
+    .received { color: #4ade80; }
+    .system   { color: #fbbf24; }
+    .err      { color: #f87171; }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="sidebar-header">Realtime API</div>
+    <div class="nav-item active" onclick="show(this,'asyncapi-panel')">📄 AsyncAPI Spec</div>
+    {% for c in consumers %}
+    <div class="nav-item" onclick="show(this,'panel-{{ c.name }}')">
+      <span class="badge badge-{{ c.protocol }}">{{ c.protocol }}</span>
+      {{ c.title }}
+    </div>
+    {% endfor %}
+  </aside>
+
+  <main class="main">
+
+    <div id="asyncapi-panel" class="panel active">
+      <div id="asyncapi-root"></div>
+    </div>
+
+    {% for c in consumers %}
+    <div id="panel-{{ c.name }}" class="panel">
+      <div class="tester">
+        <div class="tester-title">{{ c.title }}</div>
+        <div class="tester-desc">{{ c.description }}</div>
+
+        <div class="field">
+          <label>Endpoint</label>
+          <input id="url-{{ c.name }}" type="text"
+            value="{% if c.protocol == 'ws' %}{{ ws_scheme }}{% else %}{{ http_scheme }}{% endif %}://{{ host }}{{ c.path }}"
+            readonly>
+        </div>
+
+        {% if c.auth_required %}
+        {% if c.protocol == 'ws' %}
+        <div class="field">
+          <label>JWT Token (access token) — for ticket request</label>
+          <input id="token-{{ c.name }}" type="text" placeholder="eyJ...">
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-gray" onclick="getTicket('{{ c.name }}', '{% if c.protocol == 'ws' %}{{ ws_scheme }}{% else %}{{ http_scheme }}{% endif %}://{{ host }}{{ c.path }}')">
+            Get Ticket
+          </button>
+        </div>
+        {% else %}
+        <div class="field">
+          <label>Authorization Header (Bearer token)</label>
+          <input id="token-{{ c.name }}" type="text" placeholder="eyJ..."
+            oninput="updateSseHeaders('{{ c.name }}')">
+        </div>
+        {% endif %}
+        {% endif %}
+
+        <div class="status-row">
+          <div class="dot" id="dot-{{ c.name }}"></div>
+          <span class="status-text" id="st-{{ c.name }}">disconnected</span>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-green" id="bc-{{ c.name }}"
+            onclick="{% if c.protocol == 'ws' %}wsConnect{% else %}sseConnect{% endif %}('{{ c.name }}')">
+            Connect
+          </button>
+          <button class="btn btn-red" id="bd-{{ c.name }}" disabled
+            onclick="{% if c.protocol == 'ws' %}wsDisconnect{% else %}sseDisconnect{% endif %}('{{ c.name }}')">
+            Disconnect
+          </button>
+          <button class="btn btn-gray" onclick="clearLog('{{ c.name }}')">Clear</button>
+        </div>
+
+        {% if c.protocol == 'ws' %}
+        <div class="field">
+          <label>Send JSON</label>
+          <textarea id="msg-{{ c.name }}" placeholder='{"key": "value"}'></textarea>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-blue" id="bs-{{ c.name }}" disabled
+            onclick="wsSend('{{ c.name }}')">Send</button>
+        </div>
+        {% endif %}
+
+        <div class="log" id="log-{{ c.name }}"></div>
+      </div>
+    </div>
+    {% endfor %}
+
+  </main>
+</div>
+
+<script src="https://unpkg.com/@asyncapi/react-component@latest/browser/standalone/index.js"></script>
+<script>
+  AsyncApiStandalone.render(
+    { schema: {{ spec_json|safe }}, config: { show: { sidebar: true } } },
+    document.getElementById("asyncapi-root")
+  );
+
+  function show(el, id) {
+    document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+    document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+    el.classList.add("active");
+    document.getElementById(id).classList.add("active");
+  }
+
+  const sockets = {}, sources = {}, sseHeaders = {};
+
+  async function getTicket(id, wsBase) {
+    const token = (document.getElementById("token-" + id)?.value || "").trim();
+    if (!token) { addLog(id, "err", "JWT token required to get ticket"); return; }
+    try {
+      const res = await fetch("/api/v1/realtime/ws-ticket/", {
+        method: "POST",
+        headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json" },
+      });
+      if (!res.ok) { addLog(id, "err", "Ticket request failed: " + res.status); return; }
+      const { ticket } = await res.json();
+      const url = wsBase + "?ticket=" + encodeURIComponent(ticket);
+      document.getElementById("url-" + id).value = url;
+      addLog(id, "system", "Ticket acquired — URL updated");
+    } catch (e) {
+      addLog(id, "err", "Ticket request error: " + e.message);
+    }
+  }
+
+  function updateSseHeaders(id) {
+    const token = (document.getElementById("token-" + id)?.value || "").trim();
+    sseHeaders[id] = token ? { "Authorization": "Bearer " + token } : {};
+  }
+
+  function addLog(id, cls, text) {
+    const el = document.getElementById("log-" + id);
+    const d = document.createElement("div");
+    d.className = "log-line";
+    const t = new Date().toLocaleTimeString();
+    d.innerHTML = `<span class="t">${t}</span><span class="${cls}">${esc(text)}</span>`;
+    el.appendChild(d);
+    el.scrollTop = el.scrollHeight;
+  }
+  function clearLog(id) { document.getElementById("log-" + id).innerHTML = ""; }
+  function esc(s) { return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+  function setConn(id, on) {
+    document.getElementById("dot-" + id).className = "dot" + (on ? " on" : "");
+    document.getElementById("st-" + id).textContent = on ? "connected" : "disconnected";
+    document.getElementById("bc-" + id).disabled = on;
+    document.getElementById("bd-" + id).disabled = !on;
+    const bs = document.getElementById("bs-" + id);
+    if (bs) bs.disabled = !on;
+  }
+
+  /* WebSocket */
+  function wsConnect(id) {
+    const url = document.getElementById("url-" + id).value;
+    const ws = new WebSocket(url);
+    sockets[id] = ws;
+    addLog(id, "system", "Connecting → " + url);
+    ws.onopen    = () => { setConn(id, true);  addLog(id, "system", "Connected"); };
+    ws.onclose   = (e) => { setConn(id, false); addLog(id, "system", "Closed (code " + e.code + ")"); delete sockets[id]; };
+    ws.onerror   = ()  => addLog(id, "err", "Error");
+    ws.onmessage = (e) => {
+      try { addLog(id, "received", JSON.stringify(JSON.parse(e.data), null, 2)); }
+      catch { addLog(id, "received", e.data); }
+    };
+  }
+  function wsDisconnect(id) { sockets[id]?.close(); }
+  function wsSend(id) {
+    const ws = sockets[id];
+    if (!ws || ws.readyState !== WebSocket.OPEN) return;
+    const txt = document.getElementById("msg-" + id).value.trim();
+    if (!txt) return;
+    try { JSON.parse(txt); ws.send(txt); addLog(id, "sent", txt); }
+    catch { addLog(id, "err", "Invalid JSON"); }
+  }
+
+  /* SSE — fetch + ReadableStream (Authorization 헤더 지원) */
+  async function sseConnect(id) {
+    const url = document.getElementById("url-" + id).value;
+    const headers = { "Accept": "text/event-stream", ...(sseHeaders[id] || {}) };
+    addLog(id, "system", "Connecting → " + url);
+
+    let controller;
+    try {
+      controller = new AbortController();
+      sources[id] = controller;
+      const res = await fetch(url, { headers, signal: controller.signal });
+      if (!res.ok) {
+        addLog(id, "err", "HTTP " + res.status + " " + res.statusText);
+        setConn(id, false);
+        return;
+      }
+      setConn(id, true);
+      addLog(id, "system", "Connected");
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buf = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += decoder.decode(value, { stream: true });
+        const parts = buf.split("\n\n");
+        buf = parts.pop();
+        for (const block of parts) {
+          if (!block.trim()) continue;
+          let eventName = "message", data = "";
+          for (const line of block.split("\n")) {
+            if (line.startsWith("event:")) eventName = line.slice(6).trim();
+            else if (line.startsWith("data:")) data = line.slice(5).trim();
+          }
+          addLog(id, "received", eventName + ": " + data);
+          if (eventName === "done") {
+            setConn(id, false);
+            addLog(id, "system", "Stream ended");
+            delete sources[id];
+            return;
+          }
+        }
+      }
+    } catch (e) {
+      if (e.name !== "AbortError") addLog(id, "err", e.message);
+    } finally {
+      setConn(id, false);
+      if (sources[id]) { delete sources[id]; }
+    }
+  }
+  function sseDisconnect(id) {
+    sources[id]?.abort();
+    delete sources[id];
+    setConn(id, false);
+    addLog(id, "system", "Disconnected");
+  }
+</script>
+</body>
+</html>

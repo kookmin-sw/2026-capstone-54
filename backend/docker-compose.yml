@@ -26,7 +26,7 @@ services:
     build:
       context: .
       dockerfile: ./environments/development/Dockerfile
-    command: python manage.py runserver 0.0.0.0:${PORT}
+    command: uvicorn config.asgi:application --host 0.0.0.0 --port ${PORT} --reload
     ports:
       - ${PORT}:${PORT}
     volumes:

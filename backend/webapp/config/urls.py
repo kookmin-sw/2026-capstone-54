@@ -18,6 +18,7 @@ urlpatterns = [
   path("redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
   path("schema/", SpectacularAPIView.as_view(), name="schema"),
   path("api/", include("api.urls")),
+  path("realtime-docs/", include("realtime_docs.urls")),
 ]
 
 # if settings.DEBUG:
