@@ -4,11 +4,10 @@ metadata:
   name: mefit-production-api-ingress
   namespace: mefit-backend-production
   annotations:
-    kubernetes.io/ingress.class: traefik
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
     traefik.ingress.kubernetes.io/router.tls: "true"
-    traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd
 spec:
+  ingressClassName: traefik
   tls:
   - hosts:
     - mefit.xn--hy1by51c.kr
