@@ -189,12 +189,10 @@ if [[ "$TARGET" == "all" ]]; then
     kubectl set image "deployment/${deploy}" "*=${IMAGE_REPO}:${IMAGE_TAG}" -n "${NAMESPACE}" 2>/dev/null || true
   done
 
-  # 강제 rollout을 위한 annotation 추가
-  echo "▶ 강제 rollout 트리거 중..."
+  # 강제 rollout restart (새로운 Pod 생성)
+  echo "▶ 강제 rollout restart 중..."
   for deploy in "${ALL_DEPLOYMENTS[@]}"; do
-    kubectl patch deployment "${deploy}" \
-      -n "${NAMESPACE}" \
-      -p "{\"spec\":{\"template\":{\"metadata\":{\"annotations\":{\"kubectl.kubernetes.io/restartedAt\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}}}}}"
+    kubectl rollout restart "deployment/${deploy}" -n "${NAMESPACE}"
   done
 
   echo "▶ rollout 대기 중..."
