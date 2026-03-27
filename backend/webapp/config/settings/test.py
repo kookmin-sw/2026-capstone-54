@@ -12,6 +12,21 @@ DEBUG = False
 
 ENVIRONMENT = "test"
 
+STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'  # noqa: F405
+
+MEDIA_URL = 'media/'
+MEDIA_ROOT = BASE_DIR / 'media'  # noqa: F405
+
+STORAGES = {
+  "default": {
+    "BACKEND": "django.core.files.storage.FileSystemStorage",
+  },
+  "staticfiles": {
+    "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+  },
+}
+
 # 테스트 실행 속도 향상을 위한 비밀번호 해셔
 PASSWORD_HASHERS = [
   "django.contrib.auth.hashers.MD5PasswordHasher",

@@ -12,8 +12,16 @@ from .base import *  # noqa: F401, F403
 DEBUG = True
 ENVIRONMENT = "development"
 
+STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'  # noqa: F405
+
+MEDIA_URL = 'media/'
+MEDIA_ROOT = BASE_DIR / 'media'  # noqa: F405
+
 STORAGES = {
-  **STORAGES,  # noqa: F405
+  "default": {
+    "BACKEND": "django.core.files.storage.FileSystemStorage",
+  },
   "staticfiles": {
     "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
   },
