@@ -18,7 +18,6 @@ spec:
       labels:
         app: mefit-production-celery-beat
     spec:
-      hostNetwork: true  # EC2 메타데이터 서비스 접근 허용 (AWS SDK 자격증명)
       imagePullSecrets:
         - name: mefit-production-dockerhub
       containers:
