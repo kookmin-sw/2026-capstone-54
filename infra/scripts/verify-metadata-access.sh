@@ -13,7 +13,7 @@ echo "  EC2 메타데이터 접근 검증"
 echo "══════════════════════════════════════════"
 
 METADATA_IP="169.254.169.254"
-POD_CIDR="10.42.0.0/16"
+POD_CIDR="10.42.0.0/24"
 NAMESPACE="mefit-backend-production"
 
 # 색상 코드

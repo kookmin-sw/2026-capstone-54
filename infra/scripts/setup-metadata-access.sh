@@ -19,7 +19,7 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-POD_CIDR="10.42.0.0/16"
+POD_CIDR="10.42.0.0/24"
 METADATA_IP="169.254.169.254"
 
 echo ""
