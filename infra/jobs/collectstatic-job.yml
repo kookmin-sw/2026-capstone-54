@@ -9,6 +9,7 @@ spec:
   template:
     spec:
       restartPolicy: Never
+      hostNetwork: true  # NOTE: (신건) EC2 메타데이터 서비스 접근 허용
       imagePullSecrets:
         - name: mefit-production-dockerhub
       containers:
