@@ -104,37 +104,33 @@ echo ""
 echo "▶ 5. IAM Role 자격증명 확인"
 echo ""
 
-echo "   IAM Role 이름 조회 중..."
-IAM_ROLE=$(kubectl run test-iam-role \
-  --image=curlimages/curl \
+echo "   boto3로 자격증명 확인 중..."
+CREDS_TEST=$(kubectl run test-boto3-creds \
+  --image=python:3.12-slim \
   --restart=Never \
   --rm \
   -i \
-  --timeout=30s \
-  -- curl -s -m 5 http://169.254.169.254/latest/meta-data/iam/security-credentials/ 2>/dev/null || echo "")
+  --timeout=60s \
+  --command -- bash -c "pip install -q boto3 && python -c \"
+import boto3
+try:
+    session = boto3.Session()
+    creds = session.get_credentials()
+    if creds:
+        print(f'SUCCESS:{creds.access_key[:10]}')
+    else:
+        print('FAIL:No credentials')
+except Exception as e:
+    print(f'ERROR:{e}')
+\"" 2>/dev/null || echo "ERROR:Pod failed")
 
-if [[ -n "$IAM_ROLE" ]]; then
-  pass "IAM Role: $IAM_ROLE"
-  
-  echo "   자격증명 조회 중..."
-  CREDENTIALS=$(kubectl run test-credentials \
-    --image=curlimages/curl \
-    --restart=Never \
-    --rm \
-    -i \
-    --timeout=30s \
-    -- curl -s -m 5 "http://169.254.169.254/latest/meta-data/iam/security-credentials/$IAM_ROLE" 2>/dev/null || echo "")
-  
-  if echo "$CREDENTIALS" | grep -q "AccessKeyId"; then
-    pass "IAM 자격증명 획득 성공"
-    echo ""
-    echo "   AccessKeyId: $(echo "$CREDENTIALS" | grep -o '"AccessKeyId" : "[^"]*"' | cut -d'"' -f4 | cut -c1-20)..."
-  else
-    fail "IAM 자격증명 획득 실패"
-  fi
+if echo "$CREDS_TEST" | grep -q "SUCCESS:"; then
+  ACCESS_KEY=$(echo "$CREDS_TEST" | grep "SUCCESS:" | cut -d':' -f2)
+  pass "IAM 자격증명 획득 성공"
+  echo "   Access Key: ${ACCESS_KEY}..."
 else
-  fail "IAM Role 없음"
-  echo "   EC2 인스턴스에 IAM Role이 연결되어 있는지 확인하세요"
+  fail "IAM 자격증명 획득 실패"
+  echo "   $CREDS_TEST"
 fi
 
 echo ""
@@ -150,20 +146,26 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     echo "   Pod: $POD_NAME"
     echo "   boto3 테스트 실행 중..."
     
-    if kubectl exec -n "$NAMESPACE" "$POD_NAME" -- python -c "
+    BOTO3_TEST=$(kubectl exec -n "$NAMESPACE" "$POD_NAME" -- python -c "
 import boto3
-session = boto3.Session()
-creds = session.get_credentials()
-if creds:
-    print('✅ AWS 자격증명 획득 성공')
-    print(f'Access Key: {creds.access_key[:10]}...')
-else:
-    print('❌ AWS 자격증명 획득 실패')
-    exit(1)
-" 2>/dev/null; then
+try:
+    session = boto3.Session()
+    creds = session.get_credentials()
+    if creds:
+        print(f'SUCCESS:{creds.access_key[:10]}')
+    else:
+        print('FAIL:No credentials')
+except Exception as e:
+    print(f'ERROR:{e}')
+" 2>/dev/null || echo "ERROR:Command failed")
+
+    if echo "$BOTO3_TEST" | grep -q "SUCCESS:"; then
+      ACCESS_KEY=$(echo "$BOTO3_TEST" | grep "SUCCESS:" | cut -d':' -f2)
       pass "Django Pod에서 boto3 작동 확인"
+      echo "   Access Key: ${ACCESS_KEY}..."
     else
       fail "Django Pod에서 boto3 실패"
+      echo "   $BOTO3_TEST"
     fi
   else
     warn "Django Pod를 찾을 수 없습니다"
