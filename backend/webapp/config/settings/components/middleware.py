@@ -6,9 +6,6 @@ MIDDLEWARE = [
   'allow_cidr.middleware.AllowCIDRMiddleware',
   'corsheaders.middleware.CorsMiddleware',
   'django.middleware.security.SecurityMiddleware',
-
-  # TEMPORARY: WhiteNoise for local static file serving (S3 설정 후 제거)
-  'whitenoise.middleware.WhiteNoiseMiddleware',
   'django.contrib.sessions.middleware.SessionMiddleware',
   'django.middleware.common.CommonMiddleware',
   'django.middleware.csrf.CsrfViewMiddleware',

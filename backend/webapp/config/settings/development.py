@@ -46,6 +46,3 @@ LOGGING["handlers"]["slack_nplusone"
                       "()": "common.nplusone_handler.NPlusOneSlackHandler",
                       "level": "WARN",
                     }
-
-WHITENOISE_USE_FINDERS = True
-WHITENOISE_AUTOREFRESH = True

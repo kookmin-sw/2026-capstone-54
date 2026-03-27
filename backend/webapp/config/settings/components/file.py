@@ -7,21 +7,6 @@ from .common import BASE_DIR, env
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-# ============================================================================
-# TEMPORARY: WhiteNoise for local file serving (S3 설정 전까지 임시 사용)
-# ============================================================================
-# STORAGES = {
-#   "default": {
-#     "BACKEND": "django.core.files.storage.FileSystemStorage",
-#   },
-#   "staticfiles": {
-#     "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-#   },
-# }
-
-# ============================================================================
-# TODO: S3 설정 - 아래 주석을 해제하고 위의 STORAGES를 주석 처리
-# ============================================================================
 # CloudFront 없이 S3 직접 접근 방식 사용
 # EC2 IAM Role로 자격증명을 자동 처리하므로 ACCESS_KEY 설정 불필요
 AWS_STORAGE_BUCKET_NAME = "pj-kmucd1-04-mefit-be-files"
