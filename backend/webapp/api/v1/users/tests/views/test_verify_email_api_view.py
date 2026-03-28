@@ -1,15 +1,13 @@
-from datetime import timedelta
-
 from django.test import override_settings
 from django.urls import reverse
-from django.utils import timezone
 from hypothesis import given, settings
 from hypothesis import strategies as st
 from hypothesis.extra.django import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
-from users.models import EmailVerificationCode, User
+from users.factories import EmailVerificationCodeFactory, UserFactory
+from users.models import User
 
 
 @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
@@ -23,16 +21,8 @@ class VerifyEmailAPIViewPropertyTests(TestCase):
   def _create_user_with_code(self, email, code):
     """테스트용 유저와 유효한 OTP 코드를 생성하고 JWT 인증을 설정한다."""
     User.objects.filter(email=email).delete()
-    user = User.objects.create_user(
-      email=email,
-      password="ValidPass123!",
-      name="인증테스트유저",
-    )
-    EmailVerificationCode.objects.create(
-      user=user,
-      code=code,
-      expires_at=timezone.now() + timedelta(minutes=10),
-    )
+    user = UserFactory(email=email)
+    EmailVerificationCodeFactory(user=user, code=code)
     token = RefreshToken.for_user(user)
     self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token.access_token}")
     return user

@@ -5,6 +5,7 @@ from hypothesis import strategies as st
 from hypothesis.extra.django import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
+from users.factories import DEFAULT_PASSWORD, UserFactory
 from users.models import User
 
 
@@ -21,12 +22,11 @@ class SignInAPIViewPropertyTests(TestCase):
   def test_sign_in_with_valid_credentials_returns_full_response(self, name):
     """등록된 User의 올바른 email과 password로 로그인하면 access/refresh/is_email_confirmed/is_profile_completed 포함된 200 응답이 반환된다."""
     email = "signin_valid_test@example.com"
-    password = "ValidPass123!"
 
     User.objects.filter(email=email).delete()
-    User.objects.create_user(email=email, password=password, name=name)
+    UserFactory(email=email, name=name)
 
-    data = {"email": email, "password": password}
+    data = {"email": email, "password": DEFAULT_PASSWORD}
     response = self.client.post(self.url, data, format="json")
 
     self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -49,10 +49,9 @@ class SignInAPIViewPropertyTests(TestCase):
     from hypothesis import assume
 
     real_email = "signin_real_user@example.com"
-    real_password = "ValidPass123!"
 
     User.objects.filter(email=real_email).delete()
-    User.objects.create_user(email=real_email, password=real_password, name="실제유저")
+    UserFactory(email=real_email, name="실제유저")
 
     # Django EmailField가 유효하다고 판단하는 이메일만 테스트
     try:
@@ -62,7 +61,7 @@ class SignInAPIViewPropertyTests(TestCase):
 
     # 존재하지 않는 이메일이거나 잘못된 비밀번호여야 한다
     from django.contrib.auth.models import BaseUserManager
-    assume(BaseUserManager.normalize_email(wrong_email) != real_email or wrong_password != real_password)
+    assume(BaseUserManager.normalize_email(wrong_email) != real_email or wrong_password != DEFAULT_PASSWORD)
 
     data = {"email": wrong_email, "password": wrong_password}
     response = self.client.post(self.url, data, format="json")

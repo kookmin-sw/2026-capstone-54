@@ -9,6 +9,7 @@ from hypothesis.extra.django import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
+from users.factories import EmailVerificationCodeFactory, UserFactory
 from users.models import EmailVerificationCode, User
 
 
@@ -29,14 +30,10 @@ class ResendVerifyEmailAPIViewPropertyTests(TestCase):
     """미인증 User에 대해 인증 코드 재발송을 요청하면 기존 미사용 EmailVerificationCode가 만료 처리되고 새로운 코드가 생성된다."""
     email = "resend_test@example.com"
     User.objects.filter(email=email).delete()
-    user = User.objects.create_user(
-      email=email,
-      password="ValidPass123!",
-      name="재발송테스트유저",
-    )
+    user = UserFactory(email=email)
 
     # 기존 미사용 코드 생성 (이미 만료된 코드 — expires_at 과거)
-    old_code = EmailVerificationCode.objects.create(
+    old_code = EmailVerificationCodeFactory(
       user=user,
       code="OLD123",
       expires_at=timezone.now() - timedelta(minutes=1),
@@ -75,14 +72,10 @@ class ResendVerifyEmailAPIViewPropertyTests(TestCase):
     """최근 10분 내 인증 코드가 이미 발송된 경우 재전송 요청은 400을 반환한다."""
     email = "resend_cooldown_test@example.com"
     User.objects.filter(email=email).delete()
-    user = User.objects.create_user(
-      email=email,
-      password="ValidPass123!",
-      name="쿨다운테스트유저",
-    )
+    user = UserFactory(email=email)
 
     # 10분 이내에 생성된 코드 존재
-    EmailVerificationCode.objects.create(
+    EmailVerificationCodeFactory(
       user=user,
       code="NEW123",
       expires_at=timezone.now() + timedelta(minutes=10),
