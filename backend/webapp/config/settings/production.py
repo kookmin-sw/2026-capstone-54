@@ -1,7 +1,6 @@
 from datetime import timedelta
 
 from .base import *  # noqa: F401, F403
-from .components.common import env  # noqa: F401
 
 ENVIRONMENT = "production"
 
