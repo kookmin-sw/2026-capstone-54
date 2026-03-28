@@ -37,9 +37,14 @@ class JobCategory(BaseModelWithSoftDelete):
     verbose_name = "Job Category"
     verbose_name_plural = "Job Categories"
     ordering = ["name"]
+    constraints = [
+      models.UniqueConstraint(
+        fields=["name"], condition=models.Q(deleted_at__isnull=True), name="unique_job_category_name_when_not_deleted"
+      )
+    ]
 
   emoji = models.CharField(max_length=10)
-  name = models.CharField(max_length=100, unique=True)
+  name = models.CharField(max_length=100)
   opened_at = models.DateTimeField(null=True, blank=True, verbose_name="오픈 일시", help_text="사용자에게 공개된 시간")
 
   objects = JobCategoryManager()
