@@ -1,4 +1,4 @@
-import random
+import secrets
 import string
 from datetime import timedelta
 
@@ -8,6 +8,8 @@ from factory.django import DjangoModelFactory
 from users.factories.user_factory import UserFactory
 from users.models import EmailVerificationCode
 
+_CODE_ALPHABET = string.ascii_uppercase + string.digits
+
 
 class EmailVerificationCodeFactory(DjangoModelFactory):
 
@@ -15,5 +17,5 @@ class EmailVerificationCodeFactory(DjangoModelFactory):
     model = EmailVerificationCode
 
   user = factory.SubFactory(UserFactory)
-  code = factory.LazyFunction(lambda: "".join(random.choices(string.ascii_uppercase + string.digits, k=6)))
+  code = factory.LazyFunction(lambda: "".join(secrets.choice(_CODE_ALPHABET) for _ in range(6)))
   expires_at = factory.LazyFunction(lambda: timezone.now() + timedelta(minutes=10))

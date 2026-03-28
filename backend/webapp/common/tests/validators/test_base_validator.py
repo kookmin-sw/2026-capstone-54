@@ -25,7 +25,9 @@ class SimpleValidator(BaseValidator):
 class PriorityValidator(BaseValidator):
   """우선순위가 있는 검증"""
 
-  execution_order = []  # 실행 순서 추적용
+  def __init__(self, instance):
+    super().__init__(instance)
+    self.execution_order = []
 
   @validation_method(priority=10)
   def validate_high_priority(self):
@@ -49,21 +51,25 @@ class PriorityValidator(BaseValidator):
 class SamePriorityValidator(BaseValidator):
   """같은 우선순위 검증"""
 
-  execution_count = 0
+  def __init__(self, instance):
+    super().__init__(instance)
+    self.execution_count = 0
 
   @validation_method(priority=5)
   def validate_first(self):
-    SamePriorityValidator.execution_count += 1
+    self.execution_count += 1
 
   @validation_method(priority=5)
   def validate_second(self):
-    SamePriorityValidator.execution_count += 1
+    self.execution_count += 1
 
 
 class MixedValidator(BaseValidator):
   """decorator 있는 것과 없는 것 혼합"""
 
-  execution_order = []
+  def __init__(self, instance):
+    super().__init__(instance)
+    self.execution_order = []
 
   @validation_method(priority=10)
   def validate_with_decorator(self):
@@ -111,7 +117,6 @@ class BaseValidatorTest(TestCase):
 
   def test_priority_order_execution(self):
     """우선순위 순서대로 실행"""
-    PriorityValidator.execution_order = []
     model = MockModel(name="test", value=50)
     validator = PriorityValidator(model)
 
@@ -122,18 +127,16 @@ class BaseValidatorTest(TestCase):
 
   def test_same_priority_all_executed(self):
     """같은 우선순위도 모두 실행"""
-    SamePriorityValidator.execution_count = 0
     model = MockModel()
     validator = SamePriorityValidator(model)
 
     validator.validate()
 
     # 두 메서드 모두 실행되어야 함
-    self.assertEqual(SamePriorityValidator.execution_count, 2)
+    self.assertEqual(validator.execution_count, 2)
 
   def test_decorator_required_for_execution(self):
     """decorator가 없는 메서드는 실행되지 않음"""
-    MixedValidator.execution_order = []
     model = MockModel()
     validator = MixedValidator(model)
 
@@ -157,7 +160,6 @@ class BaseValidatorTest(TestCase):
 
   def test_high_priority_fails_stops_execution(self):
     """높은 우선순위에서 실패해도 낮은 우선순위도 실행됨 (모든 에러 수집)"""
-    PriorityValidator.execution_order = []
     model = MockModel(name="", value=-5)  # 두 검증 모두 실패
     validator = PriorityValidator(model)
 
@@ -187,7 +189,10 @@ class BaseValidatorTest(TestCase):
     """priority 기본값은 0"""
 
     class DefaultPriorityValidator(BaseValidator):
-      execution_order = []
+
+      def __init__(self, instance):
+        super().__init__(instance)
+        self.execution_order = []
 
       @validation_method()  # priority 지정 안 함
       def validate_default(self):

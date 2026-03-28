@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.http import HttpRequest
-from django.shortcuts import redirect
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.utils import timezone
 from profiles.models import Job
@@ -49,7 +49,7 @@ class JobAdmin(ModelAdmin):
   @action(description="직업 오픈", url_path="open-job")
   def open_job(self, request: HttpRequest, object_id: int):
     """선택한 직업을 오픈 처리"""
-    job = Job.objects.get(pk=object_id)
+    job = get_object_or_404(Job, pk=object_id)
 
     if not job.opened_at:
       job.opened_at = timezone.now()
@@ -63,7 +63,7 @@ class JobAdmin(ModelAdmin):
   @action(description="직업 닫기", url_path="close-job")
   def close_job(self, request: HttpRequest, object_id: int):
     """선택한 직업을 닫기 처리"""
-    job = Job.objects.get(pk=object_id)
+    job = get_object_or_404(Job, pk=object_id)
 
     if job.opened_at:
       job.opened_at = None
