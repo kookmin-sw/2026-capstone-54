@@ -1,6 +1,7 @@
 from api.v1.profiles.serializers import ProfileSerializer
 from common.permissions import IsEmailVerified
 from common.views import BaseAPIView
+from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema
@@ -23,22 +24,19 @@ class ProfileMeView(BaseAPIView):
     return Response(self.get_serializer(profile).data)
 
   @extend_schema(summary="내 프로필 생성/수정")
+  @transaction.atomic
   def post(self, request, *args, **kwargs):
     """프로필이 없으면 생성(201), 있으면 수정(200)."""
-    profile = Profile.objects.filter(user=self.current_user).first()
+    profile = Profile.objects.select_for_update().filter(user=self.current_user).first()
+    created = profile is None
 
-    if profile:
-      serializer = self.get_serializer(profile, data=request.data)
-      serializer.is_valid(raise_exception=True)
-      serializer.save()
-      return Response(serializer.data, status=status.HTTP_200_OK)
-
-    serializer = self.get_serializer(data=request.data)
+    serializer = self.get_serializer(profile, data=request.data)
     serializer.is_valid(raise_exception=True)
-    profile = serializer.save(user=self.current_user)
+    serializer.save(user=self.current_user)
 
-    if not request.user.profile_completed_at:
+    if created and not request.user.profile_completed_at:
       request.user.profile_completed_at = timezone.now()
       request.user.save(update_fields=["profile_completed_at"])
 
-    return Response(self.get_serializer(profile).data, status=status.HTTP_201_CREATED)
+    code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
+    return Response(serializer.data, status=code)
