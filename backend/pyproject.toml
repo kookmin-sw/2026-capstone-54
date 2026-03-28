@@ -43,5 +43,6 @@ dependencies = [
 [dependency-groups]
 test = [
     "coverage>=7.0",
+    "factory-boy>=3.3.0",
     "hypothesis>=6.151.9",
 ]
