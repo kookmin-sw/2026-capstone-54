@@ -48,7 +48,7 @@ services:
       - ${POSTGRES_PORT}:${POSTGRES_PORT}
     volumes:
       - postgres_data:/var/lib/postgresql
-      - ./environments/development/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+      - ./environments/development/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
     environment:
       POSTGRES_DB: ${DATABASE_NAME}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -62,7 +62,7 @@ services:
       - ${TEST_POSTGRES_PORT}:5432
     volumes:
       - test_postgres_data:/var/lib/postgresql
-      - ./environments/development/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+      - ./environments/development/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
     environment:
       POSTGRES_DB: ${TEST_DATABASE_NAME}
       POSTGRES_USER: ${TEST_POSTGRES_USER}

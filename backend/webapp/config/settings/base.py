@@ -18,7 +18,6 @@ from .components.celery_beat import *
 from .components.channel_layer import *
 from .components.common import *
 from .components.database import *
-from .components.file import *
 from .components.i18n import *
 from .components.installed_app import *
 from .components.logging import *
