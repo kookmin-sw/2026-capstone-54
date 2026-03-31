@@ -38,6 +38,8 @@ dependencies = [
     "django-storages[s3]>=1.14.0",
     "django-allow-cidr>=0.8.0",
     "django-cors-headers>=4.9.0",
+    "django-markdownx>=4.0.9",
+    "django-easymde>=1.0.4",
 ]
 
 [dependency-groups]
