@@ -20,6 +20,4 @@ def run_with_integrity_retry(
       if attempt == max_retries:
         if final_error_message:
           raise IntegrityError(final_error_message) from exc
-        raise
-
-  raise IntegrityError("무결성 검증 재시도 후에도 작업에 실패했습니다.")
+        raise IntegrityError("무결성 검증 재시도 후에도 작업에 실패했습니다.")
