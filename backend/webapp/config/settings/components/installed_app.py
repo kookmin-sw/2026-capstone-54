@@ -67,6 +67,7 @@ PROJECT_APPS = [
   "api",
   "profiles",
   "realtime_docs",
+  "interview",
 ]
 
 INSTALLED_APPS = ADMIN_APPS + DJANGO_APPS + PACKAGE_APPS + PROJECT_APPS
