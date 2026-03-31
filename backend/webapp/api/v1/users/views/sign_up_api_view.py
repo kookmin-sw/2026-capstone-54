@@ -1,9 +1,11 @@
 from api.v1.users.serializers import AuthResponseSerializer, SignUpSerializer
 from common.permissions import AllowAny
 from common.views import BaseAPIView
+from django.db import transaction
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.response import Response
+from terms_documents.services import AgreeToTermsDocumentService
 from users.services import SignUpService
 
 
@@ -22,11 +24,21 @@ class SignUpAPIView(BaseAPIView):
     serializer = SignUpSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     data = serializer.validated_data
-    token, user = SignUpService(
-      email=data["email"],
-      password=data["password1"],
-      name=data["name"],
-    ).perform()
+    
+    with transaction.atomic():
+      token, user = SignUpService(
+        email=data["email"],
+        password=data["password1"],
+        name=data["name"],
+      ).perform()
+
+      term_ids = data.get("terms_document_ids", [])
+      AgreeToTermsDocumentService(
+        user=user,
+        terms_document_ids=term_ids,
+        require_all_required_published=True,
+      ).perform()
+
     response_data = {
       "access": str(token.access_token),
       "refresh": str(token),
