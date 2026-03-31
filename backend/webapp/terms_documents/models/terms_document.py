@@ -1,6 +1,8 @@
 from django.db import models
+from django.db import transaction
 from django.db.models import Max
 
+from common.db import run_with_integrity_retry
 from common.models import BaseModel, BaseModelManager, BaseModelQuerySet
 from terms_documents.enums import TermsType
 
@@ -14,6 +16,8 @@ class TermsDocumentManager(BaseModelManager.from_queryset(TermsDocumentQuerySet)
 
 
 class TermsDocument(BaseModel):
+  VERSION_ASSIGN_MAX_RETRIES = 3
+
   terms_type = models.CharField(
     max_length=50,
     choices=TermsType.choices,
@@ -68,14 +72,25 @@ class TermsDocument(BaseModel):
     ]
 
   def save(self, *args, **kwargs):
-    if not self.pk:
+    if self.pk:
+      super().save(*args, **kwargs)
+      return
+
+    def save_new_terms_document():
       max_version = (
         TermsDocument.objects.filter(terms_type=self.terms_type)
         .aggregate(max=Max("version"))["max"]
         or 0
       )
       self.version = max_version + 1
-    super().save(*args, **kwargs)
+      with transaction.atomic():
+        return super(TermsDocument, self).save(*args, **kwargs)
+
+    run_with_integrity_retry(
+      save_new_terms_document,
+      max_retries=self.VERSION_ASSIGN_MAX_RETRIES,
+      final_error_message="약관 버전 할당 중 버전 충돌이 반복되어 저장에 실패했습니다.",
+    )
 
   @property
   def is_published(self):
