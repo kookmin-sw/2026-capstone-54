@@ -5,6 +5,7 @@ from hypothesis import strategies as st
 from hypothesis.extra.django import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
+from users.factories import DEFAULT_PASSWORD
 from users.models import EmailVerificationCode, User
 
 
@@ -30,8 +31,8 @@ class SignUpAPIViewPropertyTests(TestCase):
     data = {
       "name": "테스트유저",
       "email": email,
-      "password1": "ValidPass123!",
-      "password2": "ValidPass123!",
+      "password1": DEFAULT_PASSWORD,
+      "password2": DEFAULT_PASSWORD,
     }
     response = self.client.post(self.url, data, format="json")
 
@@ -91,8 +92,8 @@ class SignUpAPIViewPropertyTests(TestCase):
     data = {
       "name": "첫번째유저",
       "email": email,
-      "password1": "ValidPass123!",
-      "password2": "ValidPass123!",
+      "password1": DEFAULT_PASSWORD,
+      "password2": DEFAULT_PASSWORD,
     }
     first_response = self.client.post(self.url, data, format="json")
     self.assertEqual(first_response.status_code, status.HTTP_201_CREATED)

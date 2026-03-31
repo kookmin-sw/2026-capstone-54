@@ -65,6 +65,7 @@ PROJECT_APPS = [
   "common",
   "users",
   "api",
+  "profiles",
   "realtime_docs",
   "interview",
 ]

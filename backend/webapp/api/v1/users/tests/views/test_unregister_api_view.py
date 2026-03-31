@@ -6,6 +6,7 @@ from hypothesis.extra.django import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
+from users.factories import UserFactory
 from users.models import User
 
 
@@ -23,15 +24,10 @@ class UnregisterAPIViewPropertyTests(TestCase):
     """인증된 User가 탈퇴를 요청하면 204 응답이 반환되고 User가 소프트 삭제(deleted_at 설정)되며 개인정보가 마스킹 처리된다."""
     email = "unregister_test@example.com"
     User.objects.filter(email=email).delete()
-    # all_objects를 통해 소프트 삭제된 레코드도 정리
     if hasattr(User, "all_objects"):
       User.all_objects.filter(email=email).delete()
 
-    user = User.objects.create_user(
-      email=email,
-      password="ValidPass123!",
-      name=name,
-    )
+    user = UserFactory(email=email, name=name)
     user_pk = user.pk
 
     token = RefreshToken.for_user(user)

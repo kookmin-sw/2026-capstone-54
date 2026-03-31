@@ -1,6 +1,6 @@
 from common.exceptions import ValidationException
 from django.test import TestCase
-from users.models import User
+from users.factories import UserFactory
 from users.services.user_masking_service import UserMaskingService
 
 
@@ -8,11 +8,7 @@ class UserMaskingServiceTests(TestCase):
   """UserMaskingService 테스트"""
 
   def setUp(self):
-    self.user = User.objects.create_user(
-      email="test@example.com",
-      password="password123",
-      name="홍길동",
-    )
+    self.user = UserFactory()
 
   def test_raises_validation_exception_when_user_kwarg_missing(self):
     """user 인자가 없으면 ValidationException을 발생시킨다."""

@@ -7,6 +7,7 @@ from hypothesis.extra.django import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
+from users.factories import UserFactory
 from users.models import User
 
 
@@ -28,11 +29,7 @@ class UserMeAPIViewPropertyTests(TestCase):
     """인증된 User에 대해 GET /me 요청 시 반환되는 name/email/is_email_confirmed/is_profile_completed 값이 User 모델의 실제 값과 일치한다."""
     email = "me_test@example.com"
     User.objects.filter(email=email).delete()
-    user = User.objects.create_user(
-      email=email,
-      password="ValidPass123!",
-      name=name,
-    )
+    user = UserFactory(email=email, name=name)
 
     if is_email_confirmed:
       user.email_confirmed_at = timezone.now()
