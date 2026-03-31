@@ -58,6 +58,10 @@ PACKAGE_APPS = [
 
   # WebSocket / SSE
   "channels",
+
+  # Markdown Editor
+  "markdownx",
+  "easymde",
 ]
 
 PROJECT_APPS = [
