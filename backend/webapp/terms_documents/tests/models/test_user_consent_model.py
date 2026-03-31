@@ -1,7 +1,6 @@
 from django.db import IntegrityError
 from django.test import TestCase
 from django.utils import timezone
-
 from terms_documents.enums import TermsType
 from terms_documents.factories import TermsDocumentFactory, UserConsentFactory
 from terms_documents.models import UserConsent

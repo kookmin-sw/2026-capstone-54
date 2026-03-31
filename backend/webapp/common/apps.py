@@ -15,10 +15,7 @@ class CommonConfig(AppConfig):
 
     def get_log_entries(self, request):
       return (
-        LogEntry.objects
-        .select_related("content_type")
-        .filter(user=request.user)
-        .only(
+        LogEntry.objects.select_related("content_type").filter(user=request.user).only(
           "id",
           "action_time",
           "object_repr",
@@ -28,8 +25,7 @@ class CommonConfig(AppConfig):
           "content_type__id",
           "content_type__app_label",
           "content_type__model",
-        )
-        .order_by("-action_time")
+        ).order_by("-action_time")
       )
 
     AdminSite.get_log_entries = get_log_entries

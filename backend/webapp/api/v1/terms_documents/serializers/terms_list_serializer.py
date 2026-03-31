@@ -1,5 +1,4 @@
 from rest_framework import serializers
-
 from terms_documents.models import TermsDocument
 
 

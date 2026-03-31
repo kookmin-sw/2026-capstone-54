@@ -24,7 +24,7 @@ class SignUpAPIView(BaseAPIView):
     serializer = SignUpSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     data = serializer.validated_data
-    
+
     with transaction.atomic():
       token, user = SignUpService(
         email=data["email"],

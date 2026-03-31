@@ -1,5 +1,5 @@
-from django.db import models
 from common.models import BaseModel
+from django.db import models
 
 
 class UserConsent(BaseModel):
@@ -20,12 +20,10 @@ class UserConsent(BaseModel):
   class Meta(BaseModel.Meta):
     verbose_name = "사용자 약관 동의"
     verbose_name_plural = "사용자 약관 동의 목록"
-    constraints = [
-      models.UniqueConstraint(
-        fields=["user", "terms_document"],
-        name="unique_user_terms_consent",
-      )
-    ]
+    constraints = [models.UniqueConstraint(
+      fields=["user", "terms_document"],
+      name="unique_user_terms_consent",
+    )]
 
   def __str__(self):
     return f"{self.user} - {self.terms_document}"

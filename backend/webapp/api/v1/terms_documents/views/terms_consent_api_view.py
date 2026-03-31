@@ -1,9 +1,9 @@
+from api.v1.terms_documents.serializers import TermsConsentRequestSerializer, UserConsentSerializer
+from common.permissions import IsAuthenticated
 from common.views import BaseAPIView
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.response import Response
-from common.permissions import IsAuthenticated
-from api.v1.terms_documents.serializers import TermsConsentRequestSerializer, UserConsentSerializer
 from terms_documents.models import UserConsent
 from terms_documents.services import AgreeToTermsDocumentService
 

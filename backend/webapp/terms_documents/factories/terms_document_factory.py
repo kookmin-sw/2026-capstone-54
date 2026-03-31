@@ -1,7 +1,6 @@
 import factory
-from factory.django import DjangoModelFactory
 from django.utils import timezone
-
+from factory.django import DjangoModelFactory
 from terms_documents.enums import TermsType
 from terms_documents.models import TermsDocument
 

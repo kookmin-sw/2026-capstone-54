@@ -1,9 +1,8 @@
+from api.v1.terms_documents.serializers import TermsListSerializer
 from common.permissions import AllowAny
 from common.views import BaseAPIView
 from drf_spectacular.utils import extend_schema
 from rest_framework.response import Response
-
-from api.v1.terms_documents.serializers import TermsListSerializer
 from terms_documents.models import TermsDocument
 
 

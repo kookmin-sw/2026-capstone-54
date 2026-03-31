@@ -1,9 +1,8 @@
 from django import forms
 from django.contrib import admin
 from easymde.widgets import EasyMDEEditor
-from unfold.admin import ModelAdmin
-
 from terms_documents.models import TermsDocument
+from unfold.admin import ModelAdmin
 
 
 class TermsDocumentAdminForm(forms.ModelForm):
@@ -35,8 +34,8 @@ class TermsDocumentAdmin(ModelAdmin):
     "published_at",
     "is_required",
   )
-  search_fields = ("title",)
-  ordering = ("-created_at",)
+  search_fields = ("title", )
+  ordering = ("-created_at", )
   readonly_fields = (
     "version",
     "created_at",
@@ -55,7 +54,7 @@ class TermsDocumentAdmin(ModelAdmin):
       ),
     }),
     ("내용", {
-      "fields": ("content",),
+      "fields": ("content", ),
     }),
     ("날짜", {
       "fields": (

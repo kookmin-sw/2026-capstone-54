@@ -1,7 +1,7 @@
-from django.db import IntegrityError
-from django.test import TestCase
 from unittest.mock import patch
 
+from django.db import IntegrityError
+from django.test import TestCase
 from terms_documents.enums import TermsType
 from terms_documents.factories import TermsDocumentFactory
 from terms_documents.models import TermsDocument

@@ -1,8 +1,6 @@
-from django.utils import timezone
-
 from common.services import BaseService
-from rest_framework.exceptions import NotFound
-from rest_framework.exceptions import ValidationError
+from django.utils import timezone
+from rest_framework.exceptions import NotFound, ValidationError
 from terms_documents.models import TermsDocument, UserConsent
 
 
@@ -74,12 +72,8 @@ class AgreeToTermsDocumentService(BaseService):
     missing_required_terms_ids = sorted(required_published_terms_ids - set(terms_document_ids))
     if missing_required_terms_ids:
       raise ValidationError(
-        detail={
-          "terms_document_ids": (
-            "필수 공개 약관에 모두 동의해야 회원가입할 수 있습니다. "
-            f"누락된 약관 ID: {missing_required_terms_ids}"
-          )
-        }
+        detail={"terms_document_ids": ("필수 공개 약관에 모두 동의해야 회원가입할 수 있습니다. "
+                                       f"누락된 약관 ID: {missing_required_terms_ids}")}
       )
 
   def _prepare_consents(self, unique_terms_document_ids, published_terms_by_id, consent_by_terms_id, now):

@@ -1,12 +1,12 @@
-from django.db import models
-from django.db import transaction
-from django.db.models import Max
-
 from common.db import run_with_integrity_retry
 from common.models import BaseModel, BaseModelManager, BaseModelQuerySet
+from django.db import models, transaction
+from django.db.models import Max
 from terms_documents.enums import TermsType
 
+
 class TermsDocumentQuerySet(BaseModelQuerySet):
+
   def published(self):
     return self.filter(published_at__isnull=False)
 
@@ -32,15 +32,13 @@ class TermsDocument(BaseModel):
     max_length=200,
     verbose_name="제목",
   )
-  content = models.TextField(
-    verbose_name="내용 (마크다운)",
-  )  
-  
+  content = models.TextField(verbose_name="내용 (마크다운)", )
+
   is_required = models.BooleanField(
     default=True,
     verbose_name="필수 동의 여부",
   )
-  
+
   published_at = models.DateTimeField(
     null=True,
     blank=True,
@@ -77,11 +75,7 @@ class TermsDocument(BaseModel):
       return
 
     def save_new_terms_document():
-      max_version = (
-        TermsDocument.objects.filter(terms_type=self.terms_type)
-        .aggregate(max=Max("version"))["max"]
-        or 0
-      )
+      max_version = (TermsDocument.objects.filter(terms_type=self.terms_type).aggregate(max=Max("version"))["max"] or 0)
       self.version = max_version + 1
       with transaction.atomic():
         return super(TermsDocument, self).save(*args, **kwargs)

@@ -1,7 +1,6 @@
 from django.test import TestCase
 from django.utils import timezone
 from rest_framework.exceptions import NotFound
-
 from terms_documents.enums import TermsType
 from terms_documents.factories import TermsDocumentFactory
 from terms_documents.models import UserConsent
@@ -22,9 +21,7 @@ class AgreeToTermsDocumentServiceTests(TestCase):
   def test_creates_consent_record_for_published_document(self):
     """공개된 약관 ID를 전달하면 사용자 동의 이력이 새로 생성되는지 확인한다."""
     AgreeToTermsDocumentService(user=self.user, terms_document_ids=[self.terms_document.id]).perform()
-    self.assertTrue(
-      UserConsent.objects.filter(user=self.user, terms_document=self.terms_document).exists()
-    )
+    self.assertTrue(UserConsent.objects.filter(user=self.user, terms_document=self.terms_document).exists())
 
   def test_returns_created_consent_list(self):
     """서비스 실행 결과가 생성/갱신된 UserConsent 객체 리스트 형태로 반환되는지 검증한다."""
@@ -60,9 +57,7 @@ class AgreeToTermsDocumentServiceTests(TestCase):
     first = AgreeToTermsDocumentService(user=self.user, terms_document_ids=[self.terms_document.id]).perform()
     second = AgreeToTermsDocumentService(user=self.user, terms_document_ids=[self.terms_document.id]).perform()
 
-    self.assertEqual(
-      UserConsent.objects.filter(user=self.user, terms_document=self.terms_document).count(), 1
-    )
+    self.assertEqual(UserConsent.objects.filter(user=self.user, terms_document=self.terms_document).count(), 1)
     self.assertGreaterEqual(second[0].agreed_at, first[0].agreed_at)
 
   def test_raises_not_found_for_unpublished_document(self):

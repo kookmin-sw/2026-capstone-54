@@ -1,6 +1,5 @@
-from rest_framework import serializers
-
 from api.v1.terms_documents.serializers.terms_list_serializer import TermsListSerializer
+from rest_framework import serializers
 from terms_documents.models import UserConsent
 
 
