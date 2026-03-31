@@ -27,16 +27,20 @@ class ProfileMeView(BaseAPIView):
   @transaction.atomic
   def post(self, request, *args, **kwargs):
     """프로필이 없으면 생성(201), 있으면 수정(200)."""
-    profile = Profile.objects.select_for_update().filter(user=self.current_user).first()
+    # User 레코드에 먼저 락을 걸어 동시 요청 시 프로필 중복 생성 방지
+    from users.models import User
+    User.objects.select_for_update().filter(id=self.current_user.id).first()
+
+    profile = Profile.objects.filter(user=self.current_user).first()
     created = profile is None
 
     serializer = self.get_serializer(profile, data=request.data)
     serializer.is_valid(raise_exception=True)
     serializer.save(user=self.current_user)
 
-    if created and not request.user.profile_completed_at:
-      request.user.profile_completed_at = timezone.now()
-      request.user.save(update_fields=["profile_completed_at"])
+    if not self.current_user.profile_completed_at:
+      self.current_user.profile_completed_at = timezone.now()
+      self.current_user.save(update_fields=["profile_completed_at"])
 
     code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
     return Response(serializer.data, status=code)

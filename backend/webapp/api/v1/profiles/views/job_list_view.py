@@ -13,6 +13,7 @@ class JobListView(BaseListAPIView):
   filter_backends = [TrigramSearchFilter]
   search_fields = ["name"]
   trigram_threshold = 0.1
+  trigram_limit = 10
 
   def get_queryset(self):
     job_category_id = self.kwargs.get("job_category_id")

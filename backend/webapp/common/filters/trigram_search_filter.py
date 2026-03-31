@@ -1,4 +1,5 @@
 from django.contrib.postgres.search import TrigramSimilarity
+from django.db import models
 from django.db.models.functions import Greatest
 from rest_framework.filters import SearchFilter
 
@@ -35,7 +36,7 @@ class TrigramSearchFilter(SearchFilter):
     queryset = queryset.annotate(**similarity_annotations)
 
     if len(similarity_annotations) == 1:
-      similarity_expr = list(similarity_annotations.values())[0]
+      similarity_expr = models.F(list(similarity_annotations.keys())[0])
     else:
       similarity_expr = Greatest(*similarity_annotations.keys())
 
