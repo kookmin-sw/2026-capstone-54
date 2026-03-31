@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib import admin
+from django.db import transaction
 from easymde.widgets import EasyMDEEditor
 from terms_documents.models import TermsDocument
 from unfold.admin import ModelAdmin
@@ -63,3 +64,10 @@ class TermsDocumentAdmin(ModelAdmin):
       ),
     }),
   )
+
+  def save_model(self, request, obj, form, change):
+    with transaction.atomic():
+      if obj.published_at:
+        TermsDocument.objects.filter(terms_type=obj.terms_type,
+                                     published_at__isnull=False).exclude(pk=obj.pk).update(published_at=None)
+      super().save_model(request, obj, form, change)
