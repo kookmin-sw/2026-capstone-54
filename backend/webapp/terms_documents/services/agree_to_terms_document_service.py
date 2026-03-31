@@ -15,8 +15,8 @@ class AgreeToTermsDocumentService(BaseService):
     require_all_required_published = self.kwargs.get("require_all_required_published", False)
     unique_terms_document_ids = list(dict.fromkeys(terms_document_ids))
     now = timezone.now()
-    published_terms_by_id = self._get_published_terms_by_id(terms_document_ids)
-    self._validate_terms_document_ids(terms_document_ids, published_terms_by_id)
+    published_terms_by_id = self._get_published_terms_by_id(unique_terms_document_ids)
+    self._validate_terms_document_ids(unique_terms_document_ids, published_terms_by_id)
     self._validate_required_terms_agreed(
       terms_document_ids=unique_terms_document_ids,
       require_all_required_published=require_all_required_published,
