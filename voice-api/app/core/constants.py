@@ -15,6 +15,14 @@ class VoiceInfo(TypedDict):
     gender: str
 
 
+class ParameterRangeDict(TypedDict):
+    min: str
+    max: str
+    default: str
+    description: str
+    examples: list[str]
+
+
 # Supported languages
 LANGUAGES: list[LanguageInfo] = [
     {"code": "ko", "name": "Korean"},
@@ -108,7 +116,7 @@ DEFAULT_VOICES = {lang: voices[0]["name"] for lang, voices in VOICES_BY_LANGUAGE
 
 
 # Voice parameter ranges
-RATE_RANGE = {
+RATE_RANGE: ParameterRangeDict = {
     "min": "-50%",
     "max": "+100%",
     "default": "+0%",
@@ -116,7 +124,7 @@ RATE_RANGE = {
     "examples": ["-50%", "-25%", "+0%", "+25%", "+50%", "+100%"],
 }
 
-VOLUME_RANGE = {
+VOLUME_RANGE: ParameterRangeDict = {
     "min": "-50%",
     "max": "+100%",
     "default": "+0%",
@@ -124,7 +132,7 @@ VOLUME_RANGE = {
     "examples": ["-50%", "-25%", "+0%", "+25%", "+50%", "+100%"],
 }
 
-PITCH_RANGE = {
+PITCH_RANGE: ParameterRangeDict = {
     "min": "-50Hz",
     "max": "+50Hz",
     "default": "+0Hz",
