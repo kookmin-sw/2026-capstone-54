@@ -10,15 +10,11 @@ class StreakLog(BaseModel):
     verbose_name = "스트릭 로그"
     verbose_name_plural = "스트릭 로그 목록"
     constraints = [models.UniqueConstraint(
-      fields=["user", "log_date"],
+      fields=["user", "date"],
       name="unique_streak_log_user_date",
     )]
     indexes = [
       *BaseModel.Meta.indexes,
-      models.Index(
-        fields=["user", "log_date"],
-        name="streak_log_user_date_idx",
-      ),
     ]
 
   user = models.ForeignKey(

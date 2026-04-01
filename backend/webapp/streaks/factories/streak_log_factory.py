@@ -10,5 +10,5 @@ class StreakLogFactory(DjangoModelFactory):
     model = StreakLog
 
   user = factory.SubFactory("users.factories.UserFactory")
-  log_date = factory.LazyFunction(timezone.localdate)
+  date = factory.LazyFunction(timezone.localdate)
   interview_results_count = 1
