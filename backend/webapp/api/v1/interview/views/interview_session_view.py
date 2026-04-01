@@ -5,6 +5,7 @@ from api.v1.interview.serializers import (
 )
 from common.permissions import AllowAny
 from common.views import BaseAPIView
+from django.utils import timezone
 from drf_spectacular.utils import extend_schema
 from interview.models import InterviewSession
 from rest_framework import status
@@ -21,7 +22,7 @@ class InterviewSessionAPIView(BaseAPIView):
   def post(self, request):
     serializer = InterviewSessionCreateSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    session = serializer.save()
+    session = serializer.save(started_at=timezone.now())
     return Response(InterviewSessionSerializer(session).data, status=status.HTTP_201_CREATED)
 
 
@@ -37,4 +38,13 @@ class InterviewSessionDetailAPIView(BaseAPIView):
     serializer = InterviewSessionUpdateSerializer(session, data=request.data, partial=True)
     serializer.is_valid(raise_exception=True)
     serializer.save()
+
+    # 종료 시간 및 상태 자동 계산
+    if session.status == InterviewSession.Status.IN_PROGRESS:
+      session.finished_at = timezone.now()
+      session.status = InterviewSession.Status.COMPLETED
+      if session.started_at:
+        session.duration_seconds = int((session.finished_at - session.started_at).total_seconds())
+      session.save(update_fields=["finished_at", "status", "duration_seconds"])
+
     return Response(InterviewSessionSerializer(session).data)
