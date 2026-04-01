@@ -25,29 +25,31 @@ jobs:
   generate-coverage:
     runs-on: ubuntu-latest
 
-    services:
-      postgres:
-        image: postgres:14
-        env:
-          POSTGRES_DB: ${{ env.DATABASE_NAME }}
-          POSTGRES_USER: ${{ env.POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.CI_POSTGRES_PASSWORD }}
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
-
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
+
+      - name: Build custom PostgreSQL image
+        run: docker build -t custom-postgres -f environments/development/Dockerfile.postgres environments/development/
+
+      - name: Start PostgreSQL
+        run: |
+          docker run -d \
+            --name postgres \
+            -e POSTGRES_DB=${{ env.DATABASE_NAME }} \
+            -e POSTGRES_USER=${{ env.POSTGRES_USER }} \
+            -e POSTGRES_PASSWORD=${{ secrets.CI_POSTGRES_PASSWORD }} \
+            -v ${{ github.workspace }}/environments/development/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh \
+            -p 5432:5432 \
+            custom-postgres
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
           python-version: '3.12'
 
       - name: Cache uv dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v5
         with:
           path: ~/.cache/uv
           key: ${{ runner.os }}-uv-${{ hashFiles('**/uv.lock') }}
