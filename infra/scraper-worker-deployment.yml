@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mefit-production-scraper-worker
+  namespace: mefit-backend-production
+  labels:
+    app: mefit-production-scraper-worker
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: mefit-production-scraper-worker
+  template:
+    metadata:
+      labels:
+        app: mefit-production-scraper-worker
+    spec:
+      imagePullSecrets:
+        - name: mefit-production-dockerhub
+      containers:
+        - name: scraper-worker
+          image: teammefit/mefit-scraper:production
+          imagePullPolicy: Always
+          env:
+            - name: SCRAPER_CONCURRENCY
+              valueFrom:
+                configMapKeyRef:
+                  name: mefit-production-scraper-env
+                  key: SCRAPER_CONCURRENCY
+          envFrom:
+            - configMapRef:
+                name: mefit-production-scraper-env
+            - secretRef:
+                name: mefit-production-scraper-secret
+          resources:
+            requests:
+              cpu: "200m"
+              # SCRAPER_CONCURRENCY=2 기준: Chromium 2개 × 300Mi + 여유
+              memory: "900Mi"
+            limits:
+              # 실제 스크래핑 시 spike를 허용하는 limit
+              cpu: "1500m"
+              memory: "2Gi"
+          # Chromium이 /dev/shm(공유 메모리)을 대용량으로 필요로 함
+          # 미설정 시 64MB 기본값으로 인해 렌더링 오류 발생
+          volumeMounts:
+            - mountPath: /dev/shm
+              name: dshm
+      volumes:
+        - name: dshm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 512Mi
