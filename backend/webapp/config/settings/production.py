@@ -4,6 +4,8 @@ from .base import *  # noqa: F401, F403
 
 ENVIRONMENT = "production"
 
+FLOWER_INTERNAL_URL = "http://mefit-production-flower:5555"
+
 SIMPLE_JWT = {
   **SIMPLE_JWT,  # noqa: F405
   "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),

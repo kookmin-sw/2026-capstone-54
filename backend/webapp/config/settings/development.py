@@ -12,6 +12,8 @@ from .base import *  # noqa: F401, F403
 DEBUG = True
 ENVIRONMENT = "development"
 
+FLOWER_INTERNAL_URL = "http://flower:5555"
+
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'  # noqa: F405
 
