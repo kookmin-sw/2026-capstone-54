@@ -11,12 +11,18 @@ from django.db import models
 class InterviewSession(BaseModel):
   """면접 시뮬레이션 세션 1회 실행 단위."""
 
+  class DifficultyLevel(models.TextChoices):
+    FRIENDLY = "friendly", "친절"
+    NORMAL = "normal", "보통"
+    PRESSURE = "pressure", "압박"
+
   class Meta(BaseModel.Meta):
     db_table = "interview_sessions"
     verbose_name = "Interview Session"
     verbose_name_plural = "Interview Sessions"
 
   model_name = models.CharField(max_length=50)
+  difficulty_level = models.CharField(max_length=10, choices=DifficultyLevel.choices, default=DifficultyLevel.NORMAL)
   total_input_tokens = models.IntegerField(default=0)
   total_output_tokens = models.IntegerField(default=0)
   total_tokens = models.IntegerField(default=0)

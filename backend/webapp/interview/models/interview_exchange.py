@@ -19,7 +19,6 @@ class InterviewExchange(BaseModel):
     verbose_name = "Interview Exchange"
     verbose_name_plural = "Interview Exchanges"
 
-
   """
   session = 어떤 세션인지
   exchange_type = 초기질문인지, 꼬리질문인지
@@ -36,7 +35,6 @@ class InterviewExchange(BaseModel):
   input_tokens = models.IntegerField(default=0)
   output_tokens = models.IntegerField(default=0)
   total_tokens = models.IntegerField(default=0)
-
 
   def __str__(self):
     return f"Exchange {self.id} | {self.exchange_type} depth={self.depth}"
