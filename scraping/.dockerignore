@@ -1,0 +1,30 @@
+# 가상환경 (이미지 안에서 새로 설치)
+.venv/
+
+# 로컬 결과물
+output/
+
+# 환경 변수 (절대 이미지에 포함하면 안 됨)
+.env
+.env.*
+
+# Git
+.git/
+.gitignore
+
+# 문서
+*.md
+PROGRESS.md
+
+# Python 캐시
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# IDE
+.vscode/
+.idea/
+
+# Claude 메모리
+.claude/
