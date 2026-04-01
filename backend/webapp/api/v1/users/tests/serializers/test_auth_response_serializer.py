@@ -1,6 +1,6 @@
 from api.v1.users.serializers import AuthResponseSerializer, UserMeSerializer
 from django.test import TestCase
-from users.models import User
+from users.factories import UserFactory
 
 
 class AuthResponseSerializerTests(TestCase):
@@ -27,11 +27,7 @@ class AuthResponseSerializerTests(TestCase):
 class UserMeSerializerTests(TestCase):
 
   def setUp(self):
-    self.user = User.objects.create_user(
-      email="test@example.com",
-      password="password123",
-      name="홍길동",
-    )
+    self.user = UserFactory(email="test@example.com", name="홍길동")
 
   def test_serializes_user_info(self):
     """유저 정보를 직렬화한다"""

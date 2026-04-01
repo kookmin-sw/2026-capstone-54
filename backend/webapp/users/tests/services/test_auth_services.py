@@ -4,6 +4,7 @@ from common.exceptions import UnauthorizedException, ValidationException
 from django.test import TestCase, override_settings
 from django.utils import timezone
 from rest_framework_simplejwt.tokens import RefreshToken
+from users.factories import DEFAULT_PASSWORD, EmailVerificationCodeFactory, UserFactory
 from users.models import EmailVerificationCode, User
 from users.services import (
   ResendVerifyEmailService,
@@ -22,18 +23,18 @@ class SignUpServiceTests(TestCase):
 
   def test_creates_user(self):
     """SignUpService 실행 시 User가 생성된다"""
-    SignUpService(email="signup@example.com", password="Pass123!", name="유저").perform()
+    SignUpService(email="signup@example.com", password=DEFAULT_PASSWORD, name="유저").perform()
     self.assertTrue(User.objects.filter(email="signup@example.com").exists())
 
   def test_returns_refresh_token(self):
     """SignUpService는 RefreshToken을 반환한다"""
-    token = SignUpService(email="signup2@example.com", password="Pass123!", name="유저").perform()
+    token, _ = SignUpService(email="signup2@example.com", password=DEFAULT_PASSWORD, name="유저").perform()
     self.assertIsNotNone(token)
     self.assertTrue(hasattr(token, "access_token"))
 
   def test_sends_verification_email(self):
     """SignUpService 실행 시 EmailVerificationCode가 생성된다"""
-    SignUpService(email="signup3@example.com", password="Pass123!", name="유저").perform()
+    SignUpService(email="signup3@example.com", password=DEFAULT_PASSWORD, name="유저").perform()
     user = User.objects.get(email="signup3@example.com")
     self.assertTrue(EmailVerificationCode.objects.filter(user=user).exists())
 
@@ -41,11 +42,11 @@ class SignUpServiceTests(TestCase):
 class SignInServiceTests(TestCase):
 
   def setUp(self):
-    self.user = User.objects.create_user(email="signin@example.com", password="Pass123!", name="유저")
+    self.user = UserFactory(email="signin@example.com")
 
   def test_valid_credentials_returns_token(self):
     """올바른 자격 증명으로 로그인하면 토큰이 반환된다"""
-    token = SignInService(email="signin@example.com", password="Pass123!").perform()
+    token = SignInService(email="signin@example.com", password=DEFAULT_PASSWORD).perform()
     self.assertIsNotNone(token)
 
   def test_wrong_password_raises_unauthorized(self):
@@ -56,14 +57,14 @@ class SignInServiceTests(TestCase):
   def test_nonexistent_email_raises_unauthorized(self):
     """존재하지 않는 이메일로 로그인하면 UnauthorizedException이 발생한다"""
     with self.assertRaises(UnauthorizedException):
-      SignInService(email="nobody@example.com", password="Pass123!").perform()
+      SignInService(email="nobody@example.com", password=DEFAULT_PASSWORD).perform()
 
 
 class SignOutServiceTests(TestCase):
 
   def setUp(self):
-    self.user = User.objects.create_user(email="signout@example.com", password="Pass123!", name="유저")
-    self.other_user = User.objects.create_user(email="other@example.com", password="Pass123!", name="다른유저")
+    self.user = UserFactory(email="signout@example.com")
+    self.other_user = UserFactory(email="other@example.com")
 
   def test_valid_token_is_blacklisted(self):
     """유효한 refresh 토큰으로 로그아웃하면 토큰이 블랙리스트에 등록된다"""
@@ -89,8 +90,8 @@ class SignOutServiceTests(TestCase):
 class VerifyEmailServiceTests(TestCase):
 
   def setUp(self):
-    self.user = User.objects.create_user(email="verify@example.com", password="Pass123!", name="유저")
-    self.code_obj = EmailVerificationCode.objects.create(
+    self.user = UserFactory(email="verify@example.com")
+    self.code_obj = EmailVerificationCodeFactory(
       user=self.user,
       code="ABC123",
       expires_at=timezone.now() + timedelta(minutes=10),
@@ -133,8 +134,8 @@ class VerifyEmailServiceTests(TestCase):
 class ResendVerifyEmailServiceTests(TestCase):
 
   def setUp(self):
-    self.user = User.objects.create_user(email="resend@example.com", password="Pass123!", name="유저")
-    self.old_code = EmailVerificationCode.objects.create(
+    self.user = UserFactory(email="resend@example.com")
+    self.old_code = EmailVerificationCodeFactory(
       user=self.user,
       code="OLD123",
       expires_at=timezone.now() - timedelta(minutes=1),  # 이미 만료된 코드

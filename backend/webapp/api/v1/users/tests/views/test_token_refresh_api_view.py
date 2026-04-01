@@ -5,6 +5,7 @@ from hypothesis.extra.django import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
+from users.factories import UserFactory
 from users.models import User
 
 
@@ -15,11 +16,7 @@ class TokenRefreshAPIViewPropertyTests(TestCase):
     self.client = APIClient()
     self.url = reverse("token-refresh")
     User.objects.filter(email="tokenrefresh@example.com").delete()
-    self.user = User.objects.create_user(
-      email="tokenrefresh@example.com",
-      password="ValidPass123!",
-      name="테스트유저",
-    )
+    self.user = UserFactory(email="tokenrefresh@example.com")
 
   @given(st.just(None))
   @settings(max_examples=10, deadline=None)

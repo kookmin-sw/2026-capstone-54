@@ -12,6 +12,29 @@ from .base import *  # noqa: F401, F403
 DEBUG = True
 ENVIRONMENT = "development"
 
+FLOWER_INTERNAL_URL = "http://flower:5555"
+
+# ── CORS / CSRF 설정 (개발 환경) ──
+CORS_ALLOWED_ORIGINS = [
+  # 프론트엔드 로컬 개발 (Vite)
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "http://127.0.0.1:5173",
+  "http://127.0.0.1:5174",
+  # Docker 네트워크 내부
+  "http://voice-fe:5173",
+]
+
+CSRF_TRUSTED_ORIGINS = [
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "http://127.0.0.1:5173",
+  "http://127.0.0.1:5174",
+]
+
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_ALL_ORIGINS = False
+
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'  # noqa: F405
 

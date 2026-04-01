@@ -1,12 +1,11 @@
 from common.models.base_model import BaseModel
 from common.views import BaseViewSet
-from django.contrib.auth import get_user_model
 from django.db import models
 from django.test import TestCase
 from rest_framework import serializers, status
 from rest_framework.test import APIRequestFactory
+from users.factories import UserFactory
 
-User = get_user_model()
 factory = APIRequestFactory()
 
 
@@ -34,10 +33,7 @@ class BaseViewSetAuthTest(TestCase):
   """BaseViewSet 인증 테스트"""
 
   def setUp(self):
-    self.user = User.objects.create_user(
-      email="test@example.com",
-      password="testpass123",
-    )
+    self.user = UserFactory()
     self.list_view = DummyViewSet.as_view({"get": "list"})
     self.create_view = DummyViewSet.as_view({"post": "create"})
 

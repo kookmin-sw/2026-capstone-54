@@ -41,6 +41,11 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      flower:
+        condition: service_started
+    networks:
+      - default
+      - mefit-local
 
   postgres:
     <<: *postgres-base
@@ -48,7 +53,7 @@ services:
       - ${POSTGRES_PORT}:${POSTGRES_PORT}
     volumes:
       - postgres_data:/var/lib/postgresql
-      - ./environments/development/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+      - ./environments/development/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
     environment:
       POSTGRES_DB: ${DATABASE_NAME}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -62,7 +67,7 @@ services:
       - ${TEST_POSTGRES_PORT}:5432
     volumes:
       - test_postgres_data:/var/lib/postgresql
-      - ./environments/development/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+      - ./environments/development/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
     environment:
       POSTGRES_DB: ${TEST_DATABASE_NAME}
       POSTGRES_USER: ${TEST_POSTGRES_USER}
@@ -80,6 +85,9 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
+    networks:
+      - default
+      - mefit-local
 
   celery-worker:
     <<: *celery-base
@@ -89,7 +97,7 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    command: celery -A config worker -l INFO
+    command: celery -A config worker -l INFO -E
 
   celery-beat:
     <<: *celery-base
@@ -101,6 +109,28 @@ services:
         condition: service_healthy
     command: celery -A config beat -l INFO
 
+  flower:
+    image: mher/flower:2.0
+    container_name: mefit-flower
+    depends_on:
+      redis:
+        condition: service_healthy
+    command: >
+      celery --broker=redis://redis:6379/0
+      flower
+      --port=5555
+      --url-prefix=admin/flower
+    ports:
+      - "5555:5555"
+    restart: always
+    networks:
+      - default
+      - mefit-local
+
 volumes:
   postgres_data:
   test_postgres_data:
+
+networks:
+  mefit-local:
+    external: true
