@@ -43,6 +43,9 @@ services:
         condition: service_healthy
       flower:
         condition: service_started
+    networks:
+      - default
+      - mefit-local
 
   postgres:
     <<: *postgres-base
