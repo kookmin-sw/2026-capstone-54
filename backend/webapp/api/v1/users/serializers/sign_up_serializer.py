@@ -9,6 +9,12 @@ class SignUpSerializer(serializers.Serializer):
   email = serializers.EmailField()
   password1 = serializers.CharField(write_only=True)
   password2 = serializers.CharField(write_only=True)
+  terms_document_ids = serializers.ListField(
+    child=serializers.IntegerField(),
+    required=False,
+    default=list,
+    write_only=True,
+  )
 
   def validate_email(self, value):
     if User.objects.filter(email=value).exists():
