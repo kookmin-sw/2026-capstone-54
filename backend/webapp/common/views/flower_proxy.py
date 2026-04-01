@@ -6,6 +6,7 @@ from urllib.parse import urlparse
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
+from django.views.decorators.csrf import csrf_exempt
 
 _FLOWER_BASE = settings.FLOWER_INTERNAL_URL
 
@@ -15,6 +16,7 @@ if _scheme not in {"http", "https"}:
   raise ValueError(f"FLOWER_INTERNAL_URL scheme must be http or https, got: {_scheme!r}")
 
 
+@csrf_exempt
 def flower_proxy(request: HttpRequest, path: str = "") -> HttpResponse:
   """내부 Flower 서비스로 요청을 포워딩합니다."""
   target = f"{_FLOWER_BASE}/admin/flower/{path}"
@@ -22,7 +24,15 @@ def flower_proxy(request: HttpRequest, path: str = "") -> HttpResponse:
     target += f"?{qs}"
 
   try:
-    proxy_req = urllib.request.Request(url=target, method=request.method)
+    proxy_req = urllib.request.Request(
+      url=target,
+      method=request.method,
+      data=request.body or None,
+      headers={
+        k: v
+        for k, v in request.headers.items() if k.lower() not in {"host", "content-length", "accept-encoding"}
+      },
+    )
     with urllib.request.urlopen(proxy_req, timeout=15) as resp:  # noqa: S310
       return HttpResponse(
         content=resp.read(),
