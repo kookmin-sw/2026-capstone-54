@@ -10,7 +10,9 @@ from rest_framework.response import Response
 class InterviewExchangeAPIView(BaseAPIView):
   permission_classes = [AllowAny]
 
-  @extend_schema(summary="질문-답변 저장", request=InterviewExchangeCreateSerializer, responses={201: InterviewExchangeSerializer})
+  @extend_schema(
+    summary="질문-답변 저장", request=InterviewExchangeCreateSerializer, responses={201: InterviewExchangeSerializer}
+  )
   def post(self, request):
     serializer = InterviewExchangeCreateSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)

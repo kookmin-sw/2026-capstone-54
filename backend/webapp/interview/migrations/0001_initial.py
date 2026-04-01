@@ -4,7 +4,6 @@
 
 """
 
-
 import common.models.base_model
 import django.db.models.deletion
 from django.db import migrations, models
@@ -12,65 +11,75 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    initial = True
+  initial = True
 
-    dependencies = [
-    ]
+  dependencies = []
 
-    # InterviewSession 테이블 (토큰 관련 칼럼들)
-    operations = [
-        migrations.CreateModel(
-            name='InterviewSession',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('model_name', models.CharField(max_length=50)),
-                ('total_input_tokens', models.IntegerField(default=0)),
-                ('total_output_tokens', models.IntegerField(default=0)),
-                ('total_tokens', models.IntegerField(default=0)),
-                ('total_cost_usd', models.DecimalField(decimal_places=6, default=0, max_digits=10)),
-                ('is_auto', models.BooleanField(default=False)),
-            ],
-            options={
-                'verbose_name': 'Interview Session',
-                'verbose_name_plural': 'Interview Sessions',
-                'db_table': 'interview_sessions',
-                'ordering': ['-created_at'],
-                'get_latest_by': 'created_at',
-                'abstract': False,
-                'indexes': [models.Index(fields=['-created_at'], name='interview_s_created_221aa9_idx'), models.Index(fields=['-updated_at'], name='interview_s_updated_a6c3b0_idx')],
-            },
-            managers=[
-                ('objects', common.models.base_model.BaseModelManager()),
-            ],
+  # InterviewSession 테이블 (토큰 관련 칼럼들)
+  operations = [
+    migrations.CreateModel(
+      name='InterviewSession',
+      fields=[
+        ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+        ('created_at', models.DateTimeField(auto_now_add=True)),
+        ('updated_at', models.DateTimeField(auto_now=True)),
+        ('model_name', models.CharField(max_length=50)),
+        ('total_input_tokens', models.IntegerField(default=0)),
+        ('total_output_tokens', models.IntegerField(default=0)),
+        ('total_tokens', models.IntegerField(default=0)),
+        ('total_cost_usd', models.DecimalField(decimal_places=6, default=0, max_digits=10)),
+        ('is_auto', models.BooleanField(default=False)),
+      ],
+      options={
+        'verbose_name': 'Interview Session',
+        'verbose_name_plural': 'Interview Sessions',
+        'db_table': 'interview_sessions',
+        'ordering': ['-created_at'],
+        'get_latest_by': 'created_at',
+        'abstract': False,
+        'indexes': [
+          models.Index(fields=['-created_at'], name='interview_s_created_221aa9_idx'),
+          models.Index(fields=['-updated_at'], name='interview_s_updated_a6c3b0_idx')
+        ],
+      },
+      managers=[
+        ('objects', common.models.base_model.BaseModelManager()),
+      ],
+    ),
+    migrations.CreateModel(
+      name='InterviewExchange',
+      fields=[
+        ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+        ('created_at', models.DateTimeField(auto_now_add=True)),
+        ('updated_at', models.DateTimeField(auto_now=True)),
+        ('exchange_type', models.CharField(choices=[('initial', '초기 질문'), ('followup', '꼬리질문')], max_length=10)),
+        ('depth', models.IntegerField(default=0)),
+        ('question', models.TextField()),
+        ('answer', models.TextField()),
+        ('input_tokens', models.IntegerField(default=0)),
+        ('output_tokens', models.IntegerField(default=0)),
+        ('total_tokens', models.IntegerField(default=0)),
+        (
+          'session',
+          models.ForeignKey(
+            on_delete=django.db.models.deletion.CASCADE, related_name='exchanges', to='interview.interviewsession'
+          )
         ),
-        migrations.CreateModel(
-            name='InterviewExchange',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('exchange_type', models.CharField(choices=[('initial', '초기 질문'), ('followup', '꼬리질문')], max_length=10)),
-                ('depth', models.IntegerField(default=0)),
-                ('question', models.TextField()),
-                ('answer', models.TextField()),
-                ('input_tokens', models.IntegerField(default=0)),
-                ('output_tokens', models.IntegerField(default=0)),
-                ('total_tokens', models.IntegerField(default=0)),
-                ('session', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='exchanges', to='interview.interviewsession')),
-            ],
-            options={
-                'verbose_name': 'Interview Exchange',
-                'verbose_name_plural': 'Interview Exchanges',
-                'db_table': 'interview_exchanges',
-                'ordering': ['-created_at'],
-                'get_latest_by': 'created_at',
-                'abstract': False,
-                'indexes': [models.Index(fields=['-created_at'], name='interview_e_created_f988f8_idx'), models.Index(fields=['-updated_at'], name='interview_e_updated_7db656_idx')],
-            },
-            managers=[
-                ('objects', common.models.base_model.BaseModelManager()),
-            ],
-        ),
-    ]
+      ],
+      options={
+        'verbose_name': 'Interview Exchange',
+        'verbose_name_plural': 'Interview Exchanges',
+        'db_table': 'interview_exchanges',
+        'ordering': ['-created_at'],
+        'get_latest_by': 'created_at',
+        'abstract': False,
+        'indexes': [
+          models.Index(fields=['-created_at'], name='interview_e_created_f988f8_idx'),
+          models.Index(fields=['-updated_at'], name='interview_e_updated_7db656_idx')
+        ],
+      },
+      managers=[
+        ('objects', common.models.base_model.BaseModelManager()),
+      ],
+    ),
+  ]
