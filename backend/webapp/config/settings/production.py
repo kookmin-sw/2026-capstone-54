@@ -16,6 +16,12 @@ DEBUG = False
 # ── django-allow-cidr ──
 ALLOWED_CIDR_NETS = ["10.42.0.0/16"]
 
+# Kubernetes 내부 서비스 호스트 추가
+ALLOWED_HOSTS = [
+  "mefit-production-api.mefit-backend-production.svc.cluster.local",
+  "mefit.xn--hy1by51c.kr",
+]
+
 # ── CORS / CSRF / 보안 설정 ──
 CORS_ALLOWED_ORIGINS = [
   # 프론트엔드 로컬 개발 (Vite)
@@ -25,6 +31,8 @@ CORS_ALLOWED_ORIGINS = [
   "http://127.0.0.1:5174",
   # 임시 도메인 (mefit.코드.kr)
   "https://mefit.xn--hy1by51c.kr",
+  # AWS Amplify 프론트엔드
+  "https://develop.d2k9kvei4b3s1c.amplifyapp.com",
   # TODO: (신건) 서비스 도메인 구매후 아래와 같이 설정 필요
   # "https://mefit.chat",
   # "https://www.mefit.chat",
@@ -37,6 +45,8 @@ CSRF_TRUSTED_ORIGINS = [
   "http://127.0.0.1:5174",
   # 임시 도메인 (mefit.코드.kr)
   "https://mefit.xn--hy1by51c.kr",
+  # AWS Amplify 프론트엔드
+  "https://develop.d2k9kvei4b3s1c.amplifyapp.com",
   # TODO: (신건) 서비스 도메인 구매후 아래와 같이 설정 필요
   # "https://mefit.chat",
   # "https://www.mefit.chat",
