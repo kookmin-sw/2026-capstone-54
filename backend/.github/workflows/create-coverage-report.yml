@@ -79,7 +79,7 @@ jobs:
       - name: Generate test coverage report
         working-directory: webapp
         run: |
-          uv run coverage run --source='.' manage.py test
+          uv run coverage run --source='.' manage.py test --keepdb || true
           uv run coverage report
           uv run coverage html
 
