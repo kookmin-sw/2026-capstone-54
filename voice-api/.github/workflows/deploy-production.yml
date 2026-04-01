@@ -1,0 +1,42 @@
+name: Deploy Voice API Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "배포할 이미지 태그 (예: production, <commit sha>)"
+        required: true
+        default: "production"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Secret 주입 및 배포
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            set -e
+            NS="mefit-backend-production"
+
+            # infra 레포 최신화
+            echo "▶ infra 레포 최신화 중..."
+            git -C ~/infra pull
+
+            # namespace 생성 (없으면)
+            kubectl create namespace "${NS}" --dry-run=client -o yaml | kubectl apply -f -
+
+            # 배포 실행
+            chmod +x ~/infra/scripts/deploy-voice-api.sh
+            ~/infra/scripts/deploy-voice-api.sh "${{ inputs.image_tag }}"
+
+      - name: 배포 결과 요약
+        if: always()
+        run: |
+          echo "### 🚀 Voice API 배포 결과" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **이미지:** teammefit/voice-api:${{ inputs.image_tag }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **엔드포인트:** https://mefit-voice.xn--hy1by51c.kr" >> "$GITHUB_STEP_SUMMARY"
