@@ -14,6 +14,8 @@ class CommonConfig(AppConfig):
       return
 
     def get_log_entries(self, request):
+      if not request.user.is_authenticated:
+        return LogEntry.objects.none()
       return (
         LogEntry.objects.select_related("content_type").filter(user=request.user).only(
           "id",
