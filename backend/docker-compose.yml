@@ -82,6 +82,9 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
+    networks:
+      - default
+      - mefit-local
 
   celery-worker:
     <<: *celery-base
@@ -91,7 +94,7 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    command: celery -A config worker -l INFO
+    command: celery -A config worker -l INFO -E
 
   celery-beat:
     <<: *celery-base
@@ -110,14 +113,21 @@ services:
       redis:
         condition: service_healthy
     command: >
-      celery flower
-      --broker=redis://redis:6379/0
+      celery --broker=redis://redis:6379/0
+      flower
       --port=5555
       --url-prefix=admin/flower
     ports:
       - "5555:5555"
     restart: always
+    networks:
+      - default
+      - mefit-local
 
 volumes:
   postgres_data:
   test_postgres_data:
+
+networks:
+  mefit-local:
+    external: true
