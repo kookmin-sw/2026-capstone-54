@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mefit-production-scraper-env
+  namespace: mefit-backend-production
+data:
+  # Celery 브로커는 기존 Redis 공유
+  CELERY_BROKER_URL: "redis://mefit-production-redis:6379/0"
+  # 스크래퍼 결과는 Redis DB 1번에 별도 저장 (백엔드 django-db와 분리)
+  CELERY_RESULT_BACKEND: "redis://mefit-production-redis:6379/1"
+  # 동시 스크래핑 수 = Celery worker 프로세스 수 = 기동 브라우저 수
+  # t3.small 별도 노드: 2 권장 / t3.medium 공유: 1~2 권장
+  SCRAPER_CONCURRENCY: "2"
+  HEADLESS: "true"
+  LOG_LEVEL: "INFO"
