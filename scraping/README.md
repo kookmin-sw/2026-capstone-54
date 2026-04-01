@@ -151,6 +151,39 @@ HTML 최종 수집
 
 ---
 
+## 로컬 실행
+
+### 사전 조건
+
+scraping worker는 backend 프로젝트의 Redis를 브로커로 사용합니다.
+backend 프로젝트를 먼저 실행한 후, 아래 순서대로 진행하세요.
+
+> **최초 1회 — 공유 Docker 네트워크 생성 필요**
+>
+> ```bash
+> docker network create mefit-local
+> ```
+>
+> 두 프로젝트의 컨테이너가 같은 네트워크에서 통신하기 위해 필요합니다.
+
+### Worker 실행
+
+```bash
+# 1. backend 먼저 실행 (별도 터미널)
+cd ../backend && docker compose up
+
+# 2. scraper worker 실행
+docker compose up --build
+```
+
+### CLI로 단건 테스트 (로컬 Python 환경)
+
+```bash
+uv run main.py <채용공고_URL>
+```
+
+---
+
 ## 남은 작업
 
 - [ ] 원티드 / 점핏 / 로켓펀치 / 프로그래머스 테스트 및 플러그인 추가

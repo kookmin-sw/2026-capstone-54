@@ -63,4 +63,4 @@ COPY . /app/
 
 # Celery Worker 실행
 # SCRAPER_CONCURRENCY 환경변수로 동시 처리 수 제어 (기본값 2)
-CMD ["sh", "-c", "celery -A celery_app worker -Q scraping -l INFO --concurrency ${SCRAPER_CONCURRENCY:-2}"]
+CMD ["sh", "-c", "celery -A celery_app worker -Q scraping -l INFO -E --concurrency ${SCRAPER_CONCURRENCY:-2}"]
