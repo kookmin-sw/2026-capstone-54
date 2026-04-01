@@ -76,11 +76,16 @@ class FollowUpGenerator:
     dynamic_data += f"## 현재 질문\n{original_question}\n\n## 지원자 답변\n{user_answer}\n\n"
     if context_chunks:
       dynamic_data += "## 참고 문서\n" + "\n---\n".join(context_chunks) + "\n\n"
-    dynamic_data += (
-      f"위 내용을 바탕으로 꼬리질문을 정확히 {num_followups}개 생성하세요.\n"
-      'JSON 배열로만 반환하며, 각 항목은 "question"과 "rationale" 필드를 포함하세요.\n'
-      "JSON 배열만 반환하세요."
-    )
+    dynamic_data += (f"위 내용을 바탕으로 꼬리질문을 정확히 {num_followups}개 생성하세요.\n")
+    if history and len(history) >= 2:
+      dynamic_data += (
+        f"## 직전 꼬리질문 유형 회피 (필수)\n"
+        f"직전 꼬리질문: \"{history[-1]['question']}\"\n"
+        f"이 질문과 동일한 검증 유형(예: 수치 검증→수치 검증)을 반복하지 마세요.\n"
+        f"반드시 다른 유형의 질문을 생성하세요.\n\n"
+      )
+    dynamic_data += ('JSON 배열로만 반환하며, 각 항목은 "question"과 "rationale" 필드를 포함하세요.\n'
+                     "JSON 배열만 반환하세요.")
     return f"{persona}\n\n{dynamic_data}"
 
   def generate(
