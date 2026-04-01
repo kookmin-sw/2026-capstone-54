@@ -33,9 +33,8 @@ app.conf.update(
     task_soft_time_limit=120,  # 120초 후 SoftTimeLimitExceeded
     task_time_limit=150,       # 150초 후 강제 종료
     result_expires=3600,       # 결과 1시간 보관
+    include=["tasks"],         # flat 모듈 tasks.py 를 worker 시작 시 임포트
 )
-
-app.autodiscover_tasks(["tasks"])
 
 # ──────────────────────────────────────────────
 # Worker 프로세스별 브라우저 상태
