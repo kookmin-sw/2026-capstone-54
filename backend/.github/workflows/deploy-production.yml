@@ -70,6 +70,11 @@ jobs:
               -n "${NS}" \
               --dry-run=client -o yaml | kubectl apply -f -
 
+            kubectl create secret generic mefit-production-scraper-secret \
+              --from-literal=OPENAI_API_KEY="${{ secrets.SCRAPER_OPENAI_API_KEY }}" \
+              -n "${NS}" \
+              --dry-run=client -o yaml | kubectl apply -f -
+
             # 배포 실행 (migrate → rollout → collectstatic 순서로 자동 처리)
             chmod +x ~/infra/scripts/deploy.sh
             ~/infra/scripts/deploy.sh \
