@@ -1,0 +1,16 @@
+[project]
+name = "scraping"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.12"
+dependencies = [
+    "beautifulsoup4>=4.14.3",
+    "fake-useragent>=2.2.0",
+    "httpx>=0.28.1",
+    "langchain>=1.2.13",
+    "langchain-openai>=1.1.12",
+    "lxml>=6.0.2",
+    "openai>=2.30.0",
+    "playwright>=1.58.0",
+    "python-dotenv>=1.2.2",
+]
