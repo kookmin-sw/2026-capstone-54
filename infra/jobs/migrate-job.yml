@@ -5,7 +5,7 @@ metadata:
   namespace: mefit-backend-production
 spec:
   ttlSecondsAfterFinished: 300  # 완료 후 5분 뒤 자동 삭제
-  backoffLimit: 2               # 실패 시 최대 2회 재시도
+  backoffLimit: 3               # 실패 시 최대 3회 재시도
   template:
     spec:
       restartPolicy: Never
@@ -14,9 +14,35 @@ spec:
       containers:
         - name: migrate
           image: teammefit/mefit-backend:production
-          command: ["python", "manage.py", "migrate", "--noinput"]
+          command: 
+            - /bin/sh
+            - -c
+            - |
+              # DB 연결 대기 (최대 30초)
+              echo "Waiting for database connections to be available..."
+              for i in $(seq 1 6); do
+                if python manage.py migrate --noinput --check 2>/dev/null; then
+                  echo "Database check passed, starting migration..."
+                  break
+                fi
+                echo "Attempt $i/6 failed, waiting 5 seconds..."
+                sleep 5
+              done
+              # 실제 migration 실행
+              python manage.py migrate --noinput
           envFrom:
             - configMapRef:
                 name: mefit-production-env
             - secretRef:
                 name: mefit-production-secret
+          env:
+            # Migrate job은 단일 연결만 사용하도록 설정
+            - name: CONN_MAX_AGE
+              value: "0"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
