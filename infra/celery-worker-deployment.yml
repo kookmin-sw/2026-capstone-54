@@ -32,7 +32,7 @@ spec:
             - secretRef:
                 name: mefit-production-secret
           command: ["celery"]
-          args: ["-A", "config", "worker", "-l", "INFO", "--concurrency", "2"]
+          args: ["-A", "config", "worker", "-l", "INFO", "-E", "--concurrency", "2"]
           resources:
             requests:
               cpu: 200m
