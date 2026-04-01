@@ -41,6 +41,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      flower:
+        condition: service_started
 
   postgres:
     <<: *postgres-base
@@ -100,6 +102,21 @@ services:
       redis:
         condition: service_healthy
     command: celery -A config beat -l INFO
+
+  flower:
+    image: mher/flower:2.0
+    container_name: mefit-flower
+    depends_on:
+      redis:
+        condition: service_healthy
+    command: >
+      celery flower
+      --broker=redis://redis:6379/0
+      --port=5555
+      --url-prefix=admin/flower
+    ports:
+      - "5555:5555"
+    restart: always
 
 volumes:
   postgres_data:
