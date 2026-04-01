@@ -23,3 +23,29 @@ spec:
             name: mefit-production-api
             port:
               number: 8000
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mefit-production-voice-api-ingress
+  namespace: mefit-backend-production
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    traefik.ingress.kubernetes.io/router.tls: "true"
+spec:
+  ingressClassName: traefik
+  tls:
+  - hosts:
+    - mefit-voice.xn--hy1by51c.kr
+    secretName: mefit-voice-tls-cert
+  rules:
+  - host: mefit-voice.xn--hy1by51c.kr
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: mefit-production-voice-api
+            port:
+              number: 8001

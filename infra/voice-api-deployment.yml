@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mefit-production-voice-api
+  namespace: mefit-backend-production
+  labels:
+    app: mefit-production-voice-api
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: mefit-production-voice-api
+  template:
+    metadata:
+      labels:
+        app: mefit-production-voice-api
+    spec:
+      imagePullSecrets:
+        - name: mefit-production-dockerhub
+      containers:
+        - name: voice-api
+          image: teammefit/voice-api:production
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8001
+          env:
+            - name: PORT
+              value: "8001"
+            - name: BACKEND_API_URL
+              value: "http://mefit-production-api.mefit-backend-production.svc.cluster.local:8000"
+            - name: TOKEN_VERIFY_ENDPOINT
+              value: "/api/v1/users/tokens/verify/"
+            - name: CORS_ORIGINS
+              value: '["*"]'
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8001
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8001
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
