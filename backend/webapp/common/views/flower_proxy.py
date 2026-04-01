@@ -33,7 +33,7 @@ def flower_proxy(request: HttpRequest, path: str = "") -> HttpResponse:
         for k, v in request.headers.items() if k.lower() not in {"host", "content-length", "accept-encoding"}
       },
     )
-    with urllib.request.urlopen(proxy_req, timeout=15) as resp:  # noqa: S310
+    with urllib.request.urlopen(proxy_req, timeout=15) as resp:  # nosec B310
       return HttpResponse(
         content=resp.read(),
         content_type=resp.headers.get("Content-Type", "text/html"),
