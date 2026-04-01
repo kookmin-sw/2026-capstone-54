@@ -1,10 +1,7 @@
 # ──────────────────────────────────────────────
 # 빌드 스테이지: Python 의존성 설치
-#
-# builder와 final 모두 동일한 Lambda 베이스 이미지를 사용합니다.
-# OS(Amazon Linux 2023)가 같아야 venv 바이너리가 호환됩니다.
 # ──────────────────────────────────────────────
-FROM public.ecr.aws/lambda/python:3.12 AS builder
+FROM python:3.12-slim-bookworm AS builder
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -12,10 +9,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     UV_PYTHON_DOWNLOADS=never \
     UV_PROJECT_ENVIRONMENT=/app/.venv
 
-# uv 설치
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-# 의존성 파일만 먼저 복사해서 캐시 활용
+# 의존성 파일만 먼저 복사 (캐시 활용)
 COPY pyproject.toml uv.lock /_lock/
 RUN --mount=type=cache,target=/root/.cache \
     cd /_lock/ && \
@@ -23,44 +19,48 @@ RUN --mount=type=cache,target=/root/.cache \
 
 
 # ──────────────────────────────────────────────
-# 최종 이미지: Lambda 런타임
+# 최종 이미지: Celery Worker 런타임
 # ──────────────────────────────────────────────
-FROM public.ecr.aws/lambda/python:3.12 AS final
+FROM python:3.12-slim-bookworm AS final
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PLAYWRIGHT_BROWSERS_PATH=/opt/playwright-browsers \
     PATH="/app/.venv/bin:${PATH}"
 
-# Playwright Chromium 런타임 시스템 의존성
-RUN dnf install -y \
-    alsa-lib \
-    atk \
-    cups-libs \
-    gtk3 \
-    libdrm \
-    libXcomposite \
-    libXcursor \
-    libXdamage \
-    libXext \
-    libXi \
-    libXrandr \
-    libXScrnSaver \
-    libXtst \
-    mesa-libgbm \
-    nss \
-    pango \
-    liberation-fonts \
-    && dnf clean all
+# Playwright Chromium 런타임 시스템 의존성 (bookworm 기준)
+RUN apt-get update -qq && apt-get install -y --no-install-recommends \
+    libnss3 \
+    libnspr4 \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
+    libcups2 \
+    libdrm2 \
+    libxkbcommon0 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxfixes3 \
+    libxrandr2 \
+    libgbm1 \
+    libasound2 \
+    libpango-1.0-0 \
+    libcairo2 \
+    libx11-6 \
+    libxext6 \
+    libxcb1 \
+    fonts-liberation \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-# builder 스테이지에서 venv만 복사
+# builder 스테이지에서 venv 복사
 COPY --from=builder /app/.venv /app/.venv
 
-# Playwright Chromium 브라우저 바이너리 설치 (이미지에 포함시켜 콜드스타트 방지)
-RUN /app/.venv/bin/playwright install chromium
+# Playwright Chromium 브라우저 바이너리 설치
+RUN playwright install chromium
 
-# 소스 코드를 Lambda 작업 디렉토리에 복사
-COPY . ${LAMBDA_TASK_ROOT}/
+WORKDIR /app
+COPY . /app/
 
-# Lambda 핸들러 지정: lambda_handler.py 의 handler 함수
-CMD ["lambda_handler.handler"]
+# Celery Worker 실행
+# SCRAPER_CONCURRENCY 환경변수로 동시 처리 수 제어 (기본값 2)
+CMD ["sh", "-c", "celery -A celery_app worker -Q scraping -l INFO --concurrency ${SCRAPER_CONCURRENCY:-2}"]

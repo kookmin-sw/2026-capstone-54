@@ -15,6 +15,7 @@ output/
 # 문서
 *.md
 PROGRESS.md
+docs/
 
 # Python 캐시
 __pycache__/
@@ -26,5 +27,9 @@ __pycache__/
 .vscode/
 .idea/
 
-# Claude 메모리
+# Claude / OMC 메모리
 .claude/
+.omc/
+
+# GitHub Actions (이미지 빌드 불필요)
+.github/
