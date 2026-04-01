@@ -16,7 +16,11 @@ async def verify_token(token: str) -> dict:
     async with aiohttp.ClientSession(timeout=timeout) as session:
         try:
             # Django REST Framework SimpleJWT expects {"token": "..."} in body
-            async with session.post(url, json={"token": token}) as response:
+            headers = {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            }
+            async with session.post(url, json={"token": token}, headers=headers) as response:
                 print(f"[DEBUG] Backend response status: {response.status}")
 
                 if response.status == 200:
