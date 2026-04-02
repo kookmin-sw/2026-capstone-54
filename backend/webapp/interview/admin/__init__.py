@@ -39,6 +39,7 @@ class InterviewExchangeAdmin(ModelAdmin):
   list_filter = ("exchange_type", "session")
   search_fields = ("question", "answer")
   ordering = ("-created_at", )
+  autocomplete_fields = ("session", )
 
   fieldsets = (
     (None, {
