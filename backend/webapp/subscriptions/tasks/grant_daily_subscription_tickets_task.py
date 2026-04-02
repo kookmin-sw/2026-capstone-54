@@ -8,6 +8,7 @@
 from celery.schedules import crontab
 from common.tasks.base_scheduled_task import BaseScheduledTask
 from config.celery import app
+from subscriptions.services import GrantDailySubscriptionTicketsService
 
 
 class GrantDailySubscriptionTicketsTask(BaseScheduledTask):
@@ -17,8 +18,6 @@ class GrantDailySubscriptionTicketsTask(BaseScheduledTask):
   schedule = crontab(hour=15, minute=0)
 
   def run(self):
-    from subscriptions.services import GrantDailySubscriptionTicketsService
-
     return GrantDailySubscriptionTicketsService().perform()
 
 
