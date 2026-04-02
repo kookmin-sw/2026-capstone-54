@@ -3,6 +3,7 @@ from django.conf import settings
 from django.db import models
 from django.utils import timezone
 from subscriptions.enums import PlanType, SubscriptionStatus
+from subscriptions.validators import SubscriptionValidator
 
 
 class Subscription(BaseModel):
@@ -49,6 +50,10 @@ class Subscription(BaseModel):
 
   def __str__(self):
     return f"{self.user} — {self.get_plan_type_display()} ({self.status})"
+
+  def clean(self):
+    super().clean()
+    SubscriptionValidator(self).validate()
 
   @property
   def status(self) -> str:
