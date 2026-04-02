@@ -1,5 +1,5 @@
 from datetime import date, timedelta
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 from django.test import TestCase
 from streaks.factories import StreakLogFactory, StreakStatisticsFactory
@@ -291,8 +291,8 @@ class RecalculateStreakStatisticsServiceTests(TestCase):
     다중 사용자 처리 중 에러 처리 테스트
 
     일부 사용자 처리 중 에러가 발생해도 다른 사용자는 정상 처리되는지 확인한다.
-    - 정상 사용자 2명 설정
-    - _prepare_streak_statistic을 mock하여 한 사용자에서 에러 발생
+    - 정상 사용자 2명, 에러 발생 사용자 1명 설정
+    - _get_or_initialize_streak_statistic을 mock하여 한 사용자에서 에러 발생
     - 서비스 실행
     - success_count가 2, error_count가 1인지 검증
     """
@@ -300,15 +300,20 @@ class RecalculateStreakStatisticsServiceTests(TestCase):
     for user in users:
       StreakLogFactory(user=user, date=self.today)
 
-    # 두 번째 사용자 처리 시 에러 발생하도록 mock
+    original_method = RecalculateStreakStatisticsService._get_or_initialize_streak_statistic
+    call_count = 0
+
+    def side_effect_method(self_service, user):
+      nonlocal call_count
+      call_count += 1
+      if call_count == 2:
+        raise Exception("Test error")
+      return original_method(self_service, user)
+
     with patch.object(
       RecalculateStreakStatisticsService,
-      "_prepare_streak_statistic",
-      side_effect=[
-        MagicMock(),  # 첫 번째 사용자: 성공
-        Exception("Test error"),  # 두 번째 사용자: 에러
-        MagicMock(),  # 세 번째 사용자: 성공
-      ]
+      "_get_or_initialize_streak_statistic",
+      side_effect_method,
     ):
       result = self._perform_multiple_users(users=users)
 
