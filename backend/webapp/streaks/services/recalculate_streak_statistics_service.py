@@ -1,3 +1,4 @@
+import logging
 from datetime import timedelta
 
 from common.services import BaseService
@@ -7,6 +8,7 @@ from django.utils import timezone
 from streaks.models import StreakLog, StreakStatistics
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
 
 
 class RecalculateStreakStatisticsService(BaseService):
@@ -49,8 +51,8 @@ class RecalculateStreakStatisticsService(BaseService):
 
   def _prefetch_user_logs(self, user):
     """단일 사용자에 대해 StreakLog를 prefetch한다"""
-    return User.objects.prefetch_related(Prefetch("streak_logs",
-                                                  queryset=StreakLog.objects.order_by("date"))).get(pk=user.pk)
+    prefetch_related_objects([user], Prefetch("streak_logs", queryset=StreakLog.objects.order_by("date")))
+    return user
 
   def _add_prefetch_to_users(self, users):
     """이미 조회된 User 객체들에 prefetch를 추가한다"""
@@ -91,11 +93,13 @@ class RecalculateStreakStatisticsService(BaseService):
         results["updated_stats"].append(streak_statistic)
       except Exception as error:
         results["error_count"] += 1
-        # 디버깅을 위해 에러 로깅 (선택사항)
-        import logging
-        logger = logging.getLogger(__name__)
         logger.error(f"Failed to recalculate statistics for user {user.id}: {error}")
         continue
+
+    # Bulk 저장 전 updated_at 설정
+    current_time = timezone.now()
+    for stat in statistics_to_update:
+      stat.updated_at = current_time
 
     # Bulk 저장
     if statistics_to_create:
