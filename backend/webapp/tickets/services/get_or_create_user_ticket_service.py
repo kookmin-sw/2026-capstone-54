@@ -10,6 +10,9 @@ class GetOrCreateUserTicketService(BaseService):
     qs = UserTicket.objects.select_for_update() if lock else UserTicket.objects
     ticket, _ = qs.get_or_create(
       user=self.user,
-      defaults={"count": 0},
+      defaults={
+        "daily_count": 0,
+        "purchased_count": 0
+      },
     )
     return ticket

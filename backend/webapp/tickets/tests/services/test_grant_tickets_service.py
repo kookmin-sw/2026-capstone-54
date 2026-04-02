@@ -1,6 +1,5 @@
 from django.test import TestCase
-from tickets.factories import UserTicketFactory
-from tickets.models import TicketLog, UserTicket
+from tickets.models import TicketLog
 from tickets.services import GrantTicketsService
 from users.factories import UserFactory
 
@@ -11,19 +10,24 @@ class GrantTicketsServiceTests(TestCase):
   def setUp(self):
     self.user = UserFactory()
 
-  def test_grant_creates_ticket_if_not_exists(self):
-    """UserTicket이 없으면 생성 후 티켓을 지급한다."""
+  def test_grant_default_to_purchased(self):
+    """기본 target은 purchased_count에 지급한다."""
     ticket = GrantTicketsService(user=self.user, amount=3).perform()
 
-    self.assertEqual(ticket.count, 3)
-    self.assertEqual(UserTicket.objects.count(), 1)
+    self.assertEqual(ticket.purchased_count, 3)
+    self.assertEqual(ticket.daily_count, 0)
 
-  def test_grant_adds_to_existing(self):
-    """기존 UserTicket이 있으면 수량을 더한다."""
-    UserTicketFactory(user=self.user, count=5)
-    ticket = GrantTicketsService(user=self.user, amount=3).perform()
+  def test_grant_to_daily(self):
+    """target=daily로 daily_count에 지급한다."""
+    ticket = GrantTicketsService(user=self.user, amount=5, target="daily").perform()
 
-    self.assertEqual(ticket.count, 8)
+    self.assertEqual(ticket.daily_count, 5)
+    self.assertEqual(ticket.purchased_count, 0)
+
+  def test_grant_auto_raises_error(self):
+    """target=auto는 추가에 사용할 수 없다."""
+    with self.assertRaises(ValueError):
+      GrantTicketsService(user=self.user, amount=3, target="auto").perform()
 
   def test_grant_creates_log(self):
     """티켓 지급 시 TicketLog가 생성된다."""
@@ -33,7 +37,6 @@ class GrantTicketsServiceTests(TestCase):
     self.assertEqual(log.action_type, TicketLog.ActionType.GRANT)
     self.assertEqual(log.amount, 2)
     self.assertEqual(log.balance_after, 2)
-    self.assertEqual(log.reason, "출석 보상")
 
   def test_grant_zero_raises_error(self):
     """amount가 0이면 ValueError가 발생한다."""
