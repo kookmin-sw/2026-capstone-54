@@ -23,9 +23,9 @@ class ProfileAdminTest(TestCase):
     """ProfileAdmin search_fields 테스트"""
     self.assertEqual(self.admin.search_fields, ["user__email", "user__name"])
 
-  def test_profile_admin_raw_id_fields(self):
-    """ProfileAdmin raw_id_fields 테스트"""
-    self.assertEqual(self.admin.raw_id_fields, ["user"])
+  def test_profile_admin_autocomplete_fields(self):
+    """ProfileAdmin autocomplete_fields 테스트"""
+    self.assertEqual(self.admin.autocomplete_fields, ["user"])
 
   def test_profile_admin_filter_horizontal(self):
     """ProfileAdmin filter_horizontal 테스트"""
