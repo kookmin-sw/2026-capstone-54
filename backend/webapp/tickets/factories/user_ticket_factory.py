@@ -9,4 +9,5 @@ class UserTicketFactory(DjangoModelFactory):
     model = UserTicket
 
   user = factory.SubFactory("users.factories.UserFactory")
-  count = 0
+  daily_count = 0
+  purchased_count = 0

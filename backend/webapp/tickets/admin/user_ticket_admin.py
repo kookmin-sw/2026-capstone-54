@@ -26,12 +26,16 @@ class TicketActionForm(forms.Form):
 
 @admin.register(UserTicket)
 class UserTicketAdmin(ModelAdmin):
-  list_display = ("user", "count", "updated_at")
+  list_display = ("user", "daily_count", "purchased_count", "display_total", "updated_at")
   search_fields = ("user__email", )
-  ordering = ("-count", )
+  ordering = ("-purchased_count", )
   readonly_fields = ("created_at", "updated_at")
   autocomplete_fields = ("user", )
   actions = ["grant_tickets", "refund_tickets", "expire_tickets"]
+
+  @admin.display(description="총 티켓")
+  def display_total(self, obj):
+    return obj.total_count
 
   def _ticket_action(self, request, queryset, *, service_class, action_name, submit_label):
     """공통 티켓 액션 처리: intermediate 폼 → 서비스 호출."""
