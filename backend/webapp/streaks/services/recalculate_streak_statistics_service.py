@@ -31,8 +31,15 @@ class RecalculateStreakStatisticsService(BaseService):
       user = self._prefetch_user_logs(self.user)
       streak_statistic = self._get_or_initialize_streak_statistic(user)
       streak_statistic = self._prepare_streak_statistic(user, streak_statistic)
-      streak_statistic.updated_at = timezone.now()
-      streak_statistic.save(update_fields=["current_streak", "longest_streak", "last_participated_date", "updated_at"])
+
+      if streak_statistic.pk:
+        streak_statistic.updated_at = timezone.now()
+        streak_statistic.save(
+          update_fields=["current_streak", "longest_streak", "last_participated_date", "updated_at"]
+        )
+      else:
+        streak_statistic.save()
+
       return streak_statistic
 
     # 다중 사용자 처리
