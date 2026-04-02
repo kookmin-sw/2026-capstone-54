@@ -31,6 +31,7 @@ class RecalculateStreakStatisticsService(BaseService):
       user = self._prefetch_user_logs(self.user)
       streak_statistic = self._get_or_initialize_streak_statistic(user)
       streak_statistic = self._prepare_streak_statistic(user, streak_statistic)
+      streak_statistic.updated_at = timezone.now()
       streak_statistic.save(update_fields=["current_streak", "longest_streak", "last_participated_date", "updated_at"])
       return streak_statistic
 
@@ -96,16 +97,16 @@ class RecalculateStreakStatisticsService(BaseService):
         logger.error(f"Failed to recalculate statistics for user {user.id}: {error}")
         continue
 
-    # Bulk 저장 전 updated_at 설정
-    current_time = timezone.now()
-    for stat in statistics_to_update:
-      stat.updated_at = current_time
-
     # Bulk 저장
     if statistics_to_create:
       StreakStatistics.objects.bulk_create(statistics_to_create)
 
     if statistics_to_update:
+      # bulk_update는 auto_now를 자동 갱신하지 않으므로 명시적으로 설정
+      current_time = timezone.now()
+      for stat in statistics_to_update:
+        stat.updated_at = current_time
+
       StreakStatistics.objects.bulk_update(
         statistics_to_update, fields=["current_streak", "longest_streak", "last_participated_date", "updated_at"]
       )

@@ -1,5 +1,5 @@
 from datetime import date, timedelta
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from django.test import TestCase
 from streaks.factories import StreakLogFactory, StreakStatisticsFactory
@@ -19,16 +19,16 @@ class RecalculateStreakStatisticsServiceTests(TestCase):
     """단일 사용자 재계산 헬퍼"""
     target_user = user or self.user
     target_date = today or self.today
-    with patch("streaks.services.recalculate_streak_statistics_service.timezone") as mock_timezone:
-      mock_timezone.localdate.return_value = target_date
+    with patch("streaks.services.recalculate_streak_statistics_service.timezone.localdate") as mock_localdate:
+      mock_localdate.return_value = target_date
       return RecalculateStreakStatisticsService(user=target_user).perform()
 
-  def _perform_multiple_users(self, user_ids=None, today=None):
+  def _perform_multiple_users(self, user_ids=None, users=None, today=None):
     """다중 사용자 재계산 헬퍼"""
     target_date = today or self.today
-    with patch("streaks.services.recalculate_streak_statistics_service.timezone") as mock_timezone:
-      mock_timezone.localdate.return_value = target_date
-      return RecalculateStreakStatisticsService(user_ids=user_ids).perform()
+    with patch("streaks.services.recalculate_streak_statistics_service.timezone.localdate") as mock_localdate:
+      mock_localdate.return_value = target_date
+      return RecalculateStreakStatisticsService(user_ids=user_ids, users=users).perform()
 
   # ── 단일 사용자: 로그 없음 ──────────────────────────────────────────────────
 
@@ -226,8 +226,8 @@ class RecalculateStreakStatisticsServiceTests(TestCase):
     """
     users = [UserFactory() for _ in range(3)]
     for index, user in enumerate(users):
-      # 각 사용자마다 다른 연속 일수
-      for days_ago in range(index + 1, -1, -1):
+      # 각 사용자마다 다른 연속 일수 (index + 1일)
+      for days_ago in range(index, -1, -1):
         log_date = self.today - timedelta(days=days_ago)
         StreakLogFactory(user=user, date=log_date)
 
@@ -291,19 +291,26 @@ class RecalculateStreakStatisticsServiceTests(TestCase):
     다중 사용자 처리 중 에러 처리 테스트
 
     일부 사용자 처리 중 에러가 발생해도 다른 사용자는 정상 처리되는지 확인한다.
-    - 정상 사용자 2명, 에러 발생 사용자 1명 설정
+    - 정상 사용자 2명 설정
+    - _prepare_streak_statistic을 mock하여 한 사용자에서 에러 발생
     - 서비스 실행
     - success_count가 2, error_count가 1인지 검증
     """
-    normal_users = [UserFactory() for _ in range(2)]
-    for user in normal_users:
+    users = [UserFactory() for _ in range(3)]
+    for user in users:
       StreakLogFactory(user=user, date=self.today)
 
-    # 존재하지 않는 사용자 ID 추가 (에러 발생 예상)
-    invalid_user_id = 999999
-    user_ids = [user.id for user in normal_users] + [invalid_user_id]
-
-    result = self._perform_multiple_users(user_ids=user_ids)
+    # 두 번째 사용자 처리 시 에러 발생하도록 mock
+    with patch.object(
+      RecalculateStreakStatisticsService,
+      "_prepare_streak_statistic",
+      side_effect=[
+        MagicMock(),  # 첫 번째 사용자: 성공
+        Exception("Test error"),  # 두 번째 사용자: 에러
+        MagicMock(),  # 세 번째 사용자: 성공
+      ]
+    ):
+      result = self._perform_multiple_users(users=users)
 
     self.assertEqual(result["success_count"], 2)
     self.assertEqual(result["error_count"], 1)
