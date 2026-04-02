@@ -65,9 +65,6 @@ class SubscriptionAdmin(ModelAdmin):
       ).exclude(plan_type=PlanType.FREE).filter(Q(expires_at__isnull=True) | Q(expires_at__gt=obj.started_at))
     )
 
-    if obj.pk:
-      overlap_qs = overlap_qs.exclude(pk=obj.pk)
-
     if overlap_qs.exists():
       raise ValidationError("해당 기간에 이미 활성 유료 구독이 존재합니다. 기존 구독을 먼저 취소해주세요.")
 

@@ -43,15 +43,14 @@ class GrantDailySubscriptionTicketsService(BaseService):
       if daily_amount <= 0:
         continue
 
-      ticket, _ = UserTicket.objects.get_or_create(
+      UserTicket.objects.update_or_create(
         user=subscription.user,
-        defaults={
+        defaults={"daily_count": daily_amount},
+        create_defaults={
           "daily_count": daily_amount,
           "purchased_count": 0
         },
       )
-      ticket.daily_count = daily_amount
-      ticket.save(update_fields=["daily_count", "updated_at"])
 
       granted_count += 1
       logger.info(

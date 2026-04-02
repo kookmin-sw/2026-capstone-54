@@ -14,10 +14,6 @@ class SubscriptionPlanTicketPolicy(BaseModel):
     verbose_name = "구독 플랜 티켓 정책"
     verbose_name_plural = "구독 플랜 티켓 정책 목록"
     ordering = ["plan_type"]
-    constraints = [models.UniqueConstraint(
-      fields=["plan_type"],
-      name="unique_subscription_plan_ticket_policy",
-    )]
 
   plan_type = models.CharField(
     max_length=20,
