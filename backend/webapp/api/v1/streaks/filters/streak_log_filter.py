@@ -1,5 +1,21 @@
+from django import forms
 from django_filters import rest_framework as filters
 from streaks.models import StreakLog
+
+
+class StreakLogFilterForm(forms.Form):
+  """StreakLogFilter의 커스텀 폼"""
+
+  def clean(self):
+    """날짜 범위 교차 검증"""
+    cleaned_data = super().clean()
+    start_date = cleaned_data.get('start_date')
+    end_date = cleaned_data.get('end_date')
+
+    if start_date and end_date and start_date > end_date:
+      raise forms.ValidationError("start_date는 end_date보다 이전이어야 합니다.")
+
+    return cleaned_data
 
 
 class StreakLogFilter(filters.FilterSet):
@@ -20,3 +36,4 @@ class StreakLogFilter(filters.FilterSet):
   class Meta:
     model = StreakLog
     fields = ['start_date', 'end_date']
+    form = StreakLogFilterForm
