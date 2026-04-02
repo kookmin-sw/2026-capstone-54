@@ -18,4 +18,4 @@ class StreakLogAdmin(ModelAdmin):
     "created_at",
     "updated_at",
   )
-  raw_id_fields = ("user", )
+  autocomplete_fields = ("user", )
