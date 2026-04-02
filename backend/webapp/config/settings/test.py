@@ -67,3 +67,7 @@ CELERY_RESULT_BACKEND = "cache+memory://"
 
 # Disable Celery Beat scheduler for tests
 CELERY_BEAT_SCHEDULER = None
+
+# 테스트 환경에서 persistent connection 비활성화 (teardown 시 DB drop 실패 방지)
+DATABASES["default"]["CONN_MAX_AGE"] = 0  # noqa: F405
+DATABASES["default"]["CONN_HEALTH_CHECKS"] = False  # noqa: F405
