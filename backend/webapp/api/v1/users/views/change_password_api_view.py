@@ -1,5 +1,4 @@
 from api.v1.users.serializers import ChangePasswordSerializer
-from common.permissions import IsAuthenticated
 from common.views import BaseAPIView
 from drf_spectacular.utils import extend_schema
 from rest_framework.response import Response
@@ -9,7 +8,6 @@ from users.services import ChangePasswordService
 @extend_schema(tags=["사용자"])
 class ChangePasswordAPIView(BaseAPIView):
   """현재 비밀번호를 확인한 후 새 비밀번호로 변경한다."""
-  permission_classes = [IsAuthenticated]
   serializer_class = ChangePasswordSerializer
 
   @extend_schema(

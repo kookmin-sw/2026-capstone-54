@@ -1,5 +1,7 @@
 from common.exceptions import ValidationException
 from common.services import BaseService
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError as DjangoValidationError
 
 
 class ChangePasswordService(BaseService):
@@ -14,11 +16,13 @@ class ChangePasswordService(BaseService):
     if not self.user.check_password(old_password):
       raise ValidationException(field_errors={"old_password": ["현재 비밀번호가 올바르지 않습니다."]})
 
-    if len(new_password) < 8:
-      raise ValidationException(field_errors={"new_password": ["비밀번호는 8자 이상이어야 합니다."]})
-
     if old_password == new_password:
       raise ValidationException(field_errors={"new_password": ["현재 비밀번호와 다른 비밀번호를 입력해주세요."]})
+
+    try:
+      validate_password(new_password, user=self.user)
+    except DjangoValidationError as e:
+      raise ValidationException(field_errors={"new_password": list(e.messages)})
 
   def execute(self):
     self.user.set_password(self.kwargs["new_password"])
