@@ -8,7 +8,7 @@ class ProfileAdmin(ModelAdmin):
   list_display = ["user", "job_category", "created_at", "updated_at"]
   list_filter = ["job_category", "created_at"]
   search_fields = ["user__email", "user__name"]
-  raw_id_fields = ["user"]
+  autocomplete_fields = ["user"]
   filter_horizontal = ["jobs"]
   ordering = ["-created_at"]
   readonly_fields = ["created_at", "updated_at", "deleted_at"]

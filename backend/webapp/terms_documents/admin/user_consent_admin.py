@@ -26,7 +26,7 @@ class UserConsentAdmin(ModelAdmin):
     "created_at",
     "updated_at",
   )
-  raw_id_fields = (
+  autocomplete_fields = (
     "user",
     "terms_document",
   )

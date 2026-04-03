@@ -91,10 +91,6 @@ jobs:
             sleep 5
           done
 
-      - name: Run Django migrations
-        working-directory: webapp
-        run: uv run python manage.py migrate
-
       - name: Run Django tests
         working-directory: webapp
-        run: uv run python manage.py test --verbosity=2
+        run: uv run python manage.py test --verbosity=2 --keepdb

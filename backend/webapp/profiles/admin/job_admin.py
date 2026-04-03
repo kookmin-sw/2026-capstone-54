@@ -13,6 +13,7 @@ class JobAdmin(ModelAdmin):
   list_display = ["name", "category", "is_opened", "opened_at", "created_at", "updated_at"]
   list_filter = ["category", "opened_at", "created_at"]
   search_fields = ["name", "category__name"]
+  autocomplete_fields = ["category"]
   ordering = ["category", "name"]
   readonly_fields = ["created_at", "updated_at", "deleted_at"]
   actions = ["bulk_open_jobs", "bulk_close_jobs"]
