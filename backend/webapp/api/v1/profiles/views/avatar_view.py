@@ -4,10 +4,9 @@ from common.permissions import IsEmailVerified
 from common.views import BaseAPIView
 from django.shortcuts import get_object_or_404
 from djangorestframework_camel_case.parser import CamelCaseMultiPartParser
-from drf_spectacular.utils import extend_schema, inline_serializer
+from drf_spectacular.utils import extend_schema
 from profiles.models import Profile
 from profiles.services import AvatarUploadService
-from rest_framework import serializers
 from rest_framework.response import Response
 
 
@@ -42,12 +41,7 @@ class AvatarAPIView(BaseAPIView):
         "required": ["avatar"],
       },
     },
-    responses={
-      200: inline_serializer(
-        name="AvatarUploadResponse",
-        fields={"avatar_url": serializers.CharField(help_text="업로드된 아바타 이미지 URL")},
-      ),
-    },
+    responses={200: AvatarSerializer},
   )
   def post(self, request):
     avatar_file = request.FILES.get("avatar")
@@ -59,4 +53,4 @@ class AvatarAPIView(BaseAPIView):
       avatar=avatar_file,
     ).perform()
 
-    return Response({"avatar_url": profile.avatar.url}, status=200)
+    return Response(AvatarSerializer(profile).data, status=200)
