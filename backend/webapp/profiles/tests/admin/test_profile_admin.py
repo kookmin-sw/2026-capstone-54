@@ -13,7 +13,13 @@ class ProfileAdminTest(TestCase):
 
   def test_profile_admin_list_display(self):
     """ProfileAdmin list_display 테스트"""
-    self.assertEqual(self.admin.list_display, ["user", "job_category", "created_at", "updated_at"])
+    self.assertEqual(self.admin.list_display, [
+      "user",
+      "job_category",
+      "avatar_preview",
+      "created_at",
+      "updated_at",
+    ])
 
   def test_profile_admin_list_filter(self):
     """ProfileAdmin list_filter 테스트"""
