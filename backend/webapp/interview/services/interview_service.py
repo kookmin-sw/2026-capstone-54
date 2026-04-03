@@ -11,7 +11,6 @@ from interview.services.rag_pipeline.models import (
   FollowUpInput,
   FollowUpOutput,
   InterviewQuestion,
-  PipelineInput,
   PipelineOutput,
   StepUsage,
 )
@@ -35,38 +34,29 @@ class InterviewService:
   def generate_questions(
     self,
     file_paths: list[str],
-    keywords: list[str],
     difficulty_level: str = "normal",
   ) -> PipelineOutput:
     """난이도별 프롬프트를 적용하여 면접 질문 생성."""
     prompt = self._prompt_registry.get_question_prompt(difficulty_level)
     try:
-      input_data = PipelineInput(file_paths=file_paths, keywords=keywords)
-      documents = self._pipeline.loader.load_multiple(input_data.file_paths)
+      documents = self._pipeline.loader.load_multiple(file_paths)
       chunks = self._pipeline.chunker.split_multiple(documents)
-      self._pipeline.vector_store_manager.build_from_documents(chunks)
-      retrieved_chunks = self._pipeline.retriever.retrieve_multiple(input_data.keywords)
-      self._pipeline._last_retrieved_chunks = [chunk.page_content for chunk in retrieved_chunks]
+      self._pipeline._last_chunks = [chunk.page_content for chunk in chunks]
 
       self._pipeline._token_callback.reset()
       raw_questions = self._pipeline.question_generator.generate(
-        retrieved_chunks,
-        input_data.keywords,
+        chunks,
         self._config.num_questions,
         config={"callbacks": [self._pipeline._token_callback]},
         system_prompt_override=prompt,
       )
       question_step = StepUsage(step_name="question_generation", usage=self._pipeline._token_callback.get_usage())
-      questions = [
-        InterviewQuestion(question=q.get("question", ""), source=q.get("source", ""), keyword=q.get("keyword", ""))
-        for q in raw_questions
-      ]
+      questions = [InterviewQuestion(question=q.get("question", ""), source=q.get("source", "")) for q in raw_questions]
       step_usages = [question_step]
       total_usage = RAGPipeline._sum_usages(step_usages)
       return PipelineOutput(
         questions=questions,
-        total_chunks_retrieved=len(retrieved_chunks),
-        keywords_used=input_data.keywords,
+        total_chunks_retrieved=len(chunks),
         token_usage=total_usage if total_usage.call_count > 0 else None,
         step_usages=step_usages if total_usage.call_count > 0 else None,
       )
@@ -87,8 +77,8 @@ class InterviewService:
     session = InterviewSession.objects.get(id=session_id)
     prompt = self._prompt_registry.get_followup_prompt(session.difficulty_level)
     try:
-      if context_chunks is None and self._pipeline._last_retrieved_chunks:
-        context_chunks = self._pipeline._last_retrieved_chunks
+      if context_chunks is None and self._pipeline._last_chunks:
+        context_chunks = self._pipeline._last_chunks
       input_data = FollowUpInput(
         original_question=original_question,
         user_answer=user_answer,

@@ -50,17 +50,10 @@ class QuestionGenerator:
     )
     return FakeListLLM(responses=[default_response])
 
-  def _build_prompt(
-    self,
-    chunks: list[Document],
-    keywords: list[str],
-    num_questions: int,
-    system_prompt_override: str | None = None
-  ) -> str:
+  def _build_prompt(self, chunks: list[Document], num_questions: int, system_prompt_override: str | None = None) -> str:
     chunk_texts = "\n---\n".join(
       f"[출처: {chunk.metadata.get('source', 'unknown')}]\n{chunk.page_content}" for chunk in chunks
     )
-    keyword_str = ", ".join(keywords)
     if system_prompt_override is not None:
       persona = system_prompt_override
     else:
@@ -73,9 +66,8 @@ class QuestionGenerator:
         "- 채용공고의 요구사항을 반드시 반영하세요.\n\n"
       )
     dynamic_data = (
-      "다음은 이력서 및 채용공고에서 검색된 관련 문서 청크입니다:\n\n"
+      "다음은 이력서 및 채용공고 전문입니다:\n\n"
       f"{chunk_texts}\n\n"
-      f"참고 키워드: {keyword_str}\n\n"
       f"위 내용을 바탕으로 면접 질문을 정확히 {num_questions}개 생성해주세요.\n"
       '각 질문은 JSON 배열 형식으로 반환하며, 각 항목은 "question"과 "source" 필드를 포함해야 합니다.\n'
       "JSON 배열만 반환하세요."
@@ -85,12 +77,11 @@ class QuestionGenerator:
   def generate(
     self,
     chunks: list[Document],
-    keywords: list[str],
     num_questions: int = 5,
     config: dict | None = None,
     system_prompt_override: str | None = None
   ) -> list[dict]:
-    prompt = self._build_prompt(chunks, keywords, num_questions, system_prompt_override)
+    prompt = self._build_prompt(chunks, num_questions, system_prompt_override)
     try:
       response = self.llm.invoke(prompt, config=config or {})
     except Exception as e:

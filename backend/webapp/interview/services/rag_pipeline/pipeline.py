@@ -4,7 +4,6 @@ import logging
 
 from interview.services.rag_pipeline.chunker import Chunker
 from interview.services.rag_pipeline.config import PipelineConfig
-from interview.services.rag_pipeline.embeddings import EmbeddingEngine
 from interview.services.rag_pipeline.exceptions import PipelineStepError
 from interview.services.rag_pipeline.followup_generator import FollowUpGenerator
 from interview.services.rag_pipeline.loader import DocumentLoader
@@ -18,9 +17,7 @@ from interview.services.rag_pipeline.models import (
   TokenUsageStats,
 )
 from interview.services.rag_pipeline.question_generator import QuestionGenerator
-from interview.services.rag_pipeline.retriever import KeywordRetriever
 from interview.services.rag_pipeline.token_tracker import TokenUsageCallback
-from interview.services.rag_pipeline.vector_store import VectorStoreManager
 
 
 class RAGPipeline:
@@ -34,15 +31,10 @@ class RAGPipeline:
   def _init_modules(self) -> None:
     self.loader = DocumentLoader()
     self.chunker = Chunker(chunk_size=self.config.chunk_size, chunk_overlap=self.config.chunk_overlap)
-    self.embedding_engine = EmbeddingEngine(use_bedrock=self.config.use_bedrock, use_openai=self.config.use_openai)
-    self.vector_store_manager = VectorStoreManager(
-      embeddings=self.embedding_engine.get_embeddings(), store_type=self.config.vector_store_type
-    )
-    self.retriever = KeywordRetriever(vector_store_manager=self.vector_store_manager, top_k=self.config.top_k)
     self.question_generator = QuestionGenerator(
       use_bedrock=self.config.use_bedrock, use_openai=self.config.use_openai, openai_model=self.config.openai_model
     )
-    self._last_retrieved_chunks = []
+    self._last_chunks: list[str] = []
     self.followup_generator = FollowUpGenerator(
       use_bedrock=self.config.use_bedrock, use_openai=self.config.use_openai, openai_model=self.config.openai_model
     )
@@ -57,35 +49,22 @@ class RAGPipeline:
     except Exception as e:
       raise PipelineStepError("Chunker", e) from e
     try:
-      self.vector_store_manager.build_from_documents(chunks)
-    except Exception as e:
-      raise PipelineStepError("Vector_Store", e) from e
-    try:
-      retrieved_chunks = self.retriever.retrieve_multiple(input_data.keywords)
-      self._last_retrieved_chunks = [chunk.page_content for chunk in retrieved_chunks]
-    except Exception as e:
-      raise PipelineStepError("Retriever", e) from e
-    try:
+      self._last_chunks = [chunk.page_content for chunk in chunks]
       self._token_callback.reset()
       raw_questions = self.question_generator.generate(
-        retrieved_chunks,
-        input_data.keywords,
+        chunks,
         self.config.num_questions,
         config={"callbacks": [self._token_callback]},
       )
       question_step = StepUsage(step_name="question_generation", usage=self._token_callback.get_usage())
-      questions = [
-        InterviewQuestion(question=q.get("question", ""), source=q.get("source", ""), keyword=q.get("keyword", ""))
-        for q in raw_questions
-      ]
+      questions = [InterviewQuestion(question=q.get("question", ""), source=q.get("source", "")) for q in raw_questions]
     except Exception as e:
       raise PipelineStepError("Question_Generator", e) from e
     step_usages = [question_step]
     total_usage = self._sum_usages(step_usages)
     return PipelineOutput(
       questions=questions,
-      total_chunks_retrieved=len(retrieved_chunks),
-      keywords_used=input_data.keywords,
+      total_chunks_retrieved=len(chunks),
       token_usage=total_usage if total_usage.call_count > 0 else None,
       step_usages=step_usages if total_usage.call_count > 0 else None,
     )
@@ -100,8 +79,8 @@ class RAGPipeline:
     anchor_question: str | None = None
   ) -> FollowUpOutput:
     try:
-      if context_chunks is None and self._last_retrieved_chunks:
-        context_chunks = self._last_retrieved_chunks
+      if context_chunks is None and self._last_chunks:
+        context_chunks = self._last_chunks
       input_data = FollowUpInput(
         original_question=original_question,
         user_answer=user_answer,

@@ -5,13 +5,11 @@ from pydantic import BaseModel, Field
 
 class PipelineInput(BaseModel):
   file_paths: list[str] = Field(..., min_length=1, description="마크다운 문서 경로 리스트")
-  keywords: list[str] = Field(..., min_length=1, description="검색 키워드 리스트")
 
 
 class InterviewQuestion(BaseModel):
   question: str = Field(..., description="면접 질문 텍스트")
   source: str = Field(..., description="질문 근거 청크의 출처 문서 경로")
-  keyword: str = Field(default="", description="질문 생성에 사용된 키워드")
 
 
 class TokenUsageStats(BaseModel):
@@ -29,7 +27,6 @@ class StepUsage(BaseModel):
 class PipelineOutput(BaseModel):
   questions: list[InterviewQuestion] = Field(default_factory=list)
   total_chunks_retrieved: int = Field(default=0)
-  keywords_used: list[str] = Field(default_factory=list)
   token_usage: TokenUsageStats | None = Field(default=None)
   step_usages: list[StepUsage] | None = Field(default=None)
 
