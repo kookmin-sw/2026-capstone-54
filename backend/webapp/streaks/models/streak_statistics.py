@@ -13,7 +13,7 @@ class StreakStatistics(BaseModel):
   user = models.OneToOneField(
     settings.AUTH_USER_MODEL,
     on_delete=models.CASCADE,
-    related_name="streak_statistics",
+    related_name="streak_statistic",
     verbose_name="사용자",
   )
   current_streak = models.PositiveIntegerField(
