@@ -4,7 +4,7 @@ from .job_list_view import JobListView
 from .profile_me_view import ProfileMeView
 
 __all__ = [
-  "AvatarUploadAPIView",
+  "AvatarAPIView",
   "JobCategoryViewSet",
   "JobListView",
   "ProfileMeView",
