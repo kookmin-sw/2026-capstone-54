@@ -8,6 +8,26 @@ from interview.services.rag_pipeline.models import TokenUsageStats
 from langchain_core.callbacks import BaseCallbackHandler
 from langchain_core.outputs import LLMResult
 
+# 모델별 요금표 (USD / 1M tokens)
+MODEL_PRICING: dict[str, dict[str, float]] = {
+  "gpt-4o-mini": {
+    "input": 0.15,
+    "output": 0.60
+  },
+  "gpt-4o": {
+    "input": 2.50,
+    "output": 10.00
+  },
+}
+_DEFAULT_MODEL = "gpt-4o-mini"
+
+
+def calculate_cost(input_tokens: int, output_tokens: int, model_name: str = _DEFAULT_MODEL) -> float:
+  """토큰 수와 모델명으로 USD 비용을 계산한다."""
+  pricing = MODEL_PRICING.get(model_name, MODEL_PRICING[_DEFAULT_MODEL])
+  return input_tokens / 1_000_000 * pricing["input"] + output_tokens / 1_000_000 * pricing["output"]
+
+
 logger = logging.getLogger(__name__)
 
 
