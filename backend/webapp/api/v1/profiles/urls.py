@@ -1,7 +1,7 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from .views import JobCategoryViewSet, JobListView, ProfileMeView
+from .views import AvatarAPIView, JobCategoryViewSet, JobListView, ProfileMeView
 
 router = DefaultRouter()
 router.register(r"job-categories", JobCategoryViewSet, basename="job-category")
@@ -17,5 +17,10 @@ urlpatterns = [
     "profiles/me/",
     ProfileMeView.as_view(),
     name="profile-me",
+  ),
+  path(
+    "profiles/me/avatar/",
+    AvatarAPIView.as_view(),
+    name="avatar-upload",
   ),
 ]
