@@ -14,6 +14,11 @@ class ProfileAdmin(ModelAdmin):
   ordering = ["-created_at"]
   readonly_fields = ["avatar_image", "created_at", "updated_at", "deleted_at"]
 
+  def formfield_for_manytomany(self, db_field, request, **kwargs):
+    if db_field.name == "jobs":
+      kwargs["queryset"] = db_field.related_model.objects.select_related("category")
+    return super().formfield_for_manytomany(db_field, request, **kwargs)
+
   fieldsets = (
     (None, {
       "fields": ("user", "job_category")
