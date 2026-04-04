@@ -34,6 +34,14 @@ export async function apiRequest<T>(
   path: string,
   options: RequestInit & { auth?: boolean } = {}
 ): Promise<T> {
+  return _request<T>(path, options, false);
+}
+
+async function _request<T>(
+  path: string,
+  options: RequestInit & { auth?: boolean },
+  isRetry: boolean
+): Promise<T> {
   const { auth = false, ...fetchOptions } = options;
 
   const headers: Record<string, string> = {
@@ -67,6 +75,14 @@ export async function apiRequest<T>(
   }
 
   if (!res.ok) {
+    // 401 on authenticated request → try token refresh once, then retry
+    if (res.status === 401 && auth && !isRetry) {
+      const refreshed = await refreshAccessToken();
+      if (refreshed) {
+        return _request<T>(path, options, true);
+      }
+    }
+
     const err: ApiError = {
       status: res.status,
       ...(typeof body === "object" && body !== null ? (body as object) : {}),
