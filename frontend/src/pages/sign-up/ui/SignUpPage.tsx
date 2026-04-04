@@ -4,6 +4,17 @@ import { useNavigate, Link } from "react-router-dom";
 
 const isValidEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 
+function timingSafeEqual(a: string, b: string): boolean {
+  const lenA = a.length;
+  const lenB = b.length;
+  const len = Math.max(lenA, lenB);
+  let result = lenA ^ lenB;
+  for (let i = 0; i < len; i++) {
+    result |= (a.charCodeAt(i) || 0) ^ (b.charCodeAt(i) || 0);
+  }
+  return result === 0;
+}
+
 const SIGNUP_STYLES = `
         .su-page {
           min-height: 100vh;
@@ -250,7 +261,7 @@ export function SignUpPage() {
     if (!email.trim()) return "올바른 이메일을 입력해주세요.";
     if (!isValidEmail(email)) return "올바른 이메일을 입력해주세요.";
     if (password.length < 8) return "비밀번호는 8자 이상이어야 합니다.";
-    if (password !== passwordConfirm) return "비밀번호가 일치하지 않습니다.";
+    if (!timingSafeEqual(password, passwordConfirm)) return "비밀번호가 일치하지 않습니다.";
     if (!(agreements.terms && agreements.privacy))
       return "이용약관 및 개인정보처리방침에 동의해주세요.";
     return null;
