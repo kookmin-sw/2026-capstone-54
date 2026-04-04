@@ -1,50 +1,4 @@
-const STEPS = [
-  { num: "01", title: "면접 설정", desc: "이력서 선택, 면접 유형·시간·모드 설정", label: "1 설정" },
-  { num: "02", title: "사전 환경 점검", desc: "카메라·마이크·네트워크 자동 점검", label: "2 점검" },
-  { num: "03", title: "면접 진행 & 결과 확인", desc: "AI 면접 후 즉시 영역별 점수 리포트 제공", label: "3 면접" },
-];
-
-const TAGS = ["꼬리질문 방식", "전체 프로세스 방식", "연습 / 실전 모드", "15분 ~ 60분"];
-
-export function HowToSection() {
-  return (
-    <section id="how-to" className="howto-section">
-      <div className="howto-inner">
-        {/* 좌측 */}
-        <div className="howto-left">
-          <div className="howto-badge">이용 방법</div>
-          <h2 className="howto-title">3단계로 끝나는<br />AI 면접.</h2>
-          <p className="howto-desc">복잡한 설정 없이, 이력서 업로드부터 결과 확인까지 15분이면 충분합니다.</p>
-          <div className="howto-steps">
-            {STEPS.map((step) => (
-              <div key={step.num} className="howto-step">
-                <div className="step-num">{step.num}</div>
-                <div className="step-content">
-                  <div className="step-title">{step.title}</div>
-                  <div className="step-desc">{step.desc}</div>
-                </div>
-                <div className="step-label">{step.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* 우측: 다크 카드 */}
-        <div className="howto-card">
-          <div className="howto-card-icon">🎙️</div>
-          <h3 className="howto-card-title">연습 모드부터<br />실전 모드까지.</h3>
-          <p className="howto-card-desc">
-            준비 완료 버튼을 눌러 시작하는 연습 모드, 5~30초 랜덤 대기 후 자동 시작되는 실전 모드. 나에게 맞는 방식으로 연습하세요.
-          </p>
-          <div className="howto-tags">
-            {TAGS.map((tag) => (
-              <span key={tag} className="howto-tag">{tag}</span>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <style>{`
+const HOWTO_STYLES = `
         .howto-section {
           padding: 64px 20px;
           display: flex; justify-content: center;
@@ -125,7 +79,55 @@ export function HowToSection() {
           .howto-card-desc { font-size: 14px; margin-bottom: 28px; }
           .howto-tag { font-size: 12px; padding: 6px 14px; }
         }
-      `}</style>
+`;
+
+const STEPS = [
+  { num: "01", title: "면접 설정", desc: "이력서 선택, 면접 유형·시간·모드 설정", label: "1 설정" },
+  { num: "02", title: "사전 환경 점검", desc: "카메라·마이크·네트워크 자동 점검", label: "2 점검" },
+  { num: "03", title: "면접 진행 & 결과 확인", desc: "AI 면접 후 즉시 영역별 점수 리포트 제공", label: "3 면접" },
+];
+
+const TAGS = ["꼬리질문 방식", "전체 프로세스 방식", "연습 / 실전 모드", "15분 ~ 60분"];
+
+export function HowToSection() {
+  return (
+    <section id="how-to" className="howto-section">
+      <div className="howto-inner">
+        {/* 좌측 */}
+        <div className="howto-left">
+          <div className="howto-badge">이용 방법</div>
+          <h2 className="howto-title">3단계로 끝나는<br />AI 면접.</h2>
+          <p className="howto-desc">복잡한 설정 없이, 이력서 업로드부터 결과 확인까지 15분이면 충분합니다.</p>
+          <div className="howto-steps">
+            {STEPS.map((step) => (
+              <div key={step.num} className="howto-step">
+                <div className="step-num">{step.num}</div>
+                <div className="step-content">
+                  <div className="step-title">{step.title}</div>
+                  <div className="step-desc">{step.desc}</div>
+                </div>
+                <div className="step-label">{step.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* 우측: 다크 카드 */}
+        <div className="howto-card">
+          <div className="howto-card-icon">🎙️</div>
+          <h3 className="howto-card-title">연습 모드부터<br />실전 모드까지.</h3>
+          <p className="howto-card-desc">
+            준비 완료 버튼을 눌러 시작하는 연습 모드, 5~30초 랜덤 대기 후 자동 시작되는 실전 모드. 나에게 맞는 방식으로 연습하세요.
+          </p>
+          <div className="howto-tags">
+            {TAGS.map((tag) => (
+              <span key={tag} className="howto-tag">{tag}</span>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <style>{HOWTO_STYLES}</style>
     </section>
   );
 }

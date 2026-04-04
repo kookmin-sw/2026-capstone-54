@@ -1,45 +1,4 @@
-const REPORTS = [
-  {
-    num: "01",
-    badge: "발음 / 전달력",
-    title: "말하는 방식까지 분석",
-    desc: "답변 명확성, 발음, 속도, 전달력을 점수화해 구체적인 개선 방향을 제시합니다.",
-  },
-  {
-    num: "02",
-    title: "영역별 점수 리포트",
-    desc: "발음·전달력 / 논리적 구성 / 태도·자신감 / 전문 용어 활용 4개 영역을 세밀하게 평가합니다.",
-  },
-  {
-    num: "03",
-    title: "꼬리질문 AI 대화",
-    desc: "답변에 따라 실시간으로 꼬리질문을 생성. 실제 면접관처럼 자연스러운 대화 흐름을 만듭니다.",
-  },
-];
-
-export function ReviewReportSection() {
-  return (
-    <section className="review-section">
-      <div className="review-inner">
-        <div className="review-header">
-          <div className="review-badge">AI 리뷰 리포트</div>
-          <h2 className="review-title">면접 후, 더 정확한 피드백.</h2>
-        </div>
-        <div className="review-grid">
-          {REPORTS.map((r) => (
-            <div key={r.num} className="review-card">
-              <div className="review-card-top">
-                <span className="review-num">{r.num}</span>
-                {r.badge && <span className="review-card-badge">{r.badge}</span>}
-              </div>
-              <h3 className="review-card-title">{r.title}</h3>
-              <p className="review-card-desc">{r.desc}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <style>{`
+const REVIEW_STYLES = `
         .review-section {
           padding: 64px 20px;
           display: flex; justify-content: center;
@@ -91,7 +50,50 @@ export function ReviewReportSection() {
           .review-card-title { font-size: 18px; margin-bottom: 12px; }
           .review-card-desc { font-size: 14px; }
         }
-      `}</style>
+`;
+
+const REPORTS = [
+  {
+    num: "01",
+    badge: "발음 / 전달력",
+    title: "말하는 방식까지 분석",
+    desc: "답변 명확성, 발음, 속도, 전달력을 점수화해 구체적인 개선 방향을 제시합니다.",
+  },
+  {
+    num: "02",
+    title: "영역별 점수 리포트",
+    desc: "발음·전달력 / 논리적 구성 / 태도·자신감 / 전문 용어 활용 4개 영역을 세밀하게 평가합니다.",
+  },
+  {
+    num: "03",
+    title: "꼬리질문 AI 대화",
+    desc: "답변에 따라 실시간으로 꼬리질문을 생성. 실제 면접관처럼 자연스러운 대화 흐름을 만듭니다.",
+  },
+];
+
+export function ReviewReportSection() {
+  return (
+    <section className="review-section">
+      <div className="review-inner">
+        <div className="review-header">
+          <div className="review-badge">AI 리뷰 리포트</div>
+          <h2 className="review-title">면접 후, 더 정확한 피드백.</h2>
+        </div>
+        <div className="review-grid">
+          {REPORTS.map((r) => (
+            <div key={r.num} className="review-card">
+              <div className="review-card-top">
+                <span className="review-num">{r.num}</span>
+                {r.badge && <span className="review-card-badge">{r.badge}</span>}
+              </div>
+              <h3 className="review-card-title">{r.title}</h3>
+              <p className="review-card-desc">{r.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <style>{REVIEW_STYLES}</style>
     </section>
   );
 }

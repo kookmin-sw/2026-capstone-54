@@ -288,9 +288,7 @@ function NavBar() {
   );
 }
 
-function Styles() {
-  return (
-    <style>{`
+const JDD_STYLES = `
       @keyframes jdd-fadeUp {
         from { opacity: 0; transform: translateY(20px); }
         to   { opacity: 1; transform: translateY(0); }
@@ -607,6 +605,8 @@ function Styles() {
       @media (prefers-reduced-motion: reduce) {
         *, *::before, *::after { animation: none !important; transition: none !important; }
       }
-    `}</style>
-  );
+    `;
+
+function Styles() {
+  return <style>{JDD_STYLES}</style>;
 }

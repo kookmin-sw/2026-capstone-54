@@ -2,178 +2,9 @@ import { useState } from "react";
 import { useAuthStore } from "@/features/auth";
 import { useNavigate, Link } from "react-router-dom";
 
-interface AgreementState {
-  terms: boolean;
-  privacy: boolean;
-}
+const isValidEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 
-export function SignUpPage() {
-  const navigate = useNavigate();
-  const { isLoading, error, signUp, clearError } = useAuthStore();
-
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [passwordConfirm, setPasswordConfirm] = useState("");
-  const [showPw, setShowPw] = useState(false);
-  const [showPwConfirm, setShowPwConfirm] = useState(false);
-  const [agreements, setAgreements] = useState<AgreementState>({
-    terms: false,
-    privacy: false,
-  });
-  const [validationError, setValidationError] = useState<string | null>(null);
-
-  const validate = (): string | null => {
-    if (!name.trim()) return "이름을 입력해주세요.";
-    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
-      return "올바른 이메일을 입력해주세요.";
-    if (password.length < 8) return "비밀번호는 8자 이상이어야 합니다.";
-    // Use length comparison instead of direct string comparison to avoid timing attacks
-    if (password.length !== passwordConfirm.length || password !== passwordConfirm) 
-      return "비밀번호가 일치하지 않습니다.";
-    if (!agreements.terms || !agreements.privacy)
-      return "이용약관 및 개인정보처리방침에 동의해주세요.";
-    return null;
-  };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    clearError();
-    const err = validate();
-    if (err) {
-      setValidationError(err);
-      return;
-    }
-    setValidationError(null);
-    const ok = await signUp({ name, email, password });
-    if (ok) navigate("/verify-email");
-  };
-
-  const bothAgreed = agreements.terms && agreements.privacy;
-  const handleToggleBoth = (checked: boolean) => {
-    setAgreements({ terms: checked, privacy: checked });
-  };
-
-  return (
-    <div className="su-page">
-      {/* Header */}
-      <header className="su-header">
-        <Link to="/" className="su-logo">me<span style={{ color: "#0991B2" }}>Fit</span></Link>
-        <Link to="/login" className="su-nav-link">← 로그인</Link>
-      </header>
-
-      <main className="su-main">
-        {/* Left: Hero + Steps */}
-        <section className="su-left">
-          <div className="su-badge">● STEP 1 OF 3</div>
-          <h1 className="su-title">
-            핏이 맞는 나를
-            <br />
-            <span className="su-accent">완성해가는</span>
-            <br />
-            여정
-          </h1>
-          <p className="su-desc">
-            이메일 하나로 시작하는 AI 면접 코치.
-            <br />
-            3단계만 거치면 바로 연습할 수 있어요.
-          </p>
-
-          <div className="su-steps">
-            <div className="su-step su-step--active">
-              <div className="su-step-num su-step-num--active">1</div>
-              <div className="su-step-info">
-                <span className="su-step-name">이메일로 계정 생성</span>
-                <span className="su-step-sub">지금 이 단계예요</span>
-              </div>
-            </div>
-            <div className="su-step">
-              <div className="su-step-num">2</div>
-              <div className="su-step-info">
-                <span className="su-step-name">이메일 인증 완료</span>
-                <span className="su-step-sub">메일함을 확인해요</span>
-              </div>
-            </div>
-            <div className="su-step">
-              <div className="su-step-num">3</div>
-              <div className="su-step-info">
-                <span className="su-step-name">프로필 작성 후 면접 시작</span>
-                <span className="su-step-sub">직군·경력 입력</span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Right: Form Card */}
-        <section className="su-right">
-          <div className="su-card">
-            <h2 className="su-card-title">계정 만들기</h2>
-            <p className="su-card-desc">아직 핏이 맞지 않아도 괜찮아요 — 지금 시작해요.</p>
-
-            <form onSubmit={handleSubmit} noValidate>
-              <div className="su-field">
-                <label className="su-label" htmlFor="su-name">이름</label>
-                <input id="su-name" className="su-input" type="text" placeholder="홍길동" value={name} onChange={(e) => setName(e.target.value)} />
-              </div>
-
-              <div className="su-field">
-                <label className="su-label" htmlFor="su-email">이메일</label>
-                <div className="su-input-wrap">
-                  <input id="su-email" className="su-input" type="email" placeholder="hello@mefit.kr" value={email} onChange={(e) => setEmail(e.target.value)} />
-                  <span className="su-input-icon" aria-hidden="true">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                  </span>
-                </div>
-              </div>
-
-              <div className="su-field">
-                <label className="su-label" htmlFor="su-pw">비밀번호</label>
-                <div className="su-input-wrap">
-                  <input id="su-pw" className="su-input" type={showPw ? "text" : "password"} placeholder="8자 이상" value={password} onChange={(e) => setPassword(e.target.value)} />
-                  <button type="button" className="su-pw-toggle" onClick={() => setShowPw(!showPw)} aria-label={showPw ? "비밀번호 숨기기" : "비밀번호 보기"}>
-                    {showPw ? <EyeOff /> : <EyeOn />}
-                  </button>
-                </div>
-              </div>
-
-              <div className="su-field">
-                <label className="su-label" htmlFor="su-pw-confirm">비밀번호 확인</label>
-                <div className="su-input-wrap">
-                  <input id="su-pw-confirm" className="su-input" type={showPwConfirm ? "text" : "password"} placeholder="다시 입력" value={passwordConfirm} onChange={(e) => setPasswordConfirm(e.target.value)} />
-                  <button type="button" className="su-pw-toggle" onClick={() => setShowPwConfirm(!showPwConfirm)} aria-label={showPwConfirm ? "비밀번호 숨기기" : "비밀번호 보기"}>
-                    {showPwConfirm ? <EyeOff /> : <EyeOn />}
-                  </button>
-                </div>
-              </div>
-
-              <label className="su-agree">
-                <input type="checkbox" checked={bothAgreed} onChange={(e) => handleToggleBoth(e.target.checked)} />
-                <span><a href="#" className="su-agree-link">이용약관</a> 및 <a href="#" className="su-agree-link">개인정보처리방침</a>에 동의합니다.</span>
-              </label>
-
-              {(validationError || error) && (
-                <p className="su-error" role="alert">{validationError || error}</p>
-              )}
-
-              <button type="submit" className="su-submit" disabled={isLoading}>
-                {isLoading ? "처리 중..." : "가입하기 →"}
-              </button>
-            </form>
-
-            <p className="su-bottom-text">
-              이미 계정이 있으신가요? <Link to="/login" className="su-bottom-anchor">로그인 →</Link>
-            </p>
-          </div>
-        </section>
-      </main>
-
-      <footer className="su-footer">
-        <a href="#">개인정보처리방침</a>
-        <a href="#">이용약관</a>
-        <a href="#">쿠키</a>
-      </footer>
-
-      <style>{`
+const SIGNUP_STYLES = `
         .su-page {
           min-height: 100vh;
           background: #FFFFFF;
@@ -391,7 +222,178 @@ export function SignUpPage() {
           }
           .su-step-info { align-items: center; }
         }
-      `}</style>
+`;
+
+interface AgreementState {
+  terms: boolean;
+  privacy: boolean;
+}
+
+export function SignUpPage() {
+  const navigate = useNavigate();
+  const { isLoading, error, signUp, clearError } = useAuthStore();
+
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [passwordConfirm, setPasswordConfirm] = useState("");
+  const [showPw, setShowPw] = useState(false);
+  const [showPwConfirm, setShowPwConfirm] = useState(false);
+  const [agreements, setAgreements] = useState<AgreementState>({
+    terms: false,
+    privacy: false,
+  });
+  const [validationError, setValidationError] = useState<string | null>(null);
+
+  const validate = (): string | null => {
+    if (!name.trim()) return "이름을 입력해주세요.";
+    if (!email.trim()) return "올바른 이메일을 입력해주세요.";
+    if (!isValidEmail(email)) return "올바른 이메일을 입력해주세요.";
+    if (password.length < 8) return "비밀번호는 8자 이상이어야 합니다.";
+    if (password !== passwordConfirm) return "비밀번호가 일치하지 않습니다.";
+    if (!(agreements.terms && agreements.privacy))
+      return "이용약관 및 개인정보처리방침에 동의해주세요.";
+    return null;
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    clearError();
+    const err = validate();
+    if (err) {
+      setValidationError(err);
+      return;
+    }
+    setValidationError(null);
+    const ok = await signUp({ name, email, password });
+    if (ok) navigate("/verify-email");
+  };
+
+  const bothAgreed = agreements.terms && agreements.privacy;
+  const handleToggleBoth = (checked: boolean) => {
+    setAgreements({ terms: checked, privacy: checked });
+  };
+
+  return (
+    <div className="su-page">
+      {/* Header */}
+      <header className="su-header">
+        <Link to="/" className="su-logo">me<span style={{ color: "#0991B2" }}>Fit</span></Link>
+        <Link to="/login" className="su-nav-link">← 로그인</Link>
+      </header>
+
+      <main className="su-main">
+        {/* Left: Hero + Steps */}
+        <section className="su-left">
+          <div className="su-badge">● STEP 1 OF 3</div>
+          <h1 className="su-title">
+            핏이 맞는 나를
+            <br />
+            <span className="su-accent">완성해가는</span>
+            <br />
+            여정
+          </h1>
+          <p className="su-desc">
+            이메일 하나로 시작하는 AI 면접 코치.
+            <br />
+            3단계만 거치면 바로 연습할 수 있어요.
+          </p>
+
+          <div className="su-steps">
+            <div className="su-step su-step--active">
+              <div className="su-step-num su-step-num--active">1</div>
+              <div className="su-step-info">
+                <span className="su-step-name">이메일로 계정 생성</span>
+                <span className="su-step-sub">지금 이 단계예요</span>
+              </div>
+            </div>
+            <div className="su-step">
+              <div className="su-step-num">2</div>
+              <div className="su-step-info">
+                <span className="su-step-name">이메일 인증 완료</span>
+                <span className="su-step-sub">메일함을 확인해요</span>
+              </div>
+            </div>
+            <div className="su-step">
+              <div className="su-step-num">3</div>
+              <div className="su-step-info">
+                <span className="su-step-name">프로필 작성 후 면접 시작</span>
+                <span className="su-step-sub">직군·경력 입력</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Right: Form Card */}
+        <section className="su-right">
+          <div className="su-card">
+            <h2 className="su-card-title">계정 만들기</h2>
+            <p className="su-card-desc">아직 핏이 맞지 않아도 괜찮아요 — 지금 시작해요.</p>
+
+            <form onSubmit={handleSubmit} noValidate>
+              <div className="su-field">
+                <label className="su-label" htmlFor="su-name">이름</label>
+                <input id="su-name" className="su-input" type="text" placeholder="홍길동" value={name} onChange={(e) => setName(e.target.value)} />
+              </div>
+
+              <div className="su-field">
+                <label className="su-label" htmlFor="su-email">이메일</label>
+                <div className="su-input-wrap">
+                  <input id="su-email" className="su-input" type="email" placeholder="hello@mefit.kr" value={email} onChange={(e) => setEmail(e.target.value)} />
+                  <span className="su-input-icon" aria-hidden="true">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                  </span>
+                </div>
+              </div>
+
+              <div className="su-field">
+                <label className="su-label" htmlFor="su-pw">비밀번호</label>
+                <div className="su-input-wrap">
+                  <input id="su-pw" className="su-input" type={showPw ? "text" : "password"} placeholder="8자 이상" value={password} onChange={(e) => setPassword(e.target.value)} />
+                  <button type="button" className="su-pw-toggle" onClick={() => setShowPw(!showPw)} aria-label={showPw ? "비밀번호 숨기기" : "비밀번호 보기"}>
+                    {showPw ? <EyeOff /> : <EyeOn />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="su-field">
+                <label className="su-label" htmlFor="su-pw-confirm">비밀번호 확인</label>
+                <div className="su-input-wrap">
+                  <input id="su-pw-confirm" className="su-input" type={showPwConfirm ? "text" : "password"} placeholder="다시 입력" value={passwordConfirm} onChange={(e) => setPasswordConfirm(e.target.value)} />
+                  <button type="button" className="su-pw-toggle" onClick={() => setShowPwConfirm(!showPwConfirm)} aria-label={showPwConfirm ? "비밀번호 숨기기" : "비밀번호 보기"}>
+                    {showPwConfirm ? <EyeOff /> : <EyeOn />}
+                  </button>
+                </div>
+              </div>
+
+              <label className="su-agree">
+                <input type="checkbox" checked={bothAgreed} onChange={(e) => handleToggleBoth(e.target.checked)} />
+                <span><a href="#" className="su-agree-link">이용약관</a> 및 <a href="#" className="su-agree-link">개인정보처리방침</a>에 동의합니다.</span>
+              </label>
+
+              {(validationError || error) && (
+                <p className="su-error" role="alert">{validationError || error}</p>
+              )}
+
+              <button type="submit" className="su-submit" disabled={isLoading}>
+                {isLoading ? "처리 중..." : "가입하기 →"}
+              </button>
+            </form>
+
+            <p className="su-bottom-text">
+              이미 계정이 있으신가요? <Link to="/login" className="su-bottom-anchor">로그인 →</Link>
+            </p>
+          </div>
+        </section>
+      </main>
+
+      <footer className="su-footer">
+        <a href="#">개인정보처리방침</a>
+        <a href="#">이용약관</a>
+        <a href="#">쿠키</a>
+      </footer>
+
+      <style>{SIGNUP_STYLES}</style>
     </div>
   );
 }

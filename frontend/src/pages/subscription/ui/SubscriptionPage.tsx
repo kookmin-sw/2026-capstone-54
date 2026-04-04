@@ -45,55 +45,7 @@ const FAQ_ITEMS: { q: string; a: string }[] = [
   },
 ];
 
-export function SubscriptionPage() {
-  const {
-    status, loading, processing, error, successMessage,
-    billingCycle, openFaqIndex, redirectUrl,
-    fetchStatus, toggleBilling, checkout, cancelSubscription,
-    toggleFaq, clearMessages, clearRedirectUrl,
-  } = useSubscriptionStore();
-
-  const proCardRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    fetchStatus();
-  }, [fetchStatus]);
-
-  useEffect(() => {
-    if (successMessage || error) {
-      const t = setTimeout(clearMessages, 4000);
-      return () => clearTimeout(t);
-    }
-  }, [successMessage, error, clearMessages]);
-
-  useEffect(() => {
-    if (redirectUrl) {
-      clearRedirectUrl();
-      window.location.href = redirectUrl;
-    }
-  }, [redirectUrl, clearRedirectUrl]);
-
-  const isYearly = billingCycle === "yearly";
-  const monthlyPrice = isYearly ? "₩7,900" : "₩9,900";
-  const originalPrice = "₩9,900";
-  const periodText = isYearly
-    ? "연간 결제 (₩94,800/년) · 언제든 취소"
-    : "월간 결제 · 언제든 취소 가능";
-  const proNote = isYearly
-    ? "첫 7일 무료 체험 · 20% 절약"
-    : "첫 7일 무료 체험 · 이후 자동 결제";
-  const proBtnText = isYearly ? "Pro 연간 결제 시작" : "Pro 시작하기";
-
-  const isPro = status?.currentPlan === "pro";
-
-  const scrollToPro = (e: React.MouseEvent) => {
-    e.preventDefault();
-    proCardRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-  };
-
-  return (
-    <>
-      <style>{`
+const SUB_STYLES = `
         /* ── RESET ── */
         .sub-wrap *, .sub-wrap *::before, .sub-wrap *::after { box-sizing: border-box; }
         :root {
@@ -470,7 +422,57 @@ export function SubscriptionPage() {
           .sub-trust { gap: 14px; }
           .sub-header { padding: 36px 0 32px; }
         }
-      `}</style>
+      `;
+
+export function SubscriptionPage() {
+  const {
+    status, loading, processing, error, successMessage,
+    billingCycle, openFaqIndex, redirectUrl,
+    fetchStatus, toggleBilling, checkout, cancelSubscription,
+    toggleFaq, clearMessages, clearRedirectUrl,
+  } = useSubscriptionStore();
+
+  const proCardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    fetchStatus();
+  }, [fetchStatus]);
+
+  useEffect(() => {
+    if (successMessage || error) {
+      const t = setTimeout(clearMessages, 4000);
+      return () => clearTimeout(t);
+    }
+  }, [successMessage, error, clearMessages]);
+
+  useEffect(() => {
+    if (redirectUrl) {
+      clearRedirectUrl();
+      window.location.href = redirectUrl;
+    }
+  }, [redirectUrl, clearRedirectUrl]);
+
+  const isYearly = billingCycle === "yearly";
+  const monthlyPrice = isYearly ? "₩7,900" : "₩9,900";
+  const originalPrice = "₩9,900";
+  const periodText = isYearly
+    ? "연간 결제 (₩94,800/년) · 언제든 취소"
+    : "월간 결제 · 언제든 취소 가능";
+  const proNote = isYearly
+    ? "첫 7일 무료 체험 · 20% 절약"
+    : "첫 7일 무료 체험 · 이후 자동 결제";
+  const proBtnText = isYearly ? "Pro 연간 결제 시작" : "Pro 시작하기";
+
+  const isPro = status?.currentPlan === "pro";
+
+  const scrollToPro = (e: React.MouseEvent) => {
+    e.preventDefault();
+    proCardRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  };
+
+  return (
+    <>
+      <style>{SUB_STYLES}</style>
 
       <div className="sub-wrap">
         {/* NAV */}

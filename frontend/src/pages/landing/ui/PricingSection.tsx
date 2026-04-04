@@ -1,72 +1,4 @@
-const FREE_ITEMS = [
-  { ok: true, text: "월 5회 면접" },
-  { ok: true, text: "기본 AI 리뷰 리포트" },
-  { ok: true, text: "스트릭 기능" },
-  { ok: true, text: "이력서 등록 (최대 2개)" },
-  { ok: false, text: "시선 추적 분석" },
-  { ok: false, text: "상세 AI 리뷰 리포트" },
-];
-
-const PRO_ITEMS = [
-  { ok: true, text: "무제한 면접" },
-  { ok: true, text: "상세 AI 리뷰 리포트" },
-  { ok: true, text: "시선 추적 분석" },
-  { ok: true, text: "스트릭 보상 2배" },
-  { ok: true, text: "이력서 무제한 등록" },
-  { ok: true, text: "채용공고 연동" },
-];
-
-export function PricingSection() {
-  return (
-    <section id="pricing" className="pricing-section">
-      <div className="pricing-inner">
-        <div className="pricing-header">
-          <div className="pricing-badge">요금제</div>
-          <h2 className="pricing-title">나에게 맞는 플랜을 선택하세요.</h2>
-          <p className="pricing-subtitle">숨겨진 비용 없음. 언제든지 업그레이드 또는 취소 가능합니다.</p>
-        </div>
-
-        <div className="pricing-cards">
-          {/* Free */}
-          <div className="plan-card plan-free">
-            <div className="plan-name">Free</div>
-            <div className="plan-price">₩0</div>
-            <div className="plan-period">월 요금 없음</div>
-            <ul className="plan-items">
-              {FREE_ITEMS.map((item) => (
-                <li key={item.text} className={`plan-item ${item.ok ? "" : "plan-item-off"}`}>
-                  <span className={item.ok ? "check-ok" : "check-no"}>{item.ok ? "✓" : "✕"}</span>
-                  {item.text}
-                </li>
-              ))}
-            </ul>
-            <button className="plan-btn plan-btn-free">현재 플랜</button>
-            <div className="plan-note">기본 기능 무료 사용</div>
-          </div>
-
-          {/* Pro */}
-          <div className="plan-card plan-pro">
-            <span className="plan-recommend">추천</span>
-            <div className="plan-name plan-name-white">Pro</div>
-            <div className="plan-price plan-price-white">
-              ₩19,900<span className="plan-price-unit">/월</span>
-            </div>
-            <div className="plan-period plan-period-white">월 구독</div>
-            <ul className="plan-items">
-              {PRO_ITEMS.map((item) => (
-                <li key={item.text} className="plan-item plan-item-white">
-                  <span className="check-pro">✓</span>
-                  {item.text}
-                </li>
-              ))}
-            </ul>
-            <button className="plan-btn plan-btn-pro">Pro 업그레이드</button>
-            <div className="plan-note plan-note-white">언제든지 취소 가능</div>
-          </div>
-        </div>
-      </div>
-
-      <style>{`
+const PRICING_STYLES = `
         .pricing-section {
           padding: 64px 20px;
           display: flex; justify-content: center;
@@ -163,7 +95,77 @@ export function PricingSection() {
           .plan-note { font-size: 13px; margin-top: 12px; }
           .plan-recommend { top: 24px; right: 24px; font-size: 12px; padding: 5px 14px; }
         }
-      `}</style>
+`;
+
+const FREE_ITEMS = [
+  { ok: true, text: "월 5회 면접" },
+  { ok: true, text: "기본 AI 리뷰 리포트" },
+  { ok: true, text: "스트릭 기능" },
+  { ok: true, text: "이력서 등록 (최대 2개)" },
+  { ok: false, text: "시선 추적 분석" },
+  { ok: false, text: "상세 AI 리뷰 리포트" },
+];
+
+const PRO_ITEMS = [
+  { ok: true, text: "무제한 면접" },
+  { ok: true, text: "상세 AI 리뷰 리포트" },
+  { ok: true, text: "시선 추적 분석" },
+  { ok: true, text: "스트릭 보상 2배" },
+  { ok: true, text: "이력서 무제한 등록" },
+  { ok: true, text: "채용공고 연동" },
+];
+
+export function PricingSection() {
+  return (
+    <section id="pricing" className="pricing-section">
+      <div className="pricing-inner">
+        <div className="pricing-header">
+          <div className="pricing-badge">요금제</div>
+          <h2 className="pricing-title">나에게 맞는 플랜을 선택하세요.</h2>
+          <p className="pricing-subtitle">숨겨진 비용 없음. 언제든지 업그레이드 또는 취소 가능합니다.</p>
+        </div>
+
+        <div className="pricing-cards">
+          {/* Free */}
+          <div className="plan-card plan-free">
+            <div className="plan-name">Free</div>
+            <div className="plan-price">₩0</div>
+            <div className="plan-period">월 요금 없음</div>
+            <ul className="plan-items">
+              {FREE_ITEMS.map((item) => (
+                <li key={item.text} className={`plan-item ${item.ok ? "" : "plan-item-off"}`}>
+                  <span className={item.ok ? "check-ok" : "check-no"}>{item.ok ? "✓" : "✕"}</span>
+                  {item.text}
+                </li>
+              ))}
+            </ul>
+            <button className="plan-btn plan-btn-free">현재 플랜</button>
+            <div className="plan-note">기본 기능 무료 사용</div>
+          </div>
+
+          {/* Pro */}
+          <div className="plan-card plan-pro">
+            <span className="plan-recommend">추천</span>
+            <div className="plan-name plan-name-white">Pro</div>
+            <div className="plan-price plan-price-white">
+              ₩19,900<span className="plan-price-unit">/월</span>
+            </div>
+            <div className="plan-period plan-period-white">월 구독</div>
+            <ul className="plan-items">
+              {PRO_ITEMS.map((item) => (
+                <li key={item.text} className="plan-item plan-item-white">
+                  <span className="check-pro">✓</span>
+                  {item.text}
+                </li>
+              ))}
+            </ul>
+            <button className="plan-btn plan-btn-pro">Pro 업그레이드</button>
+            <div className="plan-note plan-note-white">언제든지 취소 가능</div>
+          </div>
+        </div>
+      </div>
+
+      <style>{PRICING_STYLES}</style>
     </section>
   );
 }

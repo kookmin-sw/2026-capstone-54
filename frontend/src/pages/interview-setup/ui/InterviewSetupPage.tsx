@@ -2,29 +2,7 @@ import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useInterviewSetupStore } from "@/features/interview-setup";
 
-export function InterviewSetupPage() {
-  const {
-    jdList, jdListLoading, jdTab, selectedJdId,
-    directCompany, directRole, directStage, directUrl,
-    interviewMode, practiceMode,
-    loadJdList, setJdTab, selectJd, setDirectField,
-    setInterviewMode, setPracticeMode, getSummary,
-  } = useInterviewSetupStore();
-
-  const summary = getSummary();
-
-  useEffect(() => {
-    loadJdList();
-  }, [loadJdList]);
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const rv = (..._args: unknown[]) => "";
-  const rvd = (delay: number): React.CSSProperties =>
-    ({ transitionDelay: `${delay}ms` });
-
-  return (
-    <>
-      <style>{`
+const ISETUP_STYLES = `
         /* ── RESET ── */
         .isetup-wrap *, .isetup-wrap *::before, .isetup-wrap *::after { box-sizing: border-box; }
 
@@ -236,7 +214,31 @@ export function InterviewSetupPage() {
           .isetup-main { padding: 20px 16px; }
           .isetup-mode-grid, .isetup-prac-row, .isetup-inp-row { grid-template-columns: 1fr; }
         }
-      `}</style>
+`;
+
+export function InterviewSetupPage() {
+  const {
+    jdList, jdListLoading, jdTab, selectedJdId,
+    directCompany, directRole, directStage, directUrl,
+    interviewMode, practiceMode,
+    loadJdList, setJdTab, selectJd, setDirectField,
+    setInterviewMode, setPracticeMode, getSummary,
+  } = useInterviewSetupStore();
+
+  const summary = getSummary();
+
+  useEffect(() => {
+    loadJdList();
+  }, [loadJdList]);
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const rv = (..._args: unknown[]) => "";
+  const rvd = (delay: number): React.CSSProperties =>
+    ({ transitionDelay: `${delay}ms` });
+
+  return (
+    <>
+      <style>{ISETUP_STYLES}</style>
 
       <div className="isetup-wrap">
         {/* NAV */}

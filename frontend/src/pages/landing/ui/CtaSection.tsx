@@ -1,21 +1,4 @@
-export function CtaSection() {
-  return (
-    <section className="cta-section">
-      <div className="cta-card">
-        <h2 className="cta-title">
-          未fit에서<br />meFit으로.
-        </h2>
-        <p className="cta-desc">
-          아직 핏이 맞지 않아도 괜찮아요. 지금 바로 시작해서<br />
-          면접에 맞는 나로 완성해가세요.
-        </p>
-        <div className="cta-btns">
-          <a href="/sign-up" className="cta-btn-primary">무료 면접 시작하기 →</a>
-          <a href="#pricing" className="cta-btn-secondary">요금제 보기</a>
-        </div>
-      </div>
-
-      <style>{`
+const CTA_STYLES = `
         .cta-section {
           padding: 48px 20px;
           display: flex; justify-content: center;
@@ -67,7 +50,26 @@ export function CtaSection() {
           .cta-btn-primary { width: auto; padding: 18px 36px; font-size: 17px; }
           .cta-btn-secondary { width: auto; padding: 18px 36px; font-size: 17px; }
         }
-      `}</style>
+`;
+
+export function CtaSection() {
+  return (
+    <section className="cta-section">
+      <div className="cta-card">
+        <h2 className="cta-title">
+          未fit에서<br />meFit으로.
+        </h2>
+        <p className="cta-desc">
+          아직 핏이 맞지 않아도 괜찮아요. 지금 바로 시작해서<br />
+          면접에 맞는 나로 완성해가세요.
+        </p>
+        <div className="cta-btns">
+          <a href="/sign-up" className="cta-btn-primary">무료 면접 시작하기 →</a>
+          <a href="#pricing" className="cta-btn-secondary">요금제 보기</a>
+        </div>
+      </div>
+
+      <style>{CTA_STYLES}</style>
     </section>
   );
 }

@@ -1,5 +1,11 @@
 import { apiRequest, setTokens, clearTokens, getRefreshToken } from "@/shared/api/client";
 
+function parseApiError(err: unknown, fallback: string): string {
+  const e = err as { message?: string; fieldErrors?: Record<string, string[]> };
+  const fieldMsg = e.fieldErrors ? Object.values(e.fieldErrors).flat()[0] : undefined;
+  return fieldMsg ?? e.message ?? fallback;
+}
+
 /* ── Response types ── */
 export interface AuthResponse {
   access: string;
@@ -45,14 +51,7 @@ export async function signUpApi(payload: SignUpPayload): Promise<SignUpResult> {
       isEmailConfirmed: res.isEmailConfirmed ?? false,
     };
   } catch (err: unknown) {
-    const e = err as { status?: number; message?: string; fieldErrors?: Record<string, string[]> };
-    const fieldMsg = e.fieldErrors
-      ? Object.values(e.fieldErrors).flat()[0]
-      : undefined;
-    return {
-      success: false,
-      message: fieldMsg ?? e.message ?? "회원가입에 실패했습니다.",
-    };
+    return { success: false, message: parseApiError(err, "회원가입에 실패했습니다.") };
   }
 }
 
@@ -118,14 +117,7 @@ export async function verifyEmailApi(code: string): Promise<VerifyEmailResult> {
     });
     return { success: true, message: "이메일 인증이 완료되었습니다." };
   } catch (err: unknown) {
-    const e = err as { status?: number; message?: string; fieldErrors?: Record<string, string[]> };
-    const fieldMsg = e.fieldErrors
-      ? Object.values(e.fieldErrors).flat()[0]
-      : undefined;
-    return {
-      success: false,
-      message: fieldMsg ?? e.message ?? "인증 코드가 올바르지 않습니다.",
-    };
+    return { success: false, message: parseApiError(err, "인증 코드가 올바르지 않습니다.") };
   }
 }
 

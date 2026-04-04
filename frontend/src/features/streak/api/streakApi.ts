@@ -42,7 +42,7 @@ export interface StreakData {
 }
 
 /* ── Mock Data ── */
-const getMockData = (): StreakData => ({
+const MOCK_DATA: StreakData = {
   currentStreak: 12,
   bestStreak: 28,
   totalDays: 43,
@@ -93,23 +93,23 @@ const getMockData = (): StreakData => ({
       date: "2026.02.14",
     },
   ],
-});
+};
 
 /* ── Fetch Streak Data ── */
 export async function fetchStreakApi(): Promise<{ success: boolean; data?: StreakData; error?: string }> {
   if (USE_MOCK) {
     await new Promise((r) => setTimeout(r, 380));
-    return { success: true, data: getMockData() };
+    return { success: true, data: MOCK_DATA };
   }
   try {
     const res = await fetch("/api/v1/streak/", {
       method: "GET",
       credentials: "include",
     });
-    if (!res.ok) return { success: true, data: getMockData() };
+    if (!res.ok) return { success: true, data: MOCK_DATA };
     const json = await res.json();
     return { success: true, data: json };
   } catch {
-    return { success: true, data: getMockData() };
+    return { success: true, data: MOCK_DATA };
   }
 }

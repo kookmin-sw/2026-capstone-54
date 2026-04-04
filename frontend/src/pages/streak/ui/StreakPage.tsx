@@ -26,52 +26,7 @@ function buildCalendarCells(
   return cells;
 }
 
-export function StreakPage() {
-  const { data, loading, fetchStreak } = useStreakStore();
-
-  const now = new Date();
-  const todayY = now.getFullYear();
-  const todayM = now.getMonth() + 1;
-  const todayD = now.getDate();
-
-  const [viewY, setViewY] = useState(todayY);
-  const [viewM, setViewM] = useState(todayM);
-  const [revealed, setRevealed] = useState(false);
-
-  useEffect(() => {
-    fetchStreak();
-  }, [fetchStreak]);
-
-  useEffect(() => {
-    if (!data) return;
-    const t = setTimeout(() => setRevealed(true), 80);
-    return () => clearTimeout(t);
-  }, [data]);
-
-  const prevMonth = () => {
-    if (viewM === 1) { setViewY(y => y - 1); setViewM(12); }
-    else setViewM(m => m - 1);
-  };
-  const nextMonth = () => {
-    if (viewM === 12) { setViewY(y => y + 1); setViewM(1); }
-    else setViewM(m => m + 1);
-  };
-
-  const doneSet = data
-    ? new Set(data.calendarDoneMap[`${viewY}-${viewM}`] ?? [])
-    : new Set<number>();
-
-  const calCells = buildCalendarCells(viewY, viewM, doneSet, todayY, todayM, todayD);
-
-  const iconBgStyle = (bg: "cyan" | "green" | "amber") => {
-    if (bg === "cyan")  return { background: "#0991B2" };
-    if (bg === "green") return { background: "#059669" };
-    return { background: "#D97706" };
-  };
-
-  return (
-    <>
-      <style>{`
+const SK_STYLES = `
         /* ── RESET ── */
         .sk-wrap *, .sk-wrap *::before, .sk-wrap *::after { box-sizing: border-box; }
         :root {
@@ -395,7 +350,54 @@ export function StreakPage() {
           .sk-cta { flex-direction: column; align-items: flex-start; }
           .sk-btn-cta { width: 100%; text-align: center; }
         }
-      `}</style>
+      `;
+
+export function StreakPage() {
+  const { data, loading, fetchStreak } = useStreakStore();
+
+  const now = new Date();
+  const todayY = now.getFullYear();
+  const todayM = now.getMonth() + 1;
+  const todayD = now.getDate();
+
+  const [viewY, setViewY] = useState(todayY);
+  const [viewM, setViewM] = useState(todayM);
+  const [revealed, setRevealed] = useState(false);
+
+  useEffect(() => {
+    fetchStreak();
+  }, [fetchStreak]);
+
+  useEffect(() => {
+    if (!data) return;
+    const t = setTimeout(() => setRevealed(true), 80);
+    return () => clearTimeout(t);
+  }, [data]);
+
+  const prevMonth = () => {
+    if (viewM === 1) { setViewY(y => y - 1); setViewM(12); }
+    else setViewM(m => m - 1);
+  };
+  const nextMonth = () => {
+    if (viewM === 12) { setViewY(y => y + 1); setViewM(1); }
+    else setViewM(m => m + 1);
+  };
+
+  const doneSet = data
+    ? new Set(data.calendarDoneMap[`${viewY}-${viewM}`] ?? [])
+    : new Set<number>();
+
+  const calCells = buildCalendarCells(viewY, viewM, doneSet, todayY, todayM, todayD);
+
+  const iconBgStyle = (bg: "cyan" | "green" | "amber") => {
+    if (bg === "cyan")  return { background: "#0991B2" };
+    if (bg === "green") return { background: "#059669" };
+    return { background: "#D97706" };
+  };
+
+  return (
+    <>
+      <style>{SK_STYLES}</style>
 
       <div className="sk-wrap">
         {/* NAV */}

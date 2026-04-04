@@ -4,20 +4,25 @@ import { useSettingsStore } from "@/features/settings";
 import type { SettingsPanel } from "@/features/settings";
 
 /* ── Password strength helper ── */
+const PWD_STATES = [
+  { width: "25%", color: "#EF4444", label: "약함 — 더 길게 작성해주세요" },
+  { width: "50%", color: "#F97316", label: "보통 — 숫자를 추가하세요" },
+  { width: "75%", color: "#F59E0B", label: "강함 — 특수문자를 추가하면 완벽해요" },
+  { width: "100%", color: "#10B981", label: "매우 강함 ✓" },
+];
+
+function calcPwdScore(val: string): number {
+  return [
+    val.length >= 8,
+    val.length >= 12,
+    /[A-Za-z]/.test(val) && /[0-9]/.test(val),
+    /[^A-Za-z0-9]/.test(val),
+  ].filter(Boolean).length;
+}
+
 function getPwdStrength(val: string): { width: string; color: string; label: string } {
   if (!val) return { width: "0%", color: "#9CA3AF", label: "8자 이상, 영문+숫자+특수문자 포함 권장" };
-  let score = 0;
-  if (val.length >= 8) score++;
-  if (val.length >= 12) score++;
-  if (/[A-Za-z]/.test(val) && /[0-9]/.test(val)) score++;
-  if (/[^A-Za-z0-9]/.test(val)) score++;
-  const states = [
-    { width: "25%", color: "#EF4444", label: "약함 — 더 길게 작성해주세요" },
-    { width: "50%", color: "#F97316", label: "보통 — 숫자를 추가하세요" },
-    { width: "75%", color: "#F59E0B", label: "강함 — 특수문자를 추가하면 완벽해요" },
-    { width: "100%", color: "#10B981", label: "매우 강함 ✓" },
-  ];
-  return states[Math.min(score - 1, 3)] ?? states[0];
+  return PWD_STATES[Math.min(calcPwdScore(val) - 1, 3)] ?? PWD_STATES[0];
 }
 
 export function SettingsPage() {

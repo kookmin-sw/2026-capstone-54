@@ -1,52 +1,4 @@
-const REASONS = [
-  {
-    emoji: "🎯",
-    title: "이력서 기반 맞춤 질문",
-    desc: "이력서를 업로드하면 AI가 직무와 경력에 맞는 맞춤형 질문을 생성합니다. 일반적인 예상 질문이 아닌, 나에게 딱 맞는 질문으로 준비하세요.",
-    featured: true,
-  },
-  { emoji: "🔄", title: "꼬리질문 AI", desc: "답변 내용에 따라 AI가 실시간으로 꼬리질문을 생성해 실제 면접과 똑같은 긴장감을 경험할 수 있습니다." },
-  { emoji: "👁️", title: "시선 추적 분석", desc: "면접 중 시선 이탈 횟수를 측정해 자신감 있는 면접 태도를 만들 수 있도록 구체적인 피드백을 제공합니다." },
-  { emoji: "📊", title: "영역별 점수 리포트", desc: "발음·전달력, 논리적 구성, 태도·자신감, 전문 용어 활용 총 4개 영역을 수치로 확인하고 개선하세요." },
-  { emoji: "🔥", title: "스트릭으로 습관 형성", desc: "연속 면접 일수와 연간 활동 기록으로 꾸준한 면접 연습 습관을 만들고 성장 과정을 시각화하세요." },
-  { emoji: "⚡", title: "24/7 언제든 면접", desc: "면접관 일정에 맞출 필요 없이 내가 원하는 시간에, 원하는 장소에서 면접 연습을 시작하세요." },
-  { emoji: "🏢", title: "채용공고 연동", desc: "지원하는 채용공고를 등록하면 해당 직무에 최적화된 면접 질문으로 연습할 수 있습니다." },
-];
-
-const [featured, ...rest] = REASONS;
-
-export function WhySection() {
-  return (
-    <section id="why" className="why-section">
-      <div className="why-inner">
-        <div className="why-header">
-          <div className="why-badge">왜 MEFIT</div>
-          <h2 className="why-title">선택해야 할 이유.</h2>
-        </div>
-
-        {/* Featured 카드 */}
-        <div className="why-featured">
-          <div className="why-featured-content">
-            <div className="why-featured-icon">{featured.emoji}</div>
-            <h3 className="why-featured-title">{featured.title}</h3>
-            <p className="why-featured-desc">{featured.desc}</p>
-          </div>
-          <div className="why-featured-spacer" />
-        </div>
-
-        {/* 나머지 카드 */}
-        <div className="why-grid">
-          {rest.map((r) => (
-            <div key={r.title} className="why-card">
-              <div className="why-card-icon">{r.emoji}</div>
-              <h3 className="why-card-title">{r.title}</h3>
-              <p className="why-card-desc">{r.desc}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <style>{`
+const WHY_STYLES = `
         .why-section {
           padding: 64px 20px;
           display: flex; justify-content: center;
@@ -118,7 +70,57 @@ export function WhySection() {
           .why-card-title { font-size: 16px; margin-bottom: 8px; }
           .why-card-desc { font-size: 13px; line-height: 1.7; }
         }
-      `}</style>
+`;
+
+const REASONS = [
+  {
+    emoji: "🎯",
+    title: "이력서 기반 맞춤 질문",
+    desc: "이력서를 업로드하면 AI가 직무와 경력에 맞는 맞춤형 질문을 생성합니다. 일반적인 예상 질문이 아닌, 나에게 딱 맞는 질문으로 준비하세요.",
+    featured: true,
+  },
+  { emoji: "🔄", title: "꼬리질문 AI", desc: "답변 내용에 따라 AI가 실시간으로 꼬리질문을 생성해 실제 면접과 똑같은 긴장감을 경험할 수 있습니다." },
+  { emoji: "👁️", title: "시선 추적 분석", desc: "면접 중 시선 이탈 횟수를 측정해 자신감 있는 면접 태도를 만들 수 있도록 구체적인 피드백을 제공합니다." },
+  { emoji: "📊", title: "영역별 점수 리포트", desc: "발음·전달력, 논리적 구성, 태도·자신감, 전문 용어 활용 총 4개 영역을 수치로 확인하고 개선하세요." },
+  { emoji: "🔥", title: "스트릭으로 습관 형성", desc: "연속 면접 일수와 연간 활동 기록으로 꾸준한 면접 연습 습관을 만들고 성장 과정을 시각화하세요." },
+  { emoji: "⚡", title: "24/7 언제든 면접", desc: "면접관 일정에 맞출 필요 없이 내가 원하는 시간에, 원하는 장소에서 면접 연습을 시작하세요." },
+  { emoji: "🏢", title: "채용공고 연동", desc: "지원하는 채용공고를 등록하면 해당 직무에 최적화된 면접 질문으로 연습할 수 있습니다." },
+];
+
+const [featured, ...rest] = REASONS;
+
+export function WhySection() {
+  return (
+    <section id="why" className="why-section">
+      <div className="why-inner">
+        <div className="why-header">
+          <div className="why-badge">왜 MEFIT</div>
+          <h2 className="why-title">선택해야 할 이유.</h2>
+        </div>
+
+        {/* Featured 카드 */}
+        <div className="why-featured">
+          <div className="why-featured-content">
+            <div className="why-featured-icon">{featured.emoji}</div>
+            <h3 className="why-featured-title">{featured.title}</h3>
+            <p className="why-featured-desc">{featured.desc}</p>
+          </div>
+          <div className="why-featured-spacer" />
+        </div>
+
+        {/* 나머지 카드 */}
+        <div className="why-grid">
+          {rest.map((r) => (
+            <div key={r.title} className="why-card">
+              <div className="why-card-icon">{r.emoji}</div>
+              <h3 className="why-card-title">{r.title}</h3>
+              <p className="why-card-desc">{r.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <style>{WHY_STYLES}</style>
     </section>
   );
 }

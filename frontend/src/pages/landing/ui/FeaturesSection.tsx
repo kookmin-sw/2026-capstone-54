@@ -1,47 +1,4 @@
-const FEATURES = [
-  { emoji: "🎥", title: "AI 화상 면접", desc: "실시간 화상으로 AI 면접관과 대화. 꼬리질문 방식과 전체 프로세스 방식 중 선택하세요.", badge: "Pro 핵심 기능" },
-  { emoji: "📄", title: "이력서 분석", desc: "PDF·DOCX 업로드 즉시 AI가 분석해 맞춤 면접 질문을 생성합니다." },
-  { emoji: "👁️", title: "시선 추적 분석", desc: "면접 중 시선 이탈 횟수와 집중도를 분석해 자신감 있는 태도를 만들어드립니다." },
-  { emoji: "📊", title: "AI 리뷰 리포트", desc: "발음·전달력, 논리적 구성, 태도·자신감, 전문 용어 4개 영역 점수를 상세 분석합니다." },
-  { emoji: "🔥", title: "스트릭 & 통계", desc: "연속 면접 일수와 연간 활동 기록으로 꾸준한 습관을 만들고 성장을 시각화하세요." },
-];
-
-const [featured, ...rest] = FEATURES;
-
-export function FeaturesSection() {
-  return (
-    <section id="features" className="features-section">
-      <div className="features-inner">
-        <div className="features-header">
-          <div className="section-badge">핵심 기능</div>
-          <h2 className="features-title">면접 준비의 모든 것.</h2>
-          <p className="features-subtitle">이력서 분석부터 실전 화상 면접, AI 피드백까지 한 플랫폼에서.</p>
-        </div>
-
-        {/* 모바일: 세로 스택 / 데스크탑: 좌우 2컬럼 */}
-        <div className="features-layout">
-          {/* 첫 번째 카드 (다크) */}
-          <div className="feature-card-featured">
-            <span className="feature-badge-pro">{featured.badge}</span>
-            <div className="feature-icon-wrap feature-icon-dark">{featured.emoji}</div>
-            <h3 className="feature-card-title feature-card-title-white">{featured.title}</h3>
-            <p className="feature-card-desc feature-card-desc-white">{featured.desc}</p>
-          </div>
-
-          {/* 나머지 카드들 */}
-          <div className="features-rest">
-            {rest.map((f) => (
-              <div key={f.title} className="feature-card">
-                <div className="feature-icon-wrap feature-icon-light">{f.emoji}</div>
-                <h3 className="feature-card-title">{f.title}</h3>
-                <p className="feature-card-desc">{f.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <style>{`
+const FEATURES_STYLES = `
         .features-section {
           padding: 56px 20px;
           display: flex; justify-content: center;
@@ -117,7 +74,52 @@ export function FeaturesSection() {
           }
           .feature-card { border-radius: 8px; padding: 28px 24px; }
         }
-      `}</style>
+`;
+
+const FEATURES = [
+  { emoji: "🎥", title: "AI 화상 면접", desc: "실시간 화상으로 AI 면접관과 대화. 꼬리질문 방식과 전체 프로세스 방식 중 선택하세요.", badge: "Pro 핵심 기능" },
+  { emoji: "📄", title: "이력서 분석", desc: "PDF·DOCX 업로드 즉시 AI가 분석해 맞춤 면접 질문을 생성합니다." },
+  { emoji: "👁️", title: "시선 추적 분석", desc: "면접 중 시선 이탈 횟수와 집중도를 분석해 자신감 있는 태도를 만들어드립니다." },
+  { emoji: "📊", title: "AI 리뷰 리포트", desc: "발음·전달력, 논리적 구성, 태도·자신감, 전문 용어 4개 영역 점수를 상세 분석합니다." },
+  { emoji: "🔥", title: "스트릭 & 통계", desc: "연속 면접 일수와 연간 활동 기록으로 꾸준한 습관을 만들고 성장을 시각화하세요." },
+];
+
+const [featured, ...rest] = FEATURES;
+
+export function FeaturesSection() {
+  return (
+    <section id="features" className="features-section">
+      <div className="features-inner">
+        <div className="features-header">
+          <div className="section-badge">핵심 기능</div>
+          <h2 className="features-title">면접 준비의 모든 것.</h2>
+          <p className="features-subtitle">이력서 분석부터 실전 화상 면접, AI 피드백까지 한 플랫폼에서.</p>
+        </div>
+
+        {/* 모바일: 세로 스택 / 데스크탑: 좌우 2컬럼 */}
+        <div className="features-layout">
+          {/* 첫 번째 카드 (다크) */}
+          <div className="feature-card-featured">
+            <span className="feature-badge-pro">{featured.badge}</span>
+            <div className="feature-icon-wrap feature-icon-dark">{featured.emoji}</div>
+            <h3 className="feature-card-title feature-card-title-white">{featured.title}</h3>
+            <p className="feature-card-desc feature-card-desc-white">{featured.desc}</p>
+          </div>
+
+          {/* 나머지 카드들 */}
+          <div className="features-rest">
+            {rest.map((f) => (
+              <div key={f.title} className="feature-card">
+                <div className="feature-icon-wrap feature-icon-light">{f.emoji}</div>
+                <h3 className="feature-card-title">{f.title}</h3>
+                <p className="feature-card-desc">{f.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <style>{FEATURES_STYLES}</style>
     </section>
   );
 }
