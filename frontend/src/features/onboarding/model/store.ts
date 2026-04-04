@@ -33,7 +33,7 @@ interface OnboardingState {
   isLoading: boolean;
   error: string | null;
 
-  selectJob: (jobId: string) => void;
+  selectJob: (jobId: string) => Promise<void>;
   toggleJobTitle: (title: string) => void;
   setJobStatus: (status: string) => void;
   submitProfile: () => Promise<boolean>;

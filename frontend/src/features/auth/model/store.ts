@@ -21,7 +21,7 @@ interface AuthState {
   error: string | null;
   pendingEmail: string | null;
 
-  signUp: (payload: { name: string; nickname: string; email: string; password: string }) => Promise<boolean>;
+  signUp: (payload: { name: string; email: string; password: string }) => Promise<boolean>;
   login: (email: string, password: string) => Promise<LoginResult>;
   logout: () => Promise<void>;
   verifyCode: (code: string) => Promise<boolean>;
