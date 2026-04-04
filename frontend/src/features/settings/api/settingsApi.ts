@@ -1,7 +1,8 @@
 // Settings API - Connected to backend
 
+import { apiRequest } from "@/shared/api/client";
+
 const USE_MOCK = false;
-const API_BASE_URL = "https://mefit.xn--hy1by51c.kr";
 
 /* ── Types ── */
 export interface SettingsProfile {
@@ -47,7 +48,7 @@ export interface ApiResult {
 }
 
 /* ── Mock Data ── */
-const getMockSettings = (): SettingsData => ({
+const MOCK_SETTINGS: SettingsData = {
   profile: {
     name: "김지원",
     email: "jiwon@example.com",
@@ -74,24 +75,19 @@ const getMockSettings = (): SettingsData => ({
     privacyAgreedAt: "2025.01.15",
     aiDataAgreed: false,
   },
-});
+};
 
 /* ── Fetch Settings ── */
 export async function fetchSettingsApi(): Promise<{ success: boolean; data?: SettingsData; error?: string }> {
   if (USE_MOCK) {
     await new Promise((r) => setTimeout(r, 350));
-    return { success: true, data: getMockSettings() };
+    return { success: true, data: MOCK_SETTINGS };
   }
   try {
-    const response = await fetch(`${API_BASE_URL}/api/v1/users/settings/`, {
-      method: "GET",
-      credentials: "include",
-    });
-    if (!response.ok) return { success: true, data: getMockSettings() };
-    const data = await response.json();
+    const data = await apiRequest<SettingsData>("/api/v1/users/settings/", { method: "GET", auth: true });
     return { success: true, data };
   } catch {
-    return { success: true, data: getMockSettings() };
+    return { success: true, data: MOCK_SETTINGS };
   }
 }
 
@@ -102,16 +98,12 @@ export async function updateProfileApi(payload: Partial<SettingsProfile>): Promi
     return { success: true, message: "프로필이 저장되었습니다." };
   }
   try {
-    const res = await fetch(`${API_BASE_URL}/api/v1/users/profile/`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify(payload),
+    await apiRequest("/api/v1/users/profile/", {
+      method: "PUT", auth: true, body: JSON.stringify(payload),
     });
-    if (!res.ok) return { success: false, message: "저장에 실패했습니다." };
     return { success: true, message: "프로필이 저장되었습니다." };
   } catch {
-    return { success: false, message: "네트워크 오류가 발생했습니다." };
+    return { success: false, message: "저장에 실패했습니다." };
   }
 }
 
@@ -122,25 +114,19 @@ export async function changePasswordApi(payload: {
 }): Promise<ApiResult> {
   if (USE_MOCK) {
     await new Promise((r) => setTimeout(r, 800));
-    if (payload.currentPassword === "wrong") {
-      return { success: false, message: "현재 비밀번호가 올바르지 않습니다." };
-    }
     return { success: true, message: "비밀번호가 변경되었습니다." };
   }
   try {
-    const res = await fetch(`${API_BASE_URL}/api/v1/users/change-password/`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
+    await apiRequest("/api/v1/users/change-password/", {
+      method: "POST", auth: true,
       body: JSON.stringify({
         current_password: payload.currentPassword,
         new_password: payload.newPassword,
       }),
     });
-    if (!res.ok) return { success: false, message: "비밀번호 변경에 실패했습니다." };
     return { success: true, message: "비밀번호가 변경되었습니다." };
   } catch {
-    return { success: false, message: "네트워크 오류가 발생했습니다." };
+    return { success: false, message: "비밀번호 변경에 실패했습니다." };
   }
 }
 
@@ -151,16 +137,12 @@ export async function updateNotificationsApi(payload: SettingsNotifications): Pr
     return { success: true, message: "알림 설정이 저장되었습니다." };
   }
   try {
-    const res = await fetch(`${API_BASE_URL}/api/v1/users/notifications/`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify(payload),
+    await apiRequest("/api/v1/users/notifications/", {
+      method: "PUT", auth: true, body: JSON.stringify(payload),
     });
-    if (!res.ok) return { success: false, message: "저장에 실패했습니다." };
     return { success: true, message: "알림 설정이 저장되었습니다." };
   } catch {
-    return { success: false, message: "네트워크 오류가 발생했습니다." };
+    return { success: false, message: "저장에 실패했습니다." };
   }
 }
 
@@ -171,16 +153,12 @@ export async function updateConsentsApi(payload: { aiDataAgreed: boolean }): Pro
     return { success: true, message: "동의 설정이 저장되었습니다." };
   }
   try {
-    const res = await fetch(`${API_BASE_URL}/api/v1/users/consents/`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ ai_data_agreed: payload.aiDataAgreed }),
+    await apiRequest("/api/v1/users/consents/", {
+      method: "PUT", auth: true, body: JSON.stringify({ ai_data_agreed: payload.aiDataAgreed }),
     });
-    if (!res.ok) return { success: false, message: "저장에 실패했습니다." };
     return { success: true, message: "동의 설정이 저장되었습니다." };
   } catch {
-    return { success: false, message: "네트워크 오류가 발생했습니다." };
+    return { success: false, message: "저장에 실패했습니다." };
   }
 }
 
@@ -191,14 +169,10 @@ export async function deleteInterviewDataApi(): Promise<ApiResult> {
     return { success: true, message: "면접 데이터가 삭제되었습니다." };
   }
   try {
-    const res = await fetch(`${API_BASE_URL}/api/v1/users/interview-data/`, {
-      method: "DELETE",
-      credentials: "include",
-    });
-    if (!res.ok) return { success: false, message: "삭제에 실패했습니다." };
+    await apiRequest("/api/v1/users/interview-data/", { method: "DELETE", auth: true });
     return { success: true, message: "면접 데이터가 삭제되었습니다." };
   } catch {
-    return { success: false, message: "네트워크 오류가 발생했습니다." };
+    return { success: false, message: "삭제에 실패했습니다." };
   }
 }
 
@@ -209,13 +183,9 @@ export async function deleteAccountApi(): Promise<ApiResult> {
     return { success: true, message: "계정이 탈퇴 처리되었습니다." };
   }
   try {
-    const res = await fetch(`${API_BASE_URL}/api/v1/users/`, {
-      method: "DELETE",
-      credentials: "include",
-    });
-    if (!res.ok) return { success: false, message: "탈퇴 처리에 실패했습니다." };
+    await apiRequest("/api/v1/users/", { method: "DELETE", auth: true });
     return { success: true, message: "계정이 탈퇴 처리되었습니다." };
   } catch {
-    return { success: false, message: "네트워크 오류가 발생했습니다." };
+    return { success: false, message: "탈퇴 처리에 실패했습니다." };
   }
 }
