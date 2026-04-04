@@ -1,6 +1,7 @@
 // Home API - Real backend integration with mock fallback
 
-const API_BASE = "https://mefit.한국.kr";
+import { apiRequest } from "@/shared/api/client";
+
 const USE_MOCK = true; // Set to false when backend is ready
 
 export interface HomeUser {
@@ -49,7 +50,7 @@ export interface HomeData {
 }
 
 // Mock data fallback
-const getMockData = (): HomeData => ({
+const MOCK_DATA: HomeData = {
   user: {
     name: "김현준",
     greeting: "Good morning ☀️",
@@ -73,7 +74,7 @@ const getMockData = (): HomeData => ({
     { id: "j2", company: "토스",       role: "서버 개발자",    stage: "서류 심사 중",     dday: 7,  dotColor: "dark" },
     { id: "j3", company: "네이버",     role: "플랫폼 개발",    stage: "지원 완료",        dday: 12, dotColor: "gray" },
   ],
-});
+};
 
 /**
  * Fetch home dashboard data from backend
@@ -83,26 +84,14 @@ export async function fetchHomeDataApi(): Promise<{ success: boolean; data?: Hom
   // Use mock data if backend is not ready
   if (USE_MOCK) {
     await new Promise((r) => setTimeout(r, 400));
-    return { success: true, data: getMockData() };
+    return { success: true, data: MOCK_DATA };
   }
 
   try {
-    const response = await fetch(`${API_BASE}/api/v1/home/dashboard/`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        // Add auth token if needed
-        // "Authorization": `Bearer ${getToken()}`,
-      },
-      credentials: "include",
-    });
-
-    if (!response.ok) {
-      console.warn(`API error ${response.status}, falling back to mock data`);
-      return { success: true, data: getMockData() };
-    }
-
-    const data = await response.json();
+    const data = await apiRequest<Record<string, unknown>>(
+      "/api/v1/home/dashboard/",
+      { method: "GET", auth: true }
+    );
     
     return {
       success: true,
@@ -145,7 +134,6 @@ export async function fetchHomeDataApi(): Promise<{ success: boolean; data?: Hom
     };
   } catch (error) {
     console.error("Failed to fetch home data:", error);
-    // Fallback to mock data on network error
-    return { success: true, data: getMockData() };
+    return { success: true, data: MOCK_DATA };
   }
 }
