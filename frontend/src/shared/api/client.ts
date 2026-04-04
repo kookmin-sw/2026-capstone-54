@@ -50,8 +50,9 @@ export async function apiRequest<T>(
     throw new Error(`Invalid API path: ${path}`);
   }
 
+  const safePath = path.replace(/[^/a-zA-Z0-9._~:-]/g, "");
   const endpoint = new URL(BASE_URL);
-  endpoint.pathname = path;
+  endpoint.pathname = safePath;
 
   const res = await fetch(endpoint, { ...fetchOptions, headers });
 
