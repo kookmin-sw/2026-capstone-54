@@ -1,0 +1,10 @@
+{
+  "provider": "claude-cli",
+  "cli_command": "claude",
+  "cli_args": [
+    "-p"
+  ],
+  "max_diff_bytes": 51200,
+  "max_diff_lines": 1000,
+  "generate_body": true
+}
