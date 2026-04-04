@@ -16,6 +16,7 @@ interface SubscriptionState {
   /** UI state */
   billingCycle: BillingCycle;
   openFaqIndex: number | null;
+  redirectUrl: string | null;
 
   /* Actions */
   fetchStatus: () => Promise<void>;
@@ -25,6 +26,7 @@ interface SubscriptionState {
   cancelSubscription: () => Promise<void>;
   toggleFaq: (index: number) => void;
   clearMessages: () => void;
+  clearRedirectUrl: () => void;
 }
 
 export const useSubscriptionStore = create<SubscriptionState>()((set, get) => ({
@@ -36,6 +38,7 @@ export const useSubscriptionStore = create<SubscriptionState>()((set, get) => ({
 
   billingCycle: "monthly",
   openFaqIndex: null,
+  redirectUrl: null,
 
   fetchStatus: async () => {
     set({ loading: true, error: null });
@@ -57,23 +60,18 @@ export const useSubscriptionStore = create<SubscriptionState>()((set, get) => ({
     set({ processing: true, error: null, successMessage: null });
     const res = await createCheckoutApi({ plan: "pro", billingCycle });
     if (res.success) {
-      set({ processing: false, successMessage: res.message });
-      // Validate redirect URL to prevent open redirect vulnerabilities
+      let validatedUrl: string | null = null;
       if (res.redirectUrl && res.redirectUrl !== "#") {
         try {
-          const url = new URL(res.redirectUrl);
-          // Only allow HTTPS URLs from trusted domains
-          if (url.protocol === "https:" && 
-              (url.hostname.endsWith("mefit.xn--hy1by51c.kr") || 
-               url.hostname === "mefit.xn--hy1by51c.kr")) {
-            window.location.href = res.redirectUrl;
-          } else {
-            set({ error: "잘못된 리다이렉트 URL입니다." });
+          const parsed = new URL(res.redirectUrl);
+          if (parsed.protocol === "https:" && parsed.hostname.endsWith("mefit.xn--hy1by51c.kr")) {
+            validatedUrl = res.redirectUrl;
           }
         } catch {
-          set({ error: "잘못된 리다이렉트 URL입니다." });
+          // invalid URL, ignore
         }
       }
+      set({ processing: false, successMessage: res.message, redirectUrl: validatedUrl });
     } else {
       set({ processing: false, error: res.message });
     }
@@ -99,4 +97,5 @@ export const useSubscriptionStore = create<SubscriptionState>()((set, get) => ({
     set((s) => ({ openFaqIndex: s.openFaqIndex === index ? null : index })),
 
   clearMessages: () => set({ error: null, successMessage: null }),
+  clearRedirectUrl: () => set({ redirectUrl: null }),
 }));

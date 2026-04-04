@@ -48,9 +48,9 @@ const FAQ_ITEMS: { q: string; a: string }[] = [
 export function SubscriptionPage() {
   const {
     status, loading, processing, error, successMessage,
-    billingCycle, openFaqIndex,
+    billingCycle, openFaqIndex, redirectUrl,
     fetchStatus, toggleBilling, checkout, cancelSubscription,
-    toggleFaq, clearMessages,
+    toggleFaq, clearMessages, clearRedirectUrl,
   } = useSubscriptionStore();
 
   const proCardRef = useRef<HTMLDivElement>(null);
@@ -65,6 +65,13 @@ export function SubscriptionPage() {
       return () => clearTimeout(t);
     }
   }, [successMessage, error, clearMessages]);
+
+  useEffect(() => {
+    if (redirectUrl) {
+      clearRedirectUrl();
+      window.location.href = redirectUrl;
+    }
+  }, [redirectUrl, clearRedirectUrl]);
 
   const isYearly = billingCycle === "yearly";
   const monthlyPrice = isYearly ? "₩7,900" : "₩9,900";
