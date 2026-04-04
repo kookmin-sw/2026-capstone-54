@@ -58,8 +58,21 @@ export const useSubscriptionStore = create<SubscriptionState>()((set, get) => ({
     const res = await createCheckoutApi({ plan: "pro", billingCycle });
     if (res.success) {
       set({ processing: false, successMessage: res.message });
+      // Validate redirect URL to prevent open redirect vulnerabilities
       if (res.redirectUrl && res.redirectUrl !== "#") {
-        window.location.href = res.redirectUrl;
+        try {
+          const url = new URL(res.redirectUrl);
+          // Only allow HTTPS URLs from trusted domains
+          if (url.protocol === "https:" && 
+              (url.hostname.endsWith("mefit.xn--hy1by51c.kr") || 
+               url.hostname === "mefit.xn--hy1by51c.kr")) {
+            window.location.href = res.redirectUrl;
+          } else {
+            set({ error: "잘못된 리다이렉트 URL입니다." });
+          }
+        } catch {
+          set({ error: "잘못된 리다이렉트 URL입니다." });
+        }
       }
     } else {
       set({ processing: false, error: res.message });

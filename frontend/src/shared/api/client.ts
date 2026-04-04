@@ -1,5 +1,15 @@
 export const BASE_URL = "https://mefit.xn--hy1by51c.kr";
 
+// Allowed URL patterns for security
+const ALLOWED_URL_PATTERNS = [
+  /^https:\/\/mefit\.xn--hy1by51c\.kr\//,
+  /^\/api\//,
+];
+
+function isAllowedUrl(url: string): boolean {
+  return ALLOWED_URL_PATTERNS.some(pattern => pattern.test(url));
+}
+
 /* ── Token helpers ── */
 export function getAccessToken(): string | null {
   return localStorage.getItem("mefit_access");
@@ -46,7 +56,13 @@ export async function apiRequest<T>(
     if (token) headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const res = await fetch(`${BASE_URL}${path}`, { ...fetchOptions, headers });
+  // Validate URL to prevent SSRF attacks
+  const fullUrl = `${BASE_URL}${path}`;
+  if (!isAllowedUrl(fullUrl) && !isAllowedUrl(path)) {
+    throw new Error("Invalid URL: URL not in allowed list");
+  }
+
+  const res = await fetch(fullUrl, { ...fetchOptions, headers });
 
   // No-content responses
   if (res.status === 204 || res.status === 205) return undefined as T;

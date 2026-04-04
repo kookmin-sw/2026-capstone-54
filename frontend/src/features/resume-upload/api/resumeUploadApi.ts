@@ -23,7 +23,11 @@ export async function uploadResumeApi(
   await new Promise<void>((resolve) => {
     let pct = 0;
     const t = setInterval(() => {
-      pct += Math.random() * 18;
+      // Use crypto.getRandomValues for secure random number generation
+      const randomArray = new Uint32Array(1);
+      crypto.getRandomValues(randomArray);
+      const randomValue = (randomArray[0] / 0xFFFFFFFF) * 18;
+      pct += randomValue;
       if (pct >= 100) {
         pct = 100;
         clearInterval(t);

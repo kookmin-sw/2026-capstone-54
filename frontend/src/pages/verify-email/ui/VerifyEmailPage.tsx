@@ -14,7 +14,7 @@ export function VerifyEmailPage() {
   const handleResend = async () => {
     setResent(false);
     clearError();
-    const ok = await resendVerification(email);
+    const ok = await resendVerification();
     if (ok) setResent(true);
   };
 
@@ -56,7 +56,7 @@ export function VerifyEmailPage() {
 
   const handleVerify = async () => {
     clearError();
-    const ok = await verifyCode(email, fullCode);
+    const ok = await verifyCode(fullCode);
     if (ok) navigate("/onboarding");
   };
 

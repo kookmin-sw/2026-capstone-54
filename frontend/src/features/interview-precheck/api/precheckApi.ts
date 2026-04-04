@@ -25,7 +25,11 @@ export async function checkNetworkApi(
   return new Promise((resolve) => {
     let w = 0;
     const t = setInterval(() => {
-      w += Math.random() * 7 + 2;
+      // Use crypto.getRandomValues for secure random number generation
+      const randomArray = new Uint32Array(1);
+      crypto.getRandomValues(randomArray);
+      const randomValue = (randomArray[0] / 0xFFFFFFFF) * 7 + 2;
+      w += randomValue;
       if (w >= 90) {
         w = 90;
         clearInterval(t);

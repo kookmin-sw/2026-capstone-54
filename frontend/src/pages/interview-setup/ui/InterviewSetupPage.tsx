@@ -17,7 +17,8 @@ export function InterviewSetupPage() {
     loadJdList();
   }, [loadJdList]);
 
-  const rv = () => "";
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const rv = (..._args: unknown[]) => "";
   const rvd = (delay: number): React.CSSProperties =>
     ({ transitionDelay: `${delay}ms` });
 

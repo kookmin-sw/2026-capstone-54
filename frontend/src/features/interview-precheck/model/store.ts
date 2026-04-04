@@ -67,8 +67,12 @@ export const usePrecheckStore = create<PrecheckState>((set) => ({
       clearInterval(micIntervalRef);
       micIntervalRef = null;
     }
+    // Use crypto.getRandomValues for secure random number generation
     micIntervalRef = setInterval(() => {
-      set({ micLevel: Math.floor(55 + Math.random() * 35) });
+      const randomArray = new Uint32Array(1);
+      crypto.getRandomValues(randomArray);
+      const randomValue = (randomArray[0] / 0xFFFFFFFF) * 35;
+      set({ micLevel: Math.floor(55 + randomValue) });
     }, 900);
   },
 

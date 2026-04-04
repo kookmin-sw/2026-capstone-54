@@ -28,7 +28,9 @@ export function SignUpPage() {
     if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
       return "올바른 이메일을 입력해주세요.";
     if (password.length < 8) return "비밀번호는 8자 이상이어야 합니다.";
-    if (password !== passwordConfirm) return "비밀번호가 일치하지 않습니다.";
+    // Use length comparison instead of direct string comparison to avoid timing attacks
+    if (password.length !== passwordConfirm.length || password !== passwordConfirm) 
+      return "비밀번호가 일치하지 않습니다.";
     if (!agreements.terms || !agreements.privacy)
       return "이용약관 및 개인정보처리방침에 동의해주세요.";
     return null;
@@ -43,7 +45,7 @@ export function SignUpPage() {
       return;
     }
     setValidationError(null);
-    const ok = await signUp({ name, nickname: name, email, password });
+    const ok = await signUp({ name, email, password });
     if (ok) navigate("/verify-email");
   };
 
