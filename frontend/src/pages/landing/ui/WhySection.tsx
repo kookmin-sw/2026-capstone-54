@@ -1,77 +1,3 @@
-const WHY_STYLES = `
-        .why-section {
-          padding: 64px 20px;
-          display: flex; justify-content: center;
-          background: #FFFFFF;
-        }
-        .why-inner { max-width: 480px; width: 100%; }
-        .why-header { margin-bottom: 32px; }
-        .why-badge {
-          display: inline-block; font-size: 12px; font-weight: 700;
-          color: #0991B2; background: #E6F7FA;
-          border-radius: 4px; padding: 5px 14px; margin-bottom: 12px;
-        }
-        .why-title {
-          font-family: 'Inter', sans-serif; font-size: clamp(28px, 8vw, 40px);
-          font-weight: 800; color: #0A0A0A;
-        }
-        .why-featured {
-          background: #0A0A0A;
-          border-radius: 8px; padding: 32px 28px; margin-bottom: 12px;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
-          display: flex; gap: 24px; align-items: center;
-          transition: transform 0.2s;
-        }
-        .why-featured:hover { transform: translateY(-2px); }
-        .why-featured-content { flex: 1; }
-        .why-featured-spacer { display: none; }
-        .why-featured-icon {
-          width: 44px; height: 44px; border-radius: 8px;
-          background: rgba(255,255,255,0.1);
-          display: flex; align-items: center; justify-content: center;
-          font-size: 22px; margin-bottom: 16px;
-        }
-        .why-featured-title {
-          font-family: 'Inter', sans-serif; font-size: 18px; font-weight: 800;
-          color: #fff; margin-bottom: 10px;
-        }
-        .why-featured-desc { font-size: 13px; color: rgba(255,255,255,0.65); line-height: 1.7; }
-        .why-grid { display: flex; flex-direction: column; gap: 8px; }
-        .why-card {
-          background: #F9FAFB; border-radius: 8px; padding: 24px 20px;
-          border: 1px solid #E5E7EB;
-          transition: transform 0.2s;
-        }
-        .why-card:hover { transform: translateY(-2px); }
-        .why-card-icon { font-size: 22px; margin-bottom: 12px; }
-        .why-card-title {
-          font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 700;
-          color: #0A0A0A; margin-bottom: 6px;
-        }
-        .why-card-desc { font-size: 13px; color: #6B7280; line-height: 1.65; }
-
-        @media (min-width: 768px) {
-          .why-section { padding: 100px 40px; }
-          .why-inner { max-width: 1080px; }
-          .why-header { margin-bottom: 56px; }
-          .why-badge { font-size: 13px; padding: 6px 18px; margin-bottom: 18px; }
-          .why-title { font-size: clamp(32px, 4vw, 52px); }
-          .why-featured {
-            border-radius: 8px; padding: 44px 40px; margin-bottom: 16px;
-            display: grid; grid-template-columns: 1fr 2fr; gap: 32px;
-          }
-          .why-featured-spacer { display: block; }
-          .why-featured-icon { width: 52px; height: 52px; border-radius: 8px; font-size: 26px; margin-bottom: 20px; }
-          .why-featured-title { font-size: 22px; margin-bottom: 12px; }
-          .why-featured-desc { font-size: 14px; }
-          .why-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-          .why-card { border-radius: 8px; padding: 32px 28px; }
-          .why-card-icon { font-size: 26px; margin-bottom: 14px; }
-          .why-card-title { font-size: 16px; margin-bottom: 8px; }
-          .why-card-desc { font-size: 13px; line-height: 1.7; }
-        }
-`;
-
 const REASONS = [
   {
     emoji: "🎯",
@@ -91,36 +17,45 @@ const [featured, ...rest] = REASONS;
 
 export function WhySection() {
   return (
-    <section id="why" className="why-section">
-      <div className="why-inner">
-        <div className="why-header">
-          <div className="why-badge">왜 MEFIT</div>
-          <h2 className="why-title">선택해야 할 이유.</h2>
+    <section id="why" className="py-16 px-5 flex justify-center bg-white md:py-25 md:px-10">
+      <div className="max-w-[480px] w-full md:max-w-[1080px]">
+        <div className="mb-8 md:mb-14">
+          <div className="inline-block text-[12px] font-bold text-[#0991B2] bg-[#E6F7FA] rounded px-[14px] py-[5px] mb-3 md:text-[13px] md:px-[18px] md:py-[6px] md:mb-[18px]">
+            왜 MEFIT
+          </div>
+          <h2 className="font-inter text-[clamp(28px,8vw,40px)] font-extrabold text-[#0A0A0A] md:text-[clamp(32px,4vw,52px)]">
+            선택해야 할 이유.
+          </h2>
         </div>
 
         {/* Featured 카드 */}
-        <div className="why-featured">
-          <div className="why-featured-content">
-            <div className="why-featured-icon">{featured.emoji}</div>
-            <h3 className="why-featured-title">{featured.title}</h3>
-            <p className="why-featured-desc">{featured.desc}</p>
+        <div className="bg-[#0A0A0A] rounded-lg px-7 py-8 mb-3 shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)] flex gap-6 items-center transition-transform duration-200 hover:-translate-y-0.5 md:rounded-lg md:px-10 md:py-11 md:mb-4 md:grid md:grid-cols-[1fr_2fr] md:gap-8">
+          <div className="flex-1">
+            <div className="w-11 h-11 rounded-lg bg-white/10 flex items-center justify-center text-[22px] mb-4 md:w-[52px] md:h-[52px] md:rounded-lg md:text-[26px] md:mb-5">
+              {featured.emoji}
+            </div>
+            <h3 className="font-inter text-[18px] font-extrabold text-white mb-[10px] md:text-[22px] md:mb-3">
+              {featured.title}
+            </h3>
+            <p className="text-[13px] text-white/65 leading-[1.7] md:text-[14px]">{featured.desc}</p>
           </div>
-          <div className="why-featured-spacer" />
+          <div className="hidden md:block" />
         </div>
 
         {/* 나머지 카드 */}
-        <div className="why-grid">
+        <div className="flex flex-col gap-2 md:grid md:grid-cols-3 md:gap-3">
           {rest.map((r) => (
-            <div key={r.title} className="why-card">
-              <div className="why-card-icon">{r.emoji}</div>
-              <h3 className="why-card-title">{r.title}</h3>
-              <p className="why-card-desc">{r.desc}</p>
+            <div
+              key={r.title}
+              className="bg-[#F9FAFB] rounded-lg px-5 py-6 border border-[#E5E7EB] transition-transform duration-200 hover:-translate-y-0.5 md:rounded-lg md:px-7 md:py-8"
+            >
+              <div className="text-[22px] mb-3 md:text-[26px] md:mb-3.5">{r.emoji}</div>
+              <h3 className="font-inter text-[14px] font-bold text-[#0A0A0A] mb-1.5 md:text-[16px] md:mb-2">{r.title}</h3>
+              <p className="text-[13px] text-[#6B7280] leading-[1.65] md:leading-[1.7]">{r.desc}</p>
             </div>
           ))}
         </div>
       </div>
-
-      <style>{WHY_STYLES}</style>
     </section>
   );
 }

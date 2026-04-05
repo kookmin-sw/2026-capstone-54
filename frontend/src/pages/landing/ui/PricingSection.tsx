@@ -1,102 +1,3 @@
-const PRICING_STYLES = `
-        .pricing-section {
-          padding: 64px 20px;
-          display: flex; justify-content: center;
-          background: #FFFFFF;
-        }
-        .pricing-inner { max-width: 480px; width: 100%; }
-        .pricing-header { text-align: center; margin-bottom: 40px; }
-        .pricing-badge {
-          display: inline-block; font-size: 12px; font-weight: 700;
-          color: #0991B2; background: #E6F7FA;
-          border-radius: 4px; padding: 5px 14px; margin-bottom: 14px;
-        }
-        .pricing-title {
-          font-family: 'Inter', sans-serif; font-size: clamp(24px, 7vw, 36px);
-          font-weight: 800; color: #0A0A0A; margin-bottom: 12px;
-        }
-        .pricing-subtitle { font-size: 14px; color: #6B7280; }
-        .pricing-cards { display: flex; flex-direction: column; gap: 16px; }
-        .plan-card {
-          border-radius: 8px; padding: 36px 28px;
-        }
-        .plan-free {
-          background: #F9FAFB;
-          border: 1px solid #E5E7EB;
-        }
-        .plan-pro {
-          background: #0A0A0A;
-          position: relative;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
-        }
-        .plan-recommend {
-          position: absolute; top: 20px; right: 20px;
-          font-size: 11px; font-weight: 700; color: #0A0A0A;
-          background: #FFFFFF; border-radius: 4px; padding: 4px 12px;
-        }
-        .plan-name {
-          font-family: 'Inter', sans-serif; font-size: 18px; font-weight: 800;
-          color: #0A0A0A; margin-bottom: 8px;
-        }
-        .plan-name-white { color: #fff; }
-        .plan-price {
-          font-family: 'Inter', sans-serif; font-size: 44px; font-weight: 900;
-          color: #0A0A0A; margin-bottom: 4px;
-        }
-        .plan-price-white { color: #fff; }
-        .plan-price-unit { font-size: 18px; }
-        .plan-period { font-size: 13px; color: #6B7280; margin-bottom: 24px; }
-        .plan-period-white { color: rgba(255,255,255,0.55); }
-        .plan-items {
-          list-style: none; padding: 0; margin: 0 0 28px;
-          display: flex; flex-direction: column; gap: 12px;
-        }
-        .plan-item {
-          font-size: 14px; color: #0A0A0A;
-          display: flex; align-items: center; gap: 10px;
-        }
-        .plan-item-off { color: #9CA3AF; }
-        .plan-item-white { color: rgba(255,255,255,0.9); }
-        .check-ok { color: #059669; font-weight: 700; }
-        .check-no { color: #D1D5DB; font-weight: 700; }
-        .check-pro { color: #6EE7B7; font-weight: 700; }
-        .plan-btn {
-          width: 100%; padding: 14px 0; border-radius: 8px; border: none;
-          font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 700;
-          cursor: pointer; transition: opacity 0.2s;
-        }
-        .plan-btn:hover { opacity: 0.85; }
-        .plan-btn-free {
-          background: #0A0A0A; color: #FFFFFF;
-        }
-        .plan-btn-pro { background: #FFFFFF; color: #0A0A0A; }
-        .plan-note { text-align: center; font-size: 12px; color: #6B7280; margin-top: 10px; }
-        .plan-note-white { color: rgba(255,255,255,0.45); }
-
-        @media (min-width: 768px) {
-          .pricing-section { padding: 100px 40px; }
-          .pricing-inner { max-width: 1080px; }
-          .pricing-header { margin-bottom: 64px; }
-          .pricing-badge { font-size: 14px; padding: 8px 20px; margin-bottom: 20px; }
-          .pricing-title { font-size: clamp(32px, 4vw, 48px); margin-bottom: 18px; }
-          .pricing-subtitle { font-size: 17px; }
-          .pricing-cards {
-            flex-direction: row; gap: 20px;
-            max-width: 760px; margin: 0 auto;
-          }
-          .plan-card { flex: 1; border-radius: 8px; padding: 44px 40px; }
-          .plan-name { font-size: 20px; margin-bottom: 10px; }
-          .plan-price { font-size: 48px; margin-bottom: 6px; }
-          .plan-price-unit { font-size: 20px; }
-          .plan-period { font-size: 14px; margin-bottom: 32px; }
-          .plan-items { gap: 14px; margin-bottom: 36px; }
-          .plan-item { font-size: 15px; gap: 12px; }
-          .plan-btn { padding: 16px 0; border-radius: 8px; font-size: 16px; }
-          .plan-note { font-size: 13px; margin-top: 12px; }
-          .plan-recommend { top: 24px; right: 24px; font-size: 12px; padding: 5px 14px; }
-        }
-`;
-
 const FREE_ITEMS = [
   { ok: true, text: "월 5회 면접" },
   { ok: true, text: "기본 AI 리뷰 리포트" },
@@ -117,55 +18,70 @@ const PRO_ITEMS = [
 
 export function PricingSection() {
   return (
-    <section id="pricing" className="pricing-section">
-      <div className="pricing-inner">
-        <div className="pricing-header">
-          <div className="pricing-badge">요금제</div>
-          <h2 className="pricing-title">나에게 맞는 플랜을 선택하세요.</h2>
-          <p className="pricing-subtitle">숨겨진 비용 없음. 언제든지 업그레이드 또는 취소 가능합니다.</p>
+    <section id="pricing" className="py-16 px-5 flex justify-center bg-white md:py-25 md:px-10">
+      <div className="max-w-[480px] w-full md:max-w-[1080px]">
+        <div className="text-center mb-10 md:mb-16">
+          <div className="inline-block text-[12px] font-bold text-[#0991B2] bg-[#E6F7FA] rounded px-[14px] py-[5px] mb-[14px] md:text-[14px] md:px-5 md:py-2 md:mb-5">
+            요금제
+          </div>
+          <h2 className="font-inter text-[clamp(24px,7vw,36px)] font-extrabold text-[#0A0A0A] mb-3 md:text-[clamp(32px,4vw,48px)] md:mb-[18px]">
+            나에게 맞는 플랜을 선택하세요.
+          </h2>
+          <p className="text-[14px] text-[#6B7280] md:text-[17px]">
+            숨겨진 비용 없음. 언제든지 업그레이드 또는 취소 가능합니다.
+          </p>
         </div>
 
-        <div className="pricing-cards">
+        <div className="flex flex-col gap-4 md:flex-row md:gap-5 md:max-w-[760px] md:mx-auto">
           {/* Free */}
-          <div className="plan-card plan-free">
-            <div className="plan-name">Free</div>
-            <div className="plan-price">₩0</div>
-            <div className="plan-period">월 요금 없음</div>
-            <ul className="plan-items">
+          <div className="flex-1 rounded-lg px-7 py-9 bg-[#F9FAFB] border border-[#E5E7EB] md:px-10 md:py-11">
+            <div className="font-inter text-[18px] font-extrabold text-[#0A0A0A] mb-2 md:text-[20px] md:mb-2.5">Free</div>
+            <div className="font-inter text-[44px] font-black text-[#0A0A0A] mb-1 md:text-[48px] md:mb-1.5">₩0</div>
+            <div className="text-[13px] text-[#6B7280] mb-6 md:text-[14px] md:mb-8">월 요금 없음</div>
+            <ul className="list-none p-0 m-0 mb-7 flex flex-col gap-3 md:gap-3.5 md:mb-9">
               {FREE_ITEMS.map((item) => (
-                <li key={item.text} className={`plan-item ${item.ok ? "" : "plan-item-off"}`}>
-                  <span className={item.ok ? "check-ok" : "check-no"}>{item.ok ? "✓" : "✕"}</span>
+                <li
+                  key={item.text}
+                  className={`text-[14px] flex items-center gap-[10px] md:text-[15px] md:gap-3 ${item.ok ? "text-[#0A0A0A]" : "text-[#9CA3AF]"}`}
+                >
+                  <span className={item.ok ? "text-[#059669] font-bold" : "text-[#D1D5DB] font-bold"}>
+                    {item.ok ? "✓" : "✕"}
+                  </span>
                   {item.text}
                 </li>
               ))}
             </ul>
-            <button className="plan-btn plan-btn-free">현재 플랜</button>
-            <div className="plan-note">기본 기능 무료 사용</div>
+            <button className="w-full py-[14px] rounded-lg border-none font-inter text-[15px] font-bold cursor-pointer transition-opacity duration-200 hover:opacity-85 bg-[#0A0A0A] text-white md:py-4 md:rounded-lg md:text-[16px]">
+              현재 플랜
+            </button>
+            <div className="text-center text-[12px] text-[#6B7280] mt-2.5 md:text-[13px] md:mt-3">기본 기능 무료 사용</div>
           </div>
 
           {/* Pro */}
-          <div className="plan-card plan-pro">
-            <span className="plan-recommend">추천</span>
-            <div className="plan-name plan-name-white">Pro</div>
-            <div className="plan-price plan-price-white">
-              ₩19,900<span className="plan-price-unit">/월</span>
+          <div className="flex-1 rounded-lg px-7 py-9 bg-[#0A0A0A] relative shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)] md:px-10 md:py-11">
+            <span className="absolute top-5 right-5 text-[11px] font-bold text-[#0A0A0A] bg-white rounded px-3 py-1 md:top-6 md:right-6 md:text-[12px] md:px-3.5 md:py-[5px]">
+              추천
+            </span>
+            <div className="font-inter text-[18px] font-extrabold text-white mb-2 md:text-[20px] md:mb-2.5">Pro</div>
+            <div className="font-inter text-[44px] font-black text-white mb-1 md:text-[48px] md:mb-1.5">
+              ₩19,900<span className="text-[18px] md:text-[20px]">/월</span>
             </div>
-            <div className="plan-period plan-period-white">월 구독</div>
-            <ul className="plan-items">
+            <div className="text-[13px] text-white/55 mb-6 md:text-[14px] md:mb-8">월 구독</div>
+            <ul className="list-none p-0 m-0 mb-7 flex flex-col gap-3 md:gap-3.5 md:mb-9">
               {PRO_ITEMS.map((item) => (
-                <li key={item.text} className="plan-item plan-item-white">
-                  <span className="check-pro">✓</span>
+                <li key={item.text} className="text-[14px] text-white/90 flex items-center gap-[10px] md:text-[15px] md:gap-3">
+                  <span className="text-[#6EE7B7] font-bold">✓</span>
                   {item.text}
                 </li>
               ))}
             </ul>
-            <button className="plan-btn plan-btn-pro">Pro 업그레이드</button>
-            <div className="plan-note plan-note-white">언제든지 취소 가능</div>
+            <button className="w-full py-[14px] rounded-lg border-none font-inter text-[15px] font-bold cursor-pointer transition-opacity duration-200 hover:opacity-85 bg-white text-[#0A0A0A] md:py-4 md:rounded-lg md:text-[16px]">
+              Pro 업그레이드
+            </button>
+            <div className="text-center text-[12px] text-white/45 mt-2.5 md:text-[13px] md:mt-3">언제든지 취소 가능</div>
           </div>
         </div>
       </div>
-
-      <style>{PRICING_STYLES}</style>
     </section>
   );
 }

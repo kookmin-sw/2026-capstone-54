@@ -26,331 +26,7 @@ function buildCalendarCells(
   return cells;
 }
 
-const SK_STYLES = `
-        /* ── RESET ── */
-        .sk-wrap *, .sk-wrap *::before, .sk-wrap *::after { box-sizing: border-box; }
-        :root {
-          --sc: 0 1px 3px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.06);
-          --sc-hover: 0 2px 8px rgba(0,0,0,.1), 0 8px 24px rgba(0,0,0,.08);
-        }
-
-        /* ── NAV ── */
-        .sk-nav {
-          position: sticky; top: 0; z-index: 200;
-          background: rgba(255,255,255,.92);
-          backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-          border-bottom: 1px solid #E5E7EB;
-          height: 60px; display: flex; align-items: center; padding: 0 32px; gap: 12px;
-        }
-        .sk-nav-logo {
-          font-family: 'Inter', sans-serif; font-size: 20px; font-weight: 900;
-          color: #0A0A0A; text-decoration: none; letter-spacing: -.4px; margin-right: auto;
-        }
-        .sk-nav-logo .hi { color: #0991B2; }
-        .sk-nav-back {
-          font-size: 13px; font-weight: 600; color: #6B7280;
-          text-decoration: none; padding: 6px 12px; border-radius: 8px;
-          transition: color .15s, background .15s;
-        }
-        .sk-nav-back:hover { color: #0A0A0A; background: #F9FAFB; }
-        .sk-btn-primary {
-          font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 700;
-          color: #FFFFFF; background: #0A0A0A; border: none; border-radius: 8px;
-          padding: 9px 18px; cursor: pointer; transition: opacity .15s, transform .15s;
-          text-decoration: none; white-space: nowrap; display: inline-flex; align-items: center; gap: 5px;
-        }
-        .sk-btn-primary:hover { opacity: .85; transform: translateY(-1px); }
-
-        /* ── LAYOUT ── */
-        .sk-page { background: #FFFFFF; min-height: calc(100vh - 60px); padding: 32px; max-width: 1080px; margin: 0 auto; }
-
-        /* ── ANIMATIONS ── */
-        @keyframes skFadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes skFlicker {
-          0%,100% { opacity:1; transform: scale(1) rotate(-3deg); }
-          30% { opacity:.85; transform: scale(1.12) rotate(3deg); }
-          60% { opacity:.95; transform: scale(.96) rotate(-1deg); }
-        }
-        @keyframes skBreathe { 0%,100% { transform: scale(1); } 50% { transform: scale(1.04); } }
-        @keyframes skFillBar { from { width: 0; } to { width: var(--target); } }
-        @keyframes skPop { 0% { transform: scale(.7); opacity: 0; } 70% { transform: scale(1.08); } 100% { transform: scale(1); opacity: 1; } }
-        .sk-rv { opacity: 0; transform: translateY(14px); transition: opacity .45s ease, transform .45s ease; }
-        .sk-rv-in { opacity: 1; transform: translateY(0); }
-
-        /* ── SKELETON ── */
-        .sk-skeleton {
-          background: linear-gradient(90deg, #F3F4F6 25%, #E9EAEC 50%, #F3F4F6 75%);
-          background-size: 200% 100%; animation: skShimmer 1.4s infinite; border-radius: 8px;
-        }
-        @keyframes skShimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-
-        /* ── BADGE ── */
-        .sk-badge {
-          display: inline-flex; align-items: center; gap: 4px;
-          font-size: 11px; font-weight: 700; color: #0991B2;
-          background: #E6F7FA; padding: 3px 10px; border-radius: 100px;
-        }
-
-        /* ── HERO ── */
-        .sk-hero {
-          background: #0A0A0A; border-radius: 16px; padding: 40px 44px;
-          position: relative; overflow: hidden;
-          box-shadow: 0 4px 24px rgba(0,0,0,.18), 0 16px 48px rgba(0,0,0,.12);
-          margin-bottom: 20px; animation: skFadeUp .45s ease both;
-        }
-        .sk-hero-deco1 {
-          position: absolute; width: 300px; height: 300px;
-          background: rgba(9,145,178,.12); filter: blur(80px); border-radius: 50%;
-          top: -100px; right: -60px; pointer-events: none;
-        }
-        .sk-hero-deco2 {
-          position: absolute; width: 200px; height: 200px;
-          background: rgba(6,182,212,.08); filter: blur(60px); border-radius: 50%;
-          bottom: -60px; left: -40px; pointer-events: none;
-        }
-        .sk-hero-inner { position: relative; z-index: 1; display: flex; align-items: center; gap: 40px; }
-        .sk-hero-left { flex: 1; }
-        .sk-hero-eyebrow {
-          display: inline-flex; align-items: center; gap: 6px;
-          font-size: 11px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase;
-          color: rgba(255,255,255,.45); background: rgba(255,255,255,.08);
-          padding: 4px 12px; border-radius: 100px; margin-bottom: 18px;
-          font-family: 'Inter', sans-serif;
-        }
-        .sk-fire-count { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
-        .sk-fire-emoji { font-size: 56px; line-height: 1; animation: skFlicker 3s ease-in-out infinite; }
-        .sk-streak-num {
-          font-family: 'Inter', sans-serif; font-size: 96px; font-weight: 900;
-          line-height: .9; letter-spacing: -4px; color: #fff;
-        }
-        .sk-streak-unit {
-          font-family: 'Inter', sans-serif; font-size: 28px; font-weight: 700;
-          color: rgba(255,255,255,.45); align-self: flex-end; padding-bottom: 10px;
-        }
-        .sk-hero-label { font-size: 15px; color: rgba(255,255,255,.55); font-weight: 500; margin-bottom: 20px; font-family: 'Inter', sans-serif; }
-        .sk-hero-label strong { color: #fff; font-weight: 700; }
-        .sk-pills { display: flex; gap: 8px; flex-wrap: wrap; }
-        .sk-pill {
-          background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12);
-          color: rgba(255,255,255,.7); font-size: 12px; font-weight: 700;
-          padding: 6px 14px; border-radius: 100px; font-family: 'Inter', sans-serif;
-        }
-        .sk-pill-hot {
-          background: rgba(9,145,178,.25); border-color: rgba(9,145,178,.45); color: #67E8F9;
-        }
-        .sk-hero-right { flex-shrink: 0; display: flex; flex-direction: column; gap: 14px; align-items: flex-end; }
-        .sk-flame-orb {
-          width: 148px; height: 148px;
-          background: rgba(9,145,178,.15); border: 1px solid rgba(9,145,178,.25);
-          border-radius: 50%; display: flex; align-items: center; justify-content: center;
-          font-size: 60px; animation: skBreathe 3s ease-in-out infinite;
-          box-shadow: 0 0 48px rgba(9,145,178,.2);
-        }
-        .sk-hero-mini-stats { display: flex; flex-direction: column; gap: 8px; }
-        .sk-hms {
-          background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.08);
-          border-radius: 10px; padding: 10px 16px; text-align: right;
-        }
-        .sk-hms-num { font-family: 'Inter', sans-serif; font-size: 20px; font-weight: 900; color: #fff; line-height: 1; }
-        .sk-hms-label { font-size: 10px; color: rgba(255,255,255,.35); margin-top: 2px; font-weight: 600; }
-
-        /* ── STATS ROW ── */
-        .sk-stats-row {
-          display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
-          margin-bottom: 20px; animation: skFadeUp .45s ease .06s both;
-        }
-        .sk-stat-card {
-          background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 12px;
-          padding: 22px; box-shadow: var(--sc);
-          text-align: center; transition: box-shadow .2s, transform .2s;
-        }
-        .sk-stat-card:hover { box-shadow: var(--sc-hover); transform: translateY(-3px); }
-        .sk-stat-icon { font-size: 24px; display: block; margin-bottom: 8px; }
-        .sk-stat-num {
-          font-family: 'Inter', sans-serif; font-size: 36px; font-weight: 900;
-          letter-spacing: -1px; color: #0A0A0A; line-height: 1; display: block; margin-bottom: 4px;
-        }
-        .sk-stat-num-accent { color: #0991B2; }
-        .sk-stat-label { font-size: 12px; color: #6B7280; font-weight: 600; font-family: 'Inter', sans-serif; }
-
-        /* ── CONTENT GRID ── */
-        .sk-content-grid { display: grid; grid-template-columns: 1fr 340px; gap: 20px; align-items: start; }
-
-        /* ── CARD ── */
-        .sk-card {
-          background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 12px;
-          padding: 28px; box-shadow: var(--sc); transition: box-shadow .2s, transform .2s;
-        }
-        .sk-card:hover { box-shadow: var(--sc-hover); }
-        .sk-card-eyebrow {
-          font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
-          color: #0991B2; background: #E6F7FA; padding: 3px 10px; border-radius: 100px;
-          display: inline-block; margin-bottom: 10px; font-family: 'Inter', sans-serif;
-        }
-        .sk-card-title {
-          font-family: 'Inter', sans-serif; font-size: 18px; font-weight: 900;
-          letter-spacing: -.3px; margin-bottom: 4px; color: #0A0A0A;
-        }
-        .sk-card-sub { font-size: 13px; color: #6B7280; margin-bottom: 22px; line-height: 1.55; }
-
-        /* ── CALENDAR ── */
-        .sk-cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-        .sk-cal-month { font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 900; color: #0A0A0A; }
-        .sk-cal-arrows { display: flex; gap: 6px; }
-        .sk-cal-arrow {
-          width: 32px; height: 32px; border-radius: 8px;
-          background: #FFFFFF; border: 1px solid #E5E7EB;
-          cursor: pointer; font-size: 14px; display: flex; align-items: center;
-          justify-content: center; color: #0A0A0A; transition: all .15s;
-        }
-        .sk-cal-arrow:hover { background: #F3F4F6; box-shadow: var(--sc); }
-        .sk-cal-dow-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; margin-bottom: 4px; }
-        .sk-cal-dow { font-size: 10px; font-weight: 700; color: #9CA3AF; text-align: center; padding: 4px 0; font-family: 'Inter', sans-serif; }
-        .sk-cal-cells { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
-        .sk-cal-cell {
-          aspect-ratio: 1; border-radius: 8px; display: flex; align-items: center;
-          justify-content: center; font-size: 12px; font-weight: 600; color: #6B7280;
-          cursor: default; transition: all .2s; user-select: none; position: relative;
-          font-family: 'Inter', sans-serif;
-        }
-        .sk-cal-cell-empty { opacity: 0; pointer-events: none; }
-        .sk-cal-cell-normal:hover { background: #E6F7FA; color: #0991B2; }
-        .sk-cal-cell-today { background: #E6F7FA; color: #0991B2; font-weight: 800; }
-        .sk-cal-cell-done {
-          background: #0991B2; color: #fff; font-weight: 700;
-          box-shadow: 0 2px 8px rgba(9,145,178,.35); animation: skPop .25s ease;
-        }
-        .sk-cal-cell-done::after {
-          content: '🔥'; position: absolute; font-size: 6px; top: 2px; right: 2px; line-height: 1;
-        }
-        .sk-cal-cell-today-done {
-          box-shadow: 0 0 0 2px #0991B2, 0 2px 8px rgba(9,145,178,.4);
-        }
-        .sk-cal-legend { display: flex; align-items: center; gap: 14px; margin-top: 16px; flex-wrap: wrap; }
-        .sk-leg-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #6B7280; font-weight: 600; font-family: 'Inter', sans-serif; }
-        .sk-leg-dot { width: 12px; height: 12px; border-radius: 4px; flex-shrink: 0; }
-        .sk-leg-done { background: #0991B2; }
-        .sk-leg-today { background: #E6F7FA; border: 1.5px solid #0991B2; }
-        .sk-leg-none { background: #E5E7EB; }
-
-        /* ── REWARD HISTORY ── */
-        .sk-rh-list { display: flex; flex-direction: column; gap: 8px; }
-        .sk-rh-item {
-          display: flex; align-items: center; gap: 12px;
-          padding: 12px 14px; background: #FFFFFF; border: 1px solid #E5E7EB;
-          border-radius: 10px; box-shadow: var(--sc); transition: all .15s;
-        }
-        .sk-rh-item:hover { box-shadow: var(--sc-hover); transform: translateY(-1px); }
-        .sk-rh-icon {
-          width: 40px; height: 40px; border-radius: 10px; display: flex;
-          align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
-        }
-        .sk-rh-body { flex: 1; }
-        .sk-rh-title { font-size: 13px; font-weight: 700; margin-bottom: 2px; color: #0A0A0A; font-family: 'Inter', sans-serif; }
-        .sk-rh-date { font-size: 11px; color: #6B7280; }
-        .sk-rh-badge { font-size: 11px; font-weight: 700; color: #0991B2; background: #E6F7FA; padding: 3px 9px; border-radius: 100px; white-space: nowrap; font-family: 'Inter', sans-serif; }
-
-        /* ── RIGHT COLUMN ── */
-        .sk-right-col { display: flex; flex-direction: column; gap: 16px; }
-
-        /* ── NEXT REWARD CARD ── */
-        .sk-reward-card {
-          background: #0A0A0A; border-radius: 12px; padding: 26px;
-          position: relative; overflow: hidden;
-          box-shadow: 0 4px 24px rgba(0,0,0,.16), 0 12px 40px rgba(0,0,0,.1);
-        }
-        .sk-reward-deco {
-          position: absolute; width: 200px; height: 200px;
-          background: rgba(9,145,178,.12); filter: blur(60px); border-radius: 50%;
-          top: -60px; right: -40px; pointer-events: none;
-        }
-        .sk-reward-inner { position: relative; z-index: 1; }
-        .sk-reward-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: rgba(255,255,255,.35); margin-bottom: 14px; font-family: 'Inter', sans-serif; }
-        .sk-reward-row { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 4px; }
-        .sk-reward-days { font-family: 'Inter', sans-serif; font-size: 34px; font-weight: 900; color: #fff; letter-spacing: -1px; line-height: 1; }
-        .sk-reward-days span { font-size: 14px; font-weight: 700; color: rgba(255,255,255,.4); margin-left: 3px; }
-        .sk-reward-remain { font-size: 12px; font-weight: 700; color: rgba(255,255,255,.45); font-family: 'Inter', sans-serif; }
-        .sk-reward-bar-bg { height: 8px; background: rgba(255,255,255,.1); border-radius: 100px; overflow: hidden; margin: 14px 0 8px; }
-        .sk-reward-bar-fill { height: 100%; background: #0991B2; border-radius: 100px; transition: width 1s cubic-bezier(.34,1.56,.64,1); }
-        .sk-reward-meta { display: flex; align-items: center; justify-content: space-between; }
-        .sk-reward-meta-left { font-size: 11px; color: rgba(255,255,255,.35); font-family: 'Inter', sans-serif; }
-        .sk-reward-chip {
-          display: flex; align-items: center; gap: 5px;
-          background: rgba(9,145,178,.25); border: 1px solid rgba(9,145,178,.4);
-          border-radius: 100px; padding: 4px 10px; font-size: 12px; font-weight: 700; color: #67E8F9;
-          font-family: 'Inter', sans-serif;
-        }
-        .sk-reward-detail { margin-top: 16px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.07); }
-        .sk-reward-detail p { font-size: 12px; color: rgba(255,255,255,.35); line-height: 1.65; font-family: 'Inter', sans-serif; }
-        .sk-reward-detail strong { color: rgba(255,255,255,.7); }
-
-        /* ── MILESTONES ── */
-        .sk-milestone-list { display: flex; flex-direction: column; gap: 8px; }
-        .sk-ms-item {
-          display: flex; align-items: center; gap: 10px;
-          padding: 12px 14px; border-radius: 10px; transition: all .15s;
-        }
-        .sk-ms-achieved { background: #E6F7FA; }
-        .sk-ms-next { background: rgba(9,145,178,.06); border: 1.5px dashed rgba(9,145,178,.3); }
-        .sk-ms-locked { opacity: .45; background: #F9FAFB; border: 1px solid #E5E7EB; }
-        .sk-ms-badge {
-          width: 34px; height: 34px; border-radius: 10px; display: flex;
-          align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;
-        }
-        .sk-ms-badge-done { background: #0991B2; box-shadow: 0 2px 8px rgba(9,145,178,.3); }
-        .sk-ms-badge-next { background: rgba(9,145,178,.12); border: 1.5px dashed rgba(9,145,178,.4); }
-        .sk-ms-badge-lock { background: #E5E7EB; }
-        .sk-ms-body { flex: 1; }
-        .sk-ms-title { font-size: 13px; font-weight: 700; color: #0A0A0A; margin-bottom: 2px; font-family: 'Inter', sans-serif; }
-        .sk-ms-desc { font-size: 11px; color: #6B7280; line-height: 1.45; }
-        .sk-ms-tag { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 100px; flex-shrink: 0; font-family: 'Inter', sans-serif; }
-        .sk-ms-tag-done { color: #059669; background: #ECFDF5; }
-        .sk-ms-tag-next { color: #0991B2; background: #E6F7FA; }
-        .sk-ms-tag-lock { color: #6B7280; background: #F3F4F6; }
-
-        /* ── CTA STRIP ── */
-        .sk-cta {
-          background: #0A0A0A; border-radius: 12px; padding: 24px 26px;
-          display: flex; align-items: center; justify-content: space-between; gap: 16px;
-          box-shadow: 0 4px 20px rgba(0,0,0,.14); position: relative; overflow: hidden;
-        }
-        .sk-cta-deco {
-          position: absolute; width: 160px; height: 160px;
-          background: rgba(9,145,178,.1); filter: blur(50px); border-radius: 50%;
-          top: -50px; right: 80px; pointer-events: none;
-        }
-        .sk-cta-text { position: relative; z-index: 1; }
-        .sk-cta-title { font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 900; color: #fff; margin-bottom: 4px; }
-        .sk-cta-desc { font-size: 12px; color: rgba(255,255,255,.45); line-height: 1.55; font-family: 'Inter', sans-serif; }
-        .sk-btn-cta {
-          position: relative; z-index: 1;
-          font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 700;
-          color: #0A0A0A; background: #fff; border: none; border-radius: 8px;
-          padding: 11px 20px; cursor: pointer; white-space: nowrap;
-          text-decoration: none; transition: all .15s; display: inline-block;
-        }
-        .sk-btn-cta:hover { background: #F3F4F6; transform: translateY(-2px); }
-
-        /* ── RESPONSIVE ── */
-        @media (max-width: 960px) {
-          .sk-content-grid { grid-template-columns: 1fr; }
-          .sk-hero-right { display: none; }
-          .sk-hero { padding: 28px 28px; }
-          .sk-streak-num { font-size: 72px; }
-          .sk-fire-emoji { font-size: 44px; }
-        }
-        @media (max-width: 640px) {
-          .sk-nav { padding: 0 16px; }
-          .sk-page { padding: 20px 16px; }
-          .sk-stats-row { gap: 10px; }
-          .sk-stat-card { padding: 16px 10px; }
-          .sk-stat-num { font-size: 28px; }
-          .sk-hero { border-radius: 12px; padding: 22px 20px; }
-          .sk-streak-num { font-size: 60px; }
-          .sk-cta { flex-direction: column; align-items: flex-start; }
-          .sk-btn-cta { width: 100%; text-align: center; }
-        }
-      `;
+const cardCls = "bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl p-7 shadow-[0_1px_3px_rgba(0,0,0,0.08),0_4px_16px_rgba(0,0,0,0.06)] transition-[box-shadow,transform] hover:shadow-[0_2px_8px_rgba(0,0,0,0.1),0_8px_24px_rgba(0,0,0,0.08)]";
 
 export function StreakPage() {
   const { data, loading, fetchStreak } = useStreakStore();
@@ -395,249 +71,254 @@ export function StreakPage() {
     return { background: "#D97706" };
   };
 
+  const calCellCls = (cell: { day: number | null; done: boolean; today: boolean }) => {
+    const base = "aspect-square rounded-lg flex items-center justify-center text-[12px] font-semibold text-[#6B7280] cursor-default transition-all select-none relative";
+    if (!cell.day) return `${base} opacity-0 pointer-events-none`;
+    if (cell.done && cell.today) return `${base} bg-[#0991B2] text-white font-bold shadow-[0_0_0_2px_#0991B2,0_2px_8px_rgba(9,145,178,.4)] animate-[skPop_.25s_ease]`;
+    if (cell.done) return `${base} bg-[#0991B2] text-white font-bold shadow-[0_2px_8px_rgba(9,145,178,.35)] animate-[skPop_.25s_ease]`;
+    if (cell.today) return `${base} bg-[#E6F7FA] text-[#0991B2] font-extrabold`;
+    return `${base} hover:bg-[#E6F7FA] hover:text-[#0991B2]`;
+  };
+
+  const msMeta = (status: string, daysRemaining?: number) => {
+    if (status === "achieved") return {
+      itemCls: "flex items-center gap-2.5 py-3 px-3.5 rounded-[10px] transition-all bg-[#E6F7FA]",
+      badgeCls: "w-[34px] h-[34px] rounded-[10px] flex items-center justify-center text-sm shrink-0 bg-[#0991B2] shadow-[0_2px_8px_rgba(9,145,178,.3)]",
+      tagCls: "text-[11px] font-bold py-[3px] px-[9px] rounded-full shrink-0 text-[#059669] bg-[#ECFDF5]",
+      tagText: "완료",
+    };
+    if (status === "next") return {
+      itemCls: "flex items-center gap-2.5 py-3 px-3.5 rounded-[10px] transition-all bg-[rgba(9,145,178,.06)] border-[1.5px] border-dashed border-[rgba(9,145,178,.3)]",
+      badgeCls: "w-[34px] h-[34px] rounded-[10px] flex items-center justify-center text-sm shrink-0 bg-[rgba(9,145,178,.12)] border-[1.5px] border-dashed border-[rgba(9,145,178,.4)]",
+      tagCls: "text-[11px] font-bold py-[3px] px-[9px] rounded-full shrink-0 text-[#0991B2] bg-[#E6F7FA]",
+      tagText: `D-${daysRemaining}`,
+    };
+    return {
+      itemCls: "flex items-center gap-2.5 py-3 px-3.5 rounded-[10px] transition-all opacity-45 bg-[#F9FAFB] border border-[#E5E7EB]",
+      badgeCls: "w-[34px] h-[34px] rounded-[10px] flex items-center justify-center text-sm shrink-0 bg-[#E5E7EB]",
+      tagCls: "text-[11px] font-bold py-[3px] px-[9px] rounded-full shrink-0 text-[#6B7280] bg-[#F3F4F6]",
+      tagText: `${daysRemaining}일 남음`,
+    };
+  };
+
   return (
     <>
-      <style>{SK_STYLES}</style>
+      {/* NAV */}
+      <nav className="sticky top-0 z-[200] bg-white/[.92] backdrop-blur-[20px] border-b border-[#E5E7EB] h-[60px] flex items-center px-8 gap-3 max-sm:px-4">
+        <Link to="/home" className="text-[20px] font-black text-[#0A0A0A] no-underline tracking-[-0.4px] mr-auto">
+          me<span className="text-[#0991B2]">Fit</span>
+        </Link>
+        <Link to="/home" className="text-[13px] font-semibold text-[#6B7280] no-underline py-1.5 px-3 rounded-lg transition-colors hover:text-[#0A0A0A] hover:bg-[#F9FAFB]">← 홈으로</Link>
+        <Link to="/interview/setup" className="text-[13px] font-bold text-white bg-[#0A0A0A] border-none rounded-lg py-[9px] px-[18px] cursor-pointer no-underline whitespace-nowrap inline-flex items-center gap-[5px] transition-[opacity,transform] hover:opacity-85 hover:-translate-y-px">면접 시작 →</Link>
+      </nav>
 
-      <div className="sk-wrap">
-        {/* NAV */}
-        <nav className="sk-nav">
-          <Link to="/home" className="sk-nav-logo">me<span className="hi">Fit</span></Link>
-          <Link to="/home" className="sk-nav-back">← 홈으로</Link>
-          <Link to="/interview/setup" className="sk-btn-primary">면접 시작 →</Link>
-        </nav>
-
-        <div className="sk-page">
-          {loading && !data ? (
-            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              <div className="sk-skeleton" style={{ height: 180 }} />
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14 }}>
-                {[0, 1, 2].map((i) => <div key={i} className="sk-skeleton" style={{ height: 110 }} />)}
-              </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 20 }}>
-                <div className="sk-skeleton" style={{ height: 360 }} />
-                <div className="sk-skeleton" style={{ height: 360 }} />
+      <div className="bg-white min-h-[calc(100vh-60px)] p-8 max-w-[1080px] mx-auto max-sm:p-[20px_16px]">
+        {loading && !data ? (
+          <div className="flex flex-col gap-4">
+            <div className="skeleton-gray rounded-lg" style={{ height: 180 }} />
+            <div className="grid grid-cols-3 gap-3.5">
+              {[0, 1, 2].map((i) => <div key={i} className="skeleton-gray rounded-lg" style={{ height: 110 }} />)}
+            </div>
+            <div className="grid grid-cols-[1fr_340px] gap-5">
+              <div className="skeleton-gray rounded-lg" style={{ height: 360 }} />
+              <div className="skeleton-gray rounded-lg" style={{ height: 360 }} />
+            </div>
+          </div>
+        ) : data ? (
+          <>
+            {/* ─── HERO ─── */}
+            <div className="bg-[#0A0A0A] rounded-2xl p-[40px_44px] relative overflow-hidden shadow-[0_4px_24px_rgba(0,0,0,.18),0_16px_48px_rgba(0,0,0,.12)] mb-5 animate-[skFadeUp_.45s_ease_both] max-[960px]:p-7 max-sm:rounded-xl max-sm:p-[22px_20px]">
+              <div className="absolute w-[300px] h-[300px] bg-[rgba(9,145,178,.12)] blur-[80px] rounded-full -top-[100px] -right-[60px] pointer-events-none" />
+              <div className="absolute w-[200px] h-[200px] bg-[rgba(6,182,212,.08)] blur-[60px] rounded-full -bottom-[60px] -left-[40px] pointer-events-none" />
+              <div className="relative z-[1] flex items-center gap-10">
+                <div className="flex-1">
+                  <div className="inline-flex items-center gap-1.5 text-[11px] font-bold tracking-[1.2px] uppercase text-white/45 bg-white/[.08] py-1 px-3 rounded-full mb-[18px]">🔥 스트릭 현황</div>
+                  <div className="flex items-center gap-3 mb-1.5">
+                    <span className="text-[56px] leading-none animate-[skFlicker_3s_ease-in-out_infinite] max-[960px]:text-[44px] max-sm:text-[40px]">🔥</span>
+                    <span className="text-[96px] font-black leading-[.9] tracking-[-4px] text-white max-[960px]:text-[72px] max-sm:text-[60px]">{data.currentStreak}</span>
+                    <span className="text-[28px] font-bold text-white/45 self-end pb-2.5">일</span>
+                  </div>
+                  <p className="text-[15px] text-white/55 font-medium mb-5">
+                    연속 면접 참여 중 · <strong className="text-white font-bold">{data.todayCompleted ? "오늘도 참여했어요!" : "오늘 아직 참여 전이에요"}</strong>
+                  </p>
+                  <div className="flex gap-2 flex-wrap">
+                    <span className="bg-[rgba(9,145,178,.25)] border border-[rgba(9,145,178,.45)] text-[#67E8F9] text-[12px] font-bold py-1.5 px-3.5 rounded-full">🏆 역대 최장 {data.bestStreak}일</span>
+                    <span className="bg-white/[.08] border border-white/[.12] text-white/70 text-[12px] font-bold py-1.5 px-3.5 rounded-full">총 {data.totalDays}일 참여</span>
+                    <span className="bg-white/[.08] border border-white/[.12] text-white/70 text-[12px] font-bold py-1.5 px-3.5 rounded-full">보상 {data.rewardsCount}회 수령</span>
+                  </div>
+                </div>
+                <div className="shrink-0 flex flex-col gap-3.5 items-end max-[960px]:hidden">
+                  <div className="w-[148px] h-[148px] bg-[rgba(9,145,178,.15)] border border-[rgba(9,145,178,.25)] rounded-full flex items-center justify-center text-[60px] animate-[skBreathe_3s_ease-in-out_infinite] shadow-[0_0_48px_rgba(9,145,178,.2)]">🔥</div>
+                  <div className="flex flex-col gap-2">
+                    <div className="bg-white/[.07] border border-white/[.08] rounded-[10px] py-2.5 px-4 text-right">
+                      <div className="text-[20px] font-black text-white leading-none">{data.bestStreak}일</div>
+                      <div className="text-[10px] text-white/35 mt-0.5 font-semibold">최장 기록</div>
+                    </div>
+                    <div className="bg-white/[.07] border border-white/[.08] rounded-[10px] py-2.5 px-4 text-right">
+                      <div className="text-[20px] font-black text-white leading-none">{data.totalDays}일</div>
+                      <div className="text-[10px] text-white/35 mt-0.5 font-semibold">총 참여일</div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-          ) : data ? (
-            <>
-              {/* ─── HERO ─── */}
-              <div className="sk-hero">
-                <div className="sk-hero-deco1" />
-                <div className="sk-hero-deco2" />
-                <div className="sk-hero-inner">
-                  <div className="sk-hero-left">
-                    <div className="sk-hero-eyebrow">🔥 스트릭 현황</div>
-                    <div className="sk-fire-count">
-                      <span className="sk-fire-emoji">🔥</span>
-                      <span className="sk-streak-num">{data.currentStreak}</span>
-                      <span className="sk-streak-unit">일</span>
-                    </div>
-                    <p className="sk-hero-label">
-                      연속 면접 참여 중 ·{" "}
-                      <strong>{data.todayCompleted ? "오늘도 참여했어요!" : "오늘 아직 참여 전이에요"}</strong>
-                    </p>
-                    <div className="sk-pills">
-                      <span className="sk-pill sk-pill-hot">🏆 역대 최장 {data.bestStreak}일</span>
-                      <span className="sk-pill">총 {data.totalDays}일 참여</span>
-                      <span className="sk-pill">보상 {data.rewardsCount}회 수령</span>
+
+            {/* ─── STATS ROW ─── */}
+            <div className="grid grid-cols-3 gap-3.5 mb-5 animate-[skFadeUp_.45s_ease_.06s_both]">
+              {[
+                { icon: "🏆", value: data.bestStreak,    label: "최장 연속 기록", accent: true },
+                { icon: "📅", value: data.totalDays,     label: "총 참여일",       accent: false },
+                { icon: "🎁", value: data.rewardsCount,  label: "보상 수령 횟수", accent: false },
+              ].map((s, i) => (
+                <div
+                  key={i}
+                  className={`bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl py-[22px] px-[22px] shadow-[0_1px_3px_rgba(0,0,0,0.08),0_4px_16px_rgba(0,0,0,0.06)] text-center transition-[box-shadow,transform] hover:shadow-[0_2px_8px_rgba(0,0,0,0.1),0_8px_24px_rgba(0,0,0,0.08)] hover:-translate-y-[3px] sk-rv${revealed ? " sk-rv-in" : ""}`}
+                  style={{ transitionDelay: `${i * 60}ms` }}
+                >
+                  <span className="text-[24px] block mb-2">{s.icon}</span>
+                  <span className={`text-[36px] font-black tracking-[-1px] leading-none block mb-1 ${s.accent ? "text-[#0991B2]" : "text-[#0A0A0A]"}`}>{s.value}</span>
+                  <span className="text-[12px] text-[#6B7280] font-semibold">{s.label}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* ─── CONTENT GRID ─── */}
+            <div className="grid grid-cols-[1fr_340px] gap-5 items-start max-[960px]:grid-cols-1">
+              {/* LEFT */}
+              <div className="flex flex-col gap-4">
+
+                {/* CALENDAR */}
+                <div className={`${cardCls} sk-rv${revealed ? " sk-rv-in" : ""}`} style={{ transitionDelay: "80ms" }}>
+                  <span className="text-[10px] font-bold tracking-[1px] uppercase text-[#0991B2] bg-[#E6F7FA] py-[3px] px-2.5 rounded-full inline-block mb-2.5">참여 달력</span>
+                  <h2 className="text-[18px] font-black tracking-[-0.3px] mb-1 text-[#0A0A0A]">면접 참여 기록</h2>
+                  <p className="text-[13px] text-[#6B7280] mb-[22px] leading-[1.55]">🔥 표시된 날은 면접에 참여한 날입니다</p>
+
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-[15px] font-black text-[#0A0A0A]">{viewY}년 {MONTH_KO[viewM - 1]}</span>
+                    <div className="flex gap-1.5">
+                      <button className="w-8 h-8 rounded-lg bg-white border border-[#E5E7EB] cursor-pointer text-sm flex items-center justify-center text-[#0A0A0A] transition-all hover:bg-[#F3F4F6] hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)]" onClick={prevMonth} aria-label="이전 달">‹</button>
+                      <button className="w-8 h-8 rounded-lg bg-white border border-[#E5E7EB] cursor-pointer text-sm flex items-center justify-center text-[#0A0A0A] transition-all hover:bg-[#F3F4F6] hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)]" onClick={nextMonth} aria-label="다음 달">›</button>
                     </div>
                   </div>
-                  <div className="sk-hero-right">
-                    <div className="sk-flame-orb">🔥</div>
-                    <div className="sk-hero-mini-stats">
-                      <div className="sk-hms">
-                        <div className="sk-hms-num">{data.bestStreak}일</div>
-                        <div className="sk-hms-label">최장 기록</div>
+
+                  <div className="grid grid-cols-7 gap-[3px] mb-1">
+                    {["일","월","화","수","목","금","토"].map((d) => (
+                      <div key={d} className="text-[10px] font-bold text-[#9CA3AF] text-center py-1">{d}</div>
+                    ))}
+                  </div>
+
+                  <div className="grid grid-cols-7 gap-[3px]">
+                    {calCells.map((cell, i) => (
+                      <div
+                        key={i}
+                        className={calCellCls(cell)}
+                        title={cell.done && cell.day ? `${viewM}월 ${cell.day}일 — 면접 참여 ✓` : undefined}
+                      >
+                        {cell.day}
+                        {cell.done && (
+                          <span className="absolute top-0.5 right-0.5 text-[6px] leading-none">🔥</span>
+                        )}
                       </div>
-                      <div className="sk-hms">
-                        <div className="sk-hms-num">{data.totalDays}일</div>
-                        <div className="sk-hms-label">총 참여일</div>
-                      </div>
-                    </div>
+                    ))}
+                  </div>
+
+                  <div className="flex items-center gap-3.5 mt-4 flex-wrap">
+                    <div className="flex items-center gap-[5px] text-[11px] text-[#6B7280] font-semibold"><div className="w-3 h-3 rounded-[4px] shrink-0 bg-[#0991B2]" />면접 참여일</div>
+                    <div className="flex items-center gap-[5px] text-[11px] text-[#6B7280] font-semibold"><div className="w-3 h-3 rounded-[4px] shrink-0 bg-[#E6F7FA] border-[1.5px] border-[#0991B2]" />오늘</div>
+                    <div className="flex items-center gap-[5px] text-[11px] text-[#6B7280] font-semibold"><div className="w-3 h-3 rounded-[4px] shrink-0 bg-[#E5E7EB]" />미참여</div>
                   </div>
                 </div>
-              </div>
 
-              {/* ─── STATS ROW ─── */}
-              <div className="sk-stats-row">
-                {[
-                  { icon: "🏆", value: data.bestStreak, label: "최장 연속 기록", accent: true },
-                  { icon: "📅", value: data.totalDays,  label: "총 참여일",       accent: false },
-                  { icon: "🎁", value: data.rewardsCount, label: "보상 수령 횟수", accent: false },
-                ].map((s, i) => (
-                  <div
-                    key={i}
-                    className={`sk-stat-card sk-rv${revealed ? " sk-rv-in" : ""}`}
-                    style={{ transitionDelay: `${i * 60}ms` }}
-                  >
-                    <span className="sk-stat-icon">{s.icon}</span>
-                    <span className={`sk-stat-num${s.accent ? " sk-stat-num-accent" : ""}`}>{s.value}</span>
-                    <span className="sk-stat-label">{s.label}</span>
-                  </div>
-                ))}
-              </div>
-
-              {/* ─── CONTENT GRID ─── */}
-              <div className="sk-content-grid">
-                {/* LEFT */}
-                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-
-                  {/* CALENDAR */}
-                  <div className={`sk-card sk-rv${revealed ? " sk-rv-in" : ""}`} style={{ transitionDelay: "80ms" }}>
-                    <span className="sk-card-eyebrow">참여 달력</span>
-                    <h2 className="sk-card-title">면접 참여 기록</h2>
-                    <p className="sk-card-sub">🔥 표시된 날은 면접에 참여한 날입니다</p>
-
-                    <div className="sk-cal-nav">
-                      <span className="sk-cal-month">{viewY}년 {MONTH_KO[viewM - 1]}</span>
-                      <div className="sk-cal-arrows">
-                        <button className="sk-cal-arrow" onClick={prevMonth} aria-label="이전 달">‹</button>
-                        <button className="sk-cal-arrow" onClick={nextMonth} aria-label="다음 달">›</button>
-                      </div>
-                    </div>
-
-                    <div className="sk-cal-dow-row">
-                      {["일","월","화","수","목","금","토"].map((d) => (
-                        <div key={d} className="sk-cal-dow">{d}</div>
-                      ))}
-                    </div>
-
-                    <div className="sk-cal-cells">
-                      {calCells.map((cell, i) => {
-                        if (!cell.day) return <div key={i} className="sk-cal-cell sk-cal-cell-empty" />;
-                        let cls = "sk-cal-cell";
-                        if (cell.done && cell.today) cls += " sk-cal-cell-done sk-cal-cell-today-done";
-                        else if (cell.done) cls += " sk-cal-cell-done";
-                        else if (cell.today) cls += " sk-cal-cell-today";
-                        else cls += " sk-cal-cell-normal";
-                        return (
-                          <div
-                            key={i}
-                            className={cls}
-                            title={cell.done ? `${viewM}월 ${cell.day}일 — 면접 참여 ✓` : undefined}
-                          >
-                            {cell.day}
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    <div className="sk-cal-legend">
-                      <div className="sk-leg-item"><div className="sk-leg-dot sk-leg-done" />면접 참여일</div>
-                      <div className="sk-leg-item"><div className="sk-leg-dot sk-leg-today" />오늘</div>
-                      <div className="sk-leg-item"><div className="sk-leg-dot sk-leg-none" />미참여</div>
-                    </div>
-                  </div>
-
-                  {/* REWARD HISTORY */}
-                  <div className={`sk-card sk-rv${revealed ? " sk-rv-in" : ""}`} style={{ transitionDelay: "130ms" }}>
-                    <span className="sk-card-eyebrow">보상 내역</span>
-                    <h2 className="sk-card-title">스트릭 보상 수령 이력</h2>
-                    <p className="sk-card-sub">마일스톤 달성 시 Pro 기능 사용권이 자동 지급됩니다</p>
-                    <div className="sk-rh-list">
-                      {data.rewardHistory.map((rh) => (
-                        <div key={rh.id} className="sk-rh-item">
-                          <div className="sk-rh-icon" style={iconBgStyle(rh.iconBg)}>{rh.icon}</div>
-                          <div className="sk-rh-body">
-                            <div className="sk-rh-title">{rh.title}</div>
-                            <div className="sk-rh-date">{rh.description} · {rh.date}</div>
-                          </div>
-                          <span className="sk-rh-badge">수령 완료</span>
+                {/* REWARD HISTORY */}
+                <div className={`${cardCls} sk-rv${revealed ? " sk-rv-in" : ""}`} style={{ transitionDelay: "130ms" }}>
+                  <span className="text-[10px] font-bold tracking-[1px] uppercase text-[#0991B2] bg-[#E6F7FA] py-[3px] px-2.5 rounded-full inline-block mb-2.5">보상 내역</span>
+                  <h2 className="text-[18px] font-black tracking-[-0.3px] mb-1 text-[#0A0A0A]">스트릭 보상 수령 이력</h2>
+                  <p className="text-[13px] text-[#6B7280] mb-[22px] leading-[1.55]">마일스톤 달성 시 Pro 기능 사용권이 자동 지급됩니다</p>
+                  <div className="flex flex-col gap-2">
+                    {data.rewardHistory.map((rh) => (
+                      <div key={rh.id} className="flex items-center gap-3 py-3 px-3.5 bg-white border border-[#E5E7EB] rounded-[10px] shadow-[0_1px_3px_rgba(0,0,0,0.08),0_4px_16px_rgba(0,0,0,0.06)] transition-all hover:shadow-[0_2px_8px_rgba(0,0,0,0.1),0_8px_24px_rgba(0,0,0,0.08)] hover:-translate-y-px">
+                        <div className="w-10 h-10 rounded-[10px] flex items-center justify-center text-base shrink-0" style={iconBgStyle(rh.iconBg)}>{rh.icon}</div>
+                        <div className="flex-1">
+                          <div className="text-[13px] font-bold mb-0.5 text-[#0A0A0A]">{rh.title}</div>
+                          <div className="text-[11px] text-[#6B7280]">{rh.description} · {rh.date}</div>
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                {/* RIGHT */}
-                <div className="sk-right-col">
-
-                  {/* NEXT REWARD */}
-                  <div className={`sk-reward-card sk-rv${revealed ? " sk-rv-in" : ""}`} style={{ transitionDelay: "100ms" }}>
-                    <div className="sk-reward-deco" />
-                    <div className="sk-reward-inner">
-                      <div className="sk-reward-eyebrow">다음 보상까지</div>
-                      <div className="sk-reward-row">
-                        <div className="sk-reward-days">
-                          {data.nextReward.targetDays}<span>일 달성 목표</span>
-                        </div>
-                        <div className="sk-reward-remain">{data.nextReward.daysRemaining}일 남음</div>
+                        <span className="text-[11px] font-bold text-[#0991B2] bg-[#E6F7FA] py-[3px] px-[9px] rounded-full whitespace-nowrap">수령 완료</span>
                       </div>
-                      <div className="sk-reward-bar-bg">
-                        <div
-                          className="sk-reward-bar-fill"
-                          style={{ width: `${data.nextReward.progress}%` }}
-                        />
-                      </div>
-                      <div className="sk-reward-meta">
-                        <span className="sk-reward-meta-left">
-                          {data.currentStreak} / {data.nextReward.targetDays}일 완료
-                        </span>
-                        <div className="sk-reward-chip">🎁 {data.nextReward.reward}</div>
-                      </div>
-                      <div className="sk-reward-detail">
-                        <p>{data.nextReward.rewardDetail}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* MILESTONES */}
-                  <div className={`sk-card sk-rv${revealed ? " sk-rv-in" : ""}`} style={{ transitionDelay: "150ms" }}>
-                    <span className="sk-card-eyebrow">마일스톤</span>
-                    <h3 className="sk-card-title" style={{ fontSize: 16 }}>보상 달성 로드맵</h3>
-                    <p className="sk-card-sub">스트릭 목표를 달성하면 Pro 기능을 무료로 이용하세요</p>
-                    <div className="sk-milestone-list">
-                      {data.milestones.map((ms) => {
-                        const itemCls =
-                          ms.status === "achieved" ? "sk-ms-item sk-ms-achieved"
-                          : ms.status === "next"     ? "sk-ms-item sk-ms-next"
-                          :                            "sk-ms-item sk-ms-locked";
-                        const badgeCls =
-                          ms.status === "achieved" ? "sk-ms-badge sk-ms-badge-done"
-                          : ms.status === "next"     ? "sk-ms-badge sk-ms-badge-next"
-                          :                            "sk-ms-badge sk-ms-badge-lock";
-                        const tagCls =
-                          ms.status === "achieved" ? "sk-ms-tag sk-ms-tag-done"
-                          : ms.status === "next"     ? "sk-ms-tag sk-ms-tag-next"
-                          :                            "sk-ms-tag sk-ms-tag-lock";
-                        const tagText =
-                          ms.status === "achieved" ? "완료"
-                          : ms.status === "next"     ? `D-${ms.daysRemaining}`
-                          :                            `${ms.daysRemaining}일 남음`;
-                        return (
-                          <div key={ms.days} className={itemCls}>
-                            <div className={badgeCls}>
-                              {ms.status === "achieved" ? "✓" : ms.rewardIcon}
-                            </div>
-                            <div className="sk-ms-body">
-                              <div className="sk-ms-title">{ms.days}일 달성</div>
-                              <div className="sk-ms-desc">{ms.reward}</div>
-                            </div>
-                            <span className={tagCls}>{tagText}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* CTA */}
-                  <div className={`sk-cta sk-rv${revealed ? " sk-rv-in" : ""}`} style={{ transitionDelay: "200ms" }}>
-                    <div className="sk-cta-deco" />
-                    <div className="sk-cta-text">
-                      <div className="sk-cta-title">오늘의 면접 시작하기</div>
-                      <div className="sk-cta-desc">
-                        {data.nextReward.daysRemaining}일만 더 하면 보상이 기다려요.<br />
-                        지금 바로 이어가세요 🔥
-                      </div>
-                    </div>
-                    <Link to="/interview/setup" className="sk-btn-cta">면접 시작 →</Link>
+                    ))}
                   </div>
                 </div>
               </div>
-            </>
-          ) : null}
-        </div>
+
+              {/* RIGHT */}
+              <div className="flex flex-col gap-4">
+
+                {/* NEXT REWARD */}
+                <div className={`bg-[#0A0A0A] rounded-xl p-[26px] relative overflow-hidden shadow-[0_4px_24px_rgba(0,0,0,.16),0_12px_40px_rgba(0,0,0,.1)] sk-rv${revealed ? " sk-rv-in" : ""}`} style={{ transitionDelay: "100ms" }}>
+                  <div className="absolute w-[200px] h-[200px] bg-[rgba(9,145,178,.12)] blur-[60px] rounded-full -top-[60px] -right-[40px] pointer-events-none" />
+                  <div className="relative z-[1]">
+                    <div className="text-[10px] font-bold tracking-[1px] uppercase text-white/35 mb-3.5">다음 보상까지</div>
+                    <div className="flex items-baseline justify-between mb-1">
+                      <div className="text-[34px] font-black text-white tracking-[-1px] leading-none">
+                        {data.nextReward.targetDays}<span className="text-sm font-bold text-white/40 ml-[3px]">일 달성 목표</span>
+                      </div>
+                      <div className="text-[12px] font-bold text-white/45">{data.nextReward.daysRemaining}일 남음</div>
+                    </div>
+                    <div className="h-2 bg-white/[.1] rounded-full overflow-hidden my-3.5">
+                      <div
+                        className="h-full bg-[#0991B2] rounded-full [transition:width_1s_cubic-bezier(.34,1.56,.64,1)]"
+                        style={{ width: `${data.nextReward.progress}%` }}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] text-white/35">{data.currentStreak} / {data.nextReward.targetDays}일 완료</span>
+                      <div className="flex items-center gap-[5px] bg-[rgba(9,145,178,.25)] border border-[rgba(9,145,178,.4)] rounded-full py-1 px-2.5 text-[12px] font-bold text-[#67E8F9]">🎁 {data.nextReward.reward}</div>
+                    </div>
+                    <div className="mt-4 pt-3.5 border-t border-white/[.07]">
+                      <p className="text-[12px] text-white/35 leading-[1.65]">{data.nextReward.rewardDetail}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* MILESTONES */}
+                <div className={`${cardCls} sk-rv${revealed ? " sk-rv-in" : ""}`} style={{ transitionDelay: "150ms" }}>
+                  <span className="text-[10px] font-bold tracking-[1px] uppercase text-[#0991B2] bg-[#E6F7FA] py-[3px] px-2.5 rounded-full inline-block mb-2.5">마일스톤</span>
+                  <h3 className="text-base font-black tracking-[-0.3px] mb-1 text-[#0A0A0A]">보상 달성 로드맵</h3>
+                  <p className="text-[13px] text-[#6B7280] mb-[22px] leading-[1.55]">스트릭 목표를 달성하면 Pro 기능을 무료로 이용하세요</p>
+                  <div className="flex flex-col gap-2">
+                    {data.milestones.map((ms) => {
+                      const meta = msMeta(ms.status, ms.daysRemaining);
+                      return (
+                        <div key={ms.days} className={meta.itemCls}>
+                          <div className={meta.badgeCls}>
+                            {ms.status === "achieved" ? "✓" : ms.rewardIcon}
+                          </div>
+                          <div className="flex-1">
+                            <div className="text-[13px] font-bold text-[#0A0A0A] mb-0.5">{ms.days}일 달성</div>
+                            <div className="text-[11px] text-[#6B7280] leading-[1.45]">{ms.reward}</div>
+                          </div>
+                          <span className={meta.tagCls}>{meta.tagText}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* CTA */}
+                <div className={`bg-[#0A0A0A] rounded-xl p-[24px_26px] flex items-center justify-between gap-4 shadow-[0_4px_20px_rgba(0,0,0,.14)] relative overflow-hidden max-sm:flex-col max-sm:items-start sk-rv${revealed ? " sk-rv-in" : ""}`} style={{ transitionDelay: "200ms" }}>
+                  <div className="absolute w-[160px] h-[160px] bg-[rgba(9,145,178,.1)] blur-[50px] rounded-full -top-[50px] right-20 pointer-events-none" />
+                  <div className="relative z-[1]">
+                    <div className="text-base font-black text-white mb-1">오늘의 면접 시작하기</div>
+                    <div className="text-[12px] text-white/45 leading-[1.55]">
+                      {data.nextReward.daysRemaining}일만 더 하면 보상이 기다려요.<br />
+                      지금 바로 이어가세요 🔥
+                    </div>
+                  </div>
+                  <Link to="/interview/setup" className="relative z-[1] text-[13px] font-bold text-[#0A0A0A] bg-white border-none rounded-lg py-[11px] px-5 cursor-pointer whitespace-nowrap no-underline transition-all hover:bg-[#F3F4F6] hover:-translate-y-0.5 inline-block max-sm:w-full max-sm:text-center">면접 시작 →</Link>
+                </div>
+              </div>
+            </div>
+          </>
+        ) : null}
       </div>
     </>
   );

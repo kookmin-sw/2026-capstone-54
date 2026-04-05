@@ -24,16 +24,34 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Gradient Text */
+.gradient-text {
+  background: linear-gradient(135deg, #0991B2, #06B6D4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Font Inter */
+.font-inter {
+  font-family: 'Inter', sans-serif;
+}
+
 *,
 *::before,
 *::after {
   box-sizing: border-box;
+}
+
+html,
+body,
+#root {
   margin: 0;
   padding: 0;
+  min-height: 100%;
 }
 
 html {
-  height: 100%;
   scroll-behavior: smooth;
 }
 
@@ -58,4 +76,263 @@ button {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* ── Gradient text utility ── */
+.gradient-text {
+  background: linear-gradient(135deg, #0991B2, #06B6D4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── ResumeInputPage keyframes ── */
+@keyframes ri-fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes ri-pop {
+  0%   { transform: scale(0.85); opacity: 0; }
+  70%  { transform: scale(1.05); }
+  100% { transform: scale(1);    opacity: 1; }
+}
+@keyframes ri-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes ri-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: .4; }
+}
+@keyframes ri-liveDot {
+  0%, 100% { transform: scale(1);   opacity: 1; }
+  50%       { transform: scale(1.5); opacity: .6; }
+}
+@keyframes ri-slideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+/* ── ResumeListPage keyframes ── */
+@keyframes rl-fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes rl-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: .4; }
+}
+@keyframes rl-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes rl-slideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+/* ── ResumeUploadPage keyframes ── */
+@keyframes ru-fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes ru-bounce {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-6px); }
+}
+@keyframes ru-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes ru-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: .4; }
+}
+@keyframes ru-liveDot {
+  0%, 100% { transform: scale(1);   opacity: 1; }
+  50%       { transform: scale(1.5); opacity: .6; }
+}
+@keyframes ru-slideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+/* ── StreakPage keyframes ── */
+@keyframes skFadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes skFlicker {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: .7; }
+}
+@keyframes skBreathe {
+  0%, 100% { transform: scale(1);    opacity: 1; }
+  50%       { transform: scale(1.08); opacity: .85; }
+}
+@keyframes skFillBar {
+  from { width: 0; }
+}
+@keyframes skPop {
+  0%   { transform: scale(0.7); opacity: 0; }
+  70%  { transform: scale(1.1); }
+  100% { transform: scale(1);   opacity: 1; }
+}
+@keyframes skShimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── SubscriptionPage keyframes ── */
+@keyframes subFadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes subSlideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes subBreathe {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(9,145,178,0); }
+  50%       { box-shadow: 0 0 0 8px rgba(9,145,178,0.1); }
+}
+@keyframes subShimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+@keyframes subSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── InterviewPreCheckPage keyframes ── */
+@keyframes ipc-fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes ipc-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+@keyframes ipc-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes ipc-checkPulse {
+  0%   { transform: scale(0.5); opacity: 0; }
+  60%  { transform: scale(1.15); }
+  100% { transform: scale(1);    opacity: 1; }
+}
+
+/* ── InterviewPreCheckPage reveal ── */
+.ipc-rv {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.45s ease, transform 0.45s ease;
+}
+.ipc-rv.ipc-rv-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── InterviewSetupPage keyframes ── */
+@keyframes isetup-fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── InterviewSetupPage reveal ── */
+.isetup-rv {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.45s ease, transform 0.45s ease;
+}
+.isetup-rv.isetup-rv-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── JdAnalyzingPage keyframes ── */
+@keyframes jan-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes jan-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: .4; }
+}
+@keyframes jan-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+@keyframes jan-fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── JdDetailPage keyframes ── */
+@keyframes jdd-fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── JdEditPage keyframes ── */
+@keyframes jde-fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── JdListPage keyframes ── */
+@keyframes jdl-fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes jdl-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes jdl-dotPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: .5; transform: scale(0.8); }
+}
+@keyframes jdl-analyzeBar {
+  0%   { width: 0; }
+  100% { width: 100%; }
+}
+
+/* ── SettingsPage keyframes ── */
+@keyframes spFadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes spSpin {
+  to { transform: rotate(360deg); }
+}
+@keyframes spShimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── Shared skeleton shimmer utility ── */
+.skeleton-shimmer {
+  background: linear-gradient(90deg, rgba(9,145,178,0.05) 25%, rgba(9,145,178,0.12) 50%, rgba(9,145,178,0.05) 75%);
+  background-size: 200% 100%;
+  animation: jan-shimmer 1.8s infinite;
+}
+
+/* ── Shared gray skeleton utility ── */
+.skeleton-gray {
+  background: linear-gradient(90deg, #F3F4F6 25%, #E9EAEC 50%, #F3F4F6 75%);
+  background-size: 200% 100%;
+  animation: jan-shimmer 1.4s infinite;
+}
+
+/* ── StreakPage reveal ── */
+.sk-rv {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.45s ease, transform 0.45s ease;
+}
+.sk-rv.sk-rv-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── InterviewPreCheckPage card-glow keyframe ── */
+@keyframes ipc-cardGlow {
+  0%, 100% { box-shadow: 0 1px 2px rgba(0,0,0,.03), 0 2px 8px rgba(0,0,0,.05); }
+  50%       { box-shadow: 0 0 0 3px rgba(9,145,178,.15), 0 1px 2px rgba(0,0,0,.04), 0 4px 12px rgba(0,0,0,.06); }
 }

@@ -77,137 +77,132 @@ export function OnboardingPage() {
   };
 
   return (
-    <div className="ob-page">
-      <header className="ob-header">
-        <Link to="/" className="ob-logo">
+    <div className="min-h-screen bg-white flex flex-col">
+      <header className="w-full max-w-[1080px] mx-auto flex justify-between items-center px-5 pt-5 md:px-10 md:pt-7">
+        <Link to="/" className="font-inter text-[22px] font-black text-[#0A0A0A] no-underline">
           me<span style={{ color: "#0991B2" }}>Fit</span>
         </Link>
-        <div className="ob-header-badge">
-          <span className="ob-header-dot" />
+        <div className="flex items-center gap-2 text-[13px] font-semibold text-[#059669] bg-[#ECFDF5] border border-[#D1FAE5] rounded-lg px-4 py-2">
+          <span className="w-2 h-2 rounded-full bg-[#059669] shrink-0" />
           이메일 인증 완료
         </div>
       </header>
 
-      <main className="ob-main">
+      <main className="flex-1 w-full max-w-[1080px] mx-auto px-5 flex flex-col gap-10 justify-center items-center text-center md:flex-row md:items-center md:px-10 md:gap-[60px] md:text-left">
         {/* ── Left ── */}
-        <section className="ob-left">
-          <div className="ob-badge">● STEP 3 OF 3</div>
-          <h1 className="ob-title">
-            이제 <span className="ob-accent">핏</span>을
+        <section className="flex flex-col items-center md:flex-none md:flex-1 md:max-w-[440px] md:items-start md:pt-4">
+          <div className="inline-block text-[12px] font-bold text-[#0991B2] bg-[#E6F7FA] rounded px-[14px] py-[5px] mb-[14px] tracking-[0.5px] self-center md:self-start md:text-[13px] md:px-[18px] md:py-[6px] md:mb-[18px]">
+            ● STEP 3 OF 3
+          </div>
+          <h1 className="font-inter text-[clamp(36px,9vw,56px)] font-black leading-[1.08] text-[#0A0A0A] mb-4 tracking-[-2px] md:text-[clamp(40px,4.5vw,56px)]">
+            이제 <span className="gradient-text">핏</span>을
             <br />
             맞춰볼
             <br />
             차례예요
           </h1>
-          <p className="ob-desc">
+          <p className="text-[14px] text-[#6B7280] leading-[1.7] mb-6 md:text-[15px]">
             어떤 직군을 준비하는지 알려주면
-            <br />
+            <br className="hidden md:block" />
             AI가 맞춤 면접 질문을 바로 생성해줄게요.
           </p>
 
           {/* Email verified card */}
-          <div className="ob-verified-card">
-            <div className="ob-verified-icon">
+          <div className="flex items-center justify-center gap-[14px] bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg px-[22px] py-[18px] mb-7 shadow-[var(--sc)] w-full md:justify-start">
+            <div className="shrink-0">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
                 <rect width="24" height="24" rx="6" fill="#059669" />
-                <polyline
-                  points="7 13 10 16 17 9"
-                  stroke="#fff"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  fill="none"
-                />
+                <polyline points="7 13 10 16 17 9" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
               </svg>
             </div>
-            <div className="ob-verified-text">
-              <span className="ob-verified-label">이메일 인증 완료!</span>
-              <span className="ob-verified-email">{email}</span>
+            <div className="flex flex-col gap-0.5">
+              <span className="text-[14px] font-bold text-[#059669]">이메일 인증 완료!</span>
+              <span className="text-[13px] text-[#6B7280]">{email}</span>
             </div>
           </div>
 
           {/* Steps */}
-          <div className="ob-steps">
-            <div className="ob-step ob-step--done">
-              <div className="ob-step-num ob-step-num--done">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+          <div className="flex flex-row gap-2 w-full md:flex-col md:gap-2">
+            {[
+              { done: true, num: null, name: "이메일로 계정 생성", sub: "완료" },
+              { done: true, num: null, name: "이메일 인증 완료", sub: "완료" },
+            ].map((step, i) => (
+              <div key={i} className="flex flex-col items-center text-center flex-1 px-[10px] py-3 rounded-lg opacity-60 md:flex-row md:items-center md:gap-[14px] md:text-left md:px-5 md:py-[14px]">
+                <div className="w-9 h-9 rounded-full flex items-center justify-center text-[14px] font-bold text-white bg-[#059669] shrink-0 mx-auto md:mx-0">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                </div>
+                <div className="flex flex-col gap-0.5 items-center md:items-start">
+                  <span className="text-[14px] font-semibold text-[#0A0A0A]">{step.name}</span>
+                  <span className="text-[12px] text-[#9CA3AF]">{step.sub}</span>
+                </div>
               </div>
-              <div className="ob-step-info">
-                <span className="ob-step-name">이메일로 계정 생성</span>
-                <span className="ob-step-sub">완료</span>
-              </div>
-            </div>
-            <div className="ob-step ob-step--done">
-              <div className="ob-step-num ob-step-num--done">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-              </div>
-              <div className="ob-step-info">
-                <span className="ob-step-name">이메일 인증 완료</span>
-                <span className="ob-step-sub">완료</span>
-              </div>
-            </div>
-            <div className="ob-step ob-step--active">
-              <div className="ob-step-num ob-step-num--active">3</div>
-              <div className="ob-step-info">
-                <span className="ob-step-name">프로필 작성 후 면접 시작</span>
-                <span className="ob-step-sub">지금 이 단계예요</span>
+            ))}
+            <div className="flex flex-col items-center text-center flex-1 px-[10px] py-3 rounded-lg bg-[#0A0A0A] transition-transform duration-200 hover:-translate-y-px md:flex-row md:items-center md:gap-[14px] md:text-left md:px-5 md:py-[14px]">
+              <div className="w-9 h-9 rounded-full flex items-center justify-center text-[14px] font-bold text-white bg-[#0991B2] shrink-0 mx-auto md:mx-0">3</div>
+              <div className="flex flex-col gap-0.5 items-center md:items-start">
+                <span className="text-[14px] font-semibold text-white">프로필 작성 후 면접 시작</span>
+                <span className="text-[12px] text-white/50">지금 이 단계예요</span>
               </div>
             </div>
           </div>
         </section>
 
         {/* ── Right: Profile Card ── */}
-        <section className="ob-right">
-          <div className="ob-card">
-            <h2 className="ob-card-title">나를 알려주세요 👋</h2>
-            <p className="ob-card-desc">
+        <section className="flex justify-center w-full md:flex-none md:flex-1 md:max-w-[520px]">
+          <div className="w-full bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg px-7 py-9 shadow-[var(--sc)] md:px-9 md:py-11">
+            <h2 className="font-inter text-[22px] font-extrabold text-[#0A0A0A] mb-1.5">나를 알려주세요 👋</h2>
+            <p className="text-[14px] text-[#6B7280] leading-[1.6] mb-6">
               면접 질문 맞춤화를 위해 딱 2가지만 입력하면 돼요.
             </p>
 
             {/* Progress */}
-            <div className="ob-progress-row">
-              <span className="ob-progress-label">프로필 완성도</span>
-              <span className="ob-progress-value">{progress}%</span>
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-[13px] text-[#6B7280]">프로필 완성도</span>
+              <span className="text-[13px] font-bold text-[#0A0A0A]">{progress}%</span>
             </div>
-            <div className="ob-progress-bar">
+            <div className="w-full h-[6px] bg-[#E5E7EB] rounded-full mb-7 overflow-hidden">
               <div
-                className="ob-progress-fill"
+                className="h-full bg-gradient-to-r from-[#0991B2] to-[#06B6D4] rounded-full transition-[width] duration-[400ms] ease-in-out"
                 style={{ width: `${progress}%` }}
               />
             </div>
 
             {/* Job categories — 단일 선택 */}
-            <label className="ob-field-label">희망 직군</label>
-            <div className="ob-chips">
+            <label className="block text-[14px] font-bold text-[#0A0A0A] mb-2">희망 직군</label>
+            <div className="flex flex-wrap gap-2 mb-6">
               {JOB_CATEGORIES.map((cat) => (
                 <button
                   key={cat.id}
                   type="button"
-                  className={`ob-chip ${selectedJob === cat.id ? "ob-chip--selected" : ""}`}
+                  className={`inline-flex items-center gap-[6px] px-4 py-[9px] font-inter text-[13px] font-semibold rounded-lg cursor-pointer transition-all duration-200 whitespace-nowrap border ${
+                    selectedJob === cat.id
+                      ? "bg-[#E6F7FA] border-[#0991B2] text-[#0991B2]"
+                      : "bg-white border-[#E5E7EB] text-[#374151] hover:border-[#0991B2] hover:text-[#0991B2]"
+                  }`}
                   onClick={() => selectJob(cat.id)}
                   aria-pressed={selectedJob === cat.id}
                 >
-                  <span className="ob-chip-emoji">{cat.emoji}</span>
+                  <span className="text-[14px]">{cat.emoji}</span>
                   {cat.label}
                 </button>
               ))}
             </div>
 
             {/* 희망 직업 — 자동완성 (1~3개) */}
-            <label className="ob-field-label">
+            <label className="block text-[14px] font-bold text-[#0A0A0A] mb-2">
               희망 직업
-              <span className="ob-field-hint"> ({jobTitles.length}/3)</span>
+              <span className="text-[12px] font-semibold text-[#9CA3AF]"> ({jobTitles.length}/3)</span>
             </label>
 
             {/* 선택된 직업 태그 */}
             {jobTitles.length > 0 && (
-              <div className="ob-selected-tags">
+              <div className="flex flex-wrap gap-[6px] mb-2">
                 {jobTitles.map((t) => (
-                  <span key={t} className="ob-tag">
+                  <span key={t} className="inline-flex items-center gap-1 px-3 py-[6px] text-[13px] font-semibold text-[#0991B2] bg-[#E6F7FA] border border-[#0991B2] rounded-lg">
                     {t}
                     <button
                       type="button"
-                      className="ob-tag-remove"
+                      className="inline-flex items-center justify-center w-4 h-4 p-0 text-[14px] leading-none text-[#0991B2] bg-none border-none cursor-pointer rounded-full transition-[background] duration-150 hover:bg-[rgba(9,145,178,0.15)]"
                       onClick={() => handleRemoveTitle(t)}
                       aria-label={`${t} 제거`}
                     >
@@ -218,11 +213,11 @@ export function OnboardingPage() {
               </div>
             )}
 
-            <div className="ob-autocomplete" ref={acRef}>
+            <div className="relative mb-6" ref={acRef}>
               <input
                 ref={inputRef}
                 type="text"
-                className="ob-input"
+                className="w-full py-[14px] px-4 font-inter text-[15px] text-[#0A0A0A] bg-white border border-[#E5E7EB] rounded-lg outline-none transition-[border-color] duration-200 placeholder-[#D1D5DB] focus:border-[#0991B2] disabled:bg-[#F3F4F6] disabled:cursor-not-allowed"
                 placeholder={
                   !selectedJob
                     ? "먼저 희망 직군을 선택해주세요"
@@ -245,11 +240,11 @@ export function OnboardingPage() {
                 autoComplete="off"
               />
               {acOpen && filtered.length > 0 && (
-                <ul className="ob-ac-list" role="listbox">
+                <ul className="absolute top-full left-0 right-0 mt-1 py-[6px] bg-white border border-[#E5E7EB] rounded-lg shadow-[0_4px_16px_rgba(0,0,0,0.08)] list-none max-h-[200px] overflow-y-auto z-10" role="listbox">
                   {filtered.map((opt) => (
                     <li
                       key={opt.id}
-                      className="ob-ac-item"
+                      className="px-4 py-[10px] text-[14px] text-[#374151] cursor-pointer transition-[background] duration-150 hover:bg-[#E6F7FA] hover:text-[#0991B2] aria-selected:bg-[#E6F7FA] aria-selected:text-[#0991B2] aria-selected:font-semibold"
                       role="option"
                       aria-selected={jobTitles.includes(opt.label)}
                       onClick={() => handleSelectTitle(opt.label)}
@@ -262,10 +257,10 @@ export function OnboardingPage() {
             </div>
 
             {/* Job status */}
-            <label className="ob-field-label">현재 직업 상태</label>
-            <div className="ob-select-wrap">
+            <label className="block text-[14px] font-bold text-[#0A0A0A] mb-2">현재 직업 상태</label>
+            <div className="relative mb-6">
               <select
-                className="ob-select"
+                className="w-full py-[14px] pl-4 pr-10 font-inter text-[15px] text-[#0A0A0A] bg-white border border-[#E5E7EB] rounded-lg outline-none appearance-none cursor-pointer transition-[border-color] duration-200 focus:border-[#0991B2]"
                 value={jobStatus}
                 onChange={(e) => setJobStatus(e.target.value)}
                 aria-label="현재 직업 상태"
@@ -276,17 +271,19 @@ export function OnboardingPage() {
                   </option>
                 ))}
               </select>
-              <svg className="ob-select-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9" /></svg>
+              <svg className="absolute right-[14px] top-1/2 -translate-y-1/2 pointer-events-none" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9" /></svg>
             </div>
 
             {error && (
-              <p className="ob-error" role="alert">{error}</p>
+              <p className="text-[13px] text-[#DC2626] mb-[14px] px-[14px] py-[10px] bg-[#FEF2F2] border border-[#FECACA] rounded-[6px]" role="alert">
+                {error}
+              </p>
             )}
 
             {/* Submit */}
             <button
               type="button"
-              className="ob-submit-btn"
+              className="w-full py-4 bg-[#0A0A0A] text-white font-inter text-[16px] font-bold border-none rounded-lg cursor-pointer transition-opacity duration-200 tracking-[-0.3px] hover:enabled:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={handleSubmit}
               disabled={isLoading}
             >
@@ -296,482 +293,13 @@ export function OnboardingPage() {
         </section>
       </main>
 
-      <footer className="ob-footer">
-        <a href="#">개인정보처리방침</a>
-        <a href="#">이용약관</a>
-        <a href="#">쿠키</a>
+      <footer className="w-full max-w-[1080px] mx-auto px-5 py-8 flex justify-center gap-5 md:px-10 md:py-10">
+        {["개인정보처리방침", "이용약관", "쿠키"].map((item) => (
+          <a key={item} href="#" className="text-[11px] text-[#9CA3AF] no-underline transition-[color] duration-200 hover:text-[#6B7280]">
+            {item}
+          </a>
+        ))}
       </footer>
-
-      <style>{`
-        .ob-page {
-          min-height: 100vh;
-          background: #FFFFFF;
-          display: flex;
-          flex-direction: column;
-        }
-
-        /* ── Header ── */
-        .ob-header {
-          width: 100%;
-          max-width: 1080px;
-          margin: 0 auto;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 20px 20px 0;
-        }
-        .ob-logo {
-          font-family: 'Inter', sans-serif;
-          font-size: 22px;
-          font-weight: 900;
-          color: #0A0A0A;
-          text-decoration: none;
-        }
-        .ob-header-badge {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          font-size: 13px;
-          font-weight: 600;
-          color: #059669;
-          background: #ECFDF5;
-          border: 1px solid #D1FAE5;
-          border-radius: 8px;
-          padding: 8px 16px;
-        }
-        .ob-header-dot {
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-          background: #059669;
-          flex-shrink: 0;
-        }
-
-        /* ── Main ── */
-        .ob-main {
-          flex: 1;
-          width: 100%;
-          max-width: 1080px;
-          margin: 0 auto;
-          padding: 0 20px;
-          display: flex;
-          flex-direction: column;
-          gap: 40px;
-          justify-content: center;
-        }
-
-        /* ── Left ── */
-        .ob-left {
-          display: flex;
-          flex-direction: column;
-        }
-        .ob-badge {
-          display: inline-block;
-          font-size: 12px;
-          font-weight: 700;
-          color: #0991B2;
-          background: #E6F7FA;
-          border-radius: 4px;
-          padding: 5px 14px;
-          margin-bottom: 14px;
-          align-self: flex-start;
-          letter-spacing: 0.5px;
-        }
-        .ob-title {
-          font-family: 'Inter', sans-serif;
-          font-size: clamp(36px, 9vw, 56px);
-          font-weight: 900;
-          line-height: 1.08;
-          color: #0A0A0A;
-          margin-bottom: 16px;
-          letter-spacing: -2px;
-        }
-        .ob-accent {
-          background: linear-gradient(135deg, #0991B2, #06B6D4);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-        }
-        .ob-desc {
-          font-size: 14px;
-          color: #6B7280;
-          line-height: 1.7;
-          margin-bottom: 24px;
-        }
-
-        /* ── Verified card ── */
-        .ob-verified-card {
-          display: flex;
-          align-items: center;
-          gap: 14px;
-          background: #F9FAFB;
-          border: 1px solid #E5E7EB;
-          border-radius: 8px;
-          padding: 18px 22px;
-          margin-bottom: 28px;
-          box-shadow: var(--sc);
-        }
-        .ob-verified-icon { flex-shrink: 0; }
-        .ob-verified-text {
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
-        }
-        .ob-verified-label {
-          font-size: 14px;
-          font-weight: 700;
-          color: #059669;
-        }
-        .ob-verified-email {
-          font-size: 13px;
-          color: #6B7280;
-        }
-
-        /* ── Steps ── */
-        .ob-steps {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-        }
-        .ob-step {
-          display: flex;
-          align-items: center;
-          gap: 14px;
-          padding: 14px 20px;
-          border-radius: 8px;
-          background: transparent;
-        }
-        .ob-step--active {
-          background: #0A0A0A;
-          transition: transform 0.2s;
-        }
-        .ob-step--active:hover { transform: translateY(-1px); }
-        .ob-step--active .ob-step-name { color: #fff; }
-        .ob-step--active .ob-step-sub { color: rgba(255,255,255,0.5); }
-        .ob-step--done { opacity: 0.6; }
-        .ob-step-num {
-          width: 36px;
-          height: 36px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 14px;
-          font-weight: 700;
-          color: #6B7280;
-          background: #E5E7EB;
-          flex-shrink: 0;
-        }
-        .ob-step-num--active { background: #0991B2; color: #fff; }
-        .ob-step-num--done { background: #059669; color: #fff; }
-        .ob-step-info {
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
-        }
-        .ob-step-name { font-size: 14px; font-weight: 600; color: #0A0A0A; }
-        .ob-step-sub { font-size: 12px; color: #9CA3AF; }
-
-        /* ── Card ── */
-        .ob-right { display: flex; justify-content: center; }
-        .ob-card {
-          width: 100%;
-          max-width: 520px;
-          background: #F9FAFB;
-          border: 1px solid #E5E7EB;
-          border-radius: 8px;
-          padding: 36px 28px;
-          box-shadow: var(--sc);
-        }
-        .ob-card-title {
-          font-family: 'Inter', sans-serif;
-          font-size: 22px;
-          font-weight: 800;
-          color: #0A0A0A;
-          margin-bottom: 6px;
-        }
-        .ob-card-desc {
-          font-size: 14px;
-          color: #6B7280;
-          line-height: 1.6;
-          margin-bottom: 24px;
-        }
-
-        /* ── Progress ── */
-        .ob-progress-row {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 8px;
-        }
-        .ob-progress-label { font-size: 13px; color: #6B7280; }
-        .ob-progress-value { font-size: 13px; font-weight: 700; color: #0A0A0A; }
-        .ob-progress-bar {
-          width: 100%;
-          height: 6px;
-          background: #E5E7EB;
-          border-radius: 3px;
-          margin-bottom: 28px;
-          overflow: hidden;
-        }
-        .ob-progress-fill {
-          height: 100%;
-          background: linear-gradient(90deg, #0991B2, #06B6D4);
-          border-radius: 3px;
-          transition: width 0.4s ease;
-        }
-
-        /* ── Fields ── */
-        .ob-field-label {
-          display: block;
-          font-size: 14px;
-          font-weight: 700;
-          color: #0A0A0A;
-          margin-bottom: 8px;
-        }
-        .ob-input {
-          width: 100%;
-          padding: 14px 16px;
-          font-family: 'Inter', sans-serif;
-          font-size: 15px;
-          color: #0A0A0A;
-          background: #FFFFFF;
-          border: 1px solid #E5E7EB;
-          border-radius: 8px;
-          outline: none;
-          transition: border-color 0.2s;
-          margin-bottom: 0;
-          box-sizing: border-box;
-        }
-        .ob-input:focus { border-color: #0991B2; }
-        .ob-input::placeholder { color: #D1D5DB; }
-        .ob-input:disabled {
-          background: #F3F4F6;
-          cursor: not-allowed;
-        }
-
-        /* ── Chips ── */
-        .ob-chips {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 8px;
-          margin-bottom: 24px;
-        }
-        .ob-chip {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          padding: 9px 16px;
-          font-family: 'Inter', sans-serif;
-          font-size: 13px;
-          font-weight: 600;
-          color: #374151;
-          background: #FFFFFF;
-          border: 1px solid #E5E7EB;
-          border-radius: 8px;
-          cursor: pointer;
-          transition: all 0.2s;
-          white-space: nowrap;
-        }
-        .ob-chip:hover { border-color: #0991B2; color: #0991B2; }
-        .ob-chip--selected {
-          background: #E6F7FA;
-          border-color: #0991B2;
-          color: #0991B2;
-        }
-        .ob-chip-emoji { font-size: 14px; }
-
-        /* ── Autocomplete ── */
-        .ob-field-hint {
-          font-size: 12px;
-          font-weight: 600;
-          color: #9CA3AF;
-        }
-        .ob-selected-tags {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 6px;
-          margin-bottom: 8px;
-        }
-        .ob-tag {
-          display: inline-flex;
-          align-items: center;
-          gap: 4px;
-          padding: 6px 12px;
-          font-size: 13px;
-          font-weight: 600;
-          color: #0991B2;
-          background: #E6F7FA;
-          border: 1px solid #0991B2;
-          border-radius: 8px;
-        }
-        .ob-tag-remove {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          width: 16px;
-          height: 16px;
-          padding: 0;
-          font-size: 14px;
-          line-height: 1;
-          color: #0991B2;
-          background: none;
-          border: none;
-          cursor: pointer;
-          border-radius: 50%;
-          transition: background 0.15s;
-        }
-        .ob-tag-remove:hover {
-          background: rgba(9,145,178,0.15);
-        }
-        .ob-autocomplete {
-          position: relative;
-          margin-bottom: 24px;
-        }
-        .ob-ac-list {
-          position: absolute;
-          top: 100%;
-          left: 0;
-          right: 0;
-          margin: 4px 0 0;
-          padding: 6px 0;
-          background: #FFFFFF;
-          border: 1px solid #E5E7EB;
-          border-radius: 8px;
-          box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-          list-style: none;
-          max-height: 200px;
-          overflow-y: auto;
-          z-index: 10;
-        }
-        .ob-ac-item {
-          padding: 10px 16px;
-          font-size: 14px;
-          color: #374151;
-          cursor: pointer;
-          transition: background 0.15s;
-        }
-        .ob-ac-item:hover {
-          background: #E6F7FA;
-          color: #0991B2;
-        }
-        .ob-ac-item[aria-selected="true"] {
-          background: #E6F7FA;
-          color: #0991B2;
-          font-weight: 600;
-        }
-
-        /* ── Select ── */
-        .ob-select-wrap {
-          position: relative;
-          margin-bottom: 24px;
-        }
-        .ob-select {
-          width: 100%;
-          padding: 14px 40px 14px 16px;
-          font-family: 'Inter', sans-serif;
-          font-size: 15px;
-          color: #0A0A0A;
-          background: #FFFFFF;
-          border: 1px solid #E5E7EB;
-          border-radius: 8px;
-          outline: none;
-          appearance: none;
-          cursor: pointer;
-          transition: border-color 0.2s;
-        }
-        .ob-select:focus { border-color: #0991B2; }
-        .ob-select-arrow {
-          position: absolute;
-          right: 14px;
-          top: 50%;
-          transform: translateY(-50%);
-          pointer-events: none;
-        }
-
-        /* ── Error ── */
-        .ob-error {
-          font-size: 13px;
-          color: #DC2626;
-          margin-bottom: 14px;
-          padding: 10px 14px;
-          background: #FEF2F2;
-          border: 1px solid #FECACA;
-          border-radius: 6px;
-        }
-
-        /* ── Submit ── */
-        .ob-submit-btn {
-          width: 100%;
-          padding: 16px;
-          background-color: #0A0A0A !important;
-          background-image: none !important;
-          color: #FFFFFF !important;
-          font-family: 'Inter', sans-serif;
-          font-size: 16px;
-          font-weight: 700;
-          border: none;
-          border-radius: 8px;
-          cursor: pointer;
-          transition: opacity 0.2s;
-          letter-spacing: -0.3px;
-        }
-        .ob-submit-btn:hover:not(:disabled) { opacity: 0.9; }
-        .ob-submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-        /* ── Footer ── */
-        .ob-footer {
-          width: 100%;
-          max-width: 1080px;
-          margin: 0 auto;
-          padding: 32px 20px;
-          display: flex;
-          justify-content: center;
-          gap: 20px;
-        }
-        .ob-footer a {
-          font-size: 11px;
-          color: #9CA3AF;
-          text-decoration: none;
-          transition: color 0.2s;
-        }
-        .ob-footer a:hover { color: #6B7280; }
-
-        /* ── Desktop ── */
-        @media (min-width: 768px) {
-          .ob-header { padding: 28px 40px 0; }
-          .ob-main {
-            flex-direction: row;
-            align-items: center;
-            padding: 0 40px;
-            gap: 60px;
-          }
-          .ob-left { flex: 1; max-width: 440px; padding-top: 16px; }
-          .ob-right { flex: 1; max-width: 520px; }
-          .ob-badge { font-size: 13px; padding: 6px 18px; margin-bottom: 18px; }
-          .ob-title { font-size: clamp(40px, 4.5vw, 56px); }
-          .ob-desc { font-size: 15px; }
-          .ob-card { padding: 44px 36px; }
-          .ob-footer { padding: 40px 40px; }
-        }
-
-        /* ── Mobile ── */
-        @media (max-width: 767px) {
-          .ob-left { align-items: center; text-align: center; }
-          .ob-badge { align-self: center; }
-          .ob-desc br { display: none; }
-          .ob-verified-card { justify-content: center; }
-          .ob-steps { flex-direction: row; gap: 8px; }
-          .ob-step {
-            flex-direction: column;
-            text-align: center;
-            padding: 12px 10px;
-            flex: 1;
-          }
-          .ob-step-info { align-items: center; }
-          .ob-chips { justify-content: center; }
-        }
-      `}</style>
     </div>
   );
 }

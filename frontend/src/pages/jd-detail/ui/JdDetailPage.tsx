@@ -15,6 +15,8 @@ const STATUS_LABEL: Record<JdStatus, string> = {
   applied: "지원 완료",
 };
 
+const cardCls = "bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)] transition-shadow hover:shadow-[0_4px_6px_rgba(0,0,0,0.07),0_2px_4px_rgba(0,0,0,0.06)]";
+
 export function JdDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -35,12 +37,11 @@ export function JdDetailPage() {
   /* ── Loading ── */
   if (isLoading) {
     return (
-      <div className="jdd-page">
+      <div className="min-h-screen bg-white">
         <NavBar />
-        <div className="jdd-wrap">
-          <div className="jdd-loading">불러오는 중...</div>
+        <div className="max-w-[1140px] mx-auto px-8 pt-[100px] pb-[60px] max-sm:px-4 max-sm:pt-20">
+          <div className="text-center py-20 text-[15px] text-[#6B7280]">불러오는 중...</div>
         </div>
-        <Styles />
       </div>
     );
   }
@@ -48,96 +49,102 @@ export function JdDetailPage() {
   /* ── Error / Not Found ── */
   if (error || !jd) {
     return (
-      <div className="jdd-page">
+      <div className="min-h-screen bg-white">
         <NavBar />
-        <div className="jdd-wrap">
-          <div className="jdd-error-box">
+        <div className="max-w-[1140px] mx-auto px-8 pt-[100px] pb-[60px] max-sm:px-4 max-sm:pt-20">
+          <div className="text-center py-[60px] flex flex-col items-center text-[15px] text-[#DC2626]">
             <p>{error ?? "채용공고를 찾을 수 없습니다."}</p>
-            <Link to="/jd" className="jdd-btn-primary" style={{ marginTop: 16 }}>
+            <Link to="/jd" className="inline-flex items-center gap-2 text-[13px] font-bold text-white bg-[#0A0A0A] border-none cursor-pointer py-3 px-5 rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.1)] transition-opacity hover:opacity-85 no-underline mt-4">
               목록으로
             </Link>
           </div>
         </div>
-        <Styles />
       </div>
     );
   }
 
   return (
-    <div className="jdd-page">
+    <div className="min-h-screen bg-white">
       <NavBar />
 
-      <div className="jdd-wrap">
+      <div className="max-w-[1140px] mx-auto px-8 pt-[100px] pb-[60px] max-sm:px-4 max-sm:pt-20">
         {/* BREADCRUMB */}
-        <div className="jdd-breadcrumb">
-          <Link to="/jd" className="jdd-bc-link">채용공고</Link>
-          <span className="jdd-bc-sep">›</span>
-          <span className="jdd-bc-current">{jd.company} {jd.title.split("—")[0].trim()}</span>
+        <div className="flex items-center gap-2 text-[13px] text-[#6B7280] mb-6">
+          <Link to="/jd" className="text-[#6B7280] no-underline transition-colors hover:text-[#0991B2]">채용공고</Link>
+          <span className="opacity-50">›</span>
+          <span className="text-[#0A0A0A] font-semibold">{jd.company} {jd.title.split("—")[0].trim()}</span>
         </div>
 
-        <div className="jdd-layout">
+        <div className="grid grid-cols-[1fr_340px] gap-6 items-start max-[900px]:grid-cols-1">
           {/* ── MAIN ── */}
-          <div className="jdd-main">
+          <div className="animate-[jdd-fadeUp_.5s_ease_both] flex flex-col gap-[18px]">
 
             {/* HERO CARD */}
-            <div className="jdd-card jdd-hero">
-              <div className="jdd-hero-bg" />
-              <div className="jdd-co-row">
-                <div className="jdd-co-logo" style={{ background: jd.companyColor }}>
+            <div className={`${cardCls} p-[36px_32px] relative overflow-hidden max-sm:p-[24px_16px]`}>
+              <div className="absolute inset-0 bg-gradient-to-br from-[rgba(9,145,178,0.05)] to-[rgba(6,182,212,0.03)] pointer-events-none" />
+              <div className="flex items-center gap-3.5 mb-[18px] relative">
+                <div
+                  className="w-[54px] h-[54px] rounded-lg flex items-center justify-center text-[22px] font-black text-white shrink-0 shadow-[0_4px_12px_rgba(0,0,0,0.12)]"
+                  style={{ background: jd.companyColor }}
+                >
                   {jd.companyInitial}
                 </div>
                 <div>
-                  <div className="jdd-co-name">{jd.company} · {jd.source}</div>
-                  <div className="jdd-title">{jd.title}</div>
+                  <div className="text-[13px] text-[#6B7280] font-semibold mb-0.5">{jd.company} · {jd.source}</div>
+                  <div className="text-[clamp(18px,2.5vw,26px)] font-black tracking-[-0.5px] leading-[1.2] text-[#0A0A0A] relative">{jd.title}</div>
                 </div>
               </div>
 
-              <div className="jdd-meta">
-                <span className="jdd-chip">🏢 {jd.company}</span>
-                <span className="jdd-chip">📍 {jd.location}</span>
-                <span className="jdd-chip">💼 {jd.experience}</span>
-                <span className="jdd-chip">🕐 {jd.period}</span>
-                <span className="jdd-chip jdd-chip--accent">
+              <div className="flex flex-wrap gap-2 mt-4 relative">
+                <span className="inline-flex items-center gap-[5px] text-[12px] font-semibold py-[5px] px-3 rounded-full bg-white text-[#6B7280] border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">🏢 {jd.company}</span>
+                <span className="inline-flex items-center gap-[5px] text-[12px] font-semibold py-[5px] px-3 rounded-full bg-white text-[#6B7280] border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">📍 {jd.location}</span>
+                <span className="inline-flex items-center gap-[5px] text-[12px] font-semibold py-[5px] px-3 rounded-full bg-white text-[#6B7280] border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">💼 {jd.experience}</span>
+                <span className="inline-flex items-center gap-[5px] text-[12px] font-semibold py-[5px] px-3 rounded-full bg-white text-[#6B7280] border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">🕐 {jd.period}</span>
+                <span className="inline-flex items-center gap-[5px] text-[12px] font-semibold py-[5px] px-3 rounded-full bg-[#E6F7FA] text-[#0991B2] border border-[#0991B2] shadow-[0_1px_3px_rgba(0,0,0,0.06)]">
                   {STATUS_OPTIONS.find((o) => o.value === jd.status)?.icon} {STATUS_LABEL[jd.status]}
                 </span>
               </div>
 
-              <div className="jdd-actions">
-                <Link to="/interview" className="jdd-btn-primary">
+              <div className="flex gap-2.5 mt-5 relative flex-wrap">
+                <Link to="/interview" className="inline-flex items-center gap-2 text-[13px] font-bold text-white bg-[#0A0A0A] border-none cursor-pointer py-3 px-5 rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.1)] transition-opacity hover:opacity-85 no-underline whitespace-nowrap">
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                     <path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                   면접 시작하기
                 </Link>
-                <Link to={`/jd/edit/${jd.id}`} className="jdd-btn-secondary">✏️ 수정</Link>
-                <a href={jd.originalUrl} target="_blank" rel="noopener noreferrer" className="jdd-btn-ghost">
+                <Link to={`/jd/edit/${jd.id}`} className="inline-flex items-center gap-2 text-[13px] font-bold text-[#0991B2] bg-[#E6F7FA] border border-[#0991B2] cursor-pointer py-3 px-5 rounded-lg transition-[background] hover:bg-[#cceef6] no-underline whitespace-nowrap">✏️ 수정</Link>
+                <a href={jd.originalUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#6B7280] bg-transparent border-none cursor-pointer py-[10px] px-4 rounded-lg transition-all hover:text-[#0A0A0A] hover:bg-[#F3F4F6] no-underline">
                   🔗 원문 보기
                 </a>
-                <button type="button" className="jdd-btn-ghost jdd-btn-danger" onClick={handleDelete}>
+                <button type="button" className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#6B7280] bg-transparent border-none cursor-pointer py-[10px] px-4 rounded-lg transition-all hover:text-[#DC2626] hover:bg-[#FEF2F2]" onClick={handleDelete}>
                   🗑 삭제
                 </button>
               </div>
             </div>
 
             {/* 직무 요약 */}
-            <div className="jdd-card jdd-section">
-              <div className="jdd-section-title">
-                <span className="jdd-section-icon" style={{ background: "linear-gradient(135deg,#67E8F9,#0891B2)" }}>📄</span>
+            <div className={`${cardCls} p-[28px_32px] max-sm:p-[20px_16px]`}>
+              <div className="text-base font-black text-[#0A0A0A] mb-[18px] flex items-center gap-2">
+                <span className="w-8 h-8 rounded-lg flex items-center justify-center text-[15px] shrink-0" style={{ background: "linear-gradient(135deg,#67E8F9,#0891B2)" }}>📄</span>
                 직무 요약
               </div>
-              <p className="jdd-summary">{jd.summary}</p>
+              <p className="text-sm text-[#6B7280] leading-[1.8] py-4 px-[18px] bg-[rgba(9,145,178,0.04)] rounded-lg border-l-[3px] border-l-[#0991B2]">{jd.summary}</p>
             </div>
 
             {/* 필수 자격 요건 */}
-            <div className="jdd-card jdd-section">
-              <div className="jdd-section-title">
-                <span className="jdd-section-icon" style={{ background: "linear-gradient(135deg,#34D399,#059669)" }}>⚡</span>
+            <div className={`${cardCls} p-[28px_32px] max-sm:p-[20px_16px]`}>
+              <div className="text-base font-black text-[#0A0A0A] mb-[18px] flex items-center gap-2">
+                <span className="w-8 h-8 rounded-lg flex items-center justify-center text-[15px] shrink-0" style={{ background: "linear-gradient(135deg,#34D399,#059669)" }}>⚡</span>
                 필수 자격 요건
               </div>
-              <div className="jdd-req-list">
+              <div className="flex flex-col gap-2">
                 {jd.requirements.map((req, i) => (
-                  <div key={i} className="jdd-req-item">
-                    <div className={`jdd-req-check jdd-req-check--${req.level}`}>✓</div>
+                  <div key={i} className="flex items-start gap-2.5 p-[10px_14px] bg-white border border-[#E5E7EB] rounded-lg text-[13px] text-[#0A0A0A] leading-[1.6]">
+                    <div className={`w-5 h-5 rounded-lg shrink-0 flex items-center justify-center text-[10px] font-bold mt-px ${
+                      req.level === "required"
+                        ? "bg-gradient-to-br from-[#34D399] to-[#059669] text-white shadow-[0_2px_6px_rgba(5,150,105,0.25)]"
+                        : "bg-[#E6F7FA] text-[#0991B2]"
+                    }`}>✓</div>
                     {req.text}
                   </div>
                 ))}
@@ -145,15 +152,15 @@ export function JdDetailPage() {
             </div>
 
             {/* 우대 사항 */}
-            <div className="jdd-card jdd-section">
-              <div className="jdd-section-title">
-                <span className="jdd-section-icon" style={{ background: "linear-gradient(135deg,#FCD34D,#D97706)" }}>⭐</span>
+            <div className={`${cardCls} p-[28px_32px] max-sm:p-[20px_16px]`}>
+              <div className="text-base font-black text-[#0A0A0A] mb-[18px] flex items-center gap-2">
+                <span className="w-8 h-8 rounded-lg flex items-center justify-center text-[15px] shrink-0" style={{ background: "linear-gradient(135deg,#FCD34D,#D97706)" }}>⭐</span>
                 우대 사항
               </div>
-              <div className="jdd-pref-grid">
+              <div className="grid grid-cols-2 gap-2 max-[900px]:grid-cols-1">
                 {jd.preferences.map((pref, i) => (
-                  <div key={i} className="jdd-pref-item">
-                    <div className="jdd-pref-dot" />
+                  <div key={i} className="p-[10px_14px] bg-white border border-[#E5E7EB] rounded-lg text-[12px] font-semibold text-[#6B7280] flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-[#D97706] shrink-0" />
                     {pref}
                   </div>
                 ))}
@@ -163,31 +170,35 @@ export function JdDetailPage() {
           </div>
 
           {/* ── SIDE ── */}
-          <div className="jdd-side">
+          <div className="animate-[jdd-fadeUp_.5s_ease_.08s_both] flex flex-col gap-[18px] max-[900px]:grid max-[900px]:grid-cols-2 max-[900px]:gap-3.5 max-sm:grid-cols-1">
 
             {/* 지원 상태 변경 */}
-            <div className="jdd-card jdd-side-card">
-              <div className="jdd-side-title">
+            <div className={`${cardCls} p-[22px_20px]`}>
+              <div className="text-sm font-black text-[#0A0A0A] mb-4 flex items-center gap-2">
                 <span style={{ fontSize: 18 }}>📌</span> 지원 상태 변경
-                {isUpdating && <span className="jdd-updating">저장 중...</span>}
+                {isUpdating && <span className="text-[11px] text-[#6B7280] font-normal ml-auto">저장 중...</span>}
               </div>
-              <div className="jdd-status-list">
+              <div className="flex flex-col gap-2">
                 {STATUS_OPTIONS.map((opt) => (
                   <button
                     key={opt.value}
                     type="button"
-                    className={`jdd-sc-opt${jd.status === opt.value ? " jdd-sc-opt--sel" : ""}`}
+                    className={`flex items-center gap-2.5 p-[12px_14px] rounded-lg cursor-pointer border-[1.5px] bg-white transition-all w-full text-left hover:enabled:border-[#0991B2] hover:enabled:bg-[#F0FAFD] disabled:opacity-60 disabled:cursor-not-allowed ${
+                      jd.status === opt.value ? "border-[#0991B2] bg-[#E6F7FA]" : "border-[#E5E7EB]"
+                    }`}
                     onClick={() => { clearError(); updateStatus(opt.value); }}
                     disabled={isUpdating}
                     aria-pressed={jd.status === opt.value}
                   >
-                    <span className="jdd-sc-icon">{opt.icon}</span>
-                    <div className="jdd-sc-radio">
-                      {jd.status === opt.value && <div className="jdd-sc-radio-dot" />}
+                    <span className="text-[18px] shrink-0">{opt.icon}</span>
+                    <div className={`w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
+                      jd.status === opt.value ? "border-[#0991B2] bg-[#0991B2]" : "border-[#E5E7EB]"
+                    }`}>
+                      {jd.status === opt.value && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                     </div>
                     <div>
-                      <div className="jdd-sc-label">{opt.label}</div>
-                      <div className="jdd-sc-sub">{opt.sub}</div>
+                      <div className="text-[13px] font-bold text-[#0A0A0A]">{opt.label}</div>
+                      <div className="text-[11px] text-[#6B7280] mt-px">{opt.sub}</div>
                     </div>
                   </button>
                 ))}
@@ -195,65 +206,65 @@ export function JdDetailPage() {
             </div>
 
             {/* 빠른 액션 */}
-            <div className="jdd-card jdd-side-card">
-              <div className="jdd-side-title">
+            <div className={`${cardCls} p-[22px_20px]`}>
+              <div className="text-sm font-black text-[#0A0A0A] mb-4 flex items-center gap-2">
                 <span style={{ fontSize: 18 }}>🚀</span> 빠른 액션
               </div>
-              <div className="jdd-qa-list">
-                <Link to="/interview" className="jdd-qa-btn">
-                  <div className="jdd-qa-icon" style={{ background: "linear-gradient(135deg,#67E8F9,#0891B2)" }}>🎤</div>
-                  <div className="jdd-qa-info">
-                    <div className="jdd-qa-title">꼬리질문 면접</div>
-                    <div className="jdd-qa-sub">심화 질문 집중 연습</div>
+              <div className="flex flex-col gap-2">
+                <Link to="/interview" className="flex items-center gap-2.5 p-[12px_14px] rounded-lg border border-[#E5E7EB] bg-white cursor-pointer text-[13px] font-semibold text-[#0A0A0A] transition-all no-underline hover:bg-[#F9FAFB] hover:-translate-y-px hover:shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)]">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center text-[15px] shrink-0" style={{ background: "linear-gradient(135deg,#67E8F9,#0891B2)" }}>🎤</div>
+                  <div className="flex-1">
+                    <div className="text-[13px] font-extrabold">꼬리질문 면접</div>
+                    <div className="text-[11px] text-[#6B7280] mt-px">심화 질문 집중 연습</div>
                   </div>
-                  <span className="jdd-qa-arrow">›</span>
+                  <span className="text-[#9CA3AF] text-base">›</span>
                 </Link>
-                <Link to="/interview" className="jdd-qa-btn">
-                  <div className="jdd-qa-icon" style={{ background: "linear-gradient(135deg,#34D399,#059669)" }}>📋</div>
-                  <div className="jdd-qa-info">
-                    <div className="jdd-qa-title">전체 프로세스</div>
-                    <div className="jdd-qa-sub">처음부터 끝까지 연습</div>
+                <Link to="/interview" className="flex items-center gap-2.5 p-[12px_14px] rounded-lg border border-[#E5E7EB] bg-white cursor-pointer text-[13px] font-semibold text-[#0A0A0A] transition-all no-underline hover:bg-[#F9FAFB] hover:-translate-y-px hover:shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)]">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center text-[15px] shrink-0" style={{ background: "linear-gradient(135deg,#34D399,#059669)" }}>📋</div>
+                  <div className="flex-1">
+                    <div className="text-[13px] font-extrabold">전체 프로세스</div>
+                    <div className="text-[11px] text-[#6B7280] mt-px">처음부터 끝까지 연습</div>
                   </div>
-                  <span className="jdd-qa-arrow">›</span>
+                  <span className="text-[#9CA3AF] text-base">›</span>
                 </Link>
-                <Link to={`/jd/edit/${jd.id}`} className="jdd-qa-btn">
-                  <div className="jdd-qa-icon" style={{ background: "linear-gradient(135deg,#60A5FA,#2563EB)" }}>✏️</div>
-                  <div className="jdd-qa-info">
-                    <div className="jdd-qa-title">공고 정보 수정</div>
-                    <div className="jdd-qa-sub">제목·상태 변경</div>
+                <Link to={`/jd/edit/${jd.id}`} className="flex items-center gap-2.5 p-[12px_14px] rounded-lg border border-[#E5E7EB] bg-white cursor-pointer text-[13px] font-semibold text-[#0A0A0A] transition-all no-underline hover:bg-[#F9FAFB] hover:-translate-y-px hover:shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)]">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center text-[15px] shrink-0" style={{ background: "linear-gradient(135deg,#60A5FA,#2563EB)" }}>✏️</div>
+                  <div className="flex-1">
+                    <div className="text-[13px] font-extrabold">공고 정보 수정</div>
+                    <div className="text-[11px] text-[#6B7280] mt-px">제목·상태 변경</div>
                   </div>
-                  <span className="jdd-qa-arrow">›</span>
+                  <span className="text-[#9CA3AF] text-base">›</span>
                 </Link>
               </div>
             </div>
 
             {/* 등록 정보 */}
-            <div className="jdd-card jdd-side-card">
-              <div className="jdd-side-title">
+            <div className={`${cardCls} p-[22px_20px]`}>
+              <div className="text-sm font-black text-[#0A0A0A] mb-4 flex items-center gap-2">
                 <span style={{ fontSize: 18 }}>ℹ️</span> 등록 정보
               </div>
-              <div className="jdd-info-row">
-                <span className="jdd-info-key">등록일</span>
-                <span className="jdd-info-val">{jd.registeredAt}</span>
+              <div className="flex items-center justify-between py-2.5 border-b border-[#F3F4F6] text-[13px]">
+                <span className="text-[#6B7280] font-semibold">등록일</span>
+                <span className="text-[#0A0A0A] font-medium text-right">{jd.registeredAt}</span>
               </div>
-              <div className="jdd-info-row">
-                <span className="jdd-info-key">분석 완료</span>
-                <span className="jdd-info-val">
+              <div className="flex items-center justify-between py-2.5 border-b border-[#F3F4F6] text-[13px]">
+                <span className="text-[#6B7280] font-semibold">분석 완료</span>
+                <span className="text-[#0A0A0A] font-medium text-right">
                   {jd.analyzed
-                    ? <span className="jdd-badge jdd-badge--ok">✓ 완료</span>
-                    : <span className="jdd-badge jdd-badge--pending">분석 중</span>}
+                    ? <span className="inline-flex items-center gap-1 text-[11px] font-bold py-[3px] px-2.5 rounded-full bg-[#D1FAE5] text-[#047857]">✓ 완료</span>
+                    : <span className="inline-flex items-center gap-1 text-[11px] font-bold py-[3px] px-2.5 rounded-full bg-[#FEF3C7] text-[#D97706]">분석 중</span>}
                 </span>
               </div>
-              <div className="jdd-info-row">
-                <span className="jdd-info-key">면접 횟수</span>
-                <span className="jdd-info-val">{jd.interviewCount}회 진행</span>
+              <div className="flex items-center justify-between py-2.5 border-b border-[#F3F4F6] text-[13px]">
+                <span className="text-[#6B7280] font-semibold">면접 횟수</span>
+                <span className="text-[#0A0A0A] font-medium text-right">{jd.interviewCount}회 진행</span>
               </div>
-              <div className="jdd-info-row">
-                <span className="jdd-info-key">AI 활성화</span>
-                <span className="jdd-info-val">
+              <div className="flex items-center justify-between py-2.5 text-[13px]">
+                <span className="text-[#6B7280] font-semibold">AI 활성화</span>
+                <span className="text-[#0A0A0A] font-medium text-right">
                   {jd.interviewActive
-                    ? <span className="jdd-badge jdd-badge--ok">활성</span>
-                    : <span className="jdd-badge jdd-badge--off">비활성</span>}
+                    ? <span className="inline-flex items-center gap-1 text-[11px] font-bold py-[3px] px-2.5 rounded-full bg-[#D1FAE5] text-[#047857]">활성</span>
+                    : <span className="inline-flex items-center gap-1 text-[11px] font-bold py-[3px] px-2.5 rounded-full bg-[#F3F4F6] text-[#9CA3AF]">비활성</span>}
                 </span>
               </div>
             </div>
@@ -261,352 +272,29 @@ export function JdDetailPage() {
           </div>
         </div>
       </div>
-
-      <Styles />
     </div>
   );
 }
 
 function NavBar() {
   const { user } = useSessionStore();
-  
+
   return (
-    <nav className="jdd-nav">
-      <div className="jdd-nav-pill">
-        <Link to="/home" className="jdd-logo">
+    <nav className="fixed top-0 left-0 right-0 z-[200] py-[14px] px-8 flex justify-center max-sm:py-3 max-sm:px-4">
+      <div className="flex items-center justify-between w-full max-w-[1140px] bg-white/[.92] backdrop-blur-[20px] border border-[#E5E7EB] rounded-lg p-[8px_8px_8px_24px] shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)]">
+        <Link to="/home" className="text-[19px] font-black tracking-[-0.3px] text-[#0A0A0A] no-underline">
           me<span style={{ color: "#0991B2" }}>Fit</span>
         </Link>
-        <ul className="jdd-nav-links">
-          <li><Link to="/home" className="jdd-nav-link">홈</Link></li>
-          <li><Link to="/jd" className="jdd-nav-link jdd-nav-link--active">채용공고</Link></li>
-          <li><Link to="/interview" className="jdd-nav-link">면접 시작</Link></li>
-          <li><Link to="/resume" className="jdd-nav-link">이력서</Link></li>
+        <ul className="flex gap-1 list-none">
+          <li><Link to="/home" className="text-[13px] font-medium text-[#6B7280] no-underline py-2 px-3.5 rounded-lg transition-all hover:text-[#0A0A0A] hover:bg-[rgba(9,145,178,0.06)]">홈</Link></li>
+          <li><Link to="/jd" className="text-[13px] font-bold text-[#0991B2] bg-[#E6F7FA] no-underline py-2 px-3.5 rounded-lg">채용공고</Link></li>
+          <li><Link to="/interview" className="text-[13px] font-medium text-[#6B7280] no-underline py-2 px-3.5 rounded-lg transition-all hover:text-[#0A0A0A] hover:bg-[rgba(9,145,178,0.06)]">면접 시작</Link></li>
+          <li><Link to="/resume" className="text-[13px] font-medium text-[#6B7280] no-underline py-2 px-3.5 rounded-lg transition-all hover:text-[#0A0A0A] hover:bg-[rgba(9,145,178,0.06)]">이력서</Link></li>
         </ul>
-        <div className="jdd-nav-avatar">{user?.initial || "U"}</div>
+        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#06B6D4] to-[#0891B2] flex items-center justify-center text-[13px] font-bold text-white shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)] cursor-pointer">
+          {user?.initial || "U"}
+        </div>
       </div>
     </nav>
   );
-}
-
-const JDD_STYLES = `
-      @keyframes jdd-fadeUp {
-        from { opacity: 0; transform: translateY(20px); }
-        to   { opacity: 1; transform: translateY(0); }
-      }
-
-      .jdd-page {
-        min-height: 100vh;
-        background: #FFFFFF;
-        font-family: 'Inter', sans-serif;
-        color: #0A0A0A;
-      }
-
-      /* NAV */
-      .jdd-nav {
-        position: fixed;
-        top: 0; left: 0; right: 0;
-        z-index: 200;
-        padding: 14px 32px;
-        display: flex;
-        justify-content: center;
-      }
-      .jdd-nav-pill {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        width: 100%;
-        max-width: 1140px;
-        background: rgba(255,255,255,0.92);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border: 1px solid #E5E7EB;
-        border-radius: 8px;
-        padding: 8px 8px 8px 24px;
-        box-shadow: var(--sc);
-      }
-      .jdd-logo {
-        font-family: 'Inter', sans-serif;
-        font-size: 19px;
-        font-weight: 900;
-        letter-spacing: -.3px;
-        color: #0A0A0A;
-        text-decoration: none;
-      }
-      .jdd-nav-links { display: flex; gap: 4px; list-style: none; }
-      .jdd-nav-link {
-        font-size: 13px; font-weight: 500; color: #6B7280;
-        text-decoration: none; padding: 8px 14px; border-radius: 8px;
-        transition: all .2s;
-      }
-      .jdd-nav-link:hover { color: #0A0A0A; background: rgba(9,145,178,0.06); }
-      .jdd-nav-link--active { color: #0991B2; background: #E6F7FA; font-weight: 700; }
-      .jdd-nav-avatar {
-        width: 36px; height: 36px; border-radius: 50%;
-        background: linear-gradient(135deg,#06B6D4,#0891B2);
-        display: flex; align-items: center; justify-content: center;
-        font-size: 13px; font-weight: 700; color: #fff;
-        box-shadow: var(--sb); cursor: pointer;
-      }
-
-      /* WRAP */
-      .jdd-wrap {
-        max-width: 1140px;
-        margin: 0 auto;
-        padding: 100px 32px 60px;
-      }
-
-      /* CARD */
-      .jdd-card {
-        background: #F9FAFB;
-        border: 1px solid #E5E7EB;
-        border-radius: 8px;
-        box-shadow: var(--sc);
-        transition: box-shadow .25s;
-      }
-      .jdd-card:hover { box-shadow: var(--sch); }
-
-      /* LOADING / ERROR */
-      .jdd-loading {
-        text-align: center; padding: 80px 0;
-        font-size: 15px; color: #6B7280;
-      }
-      .jdd-error-box {
-        text-align: center; padding: 60px 0;
-        display: flex; flex-direction: column; align-items: center;
-        font-size: 15px; color: #DC2626;
-      }
-
-      /* BREADCRUMB */
-      .jdd-breadcrumb {
-        display: flex; align-items: center; gap: 8px;
-        font-size: 13px; color: #6B7280; margin-bottom: 24px;
-      }
-      .jdd-bc-link { color: #6B7280; text-decoration: none; transition: color .2s; }
-      .jdd-bc-link:hover { color: #0991B2; }
-      .jdd-bc-sep { opacity: .5; }
-      .jdd-bc-current { color: #0A0A0A; font-weight: 600; }
-
-      /* LAYOUT */
-      .jdd-layout {
-        display: grid;
-        grid-template-columns: 1fr 340px;
-        gap: 24px;
-        align-items: start;
-      }
-      .jdd-main { animation: jdd-fadeUp .5s ease both; display: flex; flex-direction: column; gap: 18px; }
-      .jdd-side { animation: jdd-fadeUp .5s ease .08s both; display: flex; flex-direction: column; gap: 18px; }
-
-      /* HERO */
-      .jdd-hero {
-        padding: 36px 32px;
-        position: relative;
-        overflow: hidden;
-      }
-      .jdd-hero-bg {
-        position: absolute; inset: 0;
-        background: linear-gradient(135deg,rgba(9,145,178,0.05),rgba(6,182,212,0.03));
-        pointer-events: none;
-      }
-      .jdd-co-row {
-        display: flex; align-items: center; gap: 14px;
-        margin-bottom: 18px; position: relative;
-      }
-      .jdd-co-logo {
-        width: 54px; height: 54px; border-radius: 8px;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 22px; font-weight: 900; color: #fff;
-        flex-shrink: 0;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-      }
-      .jdd-co-name { font-size: 13px; color: #6B7280; font-weight: 600; margin-bottom: 2px; }
-      .jdd-title {
-        font-family: 'Inter', sans-serif;
-        font-size: clamp(18px, 2.5vw, 26px);
-        font-weight: 900; letter-spacing: -.5px; line-height: 1.2; color: #0A0A0A;
-        position: relative;
-      }
-      .jdd-meta {
-        display: flex; flex-wrap: wrap; gap: 8px;
-        margin-top: 16px; position: relative;
-      }
-      .jdd-chip {
-        display: inline-flex; align-items: center; gap: 5px;
-        font-size: 12px; font-weight: 600; padding: 5px 12px;
-        border-radius: 100px; background: #FFFFFF;
-        color: #6B7280; border: 1px solid #E5E7EB;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-      }
-      .jdd-chip--accent { background: #E6F7FA; color: #0991B2; border-color: #0991B2; }
-
-      /* BUTTONS */
-      .jdd-actions {
-        display: flex; gap: 10px; margin-top: 20px;
-        position: relative; flex-wrap: wrap;
-      }
-      .jdd-btn-primary {
-        display: inline-flex; align-items: center; gap: 8px;
-        font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 700;
-        color: #fff; background: #0A0A0A; border: none; cursor: pointer;
-        padding: 12px 20px; border-radius: 8px; box-shadow: var(--sb);
-        transition: opacity .2s; text-decoration: none; white-space: nowrap;
-      }
-      .jdd-btn-primary:hover { opacity: .85; }
-      .jdd-btn-secondary {
-        display: inline-flex; align-items: center; gap: 8px;
-        font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 700;
-        color: #0991B2; background: #E6F7FA; border: 1px solid #0991B2;
-        cursor: pointer; padding: 12px 20px; border-radius: 8px;
-        transition: background .2s; text-decoration: none; white-space: nowrap;
-      }
-      .jdd-btn-secondary:hover { background: #cceef6; }
-      .jdd-btn-ghost {
-        display: inline-flex; align-items: center; gap: 6px;
-        font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
-        color: #6B7280; background: none; border: none; cursor: pointer;
-        padding: 10px 16px; border-radius: 8px;
-        transition: all .2s; text-decoration: none;
-      }
-      .jdd-btn-ghost:hover { color: #0A0A0A; background: #F3F4F6; }
-      .jdd-btn-danger:hover { color: #DC2626 !important; background: #FEF2F2 !important; }
-
-      /* SECTION */
-      .jdd-section { padding: 28px 32px; }
-      .jdd-section-title {
-        font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 900;
-        color: #0A0A0A; margin-bottom: 18px;
-        display: flex; align-items: center; gap: 8px;
-      }
-      .jdd-section-icon {
-        width: 32px; height: 32px; border-radius: 8px;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 15px; flex-shrink: 0;
-      }
-      .jdd-summary {
-        font-size: 14px; color: #6B7280; line-height: 1.8;
-        padding: 16px 18px;
-        background: rgba(9,145,178,0.04);
-        border-radius: 8px;
-        border-left: 3px solid #0991B2;
-      }
-
-      /* REQ LIST */
-      .jdd-req-list { display: flex; flex-direction: column; gap: 8px; }
-      .jdd-req-item {
-        display: flex; align-items: flex-start; gap: 10px;
-        padding: 10px 14px; background: #FFFFFF;
-        border: 1px solid #E5E7EB; border-radius: 8px;
-        font-size: 13px; color: #0A0A0A; line-height: 1.6;
-      }
-      .jdd-req-check {
-        width: 20px; height: 20px; border-radius: 8px;
-        flex-shrink: 0; display: flex; align-items: center;
-        justify-content: center; font-size: 10px; font-weight: 700; margin-top: 1px;
-      }
-      .jdd-req-check--required {
-        background: linear-gradient(135deg,#34D399,#059669);
-        color: #fff; box-shadow: 0 2px 6px rgba(5,150,105,0.25);
-      }
-      .jdd-req-check--accent { background: #E6F7FA; color: #0991B2; }
-
-      /* PREF GRID */
-      .jdd-pref-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-      .jdd-pref-item {
-        padding: 10px 14px; background: #FFFFFF;
-        border: 1px solid #E5E7EB; border-radius: 8px;
-        font-size: 12px; font-weight: 600; color: #6B7280;
-        display: flex; align-items: center; gap: 8px;
-      }
-      .jdd-pref-dot {
-        width: 8px; height: 8px; border-radius: 50%;
-        background: #D97706; flex-shrink: 0;
-      }
-
-      /* SIDE CARD */
-      .jdd-side-card { padding: 22px 20px; }
-      .jdd-side-title {
-        font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 900;
-        color: #0A0A0A; margin-bottom: 16px;
-        display: flex; align-items: center; gap: 8px;
-      }
-      .jdd-updating { font-size: 11px; color: #6B7280; font-weight: 400; margin-left: auto; }
-
-      /* STATUS CHANGE */
-      .jdd-status-list { display: flex; flex-direction: column; gap: 8px; }
-      .jdd-sc-opt {
-        display: flex; align-items: center; gap: 10px;
-        padding: 12px 14px; border-radius: 8px;
-        cursor: pointer; border: 1.5px solid #E5E7EB;
-        background: #FFFFFF; transition: all .2s; width: 100%; text-align: left;
-      }
-      .jdd-sc-opt:hover:not(:disabled) { border-color: #0991B2; background: #F0FAFD; }
-      .jdd-sc-opt--sel { border-color: #0991B2; background: #E6F7FA; }
-      .jdd-sc-opt:disabled { opacity: .6; cursor: not-allowed; }
-      .jdd-sc-icon { font-size: 18px; flex-shrink: 0; }
-      .jdd-sc-radio {
-        width: 18px; height: 18px; border-radius: 50%;
-        border: 2px solid #E5E7EB;
-        display: flex; align-items: center; justify-content: center;
-        flex-shrink: 0; transition: all .2s;
-      }
-      .jdd-sc-opt--sel .jdd-sc-radio { border-color: #0991B2; background: #0991B2; }
-      .jdd-sc-radio-dot { width: 6px; height: 6px; border-radius: 50%; background: #fff; }
-      .jdd-sc-label { font-size: 13px; font-weight: 700; color: #0A0A0A; }
-      .jdd-sc-sub { font-size: 11px; color: #6B7280; margin-top: 1px; }
-
-      /* QUICK ACTIONS */
-      .jdd-qa-list { display: flex; flex-direction: column; gap: 8px; }
-      .jdd-qa-btn {
-        display: flex; align-items: center; gap: 10px;
-        padding: 12px 14px; border-radius: 8px;
-        border: 1px solid #E5E7EB; background: #FFFFFF;
-        cursor: pointer; font-size: 13px; font-weight: 600; color: #0A0A0A;
-        transition: all .2s; text-align: left; width: 100%; text-decoration: none;
-      }
-      .jdd-qa-btn:hover { background: #F9FAFB; transform: translateY(-1px); box-shadow: var(--sc); }
-      .jdd-qa-icon {
-        width: 32px; height: 32px; border-radius: 8px;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 15px; flex-shrink: 0;
-      }
-      .jdd-qa-info { flex: 1; }
-      .jdd-qa-title { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 800; }
-      .jdd-qa-sub { font-size: 11px; color: #6B7280; margin-top: 1px; }
-      .jdd-qa-arrow { color: #9CA3AF; font-size: 16px; }
-
-      /* INFO TABLE */
-      .jdd-info-row {
-        display: flex; align-items: center; justify-content: space-between;
-        padding: 10px 0; border-bottom: 1px solid #F3F4F6; font-size: 13px;
-      }
-      .jdd-info-row:last-child { border-bottom: none; padding-bottom: 0; }
-      .jdd-info-key { color: #6B7280; font-weight: 600; }
-      .jdd-info-val { color: #0A0A0A; font-weight: 500; text-align: right; }
-      .jdd-badge {
-        display: inline-flex; align-items: center; gap: 4px;
-        font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 100px;
-      }
-      .jdd-badge--ok      { background: #D1FAE5; color: #047857; }
-      .jdd-badge--pending { background: #FEF3C7; color: #D97706; }
-      .jdd-badge--off     { background: #F3F4F6; color: #9CA3AF; }
-
-      /* RESPONSIVE */
-      @media (max-width: 900px) {
-        .jdd-layout { grid-template-columns: 1fr; }
-        .jdd-side { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-        .jdd-pref-grid { grid-template-columns: 1fr; }
-      }
-      @media (max-width: 640px) {
-        .jdd-wrap { padding: 80px 16px 40px; }
-        .jdd-nav { padding: 12px 16px; }
-        .jdd-side { grid-template-columns: 1fr; }
-        .jdd-hero { padding: 24px 16px; }
-        .jdd-section { padding: 20px 16px; }
-      }
-      @media (prefers-reduced-motion: reduce) {
-        *, *::before, *::after { animation: none !important; transition: none !important; }
-      }
-    `;
-
-function Styles() {
-  return <style>{JDD_STYLES}</style>;
 }

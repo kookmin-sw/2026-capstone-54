@@ -1,86 +1,3 @@
-const HOWTO_STYLES = `
-        .howto-section {
-          padding: 64px 20px;
-          display: flex; justify-content: center;
-          background: #FFFFFF;
-        }
-        .howto-inner {
-          max-width: 480px; width: 100%;
-          display: flex; flex-direction: column; gap: 24px;
-        }
-        .howto-left { display: flex; flex-direction: column; }
-        .howto-badge {
-          display: inline-block; font-size: 12px; font-weight: 700;
-          color: #0991B2; background: #E6F7FA;
-          border-radius: 4px; padding: 5px 14px; margin-bottom: 14px;
-          align-self: flex-start;
-        }
-        .howto-title {
-          font-family: 'Inter', sans-serif; font-size: clamp(28px, 8vw, 40px);
-          font-weight: 800; color: #0A0A0A; margin-bottom: 12px; line-height: 1.1;
-        }
-        .howto-desc { font-size: 14px; color: #6B7280; line-height: 1.65; margin-bottom: 24px; }
-        .howto-steps { display: flex; flex-direction: column; gap: 8px; }
-        .howto-step {
-          display: flex; align-items: center; gap: 14px;
-          background: #F9FAFB; border-radius: 8px; padding: 16px 18px;
-          border: 1px solid #E5E7EB;
-          transition: transform 0.2s;
-        }
-        .howto-step:hover { transform: translateY(-2px); }
-        .step-num {
-          width: 36px; height: 36px; border-radius: 8px; flex-shrink: 0;
-          background: #0A0A0A;
-          display: flex; align-items: center; justify-content: center;
-          font-size: 12px; font-weight: 800; color: #fff;
-        }
-        .step-content { flex: 1; }
-        .step-title { font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 700; color: #0A0A0A; margin-bottom: 2px; }
-        .step-desc { font-size: 12px; color: #6B7280; }
-        .step-label {
-          font-size: 11px; font-weight: 600; color: #0991B2;
-          background: #E6F7FA; border-radius: 4px; padding: 4px 10px; flex-shrink: 0;
-        }
-        .howto-card {
-          background: #0A0A0A;
-          border-radius: 8px; padding: 32px 28px;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
-        }
-        .howto-card-icon { font-size: 32px; margin-bottom: 16px; }
-        .howto-card-title {
-          font-family: 'Inter', sans-serif; font-size: 22px; font-weight: 800;
-          color: #fff; margin-bottom: 12px; line-height: 1.25;
-        }
-        .howto-card-desc { font-size: 13px; color: rgba(255,255,255,0.65); line-height: 1.7; margin-bottom: 20px; }
-        .howto-tags { display: flex; flex-wrap: wrap; gap: 8px; }
-        .howto-tag {
-          font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.8);
-          background: rgba(255,255,255,0.1); border-radius: 4px; padding: 5px 12px;
-          border: 1px solid rgba(255,255,255,0.12);
-        }
-
-        @media (min-width: 768px) {
-          .howto-section { padding: 100px 40px; }
-          .howto-inner {
-            max-width: 1080px; flex-direction: column; gap: 40px; align-items: stretch;
-          }
-          .howto-left { flex: none; }
-          .howto-badge { font-size: 13px; padding: 6px 18px; margin-bottom: 18px; }
-          .howto-title { font-size: clamp(32px, 4vw, 52px); margin-bottom: 16px; }
-          .howto-desc { font-size: 15px; margin-bottom: 40px; }
-          .howto-step { gap: 18px; border-radius: 8px; padding: 20px 24px; }
-          .step-num { width: 40px; height: 40px; border-radius: 8px; font-size: 13px; }
-          .step-title { font-size: 15px; margin-bottom: 3px; }
-          .step-desc { font-size: 13px; }
-          .step-label { font-size: 12px; padding: 4px 12px; }
-          .howto-card { flex: none; border-radius: 8px; padding: 48px 44px; }
-          .howto-card-icon { font-size: 36px; margin-bottom: 20px; }
-          .howto-card-title { font-size: 26px; margin-bottom: 16px; }
-          .howto-card-desc { font-size: 14px; margin-bottom: 28px; }
-          .howto-tag { font-size: 12px; padding: 6px 14px; }
-        }
-`;
-
 const STEPS = [
   { num: "01", title: "면접 설정", desc: "이력서 선택, 면접 유형·시간·모드 설정", label: "1 설정" },
   { num: "02", title: "사전 환경 점검", desc: "카메라·마이크·네트워크 자동 점검", label: "2 점검" },
@@ -91,43 +8,61 @@ const TAGS = ["꼬리질문 방식", "전체 프로세스 방식", "연습 / 실
 
 export function HowToSection() {
   return (
-    <section id="how-to" className="howto-section">
-      <div className="howto-inner">
+    <section id="how-to" className="py-16 px-5 flex justify-center bg-white md:py-25 md:px-10">
+      <div className="max-w-[480px] w-full flex flex-col gap-6 md:max-w-[1080px] md:gap-10">
         {/* 좌측 */}
-        <div className="howto-left">
-          <div className="howto-badge">이용 방법</div>
-          <h2 className="howto-title">3단계로 끝나는<br />AI 면접.</h2>
-          <p className="howto-desc">복잡한 설정 없이, 이력서 업로드부터 결과 확인까지 15분이면 충분합니다.</p>
-          <div className="howto-steps">
+        <div className="flex flex-col">
+          <div className="inline-block text-[12px] font-bold text-[#0991B2] bg-[#E6F7FA] rounded px-[14px] py-[5px] mb-[14px] self-start md:text-[13px] md:px-[18px] md:py-[6px] md:mb-[18px]">
+            이용 방법
+          </div>
+          <h2 className="font-inter text-[clamp(28px,8vw,40px)] font-extrabold text-[#0A0A0A] mb-3 leading-[1.1] md:text-[clamp(32px,4vw,52px)] md:mb-4">
+            3단계로 끝나는<br />AI 면접.
+          </h2>
+          <p className="text-[14px] text-[#6B7280] leading-[1.65] mb-6 md:text-[15px] md:mb-10">
+            복잡한 설정 없이, 이력서 업로드부터 결과 확인까지 15분이면 충분합니다.
+          </p>
+          <div className="flex flex-col gap-2">
             {STEPS.map((step) => (
-              <div key={step.num} className="howto-step">
-                <div className="step-num">{step.num}</div>
-                <div className="step-content">
-                  <div className="step-title">{step.title}</div>
-                  <div className="step-desc">{step.desc}</div>
+              <div
+                key={step.num}
+                className="flex items-center gap-[14px] bg-[#F9FAFB] rounded-lg px-[18px] py-4 border border-[#E5E7EB] transition-transform duration-200 hover:-translate-y-0.5 md:gap-[18px] md:rounded-lg md:px-6 md:py-5"
+              >
+                <div className="w-9 h-9 rounded-lg shrink-0 bg-[#0A0A0A] flex items-center justify-center text-[12px] font-extrabold text-white md:w-10 md:h-10 md:rounded-lg md:text-[13px]">
+                  {step.num}
                 </div>
-                <div className="step-label">{step.label}</div>
+                <div className="flex-1">
+                  <div className="font-inter text-[14px] font-bold text-[#0A0A0A] mb-0.5 md:text-[15px] md:mb-[3px]">{step.title}</div>
+                  <div className="text-[12px] text-[#6B7280] md:text-[13px]">{step.desc}</div>
+                </div>
+                <div className="text-[11px] font-semibold text-[#0991B2] bg-[#E6F7FA] rounded px-[10px] py-1 shrink-0 md:text-[12px] md:px-3">
+                  {step.label}
+                </div>
               </div>
             ))}
           </div>
         </div>
 
         {/* 우측: 다크 카드 */}
-        <div className="howto-card">
-          <div className="howto-card-icon">🎙️</div>
-          <h3 className="howto-card-title">연습 모드부터<br />실전 모드까지.</h3>
-          <p className="howto-card-desc">
+        <div className="bg-[#0A0A0A] rounded-lg px-7 py-8 shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)] md:rounded-lg md:px-11 md:py-12">
+          <div className="text-[32px] mb-4 md:text-[36px] md:mb-5">🎙️</div>
+          <h3 className="font-inter text-[22px] font-extrabold text-white mb-3 leading-[1.25] md:text-[26px] md:mb-4">
+            연습 모드부터<br />실전 모드까지.
+          </h3>
+          <p className="text-[13px] text-white/65 leading-[1.7] mb-5 md:text-[14px] md:mb-7">
             준비 완료 버튼을 눌러 시작하는 연습 모드, 5~30초 랜덤 대기 후 자동 시작되는 실전 모드. 나에게 맞는 방식으로 연습하세요.
           </p>
-          <div className="howto-tags">
+          <div className="flex flex-wrap gap-2">
             {TAGS.map((tag) => (
-              <span key={tag} className="howto-tag">{tag}</span>
+              <span
+                key={tag}
+                className="text-[11px] font-semibold text-white/80 bg-white/10 rounded px-3 py-[5px] border border-white/12 md:text-[12px] md:px-3.5 md:py-1.5"
+              >
+                {tag}
+              </span>
             ))}
           </div>
         </div>
       </div>
-
-      <style>{HOWTO_STYLES}</style>
     </section>
   );
 }

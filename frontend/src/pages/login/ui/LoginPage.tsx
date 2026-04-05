@@ -38,44 +38,72 @@ export function LoginPage() {
   };
 
   return (
-    <div className="li-page">
+    <div className="min-h-screen bg-white flex flex-col items-center">
       {/* Header */}
-      <header className="li-header">
-        <Link to="/" className="li-logo">me<span style={{ color: "#0991B2" }}>Fit</span></Link>
-        <Link to="/sign-up" className="li-nav-link">회원가입 →</Link>
+      <header className="w-full max-w-[1080px] flex justify-between items-center px-5 pt-5 md:px-10 md:pt-7">
+        <Link to="/" className="font-inter text-[22px] font-black text-[#0A0A0A] no-underline">
+          me<span style={{ color: "#0991B2" }}>Fit</span>
+        </Link>
+        <Link
+          to="/sign-up"
+          className="text-[13px] font-medium text-[#6B7280] no-underline px-4 py-2 border border-[#E5E7EB] rounded-lg transition-[color,background] duration-200 hover:text-[#0A0A0A] hover:bg-[#F9FAFB]"
+        >
+          회원가입 →
+        </Link>
       </header>
 
-      <main className="li-main">
+      <main className="w-full max-w-[480px] px-5 flex flex-col items-center md:max-w-[1080px] md:px-10">
         {/* Hero */}
-        <section className="li-hero">
-          <div className="li-badge">로그인</div>
-          <h1 className="li-title">
+        <section className="text-center pt-12 pb-8 md:pt-16 md:pb-10">
+          <div className="inline-block text-[12px] font-bold text-[#0991B2] bg-[#E6F7FA] rounded px-[14px] py-[5px] mb-[14px] md:text-[13px] md:px-[18px] md:py-[6px] md:mb-[18px]">
+            로그인
+          </div>
+          <h1 className="font-inter text-[clamp(32px,9vw,48px)] font-black leading-[1.08] text-[#0A0A0A] mb-3 tracking-[-2px] md:text-[clamp(36px,5vw,52px)] md:mb-4">
             다시 만나서
             <br />
-            <span className="li-accent">반가워요</span>
+            <span className="gradient-text">반가워요</span>
           </h1>
-          <p className="li-desc">미핏과 함께 면접 준비를 이어가세요.</p>
+          <p className="text-[14px] text-[#6B7280] leading-[1.7] md:text-[15px]">미핏과 함께 면접 준비를 이어가세요.</p>
         </section>
 
         {/* Form Card */}
-        <section className="li-card-wrap">
-          <div className="li-card">
+        <section className="w-full flex justify-center">
+          <div className="w-full bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg px-7 py-10 shadow-[var(--sc)] md:max-w-[520px] md:px-9">
             <form onSubmit={handleSubmit} noValidate>
-              <div className="li-field">
-                <label className="li-label" htmlFor="li-email">이메일</label>
-                <div className="li-input-wrap">
-                  <input id="li-email" className="li-input" type="email" placeholder="hello@mefit.kr" value={email} onChange={(e) => setEmail(e.target.value)} />
-                  <span className="li-input-icon" aria-hidden="true">
+              <div className="mb-4 md:mb-[18px]">
+                <label className="block text-[13px] font-semibold text-[#374151] mb-1.5" htmlFor="li-email">이메일</label>
+                <div className="relative">
+                  <input
+                    id="li-email"
+                    className="w-full py-[13px] px-4 pr-11 bg-white border border-[#E5E7EB] rounded-lg text-[14px] text-[#0A0A0A] font-inter outline-none transition-[border-color] duration-200 placeholder-[#9CA3AF] focus:border-[#0991B2] md:py-[14px]"
+                    type="email"
+                    placeholder="hello@mefit.kr"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                  <span className="absolute right-[14px] top-1/2 -translate-y-1/2 text-[#9CA3AF] pointer-events-none flex items-center justify-center" aria-hidden="true">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
                   </span>
                 </div>
               </div>
 
-              <div className="li-field">
-                <label className="li-label" htmlFor="li-pw">비밀번호</label>
-                <div className="li-input-wrap">
-                  <input id="li-pw" className="li-input" type={showPw ? "text" : "password"} placeholder="비밀번호를 입력하세요" value={password} onChange={(e) => setPassword(e.target.value)} />
-                  <button type="button" className="li-pw-toggle" onClick={() => setShowPw(!showPw)} aria-label={showPw ? "비밀번호 숨기기" : "비밀번호 보기"}>
+              <div className="mb-4 md:mb-[18px]">
+                <label className="block text-[13px] font-semibold text-[#374151] mb-1.5" htmlFor="li-pw">비밀번호</label>
+                <div className="relative">
+                  <input
+                    id="li-pw"
+                    className="w-full py-[13px] px-4 pr-11 bg-white border border-[#E5E7EB] rounded-lg text-[14px] text-[#0A0A0A] font-inter outline-none transition-[border-color] duration-200 placeholder-[#9CA3AF] focus:border-[#0991B2] md:py-[14px]"
+                    type={showPw ? "text" : "password"}
+                    placeholder="비밀번호를 입력하세요"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 bg-none border-none cursor-pointer text-[#9CA3AF] p-1 flex items-center justify-center hover:text-[#6B7280]"
+                    onClick={() => setShowPw(!showPw)}
+                    aria-label={showPw ? "비밀번호 숨기기" : "비밀번호 보기"}
+                  >
                     {showPw ? (
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
                     ) : (
@@ -86,171 +114,37 @@ export function LoginPage() {
               </div>
 
               {(validationError || error) && (
-                <p className="li-error" role="alert">{validationError || error}</p>
+                <p className="text-[13px] text-[#DC2626] mb-[14px] px-[14px] py-[10px] bg-[#FEF2F2] border border-[#FECACA] rounded-lg" role="alert">
+                  {validationError || error}
+                </p>
               )}
 
-              <button type="submit" className="li-submit" disabled={isLoading}>
+              <button
+                type="submit"
+                className="w-full py-[15px] bg-[#0A0A0A] text-white font-inter text-[15px] font-bold border-none rounded-lg cursor-pointer transition-opacity duration-200 hover:enabled:opacity-85 disabled:opacity-50 disabled:cursor-not-allowed md:py-4 md:text-[16px]"
+                disabled={isLoading}
+              >
                 {isLoading ? "처리 중..." : "로그인 →"}
               </button>
             </form>
 
-            <p className="li-bottom-text">
-              아직 계정이 없으신가요? <Link to="/sign-up" className="li-bottom-anchor">회원가입 →</Link>
+            <p className="text-center text-[13px] text-[#6B7280] mt-5">
+              아직 계정이 없으신가요?{" "}
+              <Link to="/sign-up" className="text-[#0991B2] font-bold no-underline hover:underline">
+                회원가입 →
+              </Link>
             </p>
           </div>
         </section>
       </main>
 
-      <footer className="li-footer">
-        <a href="#">개인정보처리방침</a>
-        <a href="#">이용약관</a>
-        <a href="#">쿠키</a>
+      <footer className="mt-12 pb-8 flex gap-5 md:mt-16 md:pb-10">
+        {["개인정보처리방침", "이용약관", "쿠키"].map((item) => (
+          <a key={item} href="#" className="text-[11px] text-[#9CA3AF] no-underline transition-[color] duration-200 hover:text-[#6B7280]">
+            {item}
+          </a>
+        ))}
       </footer>
-
-      <style>{`
-        .li-page {
-          min-height: 100vh;
-          background: #FFFFFF;
-          display: flex; flex-direction: column; align-items: center;
-        }
-
-        /* ── Header ── */
-        .li-header {
-          width: 100%; max-width: 1080px;
-          display: flex; justify-content: space-between; align-items: center;
-          padding: 20px 20px 0;
-        }
-        .li-logo {
-          font-family: 'Inter', sans-serif; font-size: 22px; font-weight: 900;
-          color: #0A0A0A; text-decoration: none;
-        }
-        .li-nav-link {
-          font-size: 13px; font-weight: 500; color: #6B7280;
-          text-decoration: none; padding: 8px 16px;
-          border: 1px solid #E5E7EB; border-radius: 8px;
-          transition: color 0.2s, background 0.2s;
-        }
-        .li-nav-link:hover { color: #0A0A0A; background: #F9FAFB; }
-
-        /* ── Main ── */
-        .li-main {
-          width: 100%; max-width: 480px;
-          padding: 0 20px;
-          display: flex; flex-direction: column; align-items: center;
-        }
-
-        /* ── Hero ── */
-        .li-hero { text-align: center; padding: 48px 0 32px; }
-        .li-badge {
-          display: inline-block; font-size: 12px; font-weight: 700;
-          color: #0991B2; background: #E6F7FA;
-          border-radius: 4px; padding: 5px 14px; margin-bottom: 14px;
-        }
-        .li-title {
-          font-family: 'Inter', sans-serif;
-          font-size: clamp(32px, 9vw, 48px);
-          font-weight: 900; line-height: 1.08;
-          color: #0A0A0A; margin-bottom: 12px; letter-spacing: -2px;
-        }
-        .li-accent {
-          background: linear-gradient(135deg, #0991B2, #06B6D4);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-        }
-        .li-desc { font-size: 14px; color: #6B7280; line-height: 1.7; }
-
-        /* ── Card ── */
-        .li-card-wrap { width: 100%; display: flex; justify-content: center; }
-        .li-card {
-          width: 100%;
-          background: #F9FAFB; border: 1px solid #E5E7EB;
-          border-radius: 8px; padding: 40px 28px;
-          box-shadow: var(--sc);
-        }
-
-        /* ── Fields ── */
-        .li-field { margin-bottom: 16px; }
-        .li-label {
-          display: block; font-size: 13px; font-weight: 600;
-          color: #374151; margin-bottom: 6px;
-        }
-        .li-input-wrap { position: relative; }
-        .li-input {
-          width: 100%; padding: 13px 16px;
-          background: #FFFFFF; border: 1px solid #E5E7EB;
-          border-radius: 8px; font-size: 14px; color: #0A0A0A;
-          outline: none; transition: border-color 0.2s;
-          font-family: 'Inter', sans-serif;
-        }
-        .li-input::placeholder { color: #9CA3AF; }
-        .li-input:focus { border-color: #0991B2; }
-        .li-input-wrap .li-input { padding-right: 44px; }
-        .li-input-icon {
-          position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
-          color: #9CA3AF; pointer-events: none;
-          display: flex; align-items: center; justify-content: center;
-        }
-        .li-pw-toggle {
-          position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
-          background: none; border: none; cursor: pointer;
-          color: #9CA3AF; padding: 4px;
-          display: flex; align-items: center; justify-content: center;
-        }
-        .li-pw-toggle:hover { color: #6B7280; }
-
-        /* ── Error ── */
-        .li-error {
-          font-size: 13px; color: #DC2626; margin-bottom: 14px;
-          padding: 10px 14px; background: #FEF2F2;
-          border: 1px solid #FECACA; border-radius: 8px;
-        }
-
-        /* ── Submit ── */
-        .li-submit {
-          width: 100%; padding: 15px;
-          background: #0A0A0A; color: #FFFFFF;
-          font-family: 'Inter', sans-serif;
-          font-size: 15px; font-weight: 700;
-          border: none; border-radius: 8px; cursor: pointer;
-          transition: opacity 0.2s;
-        }
-        .li-submit:hover:not(:disabled) { opacity: 0.85; }
-        .li-submit:disabled { opacity: 0.5; cursor: not-allowed; }
-
-        /* ── Bottom ── */
-        .li-bottom-text {
-          text-align: center; font-size: 13px; color: #6B7280; margin-top: 20px;
-        }
-        .li-bottom-anchor { color: #0991B2; font-weight: 700; text-decoration: none; }
-        .li-bottom-anchor:hover { text-decoration: underline; }
-
-        /* ── Footer ── */
-        .li-footer {
-          margin-top: 48px; padding-bottom: 32px;
-          display: flex; gap: 20px;
-        }
-        .li-footer a {
-          font-size: 11px; color: #9CA3AF; text-decoration: none;
-          transition: color 0.2s;
-        }
-        .li-footer a:hover { color: #6B7280; }
-
-        /* ── Desktop ── */
-        @media (min-width: 768px) {
-          .li-header { padding: 28px 40px 0; }
-          .li-main { max-width: 1080px; padding: 0 40px; }
-          .li-hero { padding: 64px 0 40px; }
-          .li-badge { font-size: 13px; padding: 6px 18px; margin-bottom: 18px; }
-          .li-title { font-size: clamp(36px, 5vw, 52px); margin-bottom: 16px; }
-          .li-desc { font-size: 15px; }
-          .li-card { max-width: 520px; padding: 40px 36px; }
-          .li-field { margin-bottom: 18px; }
-          .li-input { padding: 14px 16px; }
-          .li-submit { padding: 16px; font-size: 16px; }
-          .li-footer { margin-top: 64px; padding-bottom: 40px; }
-        }
-      `}</style>
     </div>
   );
 }

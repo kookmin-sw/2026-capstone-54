@@ -9,6 +9,8 @@ const STATUS_OPTIONS: { value: JdStatus; icon: string; label: string; desc: stri
   { value: "applied", icon: "✅", label: "지원 완료", desc: "이미 지원함" },
 ];
 
+const cardCls = "bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)]";
+
 export function JdEditPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -41,10 +43,11 @@ export function JdEditPage() {
   /* ── Loading ── */
   if (isLoading) {
     return (
-      <div className="jde-page">
+      <div className="min-h-screen bg-white">
         <NavBar />
-        <div className="jde-wrap"><div className="jde-loading">불러오는 중...</div></div>
-        <Styles />
+        <div className="max-w-[1140px] mx-auto px-8 pt-[100px] pb-[60px] max-sm:px-4 max-sm:pt-20">
+          <div className="text-center py-20 text-[15px] text-[#6B7280]">불러오는 중...</div>
+        </div>
       </div>
     );
   }
@@ -52,96 +55,98 @@ export function JdEditPage() {
   /* ── Error / Not Found ── */
   if (!jd) {
     return (
-      <div className="jde-page">
+      <div className="min-h-screen bg-white">
         <NavBar />
-        <div className="jde-wrap">
-          <div className="jde-error-box">
+        <div className="max-w-[1140px] mx-auto px-8 pt-[100px] pb-[60px] max-sm:px-4 max-sm:pt-20">
+          <div className="text-center py-[60px] flex flex-col items-center text-[15px] text-[#DC2626]">
             <p>{error ?? "채용공고를 찾을 수 없습니다."}</p>
-            <Link to="/jd" className="jde-btn-primary" style={{ marginTop: 16 }}>목록으로</Link>
+            <Link to="/jd" className="inline-flex items-center gap-2 text-sm font-bold text-white bg-[#0A0A0A] border-none cursor-pointer py-3.5 px-6 rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.1)] transition-opacity hover:opacity-85 no-underline mt-4">목록으로</Link>
           </div>
         </div>
-        <Styles />
       </div>
     );
   }
 
   return (
-    <div className="jde-page">
+    <div className="min-h-screen bg-white">
       <NavBar />
 
-      <div className="jde-wrap">
+      <div className="max-w-[1140px] mx-auto px-8 pt-[100px] pb-[60px] max-sm:px-4 max-sm:pt-20">
         {/* BREADCRUMB */}
-        <div className="jde-breadcrumb">
-          <Link to="/jd" className="jde-bc-link">채용공고</Link>
-          <span className="jde-bc-sep">›</span>
-          <Link to={`/jd/detail/${jd.id}`} className="jde-bc-link">
+        <div className="flex items-center gap-2 text-[13px] text-[#6B7280] mb-6">
+          <Link to="/jd" className="text-[#6B7280] no-underline transition-colors hover:text-[#0991B2]">채용공고</Link>
+          <span className="opacity-50">›</span>
+          <Link to={`/jd/detail/${jd.id}`} className="text-[#6B7280] no-underline transition-colors hover:text-[#0991B2]">
             {jd.company} {jd.title.split("—")[0].trim()}
           </Link>
-          <span className="jde-bc-sep">›</span>
-          <span className="jde-bc-current">수정</span>
+          <span className="opacity-50">›</span>
+          <span className="text-[#0A0A0A] font-semibold">수정</span>
         </div>
 
         {/* PAGE HEADER */}
-        <div className="jde-page-hd">
+        <div className="flex items-start justify-between mb-5 gap-4">
           <div>
-            <div className="jde-eyebrow">✏️ 공고 수정</div>
-            <h1 className="jde-page-title">채용공고 수정</h1>
-            <p className="jde-page-sub">공고 정보와 지원 상태를 업데이트하세요</p>
+            <div className="inline-flex items-center gap-1.5 text-[11px] font-bold tracking-[1.4px] uppercase text-[#0991B2] bg-[#E6F7FA] py-1 px-3 rounded-lg mb-2.5">✏️ 공고 수정</div>
+            <h1 className="text-[clamp(24px,3vw,36px)] font-black tracking-[-0.8px] text-[#0A0A0A] leading-[1.1]">채용공고 수정</h1>
+            <p className="text-sm text-[#6B7280] mt-1.5">공고 정보와 지원 상태를 업데이트하세요</p>
           </div>
         </div>
 
         {/* COMPANY CHIP */}
-        <div className="jde-edit-header">
-          <div className="jde-co-chip">
-            <div className="jde-co-logo" style={{ background: jd.companyColor }}>
+        <div className="flex items-center gap-3.5 mb-7">
+          <div className="flex items-center gap-2.5 py-[10px] px-4 bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
+            <div
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-black text-white"
+              style={{ background: jd.companyColor }}
+            >
               {jd.companyInitial}
             </div>
-            <div className="jde-co-name">{jd.company}</div>
+            <div className="text-[13px] font-bold text-[#0A0A0A]">{jd.company}</div>
           </div>
-          <span className="jde-co-note">URL 원문은 변경할 수 없어요</span>
+          <span className="text-[12px] text-[#9CA3AF]">URL 원문은 변경할 수 없어요</span>
         </div>
 
-        <div className="jde-layout">
+        <div className="grid grid-cols-[1fr_340px] gap-6 items-start max-[900px]:grid-cols-1">
 
           {/* ── MAIN FORM ── */}
-          <div className="jde-main">
-            <div className="jde-card jde-form-card">
+          <div className="animate-[jde-fadeUp_.5s_ease_both]">
+            <div className={`${cardCls} p-[36px_32px] max-sm:p-[24px_16px]`}>
 
               {/* 원본 URL (읽기 전용) */}
-              <section className="jde-form-section">
-                <div className="jde-section-title">
-                  <span className="jde-section-icon" style={{ background: "rgba(9,145,178,0.1)" }}>🔗</span>
+              <section className="mb-8">
+                <div className="text-[15px] font-extrabold text-[#0A0A0A] mb-1 flex items-center gap-2">
+                  <span className="w-7 h-7 rounded-lg flex items-center justify-center text-[13px] shrink-0 bg-[rgba(9,145,178,0.1)]">🔗</span>
                   원본 URL
                 </div>
-                <div className="jde-field">
+                <div className="mb-5">
                   <input
-                    className="jde-field-input jde-field-input--readonly"
+                    className="w-full bg-[rgba(9,145,178,0.04)] border border-[#F3F4F6] rounded-lg py-[13px] px-4 text-sm font-medium text-[#9CA3AF] outline-none cursor-not-allowed focus:border-[#F3F4F6] focus:shadow-none"
                     type="text"
                     value={jd.originalUrl}
                     readOnly
                     aria-label="원본 URL (읽기 전용)"
                   />
-                  <div className="jde-readonly-note">🔒 원본 URL은 수정할 수 없습니다. 새 공고로 추가해 주세요.</div>
+                  <div className="text-[12px] text-[#9CA3AF] mt-1.5 flex items-center gap-1">🔒 원본 URL은 수정할 수 없습니다. 새 공고로 추가해 주세요.</div>
                 </div>
               </section>
 
-              <div className="jde-divider" />
+              <div className="h-px bg-[#E5E7EB] my-7" />
 
               {/* 식별 제목 */}
-              <section className="jde-form-section">
-                <div className="jde-section-title">
-                  <span className="jde-section-icon" style={{ background: "linear-gradient(135deg,#60A5FA,#2563EB)" }}>✏️</span>
+              <section className="mb-8">
+                <div className="text-[15px] font-extrabold text-[#0A0A0A] mb-1 flex items-center gap-2">
+                  <span className="w-7 h-7 rounded-lg flex items-center justify-center text-[13px] shrink-0" style={{ background: "linear-gradient(135deg,#60A5FA,#2563EB)" }}>✏️</span>
                   내 식별 제목
                 </div>
-                <p className="jde-section-sub">이 공고를 구별하기 위한 나만의 제목을 설정하세요</p>
-                <div className="jde-field">
-                  <div className="jde-field-label">
+                <p className="text-[13px] text-[#6B7280] mb-[18px] ml-9">이 공고를 구별하기 위한 나만의 제목을 설정하세요</p>
+                <div className="mb-5">
+                  <div className="flex items-center justify-between text-[13px] font-bold text-[#0A0A0A] mb-2">
                     식별 제목
-                    <span className="jde-field-hint">미입력 시 공고 원제목 표시</span>
+                    <span className="text-[11px] text-[#6B7280] font-normal">미입력 시 공고 원제목 표시</span>
                   </div>
                   <input
                     type="text"
-                    className="jde-field-input"
+                    className="w-full bg-white border border-[#E5E7EB] rounded-lg py-[13px] px-4 text-sm font-medium text-[#0A0A0A] outline-none transition-[border-color] appearance-none focus:border-[#0991B2] focus:shadow-[0_0_0_3px_rgba(9,145,178,0.1)] placeholder:text-[#D1D5DB]"
                     placeholder={jd.title}
                     value={customTitle}
                     onChange={(e) => setCustomTitle(e.target.value)}
@@ -150,71 +155,78 @@ export function JdEditPage() {
                 </div>
               </section>
 
-              <div className="jde-divider" />
+              <div className="h-px bg-[#E5E7EB] my-7" />
 
               {/* 지원 상태 */}
-              <section className="jde-form-section">
-                <div className="jde-section-title">
-                  <span className="jde-section-icon" style={{ background: "linear-gradient(135deg,#67E8F9,#0891B2)" }}>📌</span>
+              <section className="mb-8">
+                <div className="text-[15px] font-extrabold text-[#0A0A0A] mb-4 flex items-center gap-2">
+                  <span className="w-7 h-7 rounded-lg flex items-center justify-center text-[13px] shrink-0" style={{ background: "linear-gradient(135deg,#67E8F9,#0891B2)" }}>📌</span>
                   지원 상태
                 </div>
-                <div className="jde-status-selector">
+                <div className="grid grid-cols-3 gap-2 max-sm:grid-cols-1">
                   {STATUS_OPTIONS.map((opt) => (
                     <button
                       key={opt.value}
                       type="button"
-                      className={`jde-ss-opt${status === opt.value ? " jde-ss-opt--sel" : ""}`}
+                      className={`py-[14px] px-3 rounded-lg border cursor-pointer text-center transition-all shadow-[0_1px_3px_rgba(0,0,0,0.08)] hover:-translate-y-0.5 hover:shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)] hover:border-[#0991B2] ${
+                        status === opt.value
+                          ? "border-[#0991B2] bg-[#E6F7FA] shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)]"
+                          : "border-[#E5E7EB] bg-white"
+                      }`}
                       onClick={() => setStatus(opt.value)}
                       aria-pressed={status === opt.value}
                     >
-                      <span className="jde-ss-icon">{opt.icon}</span>
-                      <div className={`jde-ss-label${status === opt.value ? " jde-ss-label--sel" : ""}`}>{opt.label}</div>
-                      <div className="jde-ss-desc">{opt.desc}</div>
+                      <span className="text-[22px] mb-1.5 block">{opt.icon}</span>
+                      <div className={`text-[12px] font-extrabold ${status === opt.value ? "text-[#0991B2]" : "text-[#0A0A0A]"}`}>{opt.label}</div>
+                      <div className="text-[10px] text-[#9CA3AF] mt-0.5">{opt.desc}</div>
                     </button>
                   ))}
                 </div>
               </section>
 
-              <div className="jde-divider" />
+              <div className="h-px bg-[#E5E7EB] my-7" />
 
               {/* AI 면접 포함 */}
-              <section className="jde-form-section">
-                <div className="jde-section-title">
-                  <span className="jde-section-icon" style={{ background: "linear-gradient(135deg,#34D399,#059669)" }}>⚡</span>
+              <section className="mb-8">
+                <div className="text-[15px] font-extrabold text-[#0A0A0A] mb-4 flex items-center gap-2">
+                  <span className="w-7 h-7 rounded-lg flex items-center justify-center text-[13px] shrink-0" style={{ background: "linear-gradient(135deg,#34D399,#059669)" }}>⚡</span>
                   AI 면접 포함 설정
                 </div>
-                <div className="jde-toggle-row">
-                  <div className="jde-toggle-info">
-                    <div className="jde-toggle-label">AI 면접에 포함하기</div>
-                    <div className="jde-toggle-sub">비활성화하면 이 공고는 면접 질문 생성에서 제외됩니다</div>
+                <div className="flex items-center justify-between py-[14px] px-4 bg-white border border-[#E5E7EB] rounded-lg">
+                  <div className="flex-1">
+                    <div className="text-[13px] font-bold text-[#0A0A0A]">AI 면접에 포함하기</div>
+                    <div className="text-[11px] text-[#6B7280] mt-0.5">비활성화하면 이 공고는 면접 질문 생성에서 제외됩니다</div>
                   </div>
-                  <label className="jde-toggle-switch" aria-label="AI 면접 포함">
+                  <label className="relative w-11 h-6 shrink-0 cursor-pointer" aria-label="AI 면접 포함">
                     <input
                       type="checkbox"
+                      className="opacity-0 w-0 h-0 absolute"
                       checked={interviewActive}
                       onChange={(e) => setInterviewActive(e.target.checked)}
                     />
-                    <div className="jde-toggle-track">
-                      <div
-                        className="jde-toggle-thumb"
-                        style={{ transform: interviewActive ? "translateX(20px)" : "translateX(0)" }}
-                      />
-                    </div>
+                    <div
+                      className="absolute inset-0 rounded-lg transition-[background] duration-[250ms]"
+                      style={{ background: interviewActive ? "#0991B2" : "#E5E7EB" }}
+                    />
+                    <div
+                      className="absolute left-[3px] top-[3px] w-[18px] h-[18px] rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] transition-transform duration-[250ms] pointer-events-none"
+                      style={{ transform: interviewActive ? "translateX(20px)" : "translateX(0)" }}
+                    />
                   </label>
                 </div>
               </section>
 
               {/* ERROR */}
               {error && (
-                <p className="jde-error" role="alert">{error}</p>
+                <p className="text-[13px] text-[#DC2626] mb-3.5 py-[10px] px-3.5 bg-[#FEF2F2] border border-[#FECACA] rounded-lg" role="alert">{error}</p>
               )}
 
               {/* ACTIONS */}
-              <div className="jde-form-actions">
-                <Link to={`/jd/detail/${jd.id}`} className="jde-btn-ghost">취소</Link>
+              <div className="flex items-center justify-end gap-3 mt-7 pt-6 border-t border-[#E5E7EB]">
+                <Link to={`/jd/detail/${jd.id}`} className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#6B7280] bg-transparent border-none cursor-pointer py-[10px] px-4 rounded-lg transition-all hover:text-[#0A0A0A] hover:bg-[#F3F4F6] no-underline">취소</Link>
                 <button
                   type="button"
-                  className="jde-btn-primary"
+                  className="inline-flex items-center gap-2 text-sm font-bold text-white bg-[#0A0A0A] border-none cursor-pointer py-3.5 px-6 rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.1)] transition-opacity hover:enabled:opacity-85 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                   onClick={handleSubmit}
                   disabled={isSubmitting}
                 >
@@ -230,40 +242,40 @@ export function JdEditPage() {
           </div>
 
           {/* ── SIDE ── */}
-          <div className="jde-side">
+          <div className="animate-[jde-fadeUp_.5s_ease_.08s_both] flex flex-col gap-[18px] max-[900px]:grid max-[900px]:grid-cols-2 max-[900px]:gap-3.5 max-sm:grid-cols-1">
 
             {/* 현재 정보 */}
-            <div className="jde-card jde-side-card">
-              <div className="jde-side-title">
+            <div className={`${cardCls} p-[22px_20px]`}>
+              <div className="text-sm font-black text-[#0A0A0A] mb-4 flex items-center gap-2">
                 <span style={{ fontSize: 18 }}>ℹ️</span> 현재 정보
               </div>
-              <div className="jde-info-row">
-                <span className="jde-info-key">회사</span>
-                <span className="jde-info-val">{jd.company}</span>
+              <div className="flex items-center justify-between py-2.5 border-b border-[#F3F4F6] text-[13px]">
+                <span className="text-[#6B7280] font-semibold">회사</span>
+                <span className="text-[#0A0A0A] font-medium text-right">{jd.company}</span>
               </div>
-              <div className="jde-info-row">
-                <span className="jde-info-key">원제목</span>
-                <span className="jde-info-val jde-info-val--small">{jd.title}</span>
+              <div className="flex items-center justify-between py-2.5 border-b border-[#F3F4F6] text-[13px]">
+                <span className="text-[#6B7280] font-semibold">원제목</span>
+                <span className="text-[12px] text-[#0A0A0A] font-medium text-right max-w-[160px] leading-[1.4]">{jd.title}</span>
               </div>
-              <div className="jde-info-row">
-                <span className="jde-info-key">등록일</span>
-                <span className="jde-info-val">{jd.registeredAt}</span>
+              <div className="flex items-center justify-between py-2.5 border-b border-[#F3F4F6] text-[13px]">
+                <span className="text-[#6B7280] font-semibold">등록일</span>
+                <span className="text-[#0A0A0A] font-medium text-right">{jd.registeredAt}</span>
               </div>
-              <div className="jde-info-row">
-                <span className="jde-info-key">면접 횟수</span>
-                <span className="jde-info-val">{jd.interviewCount}회</span>
+              <div className="flex items-center justify-between py-2.5 text-[13px]">
+                <span className="text-[#6B7280] font-semibold">면접 횟수</span>
+                <span className="text-[#0A0A0A] font-medium text-right">{jd.interviewCount}회</span>
               </div>
             </div>
 
             {/* 위험 영역 */}
-            <div className="jde-card jde-danger-zone">
-              <div className="jde-danger-title">⚠️ 위험 영역</div>
-              <p className="jde-danger-desc">
+            <div className="bg-[#F9FAFB] border-[1.5px] border-[rgba(185,28,28,0.15)] rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)] p-[22px_20px]">
+              <div className="text-[13px] font-extrabold text-[#B91C1C] mb-3 flex items-center gap-1.5">⚠️ 위험 영역</div>
+              <p className="text-[12px] text-[#6B7280] leading-[1.6] mb-3.5">
                 채용공고를 삭제하면 연결된 지원 현황 정보도 함께 삭제됩니다. 이 작업은 되돌릴 수 없어요.
               </p>
               <button
                 type="button"
-                className="jde-btn-danger"
+                className="flex items-center justify-center gap-1.5 w-full py-3 rounded-lg border-[1.5px] border-[rgba(185,28,28,0.2)] bg-[rgba(185,28,28,0.06)] text-[#B91C1C] text-[13px] font-bold cursor-pointer transition-all hover:enabled:bg-[rgba(185,28,28,0.12)] hover:enabled:border-[rgba(185,28,28,0.4)] disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={handleDelete}
                 disabled={isSubmitting}
               >
@@ -274,380 +286,29 @@ export function JdEditPage() {
           </div>
         </div>
       </div>
-
-      <Styles />
     </div>
   );
 }
 
 function NavBar() {
   const { user } = useSessionStore();
-  
+
   return (
-    <nav className="jde-nav">
-      <div className="jde-nav-pill">
-        <Link to="/home" className="jde-logo">
+    <nav className="fixed top-0 left-0 right-0 z-[200] py-[14px] px-8 flex justify-center max-sm:py-3 max-sm:px-4">
+      <div className="flex items-center justify-between w-full max-w-[1140px] bg-white/[.92] backdrop-blur-[20px] border border-[#E5E7EB] rounded-lg p-[8px_8px_8px_24px] shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)]">
+        <Link to="/home" className="text-[19px] font-black tracking-[-0.3px] text-[#0A0A0A] no-underline">
           me<span style={{ color: "#0991B2" }}>Fit</span>
         </Link>
-        <ul className="jde-nav-links">
-          <li><Link to="/home" className="jde-nav-link">홈</Link></li>
-          <li><Link to="/jd" className="jde-nav-link jde-nav-link--active">채용공고</Link></li>
-          <li><Link to="/interview" className="jde-nav-link">면접 시작</Link></li>
-          <li><Link to="/resume" className="jde-nav-link">이력서</Link></li>
+        <ul className="flex gap-1 list-none">
+          <li><Link to="/home" className="text-[13px] font-medium text-[#6B7280] no-underline py-2 px-3.5 rounded-lg transition-all hover:text-[#0A0A0A] hover:bg-[rgba(9,145,178,0.06)]">홈</Link></li>
+          <li><Link to="/jd" className="text-[13px] font-bold text-[#0991B2] bg-[#E6F7FA] no-underline py-2 px-3.5 rounded-lg">채용공고</Link></li>
+          <li><Link to="/interview" className="text-[13px] font-medium text-[#6B7280] no-underline py-2 px-3.5 rounded-lg transition-all hover:text-[#0A0A0A] hover:bg-[rgba(9,145,178,0.06)]">면접 시작</Link></li>
+          <li><Link to="/resume" className="text-[13px] font-medium text-[#6B7280] no-underline py-2 px-3.5 rounded-lg transition-all hover:text-[#0A0A0A] hover:bg-[rgba(9,145,178,0.06)]">이력서</Link></li>
         </ul>
-        <div className="jde-nav-avatar">{user?.initial || "U"}</div>
+        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#06B6D4] to-[#0891B2] flex items-center justify-center text-[13px] font-bold text-white shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)] cursor-pointer">
+          {user?.initial || "U"}
+        </div>
       </div>
     </nav>
   );
-}
-
-const JDE_STYLES = `
-      @keyframes jde-fadeUp {
-        from { opacity: 0; transform: translateY(20px); }
-        to   { opacity: 1; transform: translateY(0); }
-      }
-
-      .jde-page {
-        min-height: 100vh;
-        background: #FFFFFF;
-        font-family: 'Inter', sans-serif;
-        color: #0A0A0A;
-      }
-
-      /* NAV */
-      .jde-nav {
-        position: fixed;
-        top: 0; left: 0; right: 0;
-        z-index: 200;
-        padding: 14px 32px;
-        display: flex;
-        justify-content: center;
-      }
-      .jde-nav-pill {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        width: 100%;
-        max-width: 1140px;
-        background: rgba(255,255,255,0.92);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border: 1px solid #E5E7EB;
-        border-radius: 8px;
-        padding: 8px 8px 8px 24px;
-        box-shadow: var(--sc);
-      }
-      .jde-logo {
-        font-family: 'Inter', sans-serif;
-        font-size: 19px;
-        font-weight: 900;
-        letter-spacing: -.3px;
-        color: #0A0A0A;
-        text-decoration: none;
-      }
-      .jde-nav-links { display: flex; gap: 4px; list-style: none; }
-      .jde-nav-link {
-        font-size: 13px; font-weight: 500; color: #6B7280;
-        text-decoration: none; padding: 8px 14px;
-        border-radius: 8px; transition: all .2s;
-      }
-      .jde-nav-link:hover { color: #0A0A0A; background: rgba(9,145,178,0.06); }
-      .jde-nav-link--active { color: #0991B2; background: #E6F7FA; font-weight: 700; }
-      .jde-nav-avatar {
-        width: 36px; height: 36px; border-radius: 50%;
-        background: linear-gradient(135deg,#06B6D4,#0891B2);
-        display: flex; align-items: center; justify-content: center;
-        font-size: 13px; font-weight: 700; color: #fff;
-        box-shadow: var(--sb); cursor: pointer;
-      }
-
-      /* WRAP */
-      .jde-wrap {
-        max-width: 1140px;
-        margin: 0 auto;
-        padding: 100px 32px 60px;
-      }
-
-      /* CARD */
-      .jde-card {
-        background: #F9FAFB;
-        border: 1px solid #E5E7EB;
-        border-radius: 8px;
-        box-shadow: var(--sc);
-      }
-
-      /* LOADING / ERROR */
-      .jde-loading { text-align: center; padding: 80px 0; font-size: 15px; color: #6B7280; }
-      .jde-error-box {
-        text-align: center; padding: 60px 0;
-        display: flex; flex-direction: column; align-items: center;
-        font-size: 15px; color: #DC2626;
-      }
-
-      /* BREADCRUMB */
-      .jde-breadcrumb {
-        display: flex; align-items: center; gap: 8px;
-        font-size: 13px; color: #6B7280; margin-bottom: 24px;
-      }
-      .jde-bc-link { color: #6B7280; text-decoration: none; transition: color .2s; }
-      .jde-bc-link:hover { color: #0991B2; }
-      .jde-bc-sep { opacity: .5; }
-      .jde-bc-current { color: #0A0A0A; font-weight: 600; }
-
-      /* PAGE HEADER */
-      .jde-page-hd {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        margin-bottom: 20px;
-        gap: 16px;
-      }
-      .jde-eyebrow {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 11px;
-        font-weight: 700;
-        letter-spacing: 1.4px;
-        text-transform: uppercase;
-        color: #0991B2;
-        background: #E6F7FA;
-        padding: 4px 12px;
-        border-radius: 8px;
-        margin-bottom: 10px;
-      }
-      .jde-page-title {
-        font-family: 'Inter', sans-serif;
-        font-size: clamp(24px,3vw,36px);
-        font-weight: 900;
-        letter-spacing: -.8px;
-        color: #0A0A0A;
-        line-height: 1.1;
-      }
-      .jde-page-sub { font-size: 14px; color: #6B7280; margin-top: 6px; }
-
-      /* COMPANY CHIP */
-      .jde-edit-header {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        margin-bottom: 28px;
-      }
-      .jde-co-chip {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 10px 16px;
-        background: #F9FAFB;
-        border: 1px solid #E5E7EB;
-        border-radius: 8px;
-        box-shadow: var(--sw);
-      }
-      .jde-co-logo {
-        width: 32px; height: 32px; border-radius: 8px;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 14px; font-weight: 900; color: #fff;
-      }
-      .jde-co-name { font-size: 13px; font-weight: 700; color: #0A0A0A; }
-      .jde-co-note { font-size: 12px; color: #9CA3AF; }
-
-      /* LAYOUT */
-      .jde-layout {
-        display: grid;
-        grid-template-columns: 1fr 340px;
-        gap: 24px;
-        align-items: start;
-      }
-      .jde-main { animation: jde-fadeUp .5s ease both; }
-      .jde-side { animation: jde-fadeUp .5s ease .08s both; display: flex; flex-direction: column; gap: 18px; }
-
-      /* FORM */
-      .jde-form-card { padding: 36px 32px; }
-      .jde-form-section { margin-bottom: 32px; }
-      .jde-form-section:last-child { margin-bottom: 0; }
-      .jde-section-title {
-        font-family: 'Inter', sans-serif;
-        font-size: 15px; font-weight: 800; color: #0A0A0A;
-        margin-bottom: 4px;
-        display: flex; align-items: center; gap: 8px;
-      }
-      .jde-section-icon {
-        width: 28px; height: 28px; border-radius: 8px;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 13px; flex-shrink: 0;
-      }
-      .jde-section-sub { font-size: 13px; color: #6B7280; margin-bottom: 18px; margin-left: 36px; }
-      .jde-divider { height: 1px; background: #E5E7EB; margin: 28px 0; }
-
-      .jde-field { margin-bottom: 20px; }
-      .jde-field:last-child { margin-bottom: 0; }
-      .jde-field-label {
-        display: flex; align-items: center; justify-content: space-between;
-        font-size: 13px; font-weight: 700; color: #0A0A0A; margin-bottom: 8px;
-      }
-      .jde-field-hint { font-size: 11px; color: #6B7280; font-weight: 400; }
-      .jde-field-input {
-        width: 100%;
-        background: #FFFFFF;
-        border: 1px solid #E5E7EB;
-        border-radius: 8px;
-        padding: 13px 16px;
-        font-family: 'Inter', sans-serif;
-        font-size: 14px; font-weight: 500; color: #0A0A0A;
-        outline: none; transition: border-color .2s;
-        appearance: none; box-sizing: border-box;
-      }
-      .jde-field-input:focus { border-color: #0991B2; box-shadow: 0 0 0 3px rgba(9,145,178,0.1); }
-      .jde-field-input::placeholder { color: #D1D5DB; }
-      .jde-field-input--readonly {
-        background: rgba(9,145,178,0.04);
-        color: #9CA3AF;
-        cursor: not-allowed;
-        border-color: #F3F4F6;
-      }
-      .jde-field-input--readonly:focus { border-color: #F3F4F6; box-shadow: none; }
-      .jde-readonly-note {
-        font-size: 12px; color: #9CA3AF;
-        margin-top: 6px;
-        display: flex; align-items: center; gap: 4px;
-      }
-
-      /* STATUS SELECTOR */
-      .jde-status-selector { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
-      .jde-ss-opt {
-        padding: 14px 12px;
-        border-radius: 8px;
-        border: 1px solid #E5E7EB;
-        background: #FFFFFF;
-        cursor: pointer; text-align: center;
-        transition: all .25s; box-shadow: var(--sw);
-      }
-      .jde-ss-opt:hover { transform: translateY(-2px); box-shadow: var(--sc); border-color: #0991B2; }
-      .jde-ss-opt--sel { border-color: #0991B2; background: #E6F7FA; box-shadow: var(--sc); }
-      .jde-ss-icon { font-size: 22px; margin-bottom: 6px; display: block; }
-      .jde-ss-label { font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 800; color: #0A0A0A; }
-      .jde-ss-label--sel { color: #0991B2; }
-      .jde-ss-desc { font-size: 10px; color: #9CA3AF; margin-top: 2px; }
-
-      /* TOGGLE */
-      .jde-toggle-row {
-        display: flex; align-items: center; justify-content: space-between;
-        padding: 14px 16px;
-        background: #FFFFFF;
-        border: 1px solid #E5E7EB;
-        border-radius: 8px;
-      }
-      .jde-toggle-info { flex: 1; }
-      .jde-toggle-label { font-size: 13px; font-weight: 700; color: #0A0A0A; }
-      .jde-toggle-sub { font-size: 11px; color: #6B7280; margin-top: 2px; }
-      .jde-toggle-switch {
-        position: relative; width: 44px; height: 24px;
-        flex-shrink: 0; cursor: pointer;
-      }
-      .jde-toggle-switch input { opacity: 0; width: 0; height: 0; position: absolute; }
-      .jde-toggle-track {
-        position: absolute; inset: 0;
-        border-radius: 8px; background: #E5E7EB;
-        transition: background .25s;
-      }
-      .jde-toggle-switch input:checked ~ .jde-toggle-track { background: #0991B2; }
-      .jde-toggle-thumb {
-        position: absolute; left: 3px; top: 3px;
-        width: 18px; height: 18px; border-radius: 50%;
-        background: #fff;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-        transition: transform .25s;
-        pointer-events: none;
-      }
-
-      /* ERROR */
-      .jde-error {
-        font-size: 13px; color: #DC2626;
-        margin-bottom: 14px; padding: 10px 14px;
-        background: #FEF2F2; border: 1px solid #FECACA; border-radius: 8px;
-      }
-
-      /* BUTTONS */
-      .jde-form-actions {
-        display: flex; align-items: center; justify-content: flex-end;
-        gap: 12px; margin-top: 28px; padding-top: 24px;
-        border-top: 1px solid #E5E7EB;
-      }
-      .jde-btn-primary {
-        display: inline-flex; align-items: center; gap: 8px;
-        font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 700;
-        color: #fff; background: #0A0A0A; border: none;
-        cursor: pointer; padding: 14px 24px; border-radius: 8px;
-        box-shadow: var(--sb); transition: opacity .2s;
-        text-decoration: none; white-space: nowrap;
-      }
-      .jde-btn-primary:hover:not(:disabled) { opacity: .85; }
-      .jde-btn-primary:disabled { opacity: .5; cursor: not-allowed; }
-      .jde-btn-ghost {
-        display: inline-flex; align-items: center; gap: 6px;
-        font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
-        color: #6B7280; background: none; border: none; cursor: pointer;
-        padding: 10px 16px; border-radius: 8px;
-        transition: all .2s; text-decoration: none;
-      }
-      .jde-btn-ghost:hover { color: #0A0A0A; background: #F3F4F6; }
-
-      /* SIDE CARD */
-      .jde-side-card { padding: 22px 20px; }
-      .jde-side-title {
-        font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 900;
-        color: #0A0A0A; margin-bottom: 16px;
-        display: flex; align-items: center; gap: 8px;
-      }
-      .jde-info-row {
-        display: flex; align-items: center; justify-content: space-between;
-        padding: 10px 0; border-bottom: 1px solid #F3F4F6; font-size: 13px;
-      }
-      .jde-info-row:last-child { border-bottom: none; padding-bottom: 0; }
-      .jde-info-key { color: #6B7280; font-weight: 600; }
-      .jde-info-val { color: #0A0A0A; font-weight: 500; text-align: right; }
-      .jde-info-val--small { font-size: 12px; max-width: 160px; line-height: 1.4; }
-
-      /* DANGER ZONE */
-      .jde-danger-zone {
-        padding: 22px 20px;
-        border: 1.5px solid rgba(185,28,28,0.15) !important;
-      }
-      .jde-danger-title {
-        font-size: 13px; font-weight: 800; color: #B91C1C;
-        margin-bottom: 12px;
-        display: flex; align-items: center; gap: 6px;
-      }
-      .jde-danger-desc { font-size: 12px; color: #6B7280; line-height: 1.6; margin-bottom: 14px; }
-      .jde-btn-danger {
-        display: flex; align-items: center; justify-content: center; gap: 6px;
-        width: 100%; padding: 12px; border-radius: 8px;
-        border: 1.5px solid rgba(185,28,28,0.2);
-        background: rgba(185,28,28,0.06);
-        color: #B91C1C; font-size: 13px; font-weight: 700;
-        cursor: pointer; transition: all .2s;
-        font-family: 'Inter', sans-serif;
-      }
-      .jde-btn-danger:hover:not(:disabled) { background: rgba(185,28,28,0.12); border-color: rgba(185,28,28,0.4); }
-      .jde-btn-danger:disabled { opacity: .5; cursor: not-allowed; }
-
-      /* RESPONSIVE */
-      @media (max-width: 900px) {
-        .jde-layout { grid-template-columns: 1fr; }
-        .jde-side { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-      }
-      @media (max-width: 640px) {
-        .jde-wrap { padding: 80px 16px 40px; }
-        .jde-nav { padding: 12px 16px; }
-        .jde-side { grid-template-columns: 1fr; }
-        .jde-form-card { padding: 24px 16px; }
-        .jde-status-selector { grid-template-columns: 1fr; }
-      }
-      @media (prefers-reduced-motion: reduce) {
-        *, *::before, *::after { animation: none !important; transition: none !important; }
-      }
-    `;
-
-function Styles() {
-  return <style>{JDE_STYLES}</style>;
 }

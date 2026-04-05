@@ -1,56 +1,3 @@
-const TESTIMONIALS_STYLES = `
-        .testimonials-section {
-          padding: 64px 20px;
-          display: flex; justify-content: center;
-          background: #F9FAFB;
-        }
-        .testimonials-inner { max-width: 480px; width: 100%; }
-        .testimonials-header { text-align: center; margin-bottom: 32px; }
-        .testimonials-badge {
-          display: inline-block; font-size: 12px; font-weight: 700;
-          color: #0991B2; background: #E6F7FA;
-          border-radius: 4px; padding: 5px 14px; margin-bottom: 14px;
-        }
-        .testimonials-title {
-          font-family: 'Inter', sans-serif; font-size: clamp(24px, 7vw, 36px);
-          font-weight: 800; color: #0A0A0A;
-        }
-        .testimonials-grid { display: flex; flex-direction: column; gap: 12px; }
-        .testimonial-card {
-          background: #FFFFFF; border-radius: 8px; padding: 24px 20px;
-          border: 1px solid #E5E7EB;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-        }
-        .testimonial-quote {
-          font-size: 14px; color: #374151; line-height: 1.7; margin-bottom: 16px;
-        }
-        .testimonial-author {
-          display: flex; align-items: center; gap: 10px;
-        }
-        .testimonial-avatar {
-          width: 36px; height: 36px; border-radius: 50%;
-          background: #F3F4F6; display: flex; align-items: center;
-          justify-content: center; font-size: 18px; flex-shrink: 0;
-        }
-        .testimonial-name {
-          font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 700; color: #0A0A0A;
-        }
-        .testimonial-role { font-size: 12px; color: #6B7280; }
-
-        @media (min-width: 768px) {
-          .testimonials-section { padding: 100px 40px; }
-          .testimonials-inner { max-width: 1080px; }
-          .testimonials-header { margin-bottom: 56px; }
-          .testimonials-badge { font-size: 13px; padding: 6px 18px; margin-bottom: 18px; }
-          .testimonials-title { font-size: clamp(32px, 4vw, 52px); }
-          .testimonials-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
-          .testimonial-card { border-radius: 8px; padding: 32px 28px; }
-          .testimonial-quote { font-size: 15px; }
-          .testimonial-name { font-size: 14px; }
-          .testimonial-role { font-size: 13px; }
-        }
-`;
-
 const TESTIMONIALS = [
   {
     name: "김서연",
@@ -80,29 +27,36 @@ const TESTIMONIALS = [
 
 export function TestimonialsSection() {
   return (
-    <section id="reviews" className="testimonials-section">
-      <div className="testimonials-inner">
-        <div className="testimonials-header">
-          <div className="testimonials-badge">면접 후기</div>
-          <h2 className="testimonials-title">실제 사용자들의 이야기.</h2>
+    <section id="reviews" className="py-16 px-5 flex justify-center bg-[#F9FAFB] md:py-25 md:px-10">
+      <div className="max-w-[480px] w-full md:max-w-[1080px]">
+        <div className="text-center mb-8 md:mb-14">
+          <div className="inline-block text-[12px] font-bold text-[#0991B2] bg-[#E6F7FA] rounded px-[14px] py-[5px] mb-[14px] md:text-[13px] md:px-[18px] md:py-[6px] md:mb-[18px]">
+            면접 후기
+          </div>
+          <h2 className="font-inter text-[clamp(24px,7vw,36px)] font-extrabold text-[#0A0A0A] md:text-[clamp(32px,4vw,52px)]">
+            실제 사용자들의 이야기.
+          </h2>
         </div>
-        <div className="testimonials-grid">
+        <div className="flex flex-col gap-3 md:grid md:grid-cols-2 md:gap-4">
           {TESTIMONIALS.map((t) => (
-            <div key={t.name} className="testimonial-card">
-              <p className="testimonial-quote">"{t.quote}"</p>
-              <div className="testimonial-author">
-                <span className="testimonial-avatar">{t.avatar}</span>
+            <div
+              key={t.name}
+              className="bg-white rounded-lg px-5 py-6 border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.06)] md:rounded-lg md:px-7 md:py-8"
+            >
+              <p className="text-[14px] text-[#374151] leading-[1.7] mb-4 md:text-[15px]">"{t.quote}"</p>
+              <div className="flex items-center gap-[10px]">
+                <span className="w-9 h-9 rounded-full bg-[#F3F4F6] flex items-center justify-center text-[18px] shrink-0">
+                  {t.avatar}
+                </span>
                 <div>
-                  <div className="testimonial-name">{t.name}</div>
-                  <div className="testimonial-role">{t.role}</div>
+                  <div className="font-inter text-[13px] font-bold text-[#0A0A0A] md:text-[14px]">{t.name}</div>
+                  <div className="text-[12px] text-[#6B7280] md:text-[13px]">{t.role}</div>
                 </div>
               </div>
             </div>
           ))}
         </div>
       </div>
-
-      <style>{TESTIMONIALS_STYLES}</style>
     </section>
   );
 }
