@@ -13,9 +13,7 @@ x-celery-base: &celery-base
   entrypoint: []
 
 x-postgres-base: &postgres-base
-  build:
-    context: .
-    dockerfile: ./environments/development/Dockerfile.postgres
+  image: teammefit/mefit-postgres-dev:latest
   healthcheck:
     interval: 10s
     timeout: 5s
@@ -60,6 +58,9 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${DATABASE_NAME}"]
+    networks:
+      - default
+      - mefit-local
 
   test_postgres:
     <<: *postgres-base
