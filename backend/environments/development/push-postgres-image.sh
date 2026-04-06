@@ -16,21 +16,20 @@ TAG="${1:-latest}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 echo "==> Building ${IMAGE}:${TAG} ..."
-docker build \
+docker buildx build \
+  --platform linux/amd64,linux/arm64 \
   -t "${IMAGE}:${TAG}" \
   -f "${SCRIPT_DIR}/Dockerfile.postgres" \
+  --push \
   "${SCRIPT_DIR}"
 
 if [ "$TAG" != "latest" ]; then
-  docker tag "${IMAGE}:${TAG}" "${IMAGE}:latest"
-fi
-
-echo "==> Pushing ${IMAGE}:${TAG} ..."
-docker push "${IMAGE}:${TAG}"
-
-if [ "$TAG" != "latest" ]; then
-  echo "==> Pushing ${IMAGE}:latest ..."
-  docker push "${IMAGE}:latest"
+  docker buildx build \
+    --platform linux/amd64,linux/arm64 \
+    -t "${IMAGE}:latest" \
+    -f "${SCRIPT_DIR}/Dockerfile.postgres" \
+    --push \
+    "${SCRIPT_DIR}"
 fi
 
 echo "==> Done! Image pushed: ${IMAGE}:${TAG}"
