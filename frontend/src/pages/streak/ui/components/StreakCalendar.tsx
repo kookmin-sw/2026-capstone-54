@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 const MONTH_KO = ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"];
 
@@ -84,8 +84,10 @@ export function StreakCalendar({
     }
   };
 
-  const doneSet = new Set(calendarDoneMap[`${viewY}-${viewM}`] ?? []);
-  const calCells = buildCalendarCells(viewY, viewM, doneSet, todayYear, todayMonth, todayDay);
+  const calCells = useMemo(() => {
+    const doneSet = new Set(calendarDoneMap[`${viewY}-${viewM}`] ?? []);
+    return buildCalendarCells(viewY, viewM, doneSet, todayYear, todayMonth, todayDay);
+  }, [viewY, viewM, calendarDoneMap, todayYear, todayMonth, todayDay]);
 
   return (
     <div

@@ -18,7 +18,7 @@ interface MilestoneMetadata {
   tagText: string;
 }
 
-function getMilestoneMetadata(status: string, daysRemaining?: number): MilestoneMetadata {
+function getMilestoneMetadata(status: Milestone["status"], daysRemaining?: number): MilestoneMetadata {
   if (status === "achieved") {
     return {
       itemCls:
@@ -39,7 +39,7 @@ function getMilestoneMetadata(status: string, daysRemaining?: number): Milestone
         "w-[34px] h-[34px] rounded-[10px] flex items-center justify-center text-sm shrink-0 bg-[rgba(9,145,178,.12)] border-[1.5px] border-dashed border-[rgba(9,145,178,.4)]",
       tagCls:
         "text-[11px] font-bold py-[3px] px-[9px] rounded-full shrink-0 text-[#0991B2] bg-[#E6F7FA]",
-      tagText: `D-${daysRemaining}`,
+      tagText: daysRemaining !== undefined ? `D-${daysRemaining}` : "",
     };
   }
 
@@ -50,7 +50,7 @@ function getMilestoneMetadata(status: string, daysRemaining?: number): Milestone
       "w-[34px] h-[34px] rounded-[10px] flex items-center justify-center text-sm shrink-0 bg-[#E5E7EB]",
     tagCls:
       "text-[11px] font-bold py-[3px] px-[9px] rounded-full shrink-0 text-[#6B7280] bg-[#F3F4F6]",
-    tagText: `${daysRemaining}일 남음`,
+    tagText: daysRemaining !== undefined ? `${daysRemaining}일 남음` : "잠금됨",
   };
 }
 
