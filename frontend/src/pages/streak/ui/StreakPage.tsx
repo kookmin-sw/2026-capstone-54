@@ -112,7 +112,7 @@ export function StreakPage() {
         <Link to="/interview/setup" className="text-[13px] font-bold text-white bg-[#0A0A0A] border-none rounded-lg py-[9px] px-[18px] cursor-pointer no-underline whitespace-nowrap inline-flex items-center gap-[5px] transition-[opacity,transform] hover:opacity-85 hover:-translate-y-px">면접 시작 →</Link>
       </nav>
 
-      <div className="bg-white min-h-[calc(100vh-60px)] p-8 max-w-[1080px] mx-auto max-sm:p-[20px_16px]">
+      <div className="bg-white min-h-[calc(100vh-60px)] p-8 max-w-container mx-auto max-sm:p-[20px_16px]">
         {loading && !data ? (
           <div className="flex flex-col gap-4">
             <div className="skeleton-gray rounded-lg" style={{ height: 180 }} />

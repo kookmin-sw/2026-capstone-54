@@ -94,7 +94,7 @@ export function InterviewPreCheckPage() {
         <a className="inline-flex items-center gap-1.5 text-[13px] font-bold text-white bg-[#0A0A0A] border-none rounded-lg py-[9px] px-[18px] cursor-pointer no-underline whitespace-nowrap transition-[opacity,transform] hover:opacity-85 hover:-translate-y-px" href="/interview/setup">면접 설정</a>
       </nav>
 
-      <div className="max-w-[820px] mx-auto px-8 pt-9 pb-[60px]">
+      <div className="max-w-container-md mx-auto px-8 pt-9 pb-[60px]">
 
         {/* ── BREADCRUMB ── */}
         <div className="flex items-center gap-1.5 text-[12px] text-[#6B7280] mb-6 animate-[ipc-fadeUp_.3s_ease_both]">
@@ -127,7 +127,7 @@ export function InterviewPreCheckPage() {
         <div className="text-center mb-7 animate-[ipc-fadeUp_.4s_.1s_ease_both]">
           <div className="text-[11px] font-bold tracking-[.1em] uppercase text-[#0991B2] mb-2">사전 환경 점검</div>
           <h1 className="text-[clamp(26px,3.5vw,38px)] font-black tracking-[-0.7px] leading-[1.15] mb-2.5">면접 전 준비를 확인할게요</h1>
-          <p className="text-sm text-[#6B7280] leading-relaxed max-w-[440px] mx-auto">카메라, 마이크, 네트워크를 자동으로 점검해요. 좋은 환경이 좋은 결과로 이어집니다.</p>
+          <p className="text-sm text-[#6B7280] leading-relaxed max-w-text mx-auto">카메라, 마이크, 네트워크를 자동으로 점검해요. 좋은 환경이 좋은 결과로 이어집니다.</p>
         </div>
 
         {/* ── PERMISSION BANNER ── */}

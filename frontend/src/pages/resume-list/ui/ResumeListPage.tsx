@@ -152,7 +152,7 @@ export function ResumeListPage() {
 
       {/* ── NAV ── */}
       <nav className="sticky top-0 z-[100] bg-[rgba(255,255,255,.92)] backdrop-blur-[24px] border-b border-[#E5E7EB]">
-        <div className="max-w-[1200px] mx-auto px-8 h-[60px] flex items-center justify-between gap-4">
+        <div className="max-w-container-xl mx-auto px-8 h-[60px] flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <button className="w-9 h-9 rounded-lg bg-[#F9FAFB] border border-[#E5E7EB] cursor-pointer flex items-center justify-center shadow-[var(--sw)] text-[#0A0A0A] text-[18px] transition-[background] duration-[150ms] hover:bg-[#F3F4F6]" onClick={() => navigate("/home")} aria-label="홈으로">←</button>
             <a href="/home" className="font-inter text-[20px] font-black text-[#0A0A0A] no-underline">me<span style={{ color: "#0991B2" }}>Fit</span></a>
@@ -163,7 +163,7 @@ export function ResumeListPage() {
       </nav>
 
       {/* ── MAIN ── */}
-      <main className="max-w-[1200px] mx-auto px-5 md:px-10">
+      <main className="max-w-container-xl mx-auto px-5 md:px-10">
 
         {/* Page header */}
         <div className="pt-7 pb-7 flex items-end justify-between animate-[rl-fadeUp_.5s_ease_both] md:pt-12 md:pb-10">

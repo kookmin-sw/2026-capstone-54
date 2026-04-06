@@ -94,7 +94,7 @@ export function ResumeUploadPage() {
 
       {/* ── NAV ── */}
       <nav className="sticky top-0 z-[100] bg-[rgba(255,255,255,.92)] backdrop-blur-[24px] border-b border-[#E5E7EB]">
-        <div className="max-w-[1200px] mx-auto px-6 h-16 flex items-center justify-between gap-3">
+        <div className="max-w-container-xl mx-auto px-6 h-16 flex items-center justify-between gap-3">
           <div className="flex items-center gap-[10px]">
             <button
               className="w-9 h-9 rounded-[14px] bg-[#F9FAFB] border border-[#E5E7EB] cursor-pointer flex items-center justify-center shadow-[var(--sw)] text-[#0A0A0A] text-lg transition-colors hover:bg-[#F3F4F6]"
@@ -112,7 +112,7 @@ export function ResumeUploadPage() {
 
       {/* ── STEP BAR ── */}
       <div className="bg-[rgba(255,255,255,.5)] backdrop-blur-[12px] border-b border-[#E5E7EB]">
-        <div className="max-w-[1200px] mx-auto px-6 py-[14px] md:py-4 md:px-8 flex items-center justify-center gap-2 md:gap-3">
+        <div className="max-w-container-xl mx-auto px-6 py-[14px] md:py-4 md:px-8 flex items-center justify-center gap-2 md:gap-3">
           <div className="flex items-center gap-1.5">
             <div className="w-[26px] h-[26px] rounded-full flex items-center justify-center text-xs font-extrabold flex-shrink-0 bg-[#059669] text-white">✓</div>
             <span className="text-xs md:text-[13px] font-bold text-[#9CA3AF]">방식 선택</span>
@@ -131,7 +131,7 @@ export function ResumeUploadPage() {
       </div>
 
       {/* ── MAIN ── */}
-      <main className="max-w-[1200px] mx-auto px-6 pt-10 md:pt-12 md:px-8">
+      <main className="max-w-container-xl mx-auto px-6 pt-10 md:pt-12 md:px-8">
 
         {/* Page heading */}
         <div className="pb-7 md:pb-9 md:text-center animate-[ru-fadeUp_.45s_ease_.05s_both]">
@@ -148,7 +148,7 @@ export function ResumeUploadPage() {
 
         {/* Method toggle */}
         <div className="flex justify-center mb-8 animate-[ru-fadeUp_.45s_ease_.08s_both]">
-          <div className="flex bg-[#F9FAFB] border border-[#E5E7EB] rounded-2xl p-1 shadow-[var(--sw)] w-full max-w-[480px]">
+          <div className="flex bg-[#F9FAFB] border border-[#E5E7EB] rounded-2xl p-1 shadow-[var(--sw)] w-full max-w-content">
             <button className="flex-1 py-[11px] md:py-[13px] border-none rounded-[13px] text-[13px] md:text-sm font-bold cursor-pointer transition-all bg-[#0A0A0A] text-white shadow-[0_2px_8px_rgba(0,0,0,.18)]">
               📎 파일 업로드
             </button>
@@ -348,7 +348,7 @@ export function ResumeUploadPage() {
           onClick={closeSuccess}
         >
           <div
-            className="bg-white rounded-[28px] p-10 px-8 text-center max-w-[440px] w-full shadow-[0_24px_60px_rgba(0,0,0,.15)] animate-[ru-slideUp_.4s_cubic-bezier(.4,0,.2,1)_both]"
+            className="bg-white rounded-[28px] p-10 px-8 text-center max-w-text w-full shadow-[0_24px_60px_rgba(0,0,0,.15)] animate-[ru-slideUp_.4s_cubic-bezier(.4,0,.2,1)_both]"
             onClick={(e) => e.stopPropagation()}
           >
             <span className="text-[64px] block mb-4">🎉</span>

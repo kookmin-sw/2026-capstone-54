@@ -11,6 +11,22 @@ export default {
       spacing: {
         '25': '100px',
       },
+      // 커스텀 width (skeleton 로딩용)
+      width: {
+        '35p': '35%',  // Tailwind 기본에 없는 35%만 추가
+      },
+      // 커스텀 max-width (자주 사용되는 컨테이너 너비)
+      maxWidth: {
+        'container-xl': '1200px',  // Resume 관련 페이지
+        'container-lg': '1140px',  // JD 관련 페이지
+        'container': '1080px',     // 메인 컨테이너 (landing, onboarding 등)
+        'container-md': '820px',   // Interview precheck
+        'container-sm': '720px',   // JD analyzing
+        'form': '520px',           // 폼 카드
+        'content': '480px',        // 작은 컨테이너
+        'text': '440px',           // 텍스트 블록
+        'button-group': '320px',   // 버튼 그룹
+      },
       // 커스텀 색상 (CSS 변수 사용)
       colors: {
         'mefit-accent': 'var(--accent)',

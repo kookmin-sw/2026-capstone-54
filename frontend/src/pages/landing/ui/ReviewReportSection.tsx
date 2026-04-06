@@ -20,7 +20,7 @@ const REPORTS = [
 export function ReviewReportSection() {
   return (
     <section className="py-16 px-5 flex justify-center bg-[#F9FAFB] md:py-25 md:px-10">
-      <div className="max-w-[480px] w-full md:max-w-[1080px]">
+      <div className="max-w-content w-full md:max-w-container">
         <div className="text-center mb-8 md:mb-14">
           <div className="inline-block text-[12px] font-bold text-[#0991B2] bg-[#E6F7FA] rounded px-[14px] py-[5px] mb-[14px] md:text-[13px] md:px-[18px] md:py-[6px] md:mb-[18px]">
             AI 리뷰 리포트

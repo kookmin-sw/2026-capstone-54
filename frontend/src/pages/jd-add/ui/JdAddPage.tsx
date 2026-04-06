@@ -52,7 +52,7 @@ export function JdAddPage() {
     <div className="min-h-screen bg-white">
       {/* NAV */}
       <nav className="fixed top-0 left-0 right-0 z-[200] py-[14px] px-8 flex justify-center max-sm:py-3 max-sm:px-4">
-        <div className="flex items-center justify-between w-full max-w-[1140px] bg-white/[.92] backdrop-blur-[20px] border border-[#E5E7EB] rounded-lg p-[8px_8px_8px_24px] shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)]">
+        <div className="flex items-center justify-between w-full max-w-container-lg bg-white/[.92] backdrop-blur-[20px] border border-[#E5E7EB] rounded-lg p-[8px_8px_8px_24px] shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)]">
           <Link to="/home" className="text-[19px] font-black tracking-[-0.3px] text-[#0A0A0A] no-underline">
             me<span style={{ color: "#0991B2" }}>Fit</span>
           </Link>
@@ -68,7 +68,7 @@ export function JdAddPage() {
         </div>
       </nav>
 
-      <div className="relative max-w-[1140px] mx-auto px-8 pt-[100px] pb-[60px] max-sm:px-4 max-sm:pt-20">
+      <div className="relative max-w-container-lg mx-auto px-8 pt-[100px] pb-[60px] max-sm:px-4 max-sm:pt-20">
         {/* PAGE HEADER */}
         <div className="flex items-start justify-between mb-8 gap-4">
           <div>

@@ -40,7 +40,7 @@ export function LoginPage() {
   return (
     <div className="min-h-screen bg-white flex flex-col items-center">
       {/* Header */}
-      <header className="w-full max-w-[1080px] flex justify-between items-center px-5 pt-5 md:px-10 md:pt-7">
+      <header className="w-full max-w-container flex justify-between items-center px-5 pt-5 md:px-10 md:pt-7">
         <Link to="/" className="font-inter text-[22px] font-black text-[#0A0A0A] no-underline">
           me<span style={{ color: "#0991B2" }}>Fit</span>
         </Link>
@@ -52,7 +52,7 @@ export function LoginPage() {
         </Link>
       </header>
 
-      <main className="w-full max-w-[480px] px-5 flex flex-col items-center md:max-w-[1080px] md:px-10">
+      <main className="w-full max-w-content px-5 flex flex-col items-center md:max-w-container md:px-10">
         {/* Hero */}
         <section className="text-center pt-12 pb-8 md:pt-16 md:pb-10">
           <div className="inline-block text-[12px] font-bold text-[#0991B2] bg-[#E6F7FA] rounded px-[14px] py-[5px] mb-[14px] md:text-[13px] md:px-[18px] md:py-[6px] md:mb-[18px]">
@@ -68,7 +68,7 @@ export function LoginPage() {
 
         {/* Form Card */}
         <section className="w-full flex justify-center">
-          <div className="w-full bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg px-7 py-10 shadow-[var(--sc)] md:max-w-[520px] md:px-9">
+          <div className="w-full bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg px-7 py-10 shadow-[var(--sc)] md:max-w-form md:px-9">
             <form onSubmit={handleSubmit} noValidate>
               <div className="mb-4 md:mb-[18px]">
                 <label className="block text-[13px] font-semibold text-[#374151] mb-1.5" htmlFor="li-email">이메일</label>

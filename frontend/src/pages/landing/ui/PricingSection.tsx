@@ -19,7 +19,7 @@ const PRO_ITEMS = [
 export function PricingSection() {
   return (
     <section id="pricing" className="py-16 px-5 flex justify-center bg-white md:py-25 md:px-10">
-      <div className="max-w-[480px] w-full md:max-w-[1080px]">
+      <div className="max-w-content w-full md:max-w-container">
         <div className="text-center mb-10 md:mb-16">
           <div className="inline-block text-[12px] font-bold text-[#0991B2] bg-[#E6F7FA] rounded px-[14px] py-[5px] mb-[14px] md:text-[14px] md:px-5 md:py-2 md:mb-5">
             요금제

@@ -120,7 +120,7 @@ export function SubscriptionPage() {
             <h1 className="text-[clamp(32px,5vw,52px)] font-black tracking-[-2px] leading-[1.05] text-[#0A0A0A] mb-[14px]">
               나에게 맞는 플랜을<br />선택하세요
             </h1>
-            <p className="text-base text-[#6B7280] leading-[1.65] max-w-[480px] mx-auto mb-8">
+            <p className="text-base text-[#6B7280] leading-[1.65] max-w-content mx-auto mb-8">
               숨겨진 비용 없이, 언제든 취소 가능합니다.<br />
               스트릭 보상으로 Pro 기능을 무료로 체험해보세요.
             </p>
@@ -179,7 +179,7 @@ export function SubscriptionPage() {
 
           {loading ? (
             <div className="flex flex-col gap-4 mb-12">
-              <div className="grid grid-cols-2 gap-5 max-w-[820px] mx-auto w-full">
+              <div className="grid grid-cols-2 gap-5 max-w-container-md mx-auto w-full">
                 <div className="h-[500px] rounded-lg skeleton-shimmer" />
                 <div className="h-[500px] rounded-lg skeleton-shimmer" />
               </div>
@@ -187,7 +187,7 @@ export function SubscriptionPage() {
           ) : (
             <>
               {/* PLAN CARDS */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 max-w-[820px] mx-auto mb-14 animate-[subFadeUp_.45s_ease_.12s_both]">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 max-w-container-md mx-auto mb-14 animate-[subFadeUp_.45s_ease_.12s_both]">
 
                 {/* FREE CARD */}
                 <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-2xl p-7 sm:p-9 relative overflow-hidden transition-all duration-300 shadow-[var(--sc)] hover:shadow-[var(--sc-hover)] hover:-translate-y-1">
@@ -305,7 +305,7 @@ export function SubscriptionPage() {
               </div>
 
               {/* FEATURE COMPARISON */}
-              <div className="max-w-[820px] mx-auto mb-[52px]" style={{ transitionDelay: "60ms" }}>
+              <div className="max-w-container-md mx-auto mb-[52px]" style={{ transitionDelay: "60ms" }}>
                 <h2 className="text-[24px] font-black tracking-[-0.4px] mb-[18px] text-center text-[#0A0A0A]">상세 기능 비교</h2>
                 <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl overflow-hidden shadow-[var(--sc)]">
                   <div className="grid grid-cols-[1fr_90px_90px] sm:grid-cols-[1fr_130px_130px] bg-white px-[14px] sm:px-6 py-[14px] border-b border-[#E5E7EB]">
@@ -344,7 +344,7 @@ export function SubscriptionPage() {
               </div>
 
               {/* PAYMENT METHODS */}
-              <div className="max-w-[820px] mx-auto mb-12 text-center" style={{ transitionDelay: "100ms" }}>
+              <div className="max-w-container-md mx-auto mb-12 text-center" style={{ transitionDelay: "100ms" }}>
                 <h2 className="text-xl font-black tracking-[-0.3px] mb-1.5 text-[#0A0A0A]">결제 수단</h2>
                 <p className="text-[13px] text-[#6B7280] mb-5">익숙한 방법으로 간편하게 결제하세요</p>
                 <div className="flex gap-2 sm:gap-3 justify-center flex-wrap">

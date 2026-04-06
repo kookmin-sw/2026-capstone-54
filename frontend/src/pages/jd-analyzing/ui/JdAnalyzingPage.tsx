@@ -42,7 +42,7 @@ export function JdAnalyzingPage() {
     <div className="min-h-screen bg-white text-[#0A0A0A]">
       {/* NAV */}
       <nav className="fixed top-0 left-0 right-0 z-[200] px-8 py-[14px] flex justify-center max-[640px]:px-4 max-[640px]:py-3">
-        <div className="flex items-center justify-between w-full max-w-[1140px] bg-white/[0.92] backdrop-blur-xl border border-[#E5E7EB] rounded-lg py-2 pl-6 pr-2 shadow-[var(--sc)]">
+        <div className="flex items-center justify-between w-full max-w-container-lg bg-white/[0.92] backdrop-blur-xl border border-[#E5E7EB] rounded-lg py-2 pl-6 pr-2 shadow-[var(--sc)]">
           <Link to="/home" className="text-[19px] font-black tracking-[-0.3px] text-[#0A0A0A] no-underline">
             me<span className="text-[#0991B2]">Fit</span>
           </Link>
@@ -58,7 +58,7 @@ export function JdAnalyzingPage() {
         </div>
       </nav>
 
-      <div className="max-w-[720px] mx-auto pt-[100px] px-8 pb-[60px] max-[640px]:pt-20 max-[640px]:px-4 max-[640px]:pb-10">
+      <div className="max-w-container-sm mx-auto pt-[100px] px-8 pb-[60px] max-[640px]:pt-20 max-[640px]:px-4 max-[640px]:pb-10">
 
         {/* BREADCRUMB */}
         <div className="flex items-center gap-2 text-[13px] text-[#6B7280] mb-6">
@@ -79,7 +79,7 @@ export function JdAnalyzingPage() {
           <div className="text-[14px] text-[#6B7280] relative min-h-[20px]">{subText}</div>
 
           <div className="mt-6 relative">
-            <div className="h-[6px] bg-[#E5E7EB] rounded-full overflow-hidden max-w-[320px] mx-auto">
+            <div className="h-[6px] bg-[#E5E7EB] rounded-full overflow-hidden max-w-button-group mx-auto">
               <div
                 className="h-full bg-gradient-to-r from-[#06B6D4] to-[#0991B2] rounded-full transition-[width] duration-500 ease-in-out"
                 style={{ width: `${progress}%` }}
@@ -95,20 +95,20 @@ export function JdAnalyzingPage() {
 
         {/* SKELETON CARD 1 */}
         <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg shadow-[var(--sc)] p-[28px_32px] mb-[18px] animate-[jan-fadeUp_.45s_ease_.1s_both] max-[640px]:p-[20px_16px]">
-          <div className="h-[14px] rounded-full skeleton-shimmer mb-[18px] w-[20%]" />
-          <div className="h-[14px] rounded-full skeleton-shimmer mb-[10px] w-[60%]" />
-          <div className="h-[14px] rounded-full skeleton-shimmer mb-[10px] w-[80%]" />
-          <div className="h-[14px] rounded-full skeleton-shimmer mb-[20px] w-[35%]" />
+          <div className="h-[14px] rounded-full skeleton-shimmer mb-[18px] w-1/5" />
+          <div className="h-[14px] rounded-full skeleton-shimmer mb-[10px] w-3/5" />
+          <div className="h-[14px] rounded-full skeleton-shimmer mb-[10px] w-4/5" />
+          <div className="h-[14px] rounded-full skeleton-shimmer mb-[20px] w-35p" />
           <div className="rounded-lg skeleton-shimmer mb-[14px] h-[80px]" />
           <div className="rounded-lg skeleton-shimmer mb-[14px] h-[60px]" />
         </div>
 
         {/* SKELETON CARD 2 */}
         <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg shadow-[var(--sc)] p-[28px_32px] mb-[18px] animate-[jan-fadeUp_.45s_ease_.1s_both] max-[640px]:p-[20px_16px]">
-          <div className="h-[14px] rounded-full skeleton-shimmer mb-[14px] w-[20%]" />
+          <div className="h-[14px] rounded-full skeleton-shimmer mb-[14px] w-1/5" />
           <div className="h-[14px] rounded-full skeleton-shimmer mb-[10px] w-full" />
-          <div className="h-[14px] rounded-full skeleton-shimmer mb-[10px] w-[80%]" />
-          <div className="h-[14px] rounded-full skeleton-shimmer mb-[10px] w-[60%]" />
+          <div className="h-[14px] rounded-full skeleton-shimmer mb-[10px] w-4/5" />
+          <div className="h-[14px] rounded-full skeleton-shimmer mb-[10px] w-3/5" />
         </div>
 
         {/* BACK CTA */}

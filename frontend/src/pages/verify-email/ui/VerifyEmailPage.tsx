@@ -62,7 +62,7 @@ export function VerifyEmailPage() {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      <header className="w-full max-w-[1080px] mx-auto flex justify-between items-center px-5 pt-5 md:px-10 md:pt-7">
+      <header className="w-full max-w-container mx-auto flex justify-between items-center px-5 pt-5 md:px-10 md:pt-7">
         <Link to="/" className="font-inter text-[22px] font-black text-[#0A0A0A] no-underline">
           me<span style={{ color: "#0991B2" }}>Fit</span>
         </Link>
@@ -75,9 +75,9 @@ export function VerifyEmailPage() {
         </button>
       </header>
 
-      <main className="flex-1 w-full max-w-[1080px] mx-auto px-5 flex flex-col gap-10 justify-center items-center text-center md:flex-row md:items-center md:px-10 md:gap-[60px] md:text-left">
+      <main className="flex-1 w-full max-w-container mx-auto px-5 flex flex-col gap-10 justify-center items-center text-center md:flex-row md:items-center md:px-10 md:gap-[60px] md:text-left">
         {/* Left */}
-        <section className="flex flex-col items-center md:flex-none md:flex-1 md:max-w-[440px] md:items-start md:pt-4">
+        <section className="flex flex-col items-center md:flex-none md:flex-1 md:max-w-text md:items-start md:pt-4">
           <div className="inline-block text-[12px] font-bold text-[#0991B2] bg-[#E6F7FA] rounded px-[14px] py-[5px] mb-[14px] self-center md:self-start md:text-[13px] md:px-[18px] md:py-[6px] md:mb-[18px]">
             ● STEP 2 OF 3
           </div>
@@ -125,7 +125,7 @@ export function VerifyEmailPage() {
         </section>
 
         {/* Right: Card */}
-        <section className="flex justify-center w-full md:flex-none md:flex-1 md:max-w-[520px]">
+        <section className="flex justify-center w-full md:flex-none md:flex-1 md:max-w-form">
           <div className="w-full bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg px-7 py-10 shadow-[var(--sc)] text-center md:px-9 md:py-12">
             {/* Lock icon */}
             <div className="inline-block relative mb-6">
@@ -234,7 +234,7 @@ export function VerifyEmailPage() {
         </section>
       </main>
 
-      <footer className="w-full max-w-[1080px] mx-auto px-5 py-8 flex justify-center gap-5 md:px-10 md:py-10">
+      <footer className="w-full max-w-container mx-auto px-5 py-8 flex justify-center gap-5 md:px-10 md:py-10">
         {["개인정보처리방침", "이용약관", "쿠키"].map((item) => (
           <a key={item} href="#" className="text-[11px] text-[#9CA3AF] no-underline transition-[color] duration-200 hover:text-[#6B7280]">
             {item}

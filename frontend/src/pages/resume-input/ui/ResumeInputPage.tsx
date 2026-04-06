@@ -40,7 +40,7 @@ export function ResumeInputPage() {
 
       {/* ── NAV ── */}
       <nav className="sticky top-0 z-[100] bg-white/92 backdrop-blur-[24px] border-b border-[#E5E7EB]">
-        <div className="max-w-[1200px] mx-auto px-6 h-16 flex items-center justify-between gap-3">
+        <div className="max-w-container-xl mx-auto px-6 h-16 flex items-center justify-between gap-3">
           <div className="flex items-center gap-[10px]">
             <button
               className="w-9 h-9 rounded-[14px] bg-[#F9FAFB] border border-[#E5E7EB] cursor-pointer flex items-center justify-center shadow-[var(--sw)] text-[#0A0A0A] text-[18px] transition-[background] duration-150 hover:bg-[#F3F4F6]"
@@ -58,7 +58,7 @@ export function ResumeInputPage() {
 
       {/* ── STEP BAR ── */}
       <div className="bg-white/50 backdrop-blur-[12px] border-b border-[#E5E7EB]">
-        <div className="max-w-[1200px] mx-auto px-6 py-[14px] flex items-center justify-center gap-2 md:gap-3 md:py-4 md:px-8">
+        <div className="max-w-container-xl mx-auto px-6 py-[14px] flex items-center justify-center gap-2 md:gap-3 md:py-4 md:px-8">
           <div className="flex items-center gap-[6px]">
             <div className="w-[26px] h-[26px] rounded-full flex items-center justify-center text-[12px] font-extrabold shrink-0 bg-[#059669] text-white">✓</div>
             <span className="text-[12px] font-bold text-[#9CA3AF] md:text-[13px]">방식 선택</span>
@@ -77,7 +77,7 @@ export function ResumeInputPage() {
       </div>
 
       {/* ── MAIN ── */}
-      <main className="max-w-[1200px] mx-auto px-6 pt-10 md:px-8 md:pt-12">
+      <main className="max-w-container-xl mx-auto px-6 pt-10 md:px-8 md:pt-12">
         <div className="grid grid-cols-1 gap-6 md:gap-8 min-[900px]:grid-cols-[1.3fr_1fr] min-[900px]:items-start">
 
           {/* ── LEFT FORM ── */}
@@ -255,7 +255,7 @@ export function ResumeInputPage() {
 
       {/* ── BOTTOM CTA ── */}
       <div className="fixed bottom-0 left-0 right-0 z-[200] bg-white/95 backdrop-blur-[24px] border-t border-[#E5E7EB] px-6 pt-3 pb-[max(20px,env(safe-area-inset-bottom))] md:px-8 md:pt-[14px]">
-        <div className="max-w-[1200px] mx-auto flex items-center gap-4">
+        <div className="max-w-container-xl mx-auto flex items-center gap-4">
           <div className="flex-1 hidden md:block">
             <div className="flex justify-between mb-[5px]">
               <span className="text-[11px] text-[#9CA3AF] font-semibold">작성 완성도</span>
