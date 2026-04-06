@@ -1,11 +1,20 @@
 import type { TextareaHTMLAttributes } from "react";
 
-interface TextareaProps extends Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, "className"> {
+interface TextareaLabelProps {
   label?: string;
   error?: string;
   helperText?: string;
+}
+
+interface TextareaDisplayProps {
   showCharCount?: boolean;
   fullWidth?: boolean;
+}
+
+interface TextareaProps 
+  extends Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, "className">,
+          TextareaLabelProps,
+          TextareaDisplayProps {
   className?: string;
 }
 

@@ -1,11 +1,14 @@
 import type { ReactNode, ButtonHTMLAttributes } from "react";
 
-interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "className"> {
-  children: ReactNode;
+interface ButtonStyleProps {
   variant?: "primary" | "secondary" | "outline" | "ghost" | "link";
   size?: "sm" | "md" | "lg";
-  href?: string;
   fullWidth?: boolean;
+}
+
+interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "className">, ButtonStyleProps {
+  children: ReactNode;
+  href?: string;
   loading?: boolean;
   className?: string;
 }
