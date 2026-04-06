@@ -37,6 +37,24 @@ export async function apiRequest<T>(
   return _request<T>(path, options, false);
 }
 
+/* ── Path validation ── */
+function validateApiPath(path: string): string {
+  // Only allow paths starting with /api/
+  if (!path.startsWith("/api/")) {
+    throw new Error(`Invalid API path: ${path}. Must start with /api/`);
+  }
+
+  // Sanitize path: remove any potentially dangerous characters
+  const safePath = path.replace(/[^/a-zA-Z0-9._~:-]/g, "");
+  
+  // Prevent path traversal attacks
+  if (safePath.includes("..") || safePath.includes("//")) {
+    throw new Error(`Invalid API path: path traversal detected`);
+  }
+
+  return safePath;
+}
+
 async function _request<T>(
   path: string,
   options: RequestInit & { auth?: boolean },
@@ -54,15 +72,14 @@ async function _request<T>(
     if (token) headers["Authorization"] = `Bearer ${token}`;
   }
 
-  if (!path.startsWith("/api/")) {
-    throw new Error(`Invalid API path: ${path}`);
-  }
+  // Validate and sanitize the path
+  const safePath = validateApiPath(path);
 
-  const safePath = path.replace(/[^/a-zA-Z0-9._~:-]/g, "");
+  // Construct URL using only trusted base URL and validated path
   const endpoint = new URL(BASE_URL);
   endpoint.pathname = safePath;
 
-  const res = await fetch(endpoint, { ...fetchOptions, headers });
+  const res = await fetch(endpoint.toString(), { ...fetchOptions, headers });
 
   // No-content responses
   if (res.status === 204 || res.status === 205) return undefined as T;
