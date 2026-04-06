@@ -1,137 +1,325 @@
-# meFit 디자인 시스템
+# 공통 UI 컴포넌트 가이드
 
-## 공통 컴포넌트
+이 디렉토리는 프로젝트 전체에서 재사용 가능한 UI 컴포넌트들을 포함합니다.
 
-### Button
+## 사용 가능한 컴포넌트
+
+### Layout & Structure
+
+#### `<Navigation />`
+고정 상단 네비게이션 바
 
 ```tsx
-import { Button } from '@/shared/ui';
+import { Navigation } from "@/shared/ui";
 
-// Primary 버튼
-<Button variant="primary" size="md">
-  면접 시작하기 →
-</Button>
+const navItems = [
+  { to: "/home", label: "홈" },
+  { to: "/jd", label: "채용공고", active: true },
+  { to: "/interview", label: "면접 시작" },
+  { to: "/resume", label: "이력서" },
+];
 
-// Secondary 버튼
-<Button variant="secondary" size="sm">
-  임시저장
-</Button>
-
-// Ghost 버튼
-<Button variant="ghost" onClick={handleCancel}>
-  취소
-</Button>
+<Navigation items={navItems} />
 ```
 
-### Card
+#### `<Card />`
+기본 카드 컨테이너
 
 ```tsx
-import { Card } from '@/shared/ui';
+import { Card } from "@/shared/ui";
 
-// 기본 카드
-<Card>
-  <h3>제목</h3>
-  <p>내용</p>
+<Card padding="lg">
+  <h2>카드 제목</h2>
+  <p>카드 내용</p>
 </Card>
 
-// 다크 카드
-<Card variant="dark">
-  <h3>다크 테마</h3>
-</Card>
-
-// 테두리 카드
-<Card variant="bordered">
-  <h3>화이트 배경</h3>
-</Card>
+// padding: "none" | "sm" | "md" | "lg"
 ```
 
-### Badge
+#### `<PageHeader />`
+페이지 상단 헤더 (뱃지, 제목, 설명, 액션 버튼)
 
 ```tsx
-import { Badge } from '@/shared/ui';
+import { PageHeader } from "@/shared/ui";
 
-<Badge variant="primary">Pro</Badge>
-<Badge variant="success">완료</Badge>
-<Badge variant="neutral">대기</Badge>
-<Badge variant="warning">주의</Badge>
-```
-
-### Input
-
-```tsx
-import { Input } from '@/shared/ui';
-
-<Input 
-  label="이메일"
-  type="email"
-  placeholder="hello@mefit.kr"
-  error={errors.email}
+<PageHeader
+  badge="+ 채용공고 추가"
+  title="새 채용공고 등록"
+  description="URL만 붙여넣으면 AI가 나머지를 분석해 드려요"
+  action={<Button>목록으로</Button>}
 />
+```
+
+#### `<SectionHeader />`
+섹션 헤더 (아이콘, 제목, 설명)
+
+```tsx
+import { SectionHeader } from "@/shared/ui";
+
+<SectionHeader
+  icon="🔗"
+  title="채용공고 URL"
+  description="정확한 채용공고 페이지 URL을 입력해주세요"
+  gradient="linear-gradient(135deg,#60A5FA,#2563EB)"
+/>
+```
+
+#### `<Divider />`
+구분선
+
+```tsx
+import { Divider } from "@/shared/ui";
+
+<Divider spacing="md" />
+// spacing: "sm" | "md" | "lg"
+```
+
+### Form Components
+
+#### `<Input />`
+텍스트 입력 필드
+
+```tsx
+import { Input } from "@/shared/ui";
+
+<Input
+  label="이메일"
+  required
+  helperText="회사 이메일을 입력하세요"
+  icon="📧"
+  type="email"
+  placeholder="example@company.com"
+  value={email}
+  onChange={(e) => setEmail(e.target.value)}
+  error={error}
+/>
+```
+
+#### `<Textarea />`
+여러 줄 텍스트 입력
+
+```tsx
+import { Textarea } from "@/shared/ui";
+
+<Textarea
+  label="자기소개"
+  maxLength={5000}
+  value={content}
+  onChange={(e) => setContent(e.target.value)}
+  showCharCount
+  rows={10}
+/>
+```
+
+#### `<Toggle />`
+토글 스위치
+
+```tsx
+import { Toggle } from "@/shared/ui";
+
+<Toggle
+  checked={isActive}
+  onChange={setIsActive}
+  label="AI 면접에 포함하기"
+  description="비활성화 시 면접 질문 생성에서 제외됩니다"
+/>
+```
+
+### Interactive Components
+
+#### `<Button />`
+버튼 컴포넌트
+
+```tsx
+import { Button } from "@/shared/ui";
+
+<Button variant="primary" size="md" onClick={handleClick}>
+  저장하기
+</Button>
+
+<Button variant="secondary" loading={isLoading}>
+  처리 중...
+</Button>
+
+// variant: "primary" | "secondary" | "outline" | "ghost" | "link"
+// size: "sm" | "md" | "lg"
+```
+
+#### `<Chip />`
+선택 가능한 칩/태그
+
+```tsx
+import { Chip } from "@/shared/ui";
+
+<Chip
+  icon="🎨"
+  selected={selected === "frontend"}
+  onClick={() => setSelected("frontend")}
+>
+  프론트엔드
+</Chip>
+
+<Chip onRemove={() => removeTag(tag)}>
+  {tag}
+</Chip>
+```
+
+#### `<StatusCard />`
+상태 선택 카드 그리드
+
+```tsx
+import { StatusCard } from "@/shared/ui";
+
+const options = [
+  { value: "planned", icon: "📅", label: "지원 예정", desc: "곧 지원할 예정" },
+  { value: "applied", icon: "✅", label: "지원 완료", desc: "이미 지원함" },
+];
+
+<StatusCard
+  options={options}
+  selected={status}
+  onSelect={setStatus}
+  columns={3}
+/>
+```
+
+### Feedback Components
+
+#### `<Alert />`
+알림 메시지
+
+```tsx
+import { Alert } from "@/shared/ui";
+
+<Alert variant="error">
+  오류가 발생했습니다
+</Alert>
+
+<Alert variant="success">
+  저장되었습니다
+</Alert>
+
+// variant: "info" | "success" | "warning" | "error"
+```
+
+#### `<Badge />`
+상태 뱃지
+
+```tsx
+import { Badge } from "@/shared/ui";
+
+<Badge variant="success">✓ 완료</Badge>
+<Badge variant="info">진행 중</Badge>
+
+// variant: "default" | "success" | "warning" | "error" | "info" | "primary"
+// size: "sm" | "md"
+```
+
+#### `<ProgressBar />`
+진행률 표시
+
+```tsx
+import { ProgressBar } from "@/shared/ui";
+
+<ProgressBar
+  value={75}
+  max={100}
+  showLabel
+  label="작성 완성도"
+/>
+```
+
+#### `<Spinner />`
+로딩 스피너
+
+```tsx
+import { Spinner } from "@/shared/ui";
+
+<Spinner size="md" />
+// size: "sm" | "md" | "lg"
+```
+
+## 마이그레이션 가이드
+
+### Before (기존 코드)
+
+```tsx
+<div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)] p-[28px_24px]">
+  <div className="text-[15px] font-extrabold text-[#0A0A0A] mb-1 flex items-center gap-2">
+    <span className="w-7 h-7 rounded-lg flex items-center justify-center text-[13px] shrink-0" style={{ background: "linear-gradient(135deg,#60A5FA,#2563EB)" }}>🔗</span>
+    채용공고 URL
+  </div>
+  <p className="text-[13px] text-[#6B7280] mb-[18px] ml-9">정확한 채용공고 페이지 URL을 입력해주세요.</p>
+  
+  <div className="relative">
+    <span className="absolute left-[14px] top-1/2 -translate-y-1/2 text-base pointer-events-none">🔗</span>
+    <input
+      type="url"
+      className="w-full bg-white border border-[#E5E7EB] rounded-lg py-[13px] pr-4 pl-11 text-sm font-medium text-[#0A0A0A] outline-none transition-[border-color] appearance-none focus:border-[#0991B2] focus:shadow-[0_0_0_3px_rgba(9,145,178,0.1)] placeholder:text-[#D1D5DB]"
+      placeholder="https://..."
+      value={url}
+      onChange={(e) => setUrl(e.target.value)}
+    />
+  </div>
+</div>
+```
+
+### After (리팩토링 후)
+
+```tsx
+import { Card, SectionHeader, Input } from "@/shared/ui";
+
+<Card>
+  <SectionHeader
+    icon="🔗"
+    title="채용공고 URL"
+    description="정확한 채용공고 페이지 URL을 입력해주세요."
+    gradient="linear-gradient(135deg,#60A5FA,#2563EB)"
+  />
+  
+  <Input
+    icon="🔗"
+    type="url"
+    placeholder="https://..."
+    value={url}
+    onChange={(e) => setUrl(e.target.value)}
+  />
+</Card>
 ```
 
 ## 디자인 토큰
 
-### 색상
-- `var(--fg)` - 메인 텍스트 (#0A0A0A)
-- `var(--accent)` - 액센트 컬러 (#0991B2)
-- `var(--muted)` - 보조 텍스트 (#6B7280)
-- `var(--em)` - 강조 (성공) (#059669)
-- `var(--am)` - 경고 (#D97706)
+모든 컴포넌트는 일관된 디자인 토큰을 사용합니다:
 
-### 그림자
-- `shadow-card` - 카드 기본 그림자
-- `shadow-card-hover` - 카드 호버 그림자
-- `shadow-button` - 버튼 그림자
+- **Primary Color**: `#0991B2`
+- **Text Colors**: `#0A0A0A` (primary), `#6B7280` (secondary), `#9CA3AF` (muted)
+- **Border**: `#E5E7EB`
+- **Background**: `#F9FAFB` (card), `#FFFFFF` (base)
+- **Success**: `#059669`
+- **Error**: `#DC2626`
+- **Warning**: `#D97706`
 
-### 간격
-- `gap-3` = 12px
-- `gap-4` = 16px
-- `gap-6` = 24px
-- `py-25` = 100px (커스텀)
+## 기여 가이드
 
-### 폰트
-- `font-inter` - Inter 폰트
-- `font-bold` - 700
-- `font-extrabold` - 800
-- `font-black` - 900
+새로운 공통 컴포넌트를 추가할 때:
 
-## Tailwind 유틸리티 클래스
+1. 최소 3개 이상의 페이지에서 동일한 패턴이 반복될 때만 추가
+2. Props는 명확하고 일관성 있게 정의
+3. TypeScript 타입을 명시적으로 정의
+4. 접근성(a11y) 고려 (aria-label, role 등)
+5. `index.ts`에 export 추가
 
-### 자주 쓰는 조합
+## 다음 단계
 
-```tsx
-// 카드 스타일
-className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-6 shadow-card"
+아직 리팩토링되지 않은 페이지들:
+- `src/pages/jd-list/ui/JdListPage.tsx`
+- `src/pages/jd-detail/ui/JdDetailPage.tsx`
+- `src/pages/jd-edit/ui/JdEditPage.tsx`
+- `src/pages/resume-list/ui/ResumeListPage.tsx`
+- `src/pages/interview-setup/ui/InterviewSetupPage.tsx`
+- `src/pages/interview-precheck/ui/InterviewPreCheckPage.tsx`
+- `src/pages/login/ui/LoginPage.tsx`
+- `src/pages/sign-up/ui/SignUpPage.tsx`
+- `src/pages/settings/ui/SettingsPage.tsx`
 
-// 버튼 스타일
-className="bg-[var(--fg)] text-white px-6 py-3 rounded-lg font-bold hover:opacity-85"
-
-// 입력 필드
-className="w-full px-4 py-3 border border-[#E5E7EB] rounded-lg focus:border-[var(--accent)]"
-
-// 배지
-className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-[#E6F7FA] text-[var(--accent)]"
-```
-
-## 반응형 디자인
-
-```tsx
-// 모바일: 세로 스택, 데스크탑: 가로 배치
-className="flex flex-col gap-4 md:flex-row md:gap-6"
-
-// 모바일: 1열, 태블릿: 2열, 데스크탑: 3열
-className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
-
-// 모바일: 작은 텍스트, 데스크탑: 큰 텍스트
-className="text-[14px] md:text-[16px]"
-```
-
-## 애니메이션
-
-```tsx
-// 페이드업 애니메이션
-className="animate-fadeUp"
-
-// 스켈레톤 로딩
-className="animate-shimmer bg-gradient-to-r from-[#F3F4F6] via-[#E5E7EB] to-[#F3F4F6]"
-```
+이 페이지들도 점진적으로 공통 컴포넌트를 적용하면 코드 중복이 크게 줄어들고 유지보수가 쉬워집니다.

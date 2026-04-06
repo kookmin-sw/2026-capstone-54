@@ -1,29 +1,32 @@
-import { HTMLAttributes, ReactNode } from 'react';
+import type { ReactNode } from "react";
 
-type BadgeVariant = 'primary' | 'success' | 'neutral' | 'warning';
-
-interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
-  variant?: BadgeVariant;
+interface BadgeProps {
   children: ReactNode;
+  variant?: "default" | "success" | "warning" | "error" | "info" | "primary";
+  size?: "sm" | "md";
+  className?: string;
+  style?: React.CSSProperties;
 }
 
-export function Badge({ 
-  variant = 'primary', 
-  children, 
-  className = '',
-  ...props 
-}: BadgeProps) {
-  const variants = {
-    primary: 'bg-[#E6F7FA] text-[var(--accent)] border-[rgba(9,145,178,0.15)]',
-    success: 'bg-[#ECFDF5] text-[#059669] border-[#D1FAE5]',
-    neutral: 'bg-[#F9FAFB] text-[var(--muted)] border-[#E5E7EB]',
-    warning: 'bg-[#FFF7ED] text-[#D97706] border-[#FED7AA]'
-  };
-  
+const variantStyles = {
+  default: "bg-[#F3F4F6] text-[#9CA3AF]",
+  success: "bg-[#D1FAE5] text-[#047857]",
+  warning: "bg-[rgba(245,158,11,0.08)] text-[#D97706] border-[rgba(245,158,11,0.2)]",
+  error: "bg-[#FEF2F2] text-[#DC2626] border-[#FECACA]",
+  info: "bg-[#E6F7FA] text-[#0991B2]",
+  primary: "bg-[#E6F7FA] text-[#0991B2] border-[#0991B2]",
+};
+
+const sizeStyles = {
+  sm: "text-[11px] px-2.5 py-[3px]",
+  md: "text-[11px] px-3 py-[5px]",
+};
+
+export function Badge({ children, variant = "default", size = "md", className = "", style }: BadgeProps) {
   return (
-    <span 
-      className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full border ${variants[variant]} ${className}`}
-      {...props}
+    <span
+      className={`inline-flex items-center gap-1 font-bold rounded-full ${variantStyles[variant]} ${sizeStyles[size]} ${className}`}
+      style={style}
     >
       {children}
     </span>
