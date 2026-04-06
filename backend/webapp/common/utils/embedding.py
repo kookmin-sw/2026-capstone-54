@@ -32,4 +32,6 @@ def embed_query(query: str) -> tuple[list[float], int]:
     model=settings.OPENAI_EMBEDDING_MODEL,
   )
   total_tokens = response.usage.total_tokens if response.usage else 0
+  if not response.data:
+    return [], total_tokens
   return response.data[0].embedding, total_tokens

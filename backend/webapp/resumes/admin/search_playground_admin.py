@@ -14,6 +14,7 @@ from django.db import connection as django_conn
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.urls import path, reverse
+from resumes.enums import AnalysisStatus
 from resumes.models import Resume, ResumeEmbedding
 from resumes.services import SearchResumeEmbeddingService
 from unfold.admin import ModelAdmin
@@ -201,7 +202,7 @@ class SearchPlaygroundAdmin(ModelAdmin):
 
     return {
       "total_resumes": resumes.count(),
-      "active_completed": resumes.filter(is_active=True, analysis_status="completed").count(),
+      "active_completed": resumes.filter(is_active=True, analysis_status=AnalysisStatus.COMPLETED).count(),
       "status_summary": list(resumes.values_list("uuid", "title", "analysis_status", "is_active")),
       "total_embeddings": ResumeEmbedding.objects.filter(**emb_filter).count(),
       "embeddings_with_vector": ResumeEmbedding.objects.filter(**emb_filter, embedding_vector__isnull=False).count(),

@@ -10,7 +10,7 @@ from common.services import BaseQueryService
 from common.utils import embed_query
 from django.conf import settings
 from pgvector.django import CosineDistance
-from resumes.enums import OperationType
+from resumes.enums import AnalysisStatus, OperationType
 from resumes.models import ResumeEmbedding, ResumeTokenUsage
 
 logger = structlog.getLogger(__name__)
@@ -73,9 +73,10 @@ class SearchResumeEmbeddingService(BaseQueryService):
       ResumeEmbedding.objects.filter(
         user_id=self.user.id,
         resume_id=resume_uuid,
+        embedding_vector__isnull=False,
         resume__is_active=True,
         resume__deleted_at__isnull=True,
-        resume__analysis_status="completed",
+        resume__analysis_status=AnalysisStatus.COMPLETED,
       ).annotate(distance=CosineDistance("embedding_vector", query_vector)
                  ).order_by("distance").select_related("resume")[:top_k]
     )
