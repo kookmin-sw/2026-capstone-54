@@ -12,7 +12,7 @@ interface StatusCardProps<T = string> {
   columns?: 1 | 2 | 3;
 }
 
-export function StatusCard<T = string>({ options, selected, onSelect, columns = 3 }: StatusCardProps<T>) {
+export function StatusCard<T extends string | number = string>({ options, selected, onSelect, columns = 3 }: StatusCardProps<T>) {
   const gridCols = {
     1: "grid-cols-1",
     2: "grid-cols-2",
@@ -23,7 +23,7 @@ export function StatusCard<T = string>({ options, selected, onSelect, columns = 
     <div className={`grid ${gridCols[columns]} gap-2 max-sm:grid-cols-1`}>
       {options.map((opt) => (
         <button
-          key={opt.value}
+          key={String(opt.value)}
           type="button"
           className={`py-[14px] px-3 rounded-lg border cursor-pointer text-center transition-all shadow-[0_1px_3px_rgba(0,0,0,0.08)] hover:-translate-y-0.5 hover:shadow-[0_1px_3px_rgba(0,0,0,0.1)] hover:border-[#0991B2] ${
             selected === opt.value

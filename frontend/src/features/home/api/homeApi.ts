@@ -4,6 +4,52 @@ import { apiRequest } from "@/shared/api/client";
 
 const USE_MOCK = true; // Set to false when backend is ready
 
+// Backend response types
+interface BackendUser {
+  name?: string;
+  greeting?: string;
+  last_interview_days_ago?: number;
+}
+
+interface BackendStat {
+  icon?: string;
+  value?: number;
+  unit?: string;
+  label?: string;
+  delta?: string;
+  delta_type?: string;
+}
+
+interface BackendSession {
+  id?: string;
+  icon?: string;
+  company?: string;
+  badge_label?: string;
+  badge_type?: string;
+  role?: string;
+  round?: string;
+  date?: string;
+  score?: number;
+}
+
+interface BackendJob {
+  id?: string;
+  company?: string;
+  role?: string;
+  stage?: string;
+  dday?: number;
+  dot_color?: string;
+}
+
+interface BackendHomeData {
+  user?: BackendUser;
+  stats?: BackendStat[];
+  recent_sessions?: BackendSession[];
+  streak_data?: number[];
+  current_streak?: number;
+  jobs?: BackendJob[];
+}
+
 export interface HomeUser {
   name: string;
   greeting: string;
@@ -88,7 +134,7 @@ export async function fetchHomeDataApi(): Promise<{ success: boolean; data?: Hom
   }
 
   try {
-    const data = await apiRequest<Record<string, unknown>>(
+    const data = await apiRequest<BackendHomeData>(
       "/api/v1/home/dashboard/",
       { method: "GET", auth: true }
     );
@@ -101,35 +147,35 @@ export async function fetchHomeDataApi(): Promise<{ success: boolean; data?: Hom
           greeting: data.user?.greeting || "Good morning ☀️",
           lastInterviewDaysAgo: data.user?.last_interview_days_ago ?? 0,
         },
-        stats: data.stats?.map((stat: { icon?: string; value?: number; unit?: string; label?: string; delta?: string; delta_type?: string }) => ({
+        stats: (data.stats || []).map((stat) => ({
           icon: stat.icon || "📊",
           value: stat.value ?? 0,
           unit: stat.unit,
           label: stat.label || "",
           delta: stat.delta || "",
-          deltaType: stat.delta_type || "neutral",
-        })) || [],
-        recentSessions: data.recent_sessions?.map((session: { id?: string; icon?: string; company?: string; badge_label?: string; badge_type?: string; role?: string; round?: string; date?: string; score?: number }) => ({
+          deltaType: (stat.delta_type as "up" | "down" | "neutral") || "neutral",
+        })),
+        recentSessions: (data.recent_sessions || []).map((session) => ({
           id: session.id || "",
           icon: session.icon || "🏢",
           company: session.company || "",
           badgeLabel: session.badge_label || "",
-          badgeType: session.badge_type || "neutral",
+          badgeType: (session.badge_type as "accent" | "neutral") || "neutral",
           role: session.role || "",
           round: session.round || "",
           date: session.date || "",
           score: session.score ?? 0,
-        })) || [],
+        })),
         streakData: data.streak_data || Array(28).fill(0),
         currentStreak: data.current_streak ?? 0,
-        jobs: data.jobs?.map((job: { id?: string; company?: string; role?: string; stage?: string; dday?: number; dot_color?: string }) => ({
+        jobs: (data.jobs || []).map((job) => ({
           id: job.id || "",
           company: job.company || "",
           role: job.role || "",
           stage: job.stage || "",
           dday: job.dday ?? 0,
-          dotColor: job.dot_color || "gray",
-        })) || [],
+          dotColor: (job.dot_color as "cyan" | "dark" | "gray") || "gray",
+        })),
       },
     };
   } catch (error) {
