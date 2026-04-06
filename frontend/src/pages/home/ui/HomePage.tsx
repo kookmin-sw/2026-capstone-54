@@ -39,7 +39,11 @@ export function HomePage() {
         />
 
         <div className="hp-shell">
-          <HomeSidebar menuOpen={menuOpen} currentStreak={data?.currentStreak ?? 0} />
+          <HomeSidebar 
+            menuOpen={menuOpen} 
+            currentStreak={data?.currentStreak ?? 0}
+            jdCount={data?.jobs.length ?? 0}
+          />
 
           <main className="hp-main">
             {loading && !data ? (

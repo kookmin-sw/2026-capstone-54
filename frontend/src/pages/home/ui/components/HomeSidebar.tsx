@@ -3,9 +3,10 @@ import { Link } from "react-router-dom";
 interface HomeSidebarProps {
   menuOpen: boolean;
   currentStreak: number;
+  jdCount?: number;
 }
 
-export function HomeSidebar({ menuOpen, currentStreak }: HomeSidebarProps) {
+export function HomeSidebar({ menuOpen, currentStreak, jdCount = 0 }: HomeSidebarProps) {
   return (
     <aside className={`hp-sidebar${menuOpen ? " open" : ""}`}>
       <div className="hp-sb-sep">메인</div>
@@ -21,7 +22,7 @@ export function HomeSidebar({ menuOpen, currentStreak }: HomeSidebarProps) {
       </Link>
       <Link to="/jd" className="hp-sb-item">
         <span className="hp-sb-icon">🏢</span>채용공고
-        <span className="hp-sb-badge">3</span>
+        {jdCount > 0 && <span className="hp-sb-badge">{jdCount}</span>}
       </Link>
       <div className="hp-sb-sep">분석</div>
       <Link to="#" className="hp-sb-item">
