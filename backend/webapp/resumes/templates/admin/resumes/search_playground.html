@@ -1,0 +1,163 @@
+{% extends "admin/base_site.html" %}
+
+{% load i18n unfold %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <script src="{% url 'admin:jsi18n' %}"></script>
+    {{ form.media }}
+{% endblock %}
+
+{% block content %}
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const userSelect = document.getElementById('id_user');
+        const resumeSelect = document.getElementById('id_resume');
+        if (!userSelect || !resumeSelect) return;
+
+        userSelect.addEventListener('change', function() {
+            const userId = this.value;
+            resumeSelect.innerHTML = '<option value="">---------</option>';
+            if (!userId) return;
+
+            fetch(`{{ user_resumes_url }}${userId}/`)
+                .then(r => r.json())
+                .then(resumes => {
+                    resumes.forEach(r => {
+                        const opt = document.createElement('option');
+                        opt.value = r.uuid;
+                        opt.textContent = `${r.title} (${r.analysis_status})`;
+                        resumeSelect.appendChild(opt);
+                    });
+                });
+        });
+    });
+    </script>
+    <form action="" method="post" novalidate>
+        <div class="aligned border border-base-200 mb-8 rounded-default pt-3 px-3 shadow-sm dark:border-base-800">
+            {% csrf_token %}
+
+            {% for field in form %}
+                {% include "unfold/helpers/field.html" with field=field %}
+            {% endfor %}
+        </div>
+
+        <div class="flex justify-end mb-8">
+            {% component "unfold/components/button.html" with submit=1 %}
+                {% trans "검색 실행" %}
+            {% endcomponent %}
+        </div>
+    </form>
+
+    {% if debug_info %}
+        <div class="border border-blue-200 rounded-default p-4 mb-8 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800">
+            <h3 class="text-sm font-medium text-blue-700 dark:text-blue-300 mb-2">디버그 정보</h3>
+            <div class="text-sm text-blue-600 dark:text-blue-400 space-y-1">
+                <p>전체 이력서: {{ debug_info.total_resumes }}개 | 활성+완료: {{ debug_info.active_completed }}개</p>
+                <p>전체 임베딩: {{ debug_info.total_embeddings }}개 | 벡터 있음: {{ debug_info.embeddings_with_vector }}개</p>
+                {% if debug_info.vector_check %}
+                    <p>벡터 타입: {{ debug_info.vector_check.type }} | 차원: {{ debug_info.vector_check.dims }}</p>
+                {% else %}
+                    <p class="text-red-600 dark:text-red-400">벡터 데이터를 찾을 수 없습니다.</p>
+                {% endif %}
+                <p>검색 토큰 사용: {{ search_tokens }}</p>
+                {% if debug_info.distance_samples %}
+                    <p>상위 distance 값:
+                        {% for s in debug_info.distance_samples %}
+                            {{ s.distance }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                        (0에 가까울수록 유사)
+                    </p>
+                {% endif %}
+                {% if debug_info.status_summary %}
+                    <details class="mt-2">
+                        <summary class="cursor-pointer">이력서 상태 상세</summary>
+                        <table class="mt-2 w-full text-xs">
+                            <thead>
+                                <tr>
+                                    <th class="text-left px-2 py-1">ID</th>
+                                    <th class="text-left px-2 py-1">제목</th>
+                                    <th class="text-left px-2 py-1">분석 상태</th>
+                                    <th class="text-left px-2 py-1">활성</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in debug_info.status_summary %}
+                                    <tr>
+                                        <td class="px-2 py-1">{{ row.0 }}</td>
+                                        <td class="px-2 py-1">{{ row.1 }}</td>
+                                        <td class="px-2 py-1">{{ row.2 }}</td>
+                                        <td class="px-2 py-1">{{ row.3 }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </details>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+
+    {% if results is not None %}
+        <div class="border border-base-200 rounded-default shadow-sm dark:border-base-800 overflow-hidden">
+            <div class="px-4 py-3 bg-base-50 dark:bg-base-900 border-b border-base-200 dark:border-base-800">
+                <h3 class="text-sm font-medium text-base-700 dark:text-base-300">
+                    검색 결과 ({{ results|length }}건) — 임베딩 단위
+                </h3>
+            </div>
+
+            {% if results %}
+                <table class="w-full">
+                    <thead>
+                        <tr class="border-b border-base-200 dark:border-base-800 bg-base-50 dark:bg-base-900">
+                            <th class="px-4 py-2 text-left text-xs font-medium text-base-500 dark:text-base-400">Resume</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-base-500 dark:text-base-400">청크</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-base-500 dark:text-base-400">유사도</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-base-500 dark:text-base-400">타입</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-base-500 dark:text-base-400">매칭 컨텍스트</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in results %}
+                            <tr class="border-b border-base-200 dark:border-base-800 hover:bg-base-50 dark:hover:bg-base-900">
+                                <td class="px-4 py-2 text-sm">
+                                    <a href="{% url 'admin:resumes_resume_change' item.resume_uuid %}"
+                                       class="text-primary-600 dark:text-primary-400 hover:underline">
+                                        {{ item.title }}
+                                    </a>
+                                    <span class="text-xs text-base-400">{{ item.resume_uuid|truncatechars:12 }}</span>
+                                </td>
+                                <td class="px-4 py-2 text-sm text-base-500 dark:text-base-400">{{ item.chunk_index }}</td>
+                                <td class="px-4 py-2 text-sm">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
+                                        {% if item.similarity >= 0.9 %}bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200
+                                        {% elif item.similarity >= 0.8 %}bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200
+                                        {% else %}bg-base-100 text-base-800 dark:bg-base-800 dark:text-base-200{% endif %}">
+                                        {{ item.similarity }}
+                                    </span>
+                                </td>
+                                <td class="px-4 py-2 text-sm text-base-500 dark:text-base-400">{{ item.chunk_type }}</td>
+                                <td class="px-4 py-2 text-sm text-base-500 dark:text-base-400 max-w-md">
+                                    <details>
+                                        <summary class="cursor-pointer truncate">{{ item.context|truncatechars:80 }}</summary>
+                                        <p class="mt-1 whitespace-pre-wrap">{{ item.context }}</p>
+                                    </details>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="px-4 py-8 text-center text-sm text-base-500 dark:text-base-400">
+                    검색 결과가 없습니다.
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    {% if error %}
+        <div class="border border-red-300 rounded-default p-4 bg-red-50 dark:bg-red-900/20 dark:border-red-800 mt-4">
+            <p class="text-sm text-red-700 dark:text-red-400">{{ error }}</p>
+        </div>
+    {% endif %}
+{% endblock %}
