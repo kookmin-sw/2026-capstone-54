@@ -1,0 +1,128 @@
+export const BASE_URL = "https://mefit.xn--hy1by51c.kr";
+
+/* ── Token helpers ── */
+export function getAccessToken(): string | null {
+  return localStorage.getItem("mefit_access");
+}
+export function getRefreshToken(): string | null {
+  return localStorage.getItem("mefit_refresh");
+}
+export function setTokens(access: string, refresh: string): void {
+  localStorage.setItem("mefit_access", access);
+  localStorage.setItem("mefit_refresh", refresh);
+}
+export function clearTokens(): void {
+  localStorage.removeItem("mefit_access");
+  localStorage.removeItem("mefit_refresh");
+}
+
+/* ── Error type ── */
+export interface ApiError {
+  status: number;
+  errorCode?: string;
+  message?: string;
+  fieldErrors?: Record<string, string[]>;
+}
+
+function isApiError(e: unknown): e is ApiError {
+  return typeof e === "object" && e !== null && "status" in e;
+}
+export { isApiError };
+
+/* ── Core fetch wrapper ── */
+export async function apiRequest<T>(
+  path: string,
+  options: RequestInit & { auth?: boolean } = {}
+): Promise<T> {
+  return _request<T>(path, options, false);
+}
+
+/* ── Path validation ── */
+function validateApiPath(path: string): string {
+  // Only allow paths starting with /api/
+  if (!path.startsWith("/api/")) {
+    throw new Error(`Invalid API path: ${path}. Must start with /api/`);
+  }
+
+  // Sanitize path: remove any potentially dangerous characters
+  const safePath = path.replace(/[^/a-zA-Z0-9._~:-]/g, "");
+  
+  // Prevent path traversal attacks
+  if (safePath.includes("..") || safePath.includes("//")) {
+    throw new Error(`Invalid API path: path traversal detected`);
+  }
+
+  return safePath;
+}
+
+async function _request<T>(
+  path: string,
+  options: RequestInit & { auth?: boolean },
+  isRetry: boolean
+): Promise<T> {
+  const { auth = false, ...fetchOptions } = options;
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(fetchOptions.headers as Record<string, string>),
+  };
+
+  if (auth) {
+    const token = getAccessToken();
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  // Validate and sanitize the path
+  const safePath = validateApiPath(path);
+
+  // Construct URL using only trusted base URL and validated path
+  const endpoint = new URL(BASE_URL);
+  endpoint.pathname = safePath;
+
+  const res = await fetch(endpoint.toString(), { ...fetchOptions, headers });
+
+  // No-content responses
+  if (res.status === 204 || res.status === 205) return undefined as T;
+
+  let body: unknown;
+  try {
+    body = await res.json();
+  } catch {
+    body = {};
+  }
+
+  if (!res.ok) {
+    // 401 on authenticated request → try token refresh once, then retry
+    if (res.status === 401 && auth && !isRetry) {
+      const refreshed = await refreshAccessToken();
+      if (refreshed) {
+        return _request<T>(path, options, true);
+      }
+    }
+
+    const err: ApiError = {
+      status: res.status,
+      ...(typeof body === "object" && body !== null ? (body as object) : {}),
+    };
+    throw err;
+  }
+
+  return body as T;
+}
+
+/* ── Token refresh helper ── */
+export async function refreshAccessToken(): Promise<boolean> {
+  const refresh = getRefreshToken();
+  if (!refresh) return false;
+  try {
+    const res = await apiRequest<{ access: string }>(
+      "/api/v1/users/tokens/refresh/",
+      { method: "POST", body: JSON.stringify({ refresh }) }
+    );
+    setTokens(res.access, refresh);
+    return true;
+  } catch {
+    clearTokens();
+    return false;
+  }
+}

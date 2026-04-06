@@ -1,13 +1,22 @@
 @import "tailwindcss";
 
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+  /* meFit Design Tokens — minimal_mono */
+  --canvas: #FFFFFF;
+  --fg: #0A0A0A;
+  --muted: #6B7280;
+  --accent: #0991B2;
+  --secondary: #374151;
+  --em: #059669;
+  --am: #D97706;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  /* Minimal Shadow System */
+  --sc:  0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+  --sch: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
+  --sb:  0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+  --sbh: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
+  --sw:  0 1px 3px rgba(0,0,0,0.08);
+  --sp:  none;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -15,56 +24,315 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
+/* Gradient Text */
+.gradient-text {
+  background: linear-gradient(135deg, #0991B2, #06B6D4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
-a:hover {
-  color: #535bf2;
+
+/* Font Inter */
+.font-inter {
+  font-family: 'Inter', sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
+  font-family: 'Inter', sans-serif;
+  background: #FFFFFF;
+  color: var(--fg);
   min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+  min-width: 320px;
+  overflow-x: hidden;
 }
 
 button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+}
+
+/* ── Gradient text utility ── */
+.gradient-text {
+  background: linear-gradient(135deg, #0991B2, #06B6D4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── ResumeInputPage keyframes ── */
+@keyframes ri-fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes ri-pop {
+  0%   { transform: scale(0.85); opacity: 0; }
+  70%  { transform: scale(1.05); }
+  100% { transform: scale(1);    opacity: 1; }
+}
+@keyframes ri-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes ri-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: .4; }
+}
+@keyframes ri-liveDot {
+  0%, 100% { transform: scale(1);   opacity: 1; }
+  50%       { transform: scale(1.5); opacity: .6; }
+}
+@keyframes ri-slideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+/* ── ResumeListPage keyframes ── */
+@keyframes rl-fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes rl-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: .4; }
+}
+@keyframes rl-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes rl-slideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+/* ── ResumeUploadPage keyframes ── */
+@keyframes ru-fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes ru-bounce {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-6px); }
+}
+@keyframes ru-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes ru-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: .4; }
+}
+@keyframes ru-liveDot {
+  0%, 100% { transform: scale(1);   opacity: 1; }
+  50%       { transform: scale(1.5); opacity: .6; }
+}
+@keyframes ru-slideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+/* ── StreakPage keyframes ── */
+@keyframes skFadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes skFlicker {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: .7; }
+}
+@keyframes skBreathe {
+  0%, 100% { transform: scale(1);    opacity: 1; }
+  50%       { transform: scale(1.08); opacity: .85; }
+}
+@keyframes skFillBar {
+  from { width: 0; }
+}
+@keyframes skPop {
+  0%   { transform: scale(0.7); opacity: 0; }
+  70%  { transform: scale(1.1); }
+  100% { transform: scale(1);   opacity: 1; }
+}
+@keyframes skShimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── SubscriptionPage keyframes ── */
+@keyframes subFadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes subSlideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes subBreathe {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(9,145,178,0); }
+  50%       { box-shadow: 0 0 0 8px rgba(9,145,178,0.1); }
+}
+@keyframes subShimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+@keyframes subSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── InterviewPreCheckPage keyframes ── */
+@keyframes ipc-fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes ipc-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+@keyframes ipc-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes ipc-checkPulse {
+  0%   { transform: scale(0.5); opacity: 0; }
+  60%  { transform: scale(1.15); }
+  100% { transform: scale(1);    opacity: 1; }
+}
+
+/* ── InterviewPreCheckPage reveal ── */
+.ipc-rv {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.45s ease, transform 0.45s ease;
+}
+.ipc-rv.ipc-rv-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── InterviewSetupPage keyframes ── */
+@keyframes isetup-fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── InterviewSetupPage reveal ── */
+.isetup-rv {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.45s ease, transform 0.45s ease;
+}
+.isetup-rv.isetup-rv-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── JdAnalyzingPage keyframes ── */
+@keyframes jan-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes jan-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: .4; }
+}
+@keyframes jan-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+@keyframes jan-fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── JdDetailPage keyframes ── */
+@keyframes jdd-fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── JdEditPage keyframes ── */
+@keyframes jde-fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── JdListPage keyframes ── */
+@keyframes jdl-fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes jdl-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes jdl-dotPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: .5; transform: scale(0.8); }
+}
+@keyframes jdl-analyzeBar {
+  0%   { width: 0; }
+  100% { width: 100%; }
+}
+
+/* ── SettingsPage keyframes ── */
+@keyframes spFadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes spSpin {
+  to { transform: rotate(360deg); }
+}
+@keyframes spShimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── Shared skeleton shimmer utility ── */
+.skeleton-shimmer {
+  background: linear-gradient(90deg, rgba(9,145,178,0.05) 25%, rgba(9,145,178,0.12) 50%, rgba(9,145,178,0.05) 75%);
+  background-size: 200% 100%;
+  animation: jan-shimmer 1.8s infinite;
+}
+
+/* ── Shared gray skeleton utility ── */
+.skeleton-gray {
+  background: linear-gradient(90deg, #F3F4F6 25%, #E9EAEC 50%, #F3F4F6 75%);
+  background-size: 200% 100%;
+  animation: jan-shimmer 1.4s infinite;
+}
+
+/* ── StreakPage reveal ── */
+.sk-rv {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.45s ease, transform 0.45s ease;
+}
+.sk-rv.sk-rv-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── InterviewPreCheckPage card-glow keyframe ── */
+@keyframes ipc-cardGlow {
+  0%, 100% { box-shadow: 0 1px 2px rgba(0,0,0,.03), 0 2px 8px rgba(0,0,0,.05); }
+  50%       { box-shadow: 0 0 0 3px rgba(9,145,178,.15), 0 1px 2px rgba(0,0,0,.04), 0 4px 12px rgba(0,0,0,.06); }
 }
