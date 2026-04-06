@@ -1,5 +1,4 @@
-from common.models import BaseModel
-from common.models.base_model import BaseModelManager, BaseModelQuerySet
+from common.models import BaseModel, BaseModelManager, BaseModelQuerySet
 from django.db import models
 from django.utils import timezone
 
