@@ -23,7 +23,7 @@ class CreateTextResumeServiceTests(TestCase):
     ).perform()
 
     self.assertIsNotNone(resume.pk)
-    self.assertEqual(resume.resume_type, ResumeType.TEXT)
+    self.assertEqual(resume.type, ResumeType.TEXT)
     self.assertEqual(resume.title, "백엔드 개발자")
     self.assertEqual(resume.analysis_status, AnalysisStatus.PENDING)
     self.assertTrue(ResumeTextContent.objects.filter(resume=resume).exists())

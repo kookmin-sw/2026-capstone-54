@@ -29,7 +29,7 @@ class CreateTextResumeService(BaseService):
       kwargs={
         "resume_uuid": str(resume.pk),
         "user_id": self.user.id,
-        "resume_type": "text",
+        "type": "text",
         "text": content,
       },
       queue="store-resume",

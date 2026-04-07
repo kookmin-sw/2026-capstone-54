@@ -29,7 +29,7 @@ class CreateFileResumeServiceTests(TestCase):
     ).perform()
 
     self.assertIsNotNone(resume.pk)
-    self.assertEqual(resume.resume_type, ResumeType.FILE)
+    self.assertEqual(resume.type, ResumeType.FILE)
     self.assertTrue(ResumeFileContent.objects.filter(resume=resume).exists())
 
     file_content = ResumeFileContent.objects.get(resume=resume)
@@ -47,5 +47,5 @@ class CreateFileResumeServiceTests(TestCase):
 
     mock_send_task.assert_called_once()
     call_kwargs = mock_send_task.call_args
-    self.assertEqual(call_kwargs.kwargs["kwargs"]["resume_type"], "file")
+    self.assertEqual(call_kwargs.kwargs["kwargs"]["type"], "file")
     self.assertIn("storage_path", call_kwargs.kwargs["kwargs"])

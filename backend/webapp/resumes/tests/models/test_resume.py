@@ -61,9 +61,9 @@ class ResumeModelTests(TestCase):
 class TextResumeProxyTests(TestCase):
   """TextResume proxy 모델 테스트."""
 
-  def test_생성시_resume_type이_text(self):
+  def test_생성시_type이_text(self):
     resume = TextResumeFactory()
-    self.assertEqual(resume.resume_type, ResumeType.TEXT)
+    self.assertEqual(resume.type, ResumeType.TEXT)
 
   def test_매니저가_text만_반환(self):
     TextResumeFactory()
@@ -75,9 +75,9 @@ class TextResumeProxyTests(TestCase):
 class FileResumeProxyTests(TestCase):
   """FileResume proxy 모델 테스트."""
 
-  def test_생성시_resume_type이_file(self):
+  def test_생성시_type이_file(self):
     resume = FileResumeFactory()
-    self.assertEqual(resume.resume_type, ResumeType.FILE)
+    self.assertEqual(resume.type, ResumeType.FILE)
 
   def test_매니저가_file만_반환(self):
     TextResumeFactory()

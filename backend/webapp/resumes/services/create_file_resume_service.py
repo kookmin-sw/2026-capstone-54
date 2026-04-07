@@ -41,7 +41,7 @@ class CreateFileResumeService(BaseService):
       kwargs={
         "resume_uuid": str(resume.pk),
         "user_id": self.user.id,
-        "resume_type": "file",
+        "type": "file",
         "storage_path": f"media/{saved_path}",
       },
       queue="store-resume",
