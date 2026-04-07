@@ -109,6 +109,8 @@ class InterviewAnswerAPIView(BaseAPIView):
       depth=data["depth"],
       question=data["question"],
       answer=data["answer"],
+      question_source=data.get("question_source", ""),
+      question_purpose=data.get("question_purpose", ""),
     )
 
     # 세션 통계 갱신
