@@ -23,7 +23,8 @@ DATABASES = {
     "HOST": POSTGRES_HOST,
     "PORT": POSTGRES_PORT,
     "ATOMIC_REQUESTS": True,
-    "CONN_MAX_AGE": 600,  # 10분 connection pooling
+    "CONN_MAX_AGE": env.int("CONN_MAX_AGE", default=600),  # 환경변수로 제어 가능
+    "CONN_HEALTH_CHECKS": True,  # Django 4.1+: 연결 상태 자동 체크
     "OPTIONS": {
       "connect_timeout": 10,
       "options": "-c statement_timeout=30000",  # 30초 쿼리 타임아웃
