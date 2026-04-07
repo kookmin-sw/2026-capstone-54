@@ -53,6 +53,12 @@ class InterviewAnswerRequestSerializer(serializers.Serializer):
   )
   generate_followup = serializers.BooleanField(default=True, help_text="꼬리질문 생성 여부")
   num_followups = serializers.IntegerField(default=1, min_value=1, max_value=5)
+  question_source = serializers.CharField(
+    required=False, allow_blank=True, default="", help_text="질문 출처 (resume, job_posting)"
+  )
+  question_purpose = serializers.CharField(
+    required=False, allow_blank=True, default="", help_text="질문 출제 목적 (꼬리질문의 rationale)"
+  )
 
 
 class FollowUpQuestionResponseSerializer(serializers.Serializer):

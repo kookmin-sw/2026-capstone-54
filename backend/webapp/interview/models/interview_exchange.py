@@ -32,6 +32,8 @@ class InterviewExchange(BaseModel):
   depth = models.IntegerField(default=0)  # 0=초기, 1~=꼬리질문 깊이
   question = models.TextField()
   answer = models.TextField()
+  question_source = models.CharField(max_length=20, blank=True, default="", help_text="질문 출처 (resume, job_posting)")
+  question_purpose = models.CharField(max_length=500, blank=True, default="", help_text="질문 출제 목적 (꼬리질문의 rationale)")
   input_tokens = models.IntegerField(default=0)
   output_tokens = models.IntegerField(default=0)
   total_tokens = models.IntegerField(default=0)
