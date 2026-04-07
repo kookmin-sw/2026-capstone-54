@@ -19,7 +19,7 @@ class CreateFileResumeServiceTests(TestCase):
       content_type="application/pdf",
     )
 
-  @patch("resumes.services.create_file_resume_service.current_app.send_task")
+  @patch("resumes.services.mixins.resume_pipeline_mixin.current_app.send_task")
   def test_이력서_생성(self, mock_send_task):
     """파일 이력서와 ResumeFileContent가 생성된다."""
     resume = CreateFileResumeService(
@@ -36,7 +36,7 @@ class CreateFileResumeServiceTests(TestCase):
     self.assertEqual(file_content.original_filename, "resume.pdf")
     self.assertEqual(file_content.mime_type, "application/pdf")
 
-  @patch("resumes.services.create_file_resume_service.current_app.send_task")
+  @patch("resumes.services.mixins.resume_pipeline_mixin.current_app.send_task")
   def test_celery_태스크_발행(self, mock_send_task):
     """store-resume 파이프라인 태스크가 발행된다."""
     CreateFileResumeService(
