@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+
+# Testing
+.hypothesis/
+.pytest_cache/
+
+# Environment
+.env
