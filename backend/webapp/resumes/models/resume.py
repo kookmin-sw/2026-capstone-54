@@ -19,9 +19,10 @@ class Resume(BaseModelWithUUIDAndSoftDelete):
     related_name="resumes",
     db_column="user_id",
   )
-  resume_type = models.CharField(
+  type = models.CharField(
     max_length=20,
     choices=ResumeType.choices,
+    db_column="type",
   )
   title = models.CharField(max_length=255)
   is_active = models.BooleanField(default=True)

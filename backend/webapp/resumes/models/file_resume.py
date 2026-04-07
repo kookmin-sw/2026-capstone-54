@@ -6,11 +6,11 @@ from .resume import Resume
 class FileResumeManager(Resume.objects.__class__):
 
   def get_queryset(self):
-    return super().get_queryset().filter(resume_type=ResumeType.FILE)
+    return super().get_queryset().filter(type=ResumeType.FILE)
 
 
 class FileResume(Resume):
-  """resume_type='file' 전용 프록시 모델."""
+  """type='file' 전용 프록시 모델."""
 
   objects = FileResumeManager()
 
@@ -20,5 +20,5 @@ class FileResume(Resume):
     verbose_name_plural = "File Resumes"
 
   def save(self, *args, **kwargs):
-    self.resume_type = ResumeType.FILE
+    self.type = ResumeType.FILE
     super().save(*args, **kwargs)

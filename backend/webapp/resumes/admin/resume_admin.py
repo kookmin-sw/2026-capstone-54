@@ -8,7 +8,7 @@ class ResumeAdmin(ModelAdmin):
   list_display = (
     "uuid",
     "user",
-    "resume_type",
+    "type",
     "title",
     "analysis_status",
     "analysis_step",
@@ -16,7 +16,7 @@ class ResumeAdmin(ModelAdmin):
     "created_at",
   )
   list_filter = (
-    "resume_type",
+    "type",
     "analysis_status",
     "analysis_step",
     "is_active",
@@ -30,7 +30,7 @@ class ResumeAdmin(ModelAdmin):
     (None, {
       "fields": (
         "user",
-        "resume_type",
+        "type",
         "title",
       ),
     }),
