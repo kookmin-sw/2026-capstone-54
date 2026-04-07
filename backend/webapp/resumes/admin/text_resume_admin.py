@@ -13,7 +13,7 @@ class ResumeTextContentInline(TabularInline):
 class TextResumeAdmin(ModelAdmin):
   list_display = (
     "uuid",
-    "user",
+    "user__email",
     "title",
     "analysis_status",
     "analysis_step",
@@ -25,11 +25,11 @@ class TextResumeAdmin(ModelAdmin):
     "analysis_step",
     "is_active",
   )
-  list_select_related = ("user", )
   search_fields = (
     "title",
     "user__email",
   )
+  list_select_related = ("user", )
   ordering = ("-created_at", )
   autocomplete_fields = ("user", )
   inlines = [ResumeTextContentInline]

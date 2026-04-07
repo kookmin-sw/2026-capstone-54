@@ -7,7 +7,7 @@ from unfold.admin import ModelAdmin
 class ResumeAdmin(ModelAdmin):
   list_display = (
     "uuid",
-    "user",
+    "user__email",
     "type",
     "title",
     "analysis_status",

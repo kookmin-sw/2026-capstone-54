@@ -13,7 +13,7 @@ class ResumeFileContentInline(TabularInline):
 class FileResumeAdmin(ModelAdmin):
   list_display = (
     "uuid",
-    "user",
+    "user__email",
     "title",
     "analysis_status",
     "analysis_step",
