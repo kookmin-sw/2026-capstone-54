@@ -36,7 +36,7 @@ logger = get_logger(__name__)
     bind=True,
     name="scraping.tasks.scrape_job_posting",
     max_retries=2,
-    default_retry_delay=30,
+    default_retry_delay=120,
 )
 def scrape_job_posting(self, url: str) -> dict:
     """

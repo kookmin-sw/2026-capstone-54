@@ -77,8 +77,13 @@ async def create_page(browser: Browser) -> AsyncGenerator[Page, None]:
 
 async def _launch_browser(pw: Playwright) -> Browser:
     """봇 탐지 우회 옵션으로 Chromium을 시작합니다."""
+    import os
+    # Lambda 환경: CHROMIUM_EXECUTABLE_PATH 또는 PLAYWRIGHT_BROWSERS_PATH 로
+    # 레이어에 설치된 Chromium 바이너리 경로를 직접 지정할 수 있습니다.
+    executable_path = os.getenv("CHROMIUM_EXECUTABLE_PATH") or None
     return await pw.chromium.launch(
         headless=HEADLESS,
+        executable_path=executable_path,
         args=[
             "--no-sandbox",
             "--disable-setuid-sandbox",
