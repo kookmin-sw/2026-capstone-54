@@ -5,6 +5,7 @@ from api.v1.interview.views import (
   InterviewSessionAPIView,
   InterviewSessionDetailAPIView,
   InterviewStartAPIView,
+  ReportAPIView,
 )
 from django.urls import path
 
@@ -17,4 +18,6 @@ urlpatterns = [
   path("flow/start/", InterviewStartAPIView.as_view(), name="interview-flow-start"),
   path("flow/<int:session_id>/answer/", InterviewAnswerAPIView.as_view(), name="interview-flow-answer"),
   path("flow/<int:session_id>/finish/", InterviewFinishAPIView.as_view(), name="interview-flow-finish"),
+  # 면접 분석 리포트 API
+  path("sessions/<int:session_id>/report/", ReportAPIView.as_view(), name="interview-report"),
 ]

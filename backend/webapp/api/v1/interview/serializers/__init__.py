@@ -11,6 +11,11 @@ from .interview_session_serializer import (
   InterviewSessionSerializer,
   InterviewSessionUpdateSerializer,
 )
+from .report_serializer import (
+  ReportCreateResponseSerializer,
+  ReportDetailSerializer,
+  ReportStatusSerializer,
+)
 
 __all__ = [
   "InterviewSessionCreateSerializer",
@@ -23,4 +28,7 @@ __all__ = [
   "InterviewAnswerRequestSerializer",
   "InterviewAnswerResponseSerializer",
   "InterviewFinishResponseSerializer",
+  "ReportCreateResponseSerializer",
+  "ReportDetailSerializer",
+  "ReportStatusSerializer",
 ]
