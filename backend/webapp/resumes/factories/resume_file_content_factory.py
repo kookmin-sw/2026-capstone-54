@@ -1,8 +1,9 @@
 import factory
 from factory.django import DjangoModelFactory
-from resumes.factories.resume_factory import FileResumeFactory
 from resumes.models import ResumeFileContent
 from users.factories import UserFactory
+
+from .file_resume_factory import FileResumeFactory
 
 
 class ResumeFileContentFactory(DjangoModelFactory):

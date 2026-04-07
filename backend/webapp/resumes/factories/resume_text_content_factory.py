@@ -1,8 +1,9 @@
 import factory
 from factory.django import DjangoModelFactory
-from resumes.factories.resume_factory import TextResumeFactory
 from resumes.models import ResumeTextContent
 from users.factories import UserFactory
+
+from .text_resume_factory import TextResumeFactory
 
 
 class ResumeTextContentFactory(DjangoModelFactory):
