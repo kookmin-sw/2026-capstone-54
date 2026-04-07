@@ -1,12 +1,11 @@
-import logging
-
+import structlog
 from common.services import BaseService
 from django.db.models import Q
 from django.utils import timezone
 from subscriptions.models import Subscription, SubscriptionPlanTicketPolicy
 from tickets.models import UserTicket
 
-logger = logging.getLogger(__name__)
+logger = structlog.getLogger(__name__)
 
 
 class GrantDailySubscriptionTicketsService(BaseService):

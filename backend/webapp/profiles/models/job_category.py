@@ -1,9 +1,4 @@
-from common.models.base_model_with_soft_delete import (
-  AllObjectsManager,
-  BaseModelWithSoftDelete,
-  SoftDeleteManager,
-  SoftDeleteQuerySet,
-)
+from common.models import AllObjectsManager, BaseModelWithSoftDelete, SoftDeleteManager, SoftDeleteQuerySet
 from django.db import models
 
 

@@ -1,6 +1,6 @@
 import uuid
 
-from common.models.base_model_with_uuid import BaseModelWithUUID
+from common.models import BaseModelWithUUID
 from django.db import models
 from django.test import TestCase
 

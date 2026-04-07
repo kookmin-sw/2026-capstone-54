@@ -48,8 +48,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
-      - name: Build custom PostgreSQL image
-        run: docker build -t custom-postgres -f environments/development/Dockerfile.postgres environments/development/
+      - name: Pull PostgreSQL image
+        run: docker pull teammefit/mefit-postgres-dev:latest
 
       - name: Start PostgreSQL
         run: |
@@ -60,7 +60,7 @@ jobs:
             -e POSTGRES_PASSWORD=${{ secrets.CI_POSTGRES_PASSWORD }} \
             -v ${{ github.workspace }}/environments/development/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh \
             -p 5432:5432 \
-            custom-postgres
+            teammefit/mefit-postgres-dev:latest
 
       - name: Set up Python
         uses: actions/setup-python@v6

@@ -74,6 +74,7 @@ PROJECT_APPS = [
   "interview",
   "terms_documents",
   "streaks",
+  "resumes",
   "tickets",
   "subscriptions",
 ]

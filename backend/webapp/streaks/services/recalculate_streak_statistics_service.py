@@ -1,6 +1,6 @@
-import logging
 from datetime import timedelta
 
+import structlog
 from common.services import BaseService
 from django.contrib.auth import get_user_model
 from django.db.models import Prefetch, prefetch_related_objects
@@ -8,7 +8,7 @@ from django.utils import timezone
 from streaks.models import StreakLog, StreakStatistics
 
 User = get_user_model()
-logger = logging.getLogger(__name__)
+logger = structlog.getLogger(__name__)
 
 
 class RecalculateStreakStatisticsService(BaseService):
