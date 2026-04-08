@@ -1,24 +1,24 @@
 """
-Celery 앱 설정.
+Celery 앱 설정 — interview-analysis-report worker.
 
-analysis 큐를 기본 큐로 사용하며, tasks 패키지에서 태스크를 자동 검색한다.
+면접 분석 리포트 생성을 비동기 태스크로 실행합니다.
 
 실행 예시:
-    celery -A celery_app worker -Q analysis -l INFO
+    celery -A celery_app worker -Q analysis -l INFO --concurrency 2
 """
 
+import config
 from celery import Celery
-
-from config import REDIS_URL
 
 app = Celery("analysis")
 app.conf.update(
-    broker_url=REDIS_URL,
-    result_backend=REDIS_URL,
+    broker_url=config.CELERY_BROKER_URL,
+    result_backend=config.CELERY_RESULT_BACKEND,
     task_serializer="json",
     result_serializer="json",
     accept_content=["json"],
     task_default_queue="analysis",
+    worker_prefetch_multiplier=1,
     task_acks_late=True,
     task_soft_time_limit=300,
     task_time_limit=360,
