@@ -1,4 +1,4 @@
-from common.models.base_model_with_soft_delete import BaseModelWithSoftDelete
+from common.models import BaseModelWithSoftDelete
 from django.db import models
 from django.test import TestCase
 

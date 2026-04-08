@@ -15,6 +15,15 @@ _scheme = urlparse(_FLOWER_BASE).scheme
 if _scheme not in {"http", "https"}:
   raise ValueError(f"FLOWER_INTERNAL_URL scheme must be http or https, got: {_scheme!r}")
 
+# 프록시 시 제거할 hop-by-hop / 충돌 헤더
+_SKIP_HEADERS = frozenset({
+  "host",
+  "content-length",
+  "accept-encoding",
+  "connection",
+  "transfer-encoding",
+})
+
 
 @csrf_exempt
 def flower_proxy(request: HttpRequest, path: str = "") -> HttpResponse:
@@ -23,15 +32,18 @@ def flower_proxy(request: HttpRequest, path: str = "") -> HttpResponse:
   if qs := request.META.get("QUERY_STRING"):
     target += f"?{qs}"
 
+  headers = {k: v for k, v in request.headers.items() if k.lower() not in _SKIP_HEADERS}
+
+  # POST/PUT 등 body가 있는 요청은 data를 반드시 bytes로 전달해야
+  # urllib가 메서드를 GET으로 바꾸지 않는다.
+  body = request.body if request.method in {"POST", "PUT", "PATCH", "DELETE"} else None
+
   try:
     proxy_req = urllib.request.Request(
       url=target,
       method=request.method,
-      data=request.body or None,
-      headers={
-        k: v
-        for k, v in request.headers.items() if k.lower() not in {"host", "content-length", "accept-encoding"}
-      },
+      data=body,
+      headers=headers,
     )
     with urllib.request.urlopen(proxy_req, timeout=30) as resp:  # nosec B310
       return HttpResponse(
@@ -40,6 +52,11 @@ def flower_proxy(request: HttpRequest, path: str = "") -> HttpResponse:
         status=resp.status,
       )
   except urllib.error.HTTPError as e:
-    return HttpResponse(status=e.code)
+    body_content = e.read() if hasattr(e, "read") else b""
+    return HttpResponse(
+      content=body_content,
+      content_type=e.headers.get("Content-Type", "text/plain") if e.headers else "text/plain",
+      status=e.code,
+    )
   except Exception:
     return HttpResponse(status=502)

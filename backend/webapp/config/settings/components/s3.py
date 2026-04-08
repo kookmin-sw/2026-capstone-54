@@ -1,0 +1,27 @@
+"""
+S3 / 파일 스토리지 공통 설정.
+
+환경변수로 endpoint_url을 주입하면 S3Mock(개발) / 실제 AWS S3(운영) 모두 대응합니다.
+
+  개발: AWS_S3_ENDPOINT_URL=http://mefit-s3mock:9090  (docker-compose 내 S3Mock)
+  운영: AWS_S3_ENDPOINT_URL 미설정                    (boto3 기본값 → AWS S3)
+"""
+
+from .common import env
+
+AWS_STORAGE_BUCKET_NAME = env.str("AWS_STORAGE_BUCKET_NAME", default="mefit-files")
+AWS_S3_REGION_NAME = env.str("AWS_S3_REGION_NAME", default="us-east-1")
+AWS_S3_FILE_OVERWRITE = False
+AWS_DEFAULT_ACL = None
+
+# endpoint_url: 개발 환경에서만 설정 (.env에 AWS_S3_ENDPOINT_URL 추가)
+# 미설정 시 None → boto3가 실제 AWS S3로 연결
+AWS_S3_ENDPOINT_URL = env.str("AWS_S3_ENDPOINT_URL", default="") or None
+
+__all__ = [
+  "AWS_STORAGE_BUCKET_NAME",
+  "AWS_S3_REGION_NAME",
+  "AWS_S3_FILE_OVERWRITE",
+  "AWS_DEFAULT_ACL",
+  "AWS_S3_ENDPOINT_URL",
+]

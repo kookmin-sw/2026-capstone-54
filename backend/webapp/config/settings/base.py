@@ -23,9 +23,13 @@ from .components.installed_app import *
 from .components.logging import *
 from .components.middleware import *
 from .components.rest_framework import *
+from .components.s3 import *
 from .components.slack import *
 from .components.template import *
 
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
+
+OPENAI_API_KEY = env.str("OPENAI_API_KEY", default="")
+OPENAI_EMBEDDING_MODEL = env.str("OPENAI_EMBEDDING_MODEL", default="text-embedding-3-small")
 
 ROOT_URLCONF = 'config.urls'

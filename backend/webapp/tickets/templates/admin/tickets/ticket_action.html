@@ -1,0 +1,39 @@
+{% extends "admin/base_site.html" %}
+
+{% load i18n unfold %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <script src="{% url 'admin:jsi18n' %}"></script>
+    {{ form.media }}
+{% endblock %}
+
+{% block content %}
+    <form action="" method="post" novalidate>
+        <div class="aligned border border-base-200 mb-8 rounded-default pt-3 px-3 shadow-sm dark:border-base-800">
+            {% csrf_token %}
+
+            <input type="hidden" name="action" value="{{ action_name }}">
+            {% for pk in selected_pks %}
+                <input type="hidden" name="_selected_action" value="{{ pk }}">
+            {% endfor %}
+            <input type="hidden" name="confirmed" value="1">
+
+            <div class="mb-4">
+                <p class="text-sm text-base-500 dark:text-base-400">
+                    선택된 사용자: {{ target_users }}
+                </p>
+            </div>
+
+            {% for field in form %}
+                {% include "unfold/helpers/field.html" with field=field %}
+            {% endfor %}
+        </div>
+
+        <div class="flex justify-end">
+            {% component "unfold/components/button.html" with submit=1 %}
+                {{ submit_label }}
+            {% endcomponent %}
+        </div>
+    </form>
+{% endblock %}

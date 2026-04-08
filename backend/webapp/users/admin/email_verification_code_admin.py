@@ -10,6 +10,7 @@ class EmailVerificationCodeAdmin(ModelAdmin):
   search_fields = ("user__email", "code")
   ordering = ("-created_at", )
   readonly_fields = ("is_used", "used_at", "expires_at", "created_at", "updated_at")
+  autocomplete_fields = ("user", )
 
   fieldsets = (
     (None, {

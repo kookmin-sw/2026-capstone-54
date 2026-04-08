@@ -40,6 +40,8 @@ dependencies = [
     "django-cors-headers>=4.9.0",
     "django-markdownx>=4.0.9",
     "django-easymde>=1.0.4",
+    "pgvector>=0.4.2",
+    "openai>=2.30.0",
 ]
 
 [dependency-groups]

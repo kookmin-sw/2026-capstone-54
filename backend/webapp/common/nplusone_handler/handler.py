@@ -31,6 +31,9 @@ class NPlusOneSlackHandler(logging.Handler):
 
   def emit(self, record: logging.LogRecord) -> None:
     try:
+      msg = record.getMessage()
+      if "unnecessary eager load" in msg:
+        return
       self._handle(record)
     except Exception:
       self.handleError(record)
