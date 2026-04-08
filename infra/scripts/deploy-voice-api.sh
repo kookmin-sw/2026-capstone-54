@@ -14,6 +14,8 @@ set -euo pipefail
 NAMESPACE="mefit-backend-production"
 IMAGE_REPO="teammefit/voice-api"
 DEPLOYMENT="mefit-production-voice-api"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+INFRA_DIR="${SCRIPT_DIR}/.."
 
 COMMAND="${1:?사용법: $0 <이미지태그|rollback|status|history> [리비전]}"
 
@@ -66,14 +68,9 @@ echo "  이미지:  ${IMAGE_REPO}:${IMAGE_TAG}"
 echo "  네임스페이스: ${NAMESPACE}"
 echo "══════════════════════════════════════════"
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-INFRA_DIR="${SCRIPT_DIR}/../"
-
 # 매니페스트 적용
 echo "▶ 매니페스트 적용 중..."
-kubectl apply -f "${INFRA_DIR}/voice-api-service.yml"
-kubectl apply -f "${INFRA_DIR}/voice-api-deployment.yml"
-kubectl apply -f "${INFRA_DIR}/ingress.yml"
+kubectl apply -f "${INFRA_DIR}/voice-api/"
 
 # 이미지 업데이트
 echo "▶ 이미지 업데이트 중..."

@@ -1,19 +1,19 @@
 #!/usr/bin/env bash
 #
-# store-resume Celery Worker k3s production 배포 스크립트
+# Scraper Worker k3s production 배포 스크립트
 #
 # 사용법:
-#   ./deploy-store-resume.sh <이미지태그>           # 배포
-#   ./deploy-store-resume.sh rollback [리비전]      # 롤백
-#   ./deploy-store-resume.sh status                 # 상태 확인
-#   ./deploy-store-resume.sh history                # 배포 이력 조회
+#   ./deploy-scraper.sh <이미지태그>           # 배포
+#   ./deploy-scraper.sh rollback [리비전]      # 롤백
+#   ./deploy-scraper.sh status                 # 상태 확인
+#   ./deploy-scraper.sh history                # 배포 이력 조회
 #
 
 set -euo pipefail
 
 NAMESPACE="mefit-backend-production"
-IMAGE_REPO="teammefit/mefit-store-resume"
-DEPLOYMENT="mefit-production-store-resume-worker"
+IMAGE_REPO="teammefit/mefit-scraper"
+DEPLOYMENT="mefit-production-scraper-worker"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 INFRA_DIR="${SCRIPT_DIR}/.."
 
@@ -26,7 +26,7 @@ if [[ "$COMMAND" == "rollback" || "$COMMAND" == "status" || "$COMMAND" == "histo
   case "$COMMAND" in
     rollback)
       echo "══════════════════════════════════════════"
-      echo "  🔄 store-resume Worker 롤백"
+      echo "  🔄 Scraper Worker 롤백"
       [[ -n "$REVISION" ]] && echo "  리비전: ${REVISION}"
       echo "══════════════════════════════════════════"
       if [[ -n "$REVISION" ]]; then
@@ -40,7 +40,7 @@ if [[ "$COMMAND" == "rollback" || "$COMMAND" == "status" || "$COMMAND" == "histo
       ;;
 
     status)
-      echo "── store-resume Worker Deployment ──"
+      echo "── Scraper Worker Deployment ──"
       kubectl rollout status "deployment/${DEPLOYMENT}" -n "${NAMESPACE}" 2>/dev/null || true
       echo ""
       echo "── Pods ──"
@@ -60,19 +60,19 @@ fi
 IMAGE_TAG="$COMMAND"
 
 echo "══════════════════════════════════════════"
-echo "  🚀 store-resume Worker 배포"
+echo "  🚀 Scraper Worker 배포"
 echo "  이미지:  ${IMAGE_REPO}:${IMAGE_TAG}"
 echo "  네임스페이스: ${NAMESPACE}"
 echo "══════════════════════════════════════════"
 
 # 매니페스트 적용
 echo "▶ 매니페스트 적용 중..."
-kubectl apply -f "${INFRA_DIR}/store-resume/"
+kubectl apply -f "${INFRA_DIR}/scraper/"
 
 # 이미지 업데이트
 echo "▶ 이미지 업데이트 중..."
 kubectl set image "deployment/${DEPLOYMENT}" \
-  "store-resume-worker=${IMAGE_REPO}:${IMAGE_TAG}" \
+  "scraper-worker=${IMAGE_REPO}:${IMAGE_TAG}" \
   -n "${NAMESPACE}"
 
 # 강제 rollout restart (새로운 Pod 생성)
