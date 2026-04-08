@@ -71,7 +71,7 @@ PROJECT_APPS = [
   "api",
   "profiles",
   "realtime_docs",
-  "interview",
+  "interviews",
   "terms_documents",
   "streaks",
   "resumes",
