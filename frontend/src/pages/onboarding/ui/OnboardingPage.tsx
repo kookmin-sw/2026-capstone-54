@@ -78,7 +78,7 @@ export function OnboardingPage() {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      <header className="w-full max-w-container mx-auto flex justify-between items-center px-5 pt-5 md:px-10 md:pt-7">
+      <header className="w-full max-w-container mx-auto flex justify-between items-center px-5 py-5 md:px-10 md:py-7">
         <Link to="/" className="font-inter text-[22px] font-black text-[#0A0A0A] no-underline">
           me<span style={{ color: "#0991B2" }}>Fit</span>
         </Link>
@@ -88,58 +88,59 @@ export function OnboardingPage() {
         </div>
       </header>
 
-      <main className="flex-1 w-full max-w-container mx-auto px-5 flex flex-col gap-10 justify-center items-center text-center md:flex-row md:items-center md:px-10 md:gap-[60px] md:text-left">
+      <main className="flex-1 w-full mx-auto px-5 py-8 flex flex-col justify-center gap-8 md:px-10 md:py-12">
+        <div className="w-full max-w-[1000px] mx-auto flex flex-col gap-8 md:flex-row md:items-center md:gap-10 lg:gap-12">
         {/* ── Left ── */}
-        <section className="flex flex-col items-center md:flex-none md:flex-1 md:max-w-text md:items-start md:pt-4">
+        <section className="flex flex-col items-center md:flex-1 md:items-start md:sticky md:top-8">
           <div className="inline-block text-[12px] font-bold text-[#0991B2] bg-[#E6F7FA] rounded px-[14px] py-[5px] mb-[14px] tracking-[0.5px] self-center md:self-start md:text-[13px] md:px-[18px] md:py-[6px] md:mb-[18px]">
             ● STEP 3 OF 3
           </div>
-          <h1 className="font-inter text-[clamp(36px,9vw,56px)] font-black leading-[1.08] text-[#0A0A0A] mb-4 tracking-[-2px] md:text-[clamp(40px,4.5vw,56px)]">
+          <h1 className="font-inter text-[clamp(32px,8vw,48px)] font-black leading-[1.1] text-[#0A0A0A] mb-3 tracking-[-2px] text-center md:text-left md:text-[clamp(36px,3.5vw,48px)]">
             이제 <span className="gradient-text">핏</span>을
             <br />
             맞춰볼
             <br />
             차례예요
           </h1>
-          <p className="text-[14px] text-[#6B7280] leading-[1.7] mb-6 md:text-[15px]">
+          <p className="text-[14px] text-[#6B7280] leading-[1.7] mb-6 text-center md:text-left md:text-[15px]">
             어떤 직군을 준비하는지 알려주면
             <br className="hidden md:block" />
             AI가 맞춤 면접 질문을 바로 생성해줄게요.
           </p>
 
           {/* Email verified card */}
-          <div className="flex items-center justify-center gap-[14px] bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg px-[22px] py-[18px] mb-7 shadow-[var(--sc)] w-full md:justify-start">
+          <div className="flex items-center justify-center gap-[14px] bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg px-[22px] py-[18px] mb-6 shadow-[var(--sc)] w-full md:justify-start">
             <div className="shrink-0">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
                 <rect width="24" height="24" rx="6" fill="#059669" />
                 <polyline points="7 13 10 16 17 9" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
               </svg>
             </div>
-            <div className="flex flex-col gap-0.5">
+            <div className="flex flex-col gap-0.5 overflow-hidden">
               <span className="text-[14px] font-bold text-[#059669]">이메일 인증 완료!</span>
-              <span className="text-[13px] text-[#6B7280]">{email}</span>
+              <span className="text-[13px] text-[#6B7280] truncate" title={email}>{email}</span>
             </div>
           </div>
 
-          {/* Steps */}
-          <div className="flex flex-row gap-2 w-full md:flex-col md:gap-2">
+          {/* Steps - 모바일에서는 숨김 */}
+          <div className="hidden md:flex md:flex-col md:gap-2 w-full">
             {[
               { done: true, num: null, name: "이메일로 계정 생성", sub: "완료" },
               { done: true, num: null, name: "이메일 인증 완료", sub: "완료" },
             ].map((step, i) => (
-              <div key={i} className="flex flex-col items-center text-center flex-1 px-[10px] py-3 rounded-lg opacity-60 md:flex-row md:items-center md:gap-[14px] md:text-left md:px-5 md:py-[14px]">
-                <div className="w-9 h-9 rounded-full flex items-center justify-center text-[14px] font-bold text-white bg-[#059669] shrink-0 mx-auto md:mx-0">
+              <div key={i} className="flex flex-row items-center gap-[14px] text-left px-5 py-[14px] rounded-lg opacity-60">
+                <div className="w-9 h-9 rounded-full flex items-center justify-center text-[14px] font-bold text-white bg-[#059669] shrink-0">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
                 </div>
-                <div className="flex flex-col gap-0.5 items-center md:items-start">
+                <div className="flex flex-col gap-0.5">
                   <span className="text-[14px] font-semibold text-[#0A0A0A]">{step.name}</span>
                   <span className="text-[12px] text-[#9CA3AF]">{step.sub}</span>
                 </div>
               </div>
             ))}
-            <div className="flex flex-col items-center text-center flex-1 px-[10px] py-3 rounded-lg bg-[#0A0A0A] transition-transform duration-200 hover:-translate-y-px md:flex-row md:items-center md:gap-[14px] md:text-left md:px-5 md:py-[14px]">
-              <div className="w-9 h-9 rounded-full flex items-center justify-center text-[14px] font-bold text-white bg-[#0991B2] shrink-0 mx-auto md:mx-0">3</div>
-              <div className="flex flex-col gap-0.5 items-center md:items-start">
+            <div className="flex flex-row items-center gap-[14px] text-left px-5 py-[14px] rounded-lg bg-[#0A0A0A] transition-transform duration-200 hover:-translate-y-px">
+              <div className="w-9 h-9 rounded-full flex items-center justify-center text-[14px] font-bold text-white bg-[#0991B2] shrink-0">3</div>
+              <div className="flex flex-col gap-0.5">
                 <span className="text-[14px] font-semibold text-white">프로필 작성 후 면접 시작</span>
                 <span className="text-[12px] text-white/50">지금 이 단계예요</span>
               </div>
@@ -148,8 +149,8 @@ export function OnboardingPage() {
         </section>
 
         {/* ── Right: Profile Card ── */}
-        <section className="flex justify-center w-full md:flex-none md:flex-1 md:max-w-form">
-          <div className="w-full bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg px-7 py-9 shadow-[var(--sc)] md:px-9 md:py-11">
+        <section className="flex justify-center w-full md:flex-1">
+          <div className="w-full max-w-[560px] bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg px-5 py-10 shadow-[var(--sc)] sm:px-7 sm:py-12">
             <h2 className="font-inter text-[22px] font-extrabold text-[#0A0A0A] mb-1.5">나를 알려주세요 👋</h2>
             <p className="text-[14px] text-[#6B7280] leading-[1.6] mb-6">
               면접 질문 맞춤화를 위해 딱 2가지만 입력하면 돼요.
@@ -291,9 +292,10 @@ export function OnboardingPage() {
             </button>
           </div>
         </section>
+        </div>
       </main>
 
-      <footer className="w-full max-w-container mx-auto px-5 py-8 flex justify-center gap-5 md:px-10 md:py-10">
+      <footer className="w-full max-w-container mx-auto px-5 py-6 flex justify-center gap-5 md:px-10 md:py-8">
         {["개인정보처리방침", "이용약관", "쿠키"].map((item) => (
           <a key={item} href="#" className="text-[11px] text-[#9CA3AF] no-underline transition-[color] duration-200 hover:text-[#6B7280]">
             {item}

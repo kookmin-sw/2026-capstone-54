@@ -75,48 +75,49 @@ export function VerifyEmailPage() {
         </button>
       </header>
 
-      <main className="flex-1 w-full max-w-container mx-auto px-5 flex flex-col gap-10 justify-center items-center text-center md:flex-row md:items-center md:px-10 md:gap-[60px] md:text-left">
+      <main className="flex-1 w-full mx-auto px-5 py-8 flex flex-col justify-center gap-8 md:px-10 md:py-12">
+        <div className="w-full max-w-[1000px] mx-auto flex flex-col gap-8 md:flex-row md:items-center md:gap-10 lg:gap-12">
         {/* Left */}
-        <section className="flex flex-col items-center md:flex-none md:flex-1 md:max-w-text md:items-start md:pt-4">
+        <section className="flex flex-col items-center md:flex-1 md:items-start">
           <div className="inline-block text-[12px] font-bold text-[#0991B2] bg-[#E6F7FA] rounded px-[14px] py-[5px] mb-[14px] self-center md:self-start md:text-[13px] md:px-[18px] md:py-[6px] md:mb-[18px]">
             ● STEP 2 OF 3
           </div>
-          <h1 className="font-inter text-[clamp(36px,9vw,56px)] font-black leading-[1.08] text-[#0A0A0A] mb-4 tracking-[-2px] md:text-[clamp(40px,4.5vw,56px)]">
+          <h1 className="font-inter text-[clamp(32px,8vw,48px)] font-black leading-[1.1] text-[#0A0A0A] mb-3 tracking-[-2px] text-center md:text-left md:text-[clamp(36px,3.5vw,48px)]">
             인증 메일을
             <br />
             <span className="gradient-text">확인</span>해주세요
           </h1>
-          <p className="text-[14px] text-[#6B7280] leading-[1.7] mb-8 md:text-[15px]">
+          <p className="text-[14px] text-[#6B7280] leading-[1.7] mb-6 text-center md:text-left md:text-[15px]">
             이메일 인증을 완료해야
             <br className="hidden md:block" />
             모든 기능을 이용할 수 있어요.
           </p>
 
-          <div className="flex flex-row gap-2 w-full md:flex-col md:gap-2">
+          <div className="hidden md:flex md:flex-col md:gap-2 w-full">
             {/* Done step */}
-            <div className="flex flex-col items-center text-center flex-1 px-[10px] py-3 rounded-lg opacity-60 md:flex-row md:items-center md:gap-[14px] md:text-left md:px-5 md:py-[14px]">
-              <div className="w-9 h-9 rounded-full flex items-center justify-center text-[14px] font-bold text-white bg-[#0A0A0A] shrink-0 mx-auto md:mx-0">
+            <div className="flex flex-row items-center gap-[14px] text-left px-5 py-[14px] rounded-lg opacity-60">
+              <div className="w-9 h-9 rounded-full flex items-center justify-center text-[14px] font-bold text-white bg-[#0A0A0A] shrink-0">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
               </div>
-              <div className="flex flex-col gap-0.5 items-center md:items-start">
+              <div className="flex flex-col gap-0.5">
                 <span className="text-[14px] font-semibold text-[#0A0A0A]">이메일로 계정 생성</span>
                 <span className="text-[12px] text-[#9CA3AF]">완료했어요</span>
               </div>
             </div>
             {/* Active step */}
-            <div className="flex flex-col items-center text-center flex-1 px-[10px] py-3 rounded-lg md:flex-row md:items-center md:gap-[14px] md:text-left md:px-5 md:py-[14px]">
-              <div className="w-9 h-9 rounded-full flex items-center justify-center text-[14px] font-bold text-[#EF4444] bg-[#FEE2E2] shrink-0 mx-auto md:mx-0">
+            <div className="flex flex-row items-center gap-[14px] text-left px-5 py-[14px] rounded-lg">
+              <div className="w-9 h-9 rounded-full flex items-center justify-center text-[14px] font-bold text-[#EF4444] bg-[#FEE2E2] shrink-0">
                 <span className="text-[18px] font-black">!</span>
               </div>
-              <div className="flex flex-col gap-0.5 items-center md:items-start">
+              <div className="flex flex-col gap-0.5">
                 <span className="text-[14px] font-bold text-[#EF4444]">이메일 인증 대기 중</span>
                 <span className="text-[12px] text-[#EF4444]">인증이 필요해요</span>
               </div>
             </div>
             {/* Pending step */}
-            <div className="flex flex-col items-center text-center flex-1 px-[10px] py-3 rounded-lg md:flex-row md:items-center md:gap-[14px] md:text-left md:px-5 md:py-[14px]">
-              <div className="w-9 h-9 rounded-full flex items-center justify-center text-[14px] font-bold text-[#6B7280] bg-[#E5E7EB] shrink-0 mx-auto md:mx-0">3</div>
-              <div className="flex flex-col gap-0.5 items-center md:items-start">
+            <div className="flex flex-row items-center gap-[14px] text-left px-5 py-[14px] rounded-lg">
+              <div className="w-9 h-9 rounded-full flex items-center justify-center text-[14px] font-bold text-[#6B7280] bg-[#E5E7EB] shrink-0">3</div>
+              <div className="flex flex-col gap-0.5">
                 <span className="text-[14px] font-semibold text-[#0A0A0A]">프로필 작성 후 면접 시작</span>
                 <span className="text-[12px] text-[#9CA3AF]">직군·경력 입력</span>
               </div>
@@ -125,8 +126,8 @@ export function VerifyEmailPage() {
         </section>
 
         {/* Right: Card */}
-        <section className="flex justify-center w-full md:flex-none md:flex-1 md:max-w-form">
-          <div className="w-full bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg px-7 py-10 shadow-[var(--sc)] text-center md:px-9 md:py-12">
+        <section className="flex justify-center w-full md:flex-1">
+          <div className="w-full max-w-[520px] bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg px-5 py-7 shadow-[var(--sc)] text-center sm:px-7 sm:py-9">
             {/* Lock icon */}
             <div className="inline-block relative mb-6">
               <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#E6F7FA] to-[#D1FAE5] flex items-center justify-center">
@@ -152,9 +153,9 @@ export function VerifyEmailPage() {
             </p>
 
             {/* Email display */}
-            <div className="flex items-center justify-center gap-[10px] bg-white border border-[#E5E7EB] rounded-lg px-5 py-[14px] mb-5">
+            <div className="flex items-center justify-center gap-[10px] bg-white border border-[#E5E7EB] rounded-lg px-5 py-[14px] mb-5 overflow-hidden">
               <span className="w-2 h-2 rounded-full bg-[#F59E0B] shrink-0" />
-              <span className="font-inter text-[15px] font-bold text-[#0A0A0A]">{email}</span>
+              <span className="font-inter text-[15px] font-bold text-[#0A0A0A] truncate" title={email}>{email}</span>
             </div>
 
             {/* Code input */}
@@ -232,9 +233,10 @@ export function VerifyEmailPage() {
             </p>
           </div>
         </section>
+        </div>
       </main>
 
-      <footer className="w-full max-w-container mx-auto px-5 py-8 flex justify-center gap-5 md:px-10 md:py-10">
+      <footer className="w-full max-w-container mx-auto px-5 py-6 flex justify-center gap-5 md:px-10 md:py-8">
         {["개인정보처리방침", "이용약관", "쿠키"].map((item) => (
           <a key={item} href="#" className="text-[11px] text-[#9CA3AF] no-underline transition-[color] duration-200 hover:text-[#6B7280]">
             {item}
