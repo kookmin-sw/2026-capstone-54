@@ -2,10 +2,8 @@
 
 import logging
 
-from interview.services.rag_pipeline.config import PipelineConfig
-from interview.services.rag_pipeline.exceptions import PipelineStepError
+from interview.exceptions import PipelineStepException
 from interview.services.rag_pipeline.followup_generator import FollowUpGenerator
-from interview.services.rag_pipeline.loader import DocumentLoader
 from interview.services.rag_pipeline.models import (
   FollowUpInput,
   FollowUpOutput,
@@ -42,12 +40,12 @@ class RAGPipeline:
   def run(self, input_data: PipelineInput) -> PipelineOutput:
     try:
       documents = self.loader.load_multiple(input_data.file_paths)
-    except Exception as e:
-      raise PipelineStepError("Document_Loader", e) from e
+    except Exception:
+      raise PipelineStepException("Document_Load 중 오류가 발생했습니다.")
     try:
       chunks = self.chunker.split_multiple(documents)
-    except Exception as e:
-      raise PipelineStepError("Chunker", e) from e
+    except Exception:
+      raise PipelineStepException("Chunking 중 오류가 발생했습니다.")
     try:
       self._last_chunks = [chunk.page_content for chunk in chunks]
       self._token_callback.reset()
@@ -58,8 +56,8 @@ class RAGPipeline:
       )
       question_step = StepUsage(step_name="question_generation", usage=self._token_callback.get_usage())
       questions = [InterviewQuestion(question=q.get("question", ""), source=q.get("source", "")) for q in raw_questions]
-    except Exception as e:
-      raise PipelineStepError("Question_Generator", e) from e
+    except Exception:
+      raise PipelineStepException("Question_Generator 진행 중 오류가 발생했습니다.")
     step_usages = [question_step]
     total_usage = self._sum_usages(step_usages)
     return PipelineOutput(
@@ -97,8 +95,8 @@ class RAGPipeline:
       usage = self._token_callback.get_usage()
       output.token_usage = usage if usage.call_count > 0 else None
       return output
-    except Exception as e:
-      raise PipelineStepError("FollowUp_Generator", e) from e
+    except Exception:
+      raise PipelineStepException("FollowUp_Generator 진행 중 오류가 발생했습니다.")
 
   @staticmethod
   def _sum_usages(step_usages: list[StepUsage]) -> TokenUsageStats:
