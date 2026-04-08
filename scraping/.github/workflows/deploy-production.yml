@@ -38,9 +38,14 @@ jobs:
               -n "${NS}" \
               --dry-run=client -o yaml | kubectl apply -f -
 
-            # Scraper Secret 주입
+            # scraper Secret 주입
             kubectl create secret generic mefit-production-scraper-secret \
               --from-literal=OPENAI_API_KEY="${{ secrets.SCRAPER_OPENAI_API_KEY }}" \
+              --from-literal=DATABASE_NAME="${{ secrets.DATABASE_NAME }}" \
+              --from-literal=POSTGRES_USER="${{ secrets.POSTGRES_USER }}" \
+              --from-literal=POSTGRES_PASSWORD="${{ secrets.POSTGRES_PASSWORD }}" \
+              --from-literal=POSTGRES_HOST="${{ secrets.POSTGRES_HOST }}" \
+              --from-literal=POSTGRES_PORT="${{ secrets.POSTGRES_PORT }}" \
               -n "${NS}" \
               --dry-run=client -o yaml | kubectl apply -f -
 

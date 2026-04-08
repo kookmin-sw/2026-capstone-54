@@ -14,5 +14,7 @@ dependencies = [
     "openai>=2.30.0",
     "playwright>=1.58.0",
     "pydantic>=2.12.5",
+    "psycopg2-binary>=2.9.0",
     "python-dotenv>=1.2.2",
+    "sqlalchemy>=2.0.0",
 ]

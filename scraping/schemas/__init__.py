@@ -8,6 +8,7 @@
     extractor    - LLM 추출 함수 I/O
 """
 
+from schemas.job_description import JobDescriptionTable
 from schemas.job_posting import JobPostingSchema
 from schemas.scraper import ScrapeRequest, ScrapeResult
 from schemas.pipeline import (
@@ -25,16 +26,17 @@ from schemas.extractor import (
 )
 
 __all__ = [
-    "JobPostingSchema",
-    "ScrapeRequest",
-    "ScrapeResult",
-    "PipelineInput",
-    "DirectRequestResult",
-    "PlaywrightCollectResult",
-    "PipelineOutput",
-    "CleanHTMLInput",
-    "CleanHTMLOutput",
-    "LLMExtractInput",
-    "VisionLLMExtractInput",
-    "LLMExtractOutput",
+  "JobDescriptionTable",
+  "JobPostingSchema",
+  "ScrapeRequest",
+  "ScrapeResult",
+  "PipelineInput",
+  "DirectRequestResult",
+  "PlaywrightCollectResult",
+  "PipelineOutput",
+  "CleanHTMLInput",
+  "CleanHTMLOutput",
+  "LLMExtractInput",
+  "VisionLLMExtractInput",
+  "LLMExtractOutput",
 ]

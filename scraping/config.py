@@ -42,3 +42,17 @@ OPENAI_VISION_MODEL = os.getenv("OPENAI_VISION_MODEL", "gpt-4o")  # 이미지 �
 
 # LLM 추출 설정
 LLM_MAX_TEXT_CHARS = int(os.getenv("LLM_MAX_TEXT_CHARS", "10000"))  # HTML에서 추출한 텍스트 최대 길이
+
+# ── Database (backend/ job_descriptions 테이블에 직접 저장) ──
+DB_HOST = os.getenv("POSTGRES_HOST", "localhost")
+DB_PORT = int(os.getenv("POSTGRES_PORT", "5432"))
+DB_NAME = os.getenv("DATABASE_NAME", "team_four_db")
+DB_USER = os.getenv("POSTGRES_USER", "postgres")
+DB_PASSWORD = os.getenv("POSTGRES_PASSWORD", "")
+
+# SQLAlchemy용 DATABASE_URL
+# 운영: AWS RDS → 환경변수로 주입 (sslmode 등 필요 시 DATABASE_URL에 포함)
+DATABASE_URL: str = os.getenv(
+    "DATABASE_URL",
+    f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}",
+)
