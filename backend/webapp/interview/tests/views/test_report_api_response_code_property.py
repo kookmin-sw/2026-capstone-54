@@ -16,6 +16,7 @@ from django.utils import timezone
 from hypothesis import given, settings
 from hypothesis import strategies as st
 from hypothesis.extra.django import TestCase
+from interview.enums import AnalysisReportStatus
 from interview.models import AnalysisReport, InterviewExchange, InterviewSession
 from rest_framework import status
 from rest_framework.test import APIClient
@@ -77,7 +78,7 @@ class ReportAPIResponseCodePropertyTests(TestCase):
 
     # report_id가 실제 DB에 존재하는지 확인
     report = AnalysisReport.objects.get(id=response.data["report_id"])
-    self.assertEqual(report.status, AnalysisReport.Status.GENERATING)
+    self.assertEqual(report.status, AnalysisReportStatus.GENERATING)
     self.assertEqual(report.session_id, session.id)
 
     # cleanup

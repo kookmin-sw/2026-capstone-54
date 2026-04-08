@@ -5,16 +5,12 @@
 
 from common.models import BaseModel
 from django.db import models
+from interview.enums import AnalysisReportStatus
 from interview.models.interview_session import InterviewSession
 
 
 class AnalysisReport(BaseModel):
   """면접 세션에 대한 종합 분석 리포트."""
-
-  class Status(models.TextChoices):
-    GENERATING = "generating", "생성 중"
-    COMPLETED = "completed", "완료"
-    FAILED = "failed", "실패"
 
   class Meta(BaseModel.Meta):
     db_table = "analysis_reports"
@@ -22,7 +18,9 @@ class AnalysisReport(BaseModel):
     verbose_name_plural = "Analysis Reports"
 
   session = models.OneToOneField(InterviewSession, on_delete=models.CASCADE, related_name="report")
-  status = models.CharField(max_length=15, choices=Status.choices, default=Status.GENERATING)
+  status = models.CharField(
+    max_length=15, choices=AnalysisReportStatus.choices, default=AnalysisReportStatus.GENERATING
+  )
   error_message = models.TextField(blank=True, default="")
 
   # 종합 점수

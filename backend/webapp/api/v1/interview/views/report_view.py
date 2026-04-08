@@ -11,6 +11,7 @@ from celery import current_app
 from common.permissions import AllowAny
 from common.views import BaseAPIView
 from drf_spectacular.utils import extend_schema
+from interview.enums import AnalysisReportStatus
 from interview.models import AnalysisReport, InterviewExchange, InterviewSession
 from rest_framework import status
 from rest_framework.response import Response
@@ -58,7 +59,7 @@ class ReportAPIView(BaseAPIView):
     # AnalysisReport 생성 (status=generating)
     report = AnalysisReport.objects.create(
       session=session,
-      status=AnalysisReport.Status.GENERATING,
+      status=AnalysisReportStatus.GENERATING,
     )
 
     # Celery 태스크 발행 (analysis 큐 라우팅)
@@ -70,7 +71,7 @@ class ReportAPIView(BaseAPIView):
       )
     except Exception:
       logger.exception("Failed to send analysis task for report %s", report.id)
-      report.status = AnalysisReport.Status.FAILED
+      report.status = AnalysisReportStatus.FAILED
       report.error_message = "태스크 발행에 실패했습니다."
       report.save(update_fields=["status", "error_message"])
       return Response(
@@ -110,7 +111,7 @@ class ReportAPIView(BaseAPIView):
       )
 
     # generating 상태면 상태만 반환
-    if report.status == AnalysisReport.Status.GENERATING:
+    if report.status == AnalysisReportStatus.GENERATING:
       serializer = ReportStatusSerializer(report)
       return Response(serializer.data)
 

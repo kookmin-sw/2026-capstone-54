@@ -14,10 +14,11 @@ from django.utils import timezone
 from hypothesis import given, settings
 from hypothesis import strategies as st
 from hypothesis.extra.django import TestCase
+from interview.enums import AnalysisReportStatus
 from interview.models import AnalysisReport, InterviewSession
 
 status_values = st.sampled_from(
-  [AnalysisReport.Status.GENERATING, AnalysisReport.Status.COMPLETED, AnalysisReport.Status.FAILED]
+  [AnalysisReportStatus.GENERATING, AnalysisReportStatus.COMPLETED, AnalysisReportStatus.FAILED]
 )
 
 score_values = st.integers(min_value=0, max_value=100)
@@ -50,7 +51,7 @@ class AnalysisReportOneToOnePropertyTests(TestCase):
       with transaction.atomic():
         AnalysisReport.objects.create(
           session=self.session,
-          status=AnalysisReport.Status.GENERATING,
+          status=AnalysisReportStatus.GENERATING,
         )
 
     report.delete()
@@ -67,7 +68,7 @@ class AnalysisReportOneToOnePropertyTests(TestCase):
         """
     first_report = AnalysisReport.objects.create(
       session=self.session,
-      status=AnalysisReport.Status.COMPLETED,
+      status=AnalysisReportStatus.COMPLETED,
       overall_score=first_score,
     )
     first_id = first_report.id
@@ -76,7 +77,7 @@ class AnalysisReportOneToOnePropertyTests(TestCase):
     first_report.delete()
     second_report = AnalysisReport.objects.create(
       session=self.session,
-      status=AnalysisReport.Status.COMPLETED,
+      status=AnalysisReportStatus.COMPLETED,
       overall_score=second_score,
     )
 
@@ -100,11 +101,11 @@ class AnalysisReportOneToOnePropertyTests(TestCase):
 
     report1 = AnalysisReport.objects.create(
       session=self.session,
-      status=AnalysisReport.Status.COMPLETED,
+      status=AnalysisReportStatus.COMPLETED,
     )
     report2 = AnalysisReport.objects.create(
       session=session2,
-      status=AnalysisReport.Status.COMPLETED,
+      status=AnalysisReportStatus.COMPLETED,
     )
 
     self.assertEqual(AnalysisReport.objects.count(), 2)
