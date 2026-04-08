@@ -108,9 +108,6 @@ class JobDescription(BaseModel):
     verbose_name="에러 메시지",
   )
 
-
-
-
   def __str__(self):
     return f"[{self.get_collection_status_display()}] {self.title or self.url}"
 
@@ -131,5 +128,3 @@ class JobDescription(BaseModel):
     self.collection_status = CollectionStatus.ERROR
     self.error_message = message
     self.save(update_fields=["collection_status", "error_message", "updated_at"])
-
-

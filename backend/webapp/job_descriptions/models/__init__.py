@@ -1,5 +1,4 @@
-from .job_description import JobDescription  
-
+from .job_description import JobDescription
 
 __all__ = [
   "JobDescription",
