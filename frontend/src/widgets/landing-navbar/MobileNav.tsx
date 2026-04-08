@@ -30,15 +30,13 @@ export function MobileNav() {
         {/* 로고 */}
         <Link
           to="/"
-          style={{
-            fontFamily: "'Inter', sans-serif",
-            fontSize: 20,
-            fontWeight: 900,
-            color: "#0A0A0A",
-            textDecoration: "none",
-          }}
+          className="flex items-center no-underline"
         >
-          me<span style={{ color: "#0991B2" }}>Fit</span>
+          <img 
+            src="/logo-korean.png" 
+            alt="미핏" 
+            className="h-[40px] w-auto"
+          />
         </Link>
 
         {/* 우측 */}

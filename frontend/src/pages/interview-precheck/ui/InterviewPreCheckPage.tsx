@@ -85,8 +85,8 @@ export function InterviewPreCheckPage() {
     <>
       {/* ── NAV ── */}
       <nav className="sticky top-0 z-[200] bg-white/[.92] backdrop-blur-[20px] border-b border-[#E5E7EB] h-[60px] flex items-center px-8 gap-4">
-        <a className="text-[20px] font-black text-[#0A0A0A] no-underline tracking-[-0.4px] mr-auto" href="/home">
-          me<span className="text-[#0991B2]">Fit</span>
+        <a className="flex items-center mr-auto" href="/home">
+          <img src="/logo-korean.png" alt="미핏" className="h-[36px] w-auto" />
         </a>
         <a className="text-sm font-medium text-[#6B7280] no-underline px-3 py-1.5 rounded-lg transition-colors hover:text-[#0A0A0A] hover:bg-[#F9FAFB]" href="/home">홈</a>
         <a className="text-sm font-medium text-[#6B7280] no-underline px-3 py-1.5 rounded-lg transition-colors hover:text-[#0A0A0A] hover:bg-[#F9FAFB]" href="#">이력서</a>

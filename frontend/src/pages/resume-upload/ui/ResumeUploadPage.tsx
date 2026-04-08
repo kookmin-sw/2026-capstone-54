@@ -101,8 +101,8 @@ export function ResumeUploadPage() {
               onClick={() => navigate(-1)}
               aria-label="뒤로가기"
             >←</button>
-            <a href="/home" className="text-xl font-black text-[#0A0A0A] no-underline">
-              me<span className="text-[#0991B2]">Fit</span>
+            <a href="/home" className="flex items-center">
+              <img src="/logo-korean.png" alt="미핏" className="h-[36px] w-auto" />
             </a>
           </div>
           <span className="text-base md:text-lg font-extrabold text-[#0A0A0A]">이력서 등록</span>

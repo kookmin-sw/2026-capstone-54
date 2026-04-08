@@ -3,7 +3,7 @@ import { Button } from "@/shared/ui";
 export function CtaSection() {
   return (
     <section className="py-12 px-5 flex justify-center bg-white md:py-20 md:px-10">
-      <div className="max-w-content w-full bg-[#0A0A0A] rounded-lg px-5 py-10 text-center shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)] md:max-w-container md:rounded-lg md:px-[80px] md:py-[88px]">
+      <div className="max-w-content w-full bg-[#0A0A0A] rounded-lg px-5 py-10 text-center shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)] md:max-w-[900px] md:rounded-lg md:px-[80px] md:py-[88px]">
         <h2 className="font-inter text-[clamp(32px,10vw,48px)] font-black text-white mb-4 leading-[1.1] md:text-[clamp(36px,5vw,56px)] md:mb-6">
           未fit에서<br />meFit으로.
         </h2>

@@ -11,7 +11,7 @@ export function HeroSection() {
       id="hero"
       className="min-h-svh flex flex-col items-center justify-center text-center px-5 pt-20 pb-12 relative overflow-hidden bg-white md:px-10 md:pt-25 md:pb-16"
     >
-      <div className="relative z-10 max-w-container w-full flex flex-col items-center gap-10 md:gap-12">
+      <div className="relative z-10 max-w-content w-full flex flex-col items-center gap-10 md:max-w-[820px] md:gap-12">
         <div className="flex flex-col items-center w-full">
             <div className="inline-flex items-center gap-[7px] bg-[#F9FAFB] border border-[#E5E7EB] rounded-full px-[14px] py-[6px] text-[12px] font-[600] text-[#374151] mb-6 leading-none">       
               <span className="w-[7px] h-[7px] rounded-full bg-[#059669] inline-block shrink-0" />

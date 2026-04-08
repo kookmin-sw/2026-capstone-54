@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 
 export function VerifyEmailPage() {
   const navigate = useNavigate();
-  const { pendingEmail, isLoading, error, resendVerification, verifyCode, logout, clearError } = useAuthStore();
+  const { pendingEmail, isVerifying, isResending, error, resendVerification, verifyCode, logout, clearError } = useAuthStore();
   const [resent, setResent] = useState(false);
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -63,8 +63,8 @@ export function VerifyEmailPage() {
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <header className="w-full max-w-container mx-auto flex justify-between items-center px-5 pt-5 md:px-10 md:pt-7">
-        <Link to="/" className="font-inter text-[22px] font-black text-[#0A0A0A] no-underline">
-          me<span style={{ color: "#0991B2" }}>Fit</span>
+        <Link to="/" className="flex items-center">
+          <img src="/logo-korean.png" alt="미핏" className="h-[44px] w-auto md:h-[50px]" />
         </Link>
         <button
           type="button"
@@ -187,9 +187,9 @@ export function VerifyEmailPage() {
               type="button"
               className="w-full py-[15px] bg-[#0991B2] text-white font-inter text-[15px] font-bold border-none rounded-lg cursor-pointer transition-opacity duration-200 mb-5 hover:enabled:opacity-85 disabled:opacity-50 disabled:cursor-not-allowed md:py-4 md:text-[16px]"
               onClick={handleVerify}
-              disabled={isLoading || fullCode.length < 6}
+              disabled={isVerifying || fullCode.length < 6}
             >
-              {isLoading ? "확인 중..." : "인증 완료 →"}
+              {isVerifying ? "확인 중..." : "인증 완료 →"}
             </button>
 
             {/* Resend label */}
@@ -200,9 +200,9 @@ export function VerifyEmailPage() {
               type="button"
               className="w-full py-[15px] bg-[#0A0A0A] text-white font-inter text-[15px] font-bold border-none rounded-lg cursor-pointer transition-opacity duration-200 flex items-center justify-center gap-[10px] mb-3 hover:enabled:opacity-85 disabled:opacity-50 disabled:cursor-not-allowed md:py-4 md:text-[16px]"
               onClick={handleResend}
-              disabled={isLoading}
+              disabled={isResending}
             >
-              {isLoading ? "발송 중..." : (
+              {isResending ? "발송 중..." : (
                 <>
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
                     <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
