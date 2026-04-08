@@ -57,5 +57,8 @@ class InterviewSession(BaseModel):
   # RAG 정보
   total_chunks_retrieved = models.IntegerField(default=0, help_text="RAG에서 검색된 총 청크 수")
 
+  # 질문 메타데이터 캐시 (질문 텍스트 → source 매핑)
+  question_sources = models.JSONField(default=dict, blank=True, help_text="질문별 source 매핑 {question_text: source}")
+
   def __str__(self):
     return f"Session {self.id} | {self.model_name} | {self.status} | {self.created_at:%Y-%m-%d %H:%M}"

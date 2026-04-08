@@ -24,6 +24,25 @@ class InterviewStartAPIView(BaseAPIView):
 
   permission_classes = [AllowAny]
 
+  @staticmethod
+  def _resolve_source(file_path: str, file_paths: list[str]) -> str:
+    """RAG 파이프라인의 source 파일 경로를 resume/job_posting으로 변환한다."""
+    if not file_path:
+      return ""
+    resume_file = file_paths[0] if file_paths else ""
+    job_posting_file = file_paths[1] if len(file_paths) > 1 else ""
+    if resume_file and file_path == resume_file:
+      return "resume"
+    if job_posting_file and file_path == job_posting_file:
+      return "job_posting"
+    # 파일명에 키워드가 포함된 경우 폴백
+    lower = file_path.lower()
+    if "resume" in lower or "이력서" in lower:
+      return "resume"
+    if "job" in lower or "채용" in lower or "posting" in lower:
+      return "job_posting"
+    return ""
+
   @extend_schema(
     summary="면접 시작 (세션 생성 + 질문 생성)",
     request=InterviewStartRequestSerializer,
@@ -52,6 +71,8 @@ class InterviewStartAPIView(BaseAPIView):
       total_chunks_retrieved=output.total_chunks_retrieved,
       resume_file=data["file_paths"][0] if data["file_paths"] else "",
       job_posting_file=data["file_paths"][1] if len(data["file_paths"]) > 1 else "",
+      question_sources={q.question: self._resolve_source(q.source, data["file_paths"])
+                        for q in output.questions},
     )
 
     # 토큰 사용량 기록
@@ -102,6 +123,18 @@ class InterviewAnswerAPIView(BaseAPIView):
 
     session = InterviewSession.objects.get(id=session_id)
 
+    # question_source 자동 결정: 클라이언트 값 우선, 없으면 세션 캐시에서 조회
+    question_source = data.get("question_source", "")
+    if not question_source and data["exchange_type"] == "initial":
+      question_source = (session.question_sources or {}).get(data["question"], "")
+
+    # question_purpose 자동 결정: 클라이언트 값 우선
+    question_purpose = data.get("question_purpose", "")
+    if not question_purpose and data["exchange_type"] == "followup":
+      cached = (session.question_sources or {}).get(data["question"], "")
+      if cached.startswith("purpose:"):
+        question_purpose = cached[len("purpose:"):]
+
     # exchange 저장
     exchange = InterviewExchange.objects.create(
       session=session,
@@ -109,8 +142,8 @@ class InterviewAnswerAPIView(BaseAPIView):
       depth=data["depth"],
       question=data["question"],
       answer=data["answer"],
-      question_source=data.get("question_source", ""),
-      question_purpose=data.get("question_purpose", ""),
+      question_source=question_source,
+      question_purpose=question_purpose,
     )
 
     # 세션 통계 갱신
@@ -148,6 +181,14 @@ class InterviewAnswerAPIView(BaseAPIView):
           "rationale": fq.rationale
         } for fq in followup_output.followup_questions
       ]
+
+      # 꼬리질문의 rationale을 세션 캐시에 저장 (다음 답변 제출 시 question_purpose로 자동 매핑)
+      sources = session.question_sources or {}
+      for fq in followup_output.followup_questions:
+        if fq.question and fq.rationale:
+          sources[fq.question] = f"purpose:{fq.rationale}"
+      session.question_sources = sources
+      session.save(update_fields=["question_sources"])
 
       if followup_output.token_usage:
         usage = followup_output.token_usage
