@@ -33,7 +33,7 @@ COPY pyproject.toml uv.lock /_lock/
 
 RUN --mount=type=cache,target=/root/.cache \
   cd /_lock/ && \
-  uv sync --frozen --no-install-project
+  uv sync --frozen --no-install-project --all-groups
 
 WORKDIR /app/webapp
 

@@ -24,12 +24,12 @@ Usage::
   RegisteredCreateSomethingTask.apply_async(kwargs={"user_id": 1}, countdown=10)
 """
 
-import logging
 from abc import abstractmethod
 
+import structlog
 from celery import Task
 
-logger = logging.getLogger(__name__)
+logger = structlog.getLogger(__name__)
 
 
 class BaseTask(Task):

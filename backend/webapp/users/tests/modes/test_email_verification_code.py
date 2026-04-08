@@ -2,20 +2,17 @@ from datetime import timedelta
 
 from django.test import TestCase
 from django.utils import timezone
-from users.models import EmailVerificationCode, User
+from users.factories import EmailVerificationCodeFactory, UserFactory
+from users.models import EmailVerificationCode
 
 
 class EmailVerificationCodeModelTests(TestCase):
 
   def setUp(self):
-    self.user = User.objects.create_user(
-      email="model_test@example.com",
-      password="TestPass123!",
-      name="테스트유저",
-    )
+    self.user = UserFactory()
 
   def _make_code(self, code="ABC123", minutes=10, used=False):
-    obj = EmailVerificationCode.objects.create(
+    obj = EmailVerificationCodeFactory(
       user=self.user,
       code=code,
       expires_at=timezone.now() + timedelta(minutes=minutes),
@@ -37,11 +34,7 @@ class EmailVerificationCodeModelTests(TestCase):
 
   def test_is_used_defaults_to_false(self):
     """used_at이 없으면 is_used는 False다"""
-    obj = EmailVerificationCode.objects.create(
-      user=self.user,
-      code="XYZ789",
-      expires_at=timezone.now() + timedelta(minutes=10),
-    )
+    obj = EmailVerificationCodeFactory(user=self.user, code="XYZ789")
     self.assertFalse(obj.is_used)
     self.assertIsNone(obj.used_at)
 

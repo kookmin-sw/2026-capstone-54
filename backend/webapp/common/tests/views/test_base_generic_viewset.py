@@ -1,12 +1,11 @@
 from common.views import BaseGenericViewSet
-from django.contrib.auth import get_user_model
 from django.test import TestCase
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.test import APIRequestFactory
+from users.factories import UserFactory
 
-User = get_user_model()
 factory = APIRequestFactory()
 
 
@@ -22,10 +21,7 @@ class BaseGenericViewSetAuthTest(TestCase):
   """BaseGenericViewSet 인증 테스트"""
 
   def setUp(self):
-    self.user = User.objects.create_user(
-      email="test@example.com",
-      password="testpass123",
-    )
+    self.user = UserFactory()
     self.ping_view = DummyGenericViewSet.as_view({"get": "ping"})
 
   def test_unauthenticated_request_returns_401_or_403(self):

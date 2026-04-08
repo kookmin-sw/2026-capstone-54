@@ -56,12 +56,4 @@ class InterviewSessionSerializer(serializers.ModelSerializer):
       "total_initial_questions",
       "total_followup_questions",
       "avg_answer_length",
-      "total_input_tokens",
-      "total_output_tokens",
-      "total_tokens",
-      "total_cost_usd",
-      "resume_file",
-      "job_posting_file",
-      "total_chunks_retrieved",
-      "created_at",
     ]
