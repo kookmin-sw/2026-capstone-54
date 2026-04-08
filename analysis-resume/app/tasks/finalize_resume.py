@@ -3,7 +3,6 @@
 from app import config, db
 from app.celery_app import app
 from app.common import embed_texts
-from app.db import get_connection
 from app.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -44,17 +43,7 @@ def finalize_resume_task(self, group_results: list[dict]) -> dict:
       analysis_embed_tokens += tokens
 
     if extra_chunks:
-      with get_connection() as conn:
-        with conn.cursor() as cur:
-          cur.executemany(
-            """
-            INSERT INTO resume_embeddings
-              (uuid, resume_id, user_id, embedding_vector, context, chunk_type, chunk_index, created_at, updated_at)
-            VALUES
-              (gen_random_uuid(), %s, %s, %s, %s, %s, 0, NOW(), NOW())
-            """,
-            [(resume_uuid, user_id, emb, ctx, ctype) for ctx, emb, ctype in extra_chunks],
-          )
+      db.insert_embeddings(resume_uuid=resume_uuid, user_id=user_id, chunks=extra_chunks)
 
     if analysis_embed_tokens > 0:
       db.record_token_usage(

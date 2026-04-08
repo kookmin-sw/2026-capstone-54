@@ -24,6 +24,13 @@ DB_NAME = os.getenv("DATABASE_NAME", "mefit")
 DB_USER = os.getenv("POSTGRES_USER", "postgres")
 DB_PASSWORD = os.getenv("POSTGRES_PASSWORD", "")
 
+# SQLAlchemy용 DATABASE_URL
+# 운영: AWS RDS → 환경변수로 주입 (sslmode 등 필요 시 DATABASE_URL에 포함)
+DATABASE_URL: str = os.getenv(
+    "DATABASE_URL",
+    f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}",
+)
+
 # ── OpenAI ───────────────────────────────────────
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 OPENAI_EMBEDDING_MODEL = os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small")
