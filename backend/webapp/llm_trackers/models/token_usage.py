@@ -7,12 +7,11 @@ Django의 GenericForeignKey를 활용하여 어떤 모델 인스턴스에도 토
 
 from decimal import Decimal
 
-from common.enums.token_operation import TokenOperation
-from common.enums.token_usage_context import TokenUsageContext
 from common.models.base_model import BaseModel
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
+from llm_trackers.enums import TokenOperation, TokenUsageContext
 
 
 class TokenUsage(BaseModel):
