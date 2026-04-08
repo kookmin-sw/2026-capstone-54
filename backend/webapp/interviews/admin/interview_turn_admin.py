@@ -7,7 +7,7 @@ from unfold.admin import ModelAdmin
 class InterviewTurnAdmin(ModelAdmin):
   list_display = (
     "pk",
-    "session_id",
+    "interview_session_id",
     "turn_type",
     "question_source",
     "turn_number",
@@ -18,8 +18,8 @@ class InterviewTurnAdmin(ModelAdmin):
     "turn_type",
     "question_source",
   )
-  list_select_related = ("session", )
-  search_fields = ("question", "session__user__email")
+  list_select_related = ("interview_session", )
+  search_fields = ("question", "interview_session__user__email")
   ordering = ("-created_at", )
   readonly_fields = ("pk", "created_at", "updated_at")
 
@@ -27,7 +27,7 @@ class InterviewTurnAdmin(ModelAdmin):
     (None, {
       "fields": (
         "pk",
-        "session",
+        "interview_session",
         "turn_type",
         "question_source",
         "turn_number",

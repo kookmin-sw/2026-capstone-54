@@ -3,10 +3,10 @@
 from common.models import BaseModel
 from django.contrib.contenttypes.fields import GenericRelation
 from django.db import models
-from interviews.enums import InterviewReportStatus
+from interviews.enums import InterviewAnalysisReportStatus
 
 
-class AnalysisReport(BaseModel):
+class InterviewAnalysisReport(BaseModel):
   """면접 세션 종료 후 AI가 생성하는 종합 분석 리포트.
 
     interview-analysis-report Celery worker가 비동기로 채운다.
@@ -14,20 +14,20 @@ class AnalysisReport(BaseModel):
     """
 
   class Meta(BaseModel.Meta):
-    db_table = "analysis_reports"
+    db_table = "interview_analysis_reports"
     verbose_name = "면접 분석 리포트"
     verbose_name_plural = "면접 분석 리포트 목록"
 
-  session = models.OneToOneField(
+  interview_session = models.OneToOneField(
     "interviews.InterviewSession",
     on_delete=models.CASCADE,
     related_name="analysis_report",
     verbose_name="면접 세션",
   )
-  analysis_report_status = models.CharField(
+  interview_analysis_report_status = models.CharField(
     max_length=15,
-    choices=InterviewReportStatus.choices,
-    default=InterviewReportStatus.PENDING,
+    choices=InterviewAnalysisReportStatus.choices,
+    default=InterviewAnalysisReportStatus.PENDING,
     verbose_name="리포트 상태",
   )
   error_message = models.TextField(blank=True, default="", verbose_name="에러 메시지")
@@ -51,17 +51,17 @@ class AnalysisReport(BaseModel):
   )
 
   def __str__(self):
-    return f"AnalysisReport #{self.pk} [{self.get_analysis_report_status_display()}]"
+    return f"AnalysisReport #{self.pk} [{self.get_interview_analysis_report_status_display()}]"
 
   def mark_generating(self) -> None:
-    self.analysis_report_status = InterviewReportStatus.GENERATING
+    self.analysis_report_status = InterviewAnalysisReportStatus.GENERATING
     self.save(update_fields=["analysis_report_status", "updated_at"])
 
   def mark_completed(self) -> None:
-    self.analysis_report_status = InterviewReportStatus.COMPLETED
+    self.analysis_report_status = InterviewAnalysisReportStatus.COMPLETED
     self.save(update_fields=["analysis_report_status", "updated_at"])
 
   def mark_failed(self, message: str = "") -> None:
-    self.analysis_report_status = InterviewReportStatus.FAILED
+    self.analysis_report_status = InterviewAnalysisReportStatus.FAILED
     self.error_message = message
     self.save(update_fields=["analysis_report_status", "error_message", "updated_at"])

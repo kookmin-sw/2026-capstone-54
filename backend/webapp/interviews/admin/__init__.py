@@ -1,9 +1,9 @@
-from interviews.admin.analysis_report_admin import AnalysisReportAdmin
-from interviews.admin.interview_session_admin import InterviewSessionAdmin
-from interviews.admin.interview_turn_admin import InterviewTurnAdmin
+from .interview_analysis_report_admin import InterviewAnalysisReportAdmin
+from .interview_session_admin import InterviewSessionAdmin
+from .interview_turn_admin import InterviewTurnAdmin
 
 __all__ = [
-  "AnalysisReportAdmin",
+  "InterviewAnalysisReportAdmin",
   "InterviewSessionAdmin",
   "InterviewTurnAdmin",
 ]

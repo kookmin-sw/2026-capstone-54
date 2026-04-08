@@ -48,18 +48,18 @@ class InterviewSession(BaseModelWithUUID):
     verbose_name="사용자 채용공고",
   )
 
-  session_type = models.CharField(
+  interview_session_type = models.CharField(
     max_length=20,
     choices=InterviewSessionType.choices,
     verbose_name="세션 유형",
   )
-  session_status = models.CharField(
+  interview_session_status = models.CharField(
     max_length=20,
     choices=InterviewSessionStatus.choices,
     default=InterviewSessionStatus.IN_PROGRESS,
     verbose_name="세션 상태",
   )
-  difficulty_level = models.CharField(
+  interview_difficulty_level = models.CharField(
     max_length=20,
     choices=InterviewDifficultyLevel.choices,
     default=InterviewDifficultyLevel.NORMAL,

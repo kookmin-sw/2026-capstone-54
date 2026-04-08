@@ -1,21 +1,21 @@
 from django.contrib import admin
-from interviews.models.analysis_report import AnalysisReport
+from interviews.models import InterviewAnalysisReport
 from unfold.admin import ModelAdmin
 
 
-@admin.register(AnalysisReport)
-class AnalysisReportAdmin(ModelAdmin):
+@admin.register(InterviewAnalysisReport)
+class InterviewAnalysisReportAdmin(ModelAdmin):
   list_display = (
     "pk",
-    "session_id",
-    "analysis_report_status",
+    "interview_session_id",
+    "interview_analysis_report_status",
     "overall_score",
     "overall_grade",
     "created_at",
   )
-  list_filter = ("analysis_report_status", )
-  list_select_related = ("session", )
-  search_fields = ("session__user__email", )
+  list_filter = ("interview_analysis_report_status", )
+  list_select_related = ("interview_session", )
+  search_fields = ("interview_session__user__email", )
   ordering = ("-created_at", )
   readonly_fields = ("pk", "created_at", "updated_at")
 
@@ -23,8 +23,8 @@ class AnalysisReportAdmin(ModelAdmin):
     (None, {
       "fields": (
         "pk",
-        "session",
-        "analysis_report_status",
+        "interview_session",
+        "interview_analysis_report_status",
         "error_message",
       ),
     }),

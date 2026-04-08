@@ -17,7 +17,7 @@ class InterviewTurn(BaseModel):
     verbose_name_plural = "면접 턴 목록"
     ordering = ["created_at"]
 
-  session = models.ForeignKey(
+  interview_session = models.ForeignKey(
     "interviews.InterviewSession",
     on_delete=models.CASCADE,
     related_name="turns",

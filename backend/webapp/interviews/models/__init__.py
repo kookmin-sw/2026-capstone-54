@@ -1,9 +1,9 @@
-from interviews.models.analysis_report import AnalysisReport
-from interviews.models.interview_session import InterviewSession
-from interviews.models.interview_turn import InterviewTurn
+from .interview_analysis_report import InterviewAnalysisReport
+from .interview_session import InterviewSession
+from .interview_turn import InterviewTurn
 
 __all__ = [
-  "AnalysisReport",
+  "InterviewAnalysisReport",
   "InterviewSession",
   "InterviewTurn",
 ]

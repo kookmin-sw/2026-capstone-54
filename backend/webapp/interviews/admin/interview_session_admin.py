@@ -8,17 +8,17 @@ class InterviewSessionAdmin(ModelAdmin):
   list_display = (
     "pk",
     "user__email",
-    "session_type",
-    "session_status",
-    "difficulty_level",
+    "interview_session_type",
+    "interview_session_status",
+    "interview_difficulty_level",
     "total_questions",
     "total_followup_questions",
     "created_at",
   )
   list_filter = (
-    "session_type",
-    "session_status",
-    "difficulty_level",
+    "interview_session_type",
+    "interview_session_status",
+    "interview_difficulty_level",
   )
   list_select_related = ("user", "resume", "user_job_description")
   search_fields = ("user__email", )
@@ -34,11 +34,11 @@ class InterviewSessionAdmin(ModelAdmin):
         "user_job_description",
       ),
     }),
-    ("세션 설정", {
+    ("인터뷰 세션 설정", {
       "fields": (
-        "session_type",
-        "session_status",
-        "difficulty_level",
+        "interview_session_type",
+        "interview_session_status",
+        "interview_difficulty_level",
       ),
     }),
     ("통계", {
