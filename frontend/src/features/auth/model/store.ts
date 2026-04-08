@@ -18,6 +18,8 @@ interface LoginResult {
 interface AuthState {
   user: UserMe | null;
   isLoading: boolean;
+  isVerifying: boolean;
+  isResending: boolean;
   error: string | null;
   pendingEmail: string | null;
 
@@ -35,6 +37,8 @@ interface AuthState {
 export const useAuthStore = create<AuthState>()((set) => ({
   user: null,
   isLoading: false,
+  isVerifying: false,
+  isResending: false,
   error: null,
   pendingEmail: null,
 
@@ -69,24 +73,24 @@ export const useAuthStore = create<AuthState>()((set) => ({
   },
 
   verifyCode: async (code) => {
-    set({ isLoading: true, error: null });
+    set({ isVerifying: true, error: null });
     const res = await verifyEmailApi(code);
     if (!res.success) {
-      set({ isLoading: false, error: res.message });
+      set({ isVerifying: false, error: res.message });
       return false;
     }
-    set({ isLoading: false });
+    set({ isVerifying: false });
     return true;
   },
 
   resendVerification: async () => {
-    set({ isLoading: true, error: null });
+    set({ isResending: true, error: null });
     const res = await resendVerifyEmailApi();
     if (!res.success) {
-      set({ isLoading: false, error: res.message });
+      set({ isResending: false, error: res.message });
       return false;
     }
-    set({ isLoading: false });
+    set({ isResending: false });
     return true;
   },
 
