@@ -1,0 +1,62 @@
+"""Flower 모니터링 UI 프록시 — Django admin 인증(is_staff) 전용."""
+
+import urllib.error
+import urllib.request
+from urllib.parse import urlparse
+
+from django.conf import settings
+from django.http import HttpRequest, HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+
+_FLOWER_BASE = settings.FLOWER_INTERNAL_URL
+
+# settings 값이 http(s):// 이외의 scheme이면 서버 시작 시점에 즉시 실패
+_scheme = urlparse(_FLOWER_BASE).scheme
+if _scheme not in {"http", "https"}:
+  raise ValueError(f"FLOWER_INTERNAL_URL scheme must be http or https, got: {_scheme!r}")
+
+# 프록시 시 제거할 hop-by-hop / 충돌 헤더
+_SKIP_HEADERS = frozenset({
+  "host",
+  "content-length",
+  "accept-encoding",
+  "connection",
+  "transfer-encoding",
+})
+
+
+@csrf_exempt
+def flower_proxy(request: HttpRequest, path: str = "") -> HttpResponse:
+  """내부 Flower 서비스로 요청을 포워딩합니다."""
+  target = f"{_FLOWER_BASE}/admin/flower/{path}"
+  if qs := request.META.get("QUERY_STRING"):
+    target += f"?{qs}"
+
+  headers = {k: v for k, v in request.headers.items() if k.lower() not in _SKIP_HEADERS}
+
+  # POST/PUT 등 body가 있는 요청은 data를 반드시 bytes로 전달해야
+  # urllib가 메서드를 GET으로 바꾸지 않는다.
+  body = request.body if request.method in {"POST", "PUT", "PATCH", "DELETE"} else None
+
+  try:
+    proxy_req = urllib.request.Request(
+      url=target,
+      method=request.method,
+      data=body,
+      headers=headers,
+    )
+    with urllib.request.urlopen(proxy_req, timeout=30) as resp:  # nosec B310
+      return HttpResponse(
+        content=resp.read(),
+        content_type=resp.headers.get("Content-Type", "text/html"),
+        status=resp.status,
+      )
+  except urllib.error.HTTPError as e:
+    body_content = e.read() if hasattr(e, "read") else b""
+    return HttpResponse(
+      content=body_content,
+      content_type=e.headers.get("Content-Type", "text/plain") if e.headers else "text/plain",
+      status=e.code,
+    )
+  except Exception:
+    return HttpResponse(status=502)

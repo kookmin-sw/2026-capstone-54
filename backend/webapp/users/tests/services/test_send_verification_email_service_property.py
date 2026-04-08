@@ -4,7 +4,8 @@ from django.test import override_settings
 from hypothesis import given, settings
 from hypothesis import strategies as st
 from hypothesis.extra.django import TestCase
-from users.models import EmailVerificationCode, User
+from users.factories import UserFactory
+from users.models import EmailVerificationCode
 from users.services.send_verification_email_service import SendVerificationEmailService
 
 
@@ -13,11 +14,7 @@ class SendVerificationEmailServicePropertyTests(TestCase):
   """SendVerificationEmailService OTP 코드 형식 및 만료 시간 불변식 property 테스트"""
 
   def setUp(self):
-    self.user = User.objects.create_user(
-      email="otp_test@example.com",
-      password="TestPass123!",
-      name="테스트유저",
-    )
+    self.user = UserFactory()
 
   @given(st.just(None))
   @settings(max_examples=1, deadline=None)

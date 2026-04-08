@@ -1,4 +1,4 @@
-from common.models.base_model import BaseModel
+from common.models import BaseModel
 from common.views import BaseReadOnlyViewSet
 from django.db import models
 from django.test import TestCase

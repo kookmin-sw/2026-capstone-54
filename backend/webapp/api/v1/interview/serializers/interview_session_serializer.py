@@ -60,8 +60,5 @@ class InterviewSessionSerializer(serializers.ModelSerializer):
       "total_output_tokens",
       "total_tokens",
       "total_cost_usd",
-      "resume_file",
-      "job_posting_file",
-      "total_chunks_retrieved",
       "created_at",
     ]

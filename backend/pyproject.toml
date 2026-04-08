@@ -38,10 +38,15 @@ dependencies = [
     "django-storages[s3]>=1.14.0",
     "django-allow-cidr>=0.8.0",
     "django-cors-headers>=4.9.0",
+    "django-markdownx>=4.0.9",
+    "django-easymde>=1.0.4",
+    "pgvector>=0.4.2",
+    "openai>=2.30.0",
 ]
 
 [dependency-groups]
 test = [
     "coverage>=7.0",
+    "factory-boy>=3.3.0",
     "hypothesis>=6.151.9",
 ]

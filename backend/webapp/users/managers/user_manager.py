@@ -1,4 +1,4 @@
-from common.models.base_model_with_soft_delete import SoftDeleteManager, SoftDeleteQuerySet
+from common.models import SoftDeleteManager, SoftDeleteQuerySet
 from django.contrib.auth.models import BaseUserManager
 from django.utils import timezone
 from users.services import UserMaskingService

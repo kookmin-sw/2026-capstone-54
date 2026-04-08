@@ -57,6 +57,9 @@ LOGGING = {
   },
 }
 
+# 테스트에서는 Flower를 사용하지 않으므로 더미 값으로 scheme 검증만 통과
+FLOWER_INTERNAL_URL = "http://localhost:5555"
+
 CELERY_TASK_ALWAYS_EAGER = True
 CELERY_TASK_EAGER_PROPAGATES = True
 CELERY_BROKER_URL = "memory://"
@@ -64,3 +67,10 @@ CELERY_RESULT_BACKEND = "cache+memory://"
 
 # Disable Celery Beat scheduler for tests
 CELERY_BEAT_SCHEDULER = None
+
+# 테스트 환경에서 persistent connection 비활성화 (teardown 시 DB drop 실패 방지)
+DATABASES["default"]["CONN_MAX_AGE"] = 0  # noqa: F405
+DATABASES["default"]["CONN_HEALTH_CHECKS"] = False  # noqa: F405
+
+# 테스트 환경에서는 OPENAI API를 직접 접근하지 않게 한다.
+OPENAI_API_KEY = "demo-api-key"

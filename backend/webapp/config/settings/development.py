@@ -12,15 +12,47 @@ from .base import *  # noqa: F401, F403
 DEBUG = True
 ENVIRONMENT = "development"
 
+FLOWER_INTERNAL_URL = "http://flower:5555"
+
+# ── CORS / CSRF 설정 (개발 환경) ──
+CORS_ALLOWED_ORIGINS = [
+  # 프론트엔드 로컬 개발 (Vite)
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "http://127.0.0.1:5173",
+  "http://127.0.0.1:5174",
+  # Docker 네트워크 내부
+  "http://voice-fe:5173",
+]
+
+CSRF_TRUSTED_ORIGINS = [
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "http://127.0.0.1:5173",
+  "http://127.0.0.1:5174",
+]
+
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_ALL_ORIGINS = False
+
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'  # noqa: F405
 
-MEDIA_URL = 'media/'
-MEDIA_ROOT = BASE_DIR / 'media'  # noqa: F405
-
+# 개발 환경: S3Mock (mefit-s3mock 컨테이너) 을 실제 S3처럼 사용
+# AWS_S3_ENDPOINT_URL 은 s3.py 컴포넌트에서 .env 값을 읽어 주입됨
 STORAGES = {
   "default": {
-    "BACKEND": "django.core.files.storage.FileSystemStorage",
+    "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+    "OPTIONS": {
+      "bucket_name": AWS_STORAGE_BUCKET_NAME,  # noqa: F405
+      "region_name": AWS_S3_REGION_NAME,  # noqa: F405
+      "endpoint_url": AWS_S3_ENDPOINT_URL,  # noqa: F405  → http://mefit-s3mock:9090
+      "access_key": "dummy",
+      "secret_key": "dummy",
+      "location": "media",
+      "file_overwrite": False,
+      "querystring_auth": False,  # S3Mock은 presigned URL 불필요
+    },
   },
   "staticfiles": {
     "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",

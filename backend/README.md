@@ -56,3 +56,20 @@ uv run pre-commit install
 ```bash
 uv run python webapp/manage.py runserver
 ```
+
+### 5. Docker 개발 환경 실행
+
+```bash
+docker compose up
+```
+
+> **최초 1회 — 공유 Docker 네트워크 생성 필요**
+>
+> scraping 프로젝트의 Celery Worker가 이 프로젝트의 Redis에 접근하기 위해
+> 두 프로젝트가 공유하는 외부 네트워크가 필요합니다.
+>
+> ```bash
+> docker network create mefit-local
+> ```
+>
+> 이후 `docker compose up` 시 Redis가 `mefit-local` 네트워크에 자동으로 참여합니다.

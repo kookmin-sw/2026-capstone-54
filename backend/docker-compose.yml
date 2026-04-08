@@ -13,9 +13,7 @@ x-celery-base: &celery-base
   entrypoint: []
 
 x-postgres-base: &postgres-base
-  build:
-    context: .
-    dockerfile: ./environments/development/Dockerfile.postgres
+  image: teammefit/mefit-postgres-dev:latest
   healthcheck:
     interval: 10s
     timeout: 5s
@@ -41,6 +39,11 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      flower:
+        condition: service_started
+    networks:
+      - default
+      - mefit-local
 
   postgres:
     <<: *postgres-base
@@ -55,6 +58,9 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${DATABASE_NAME}"]
+    networks:
+      - default
+      - mefit-local
 
   test_postgres:
     <<: *postgres-base
@@ -80,6 +86,9 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
+    networks:
+      - default
+      - mefit-local
 
   celery-worker:
     <<: *celery-base
@@ -89,7 +98,7 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    command: celery -A config worker -l INFO
+    command: celery -A config worker -l INFO -E
 
   celery-beat:
     <<: *celery-base
@@ -101,6 +110,47 @@ services:
         condition: service_healthy
     command: celery -A config beat -l INFO
 
+  s3mock:
+    image: adobe/s3mock:latest
+    container_name: mefit-s3mock
+    environment:
+      - COM_ADOBE_TESTING_S3MOCK_STORE_INITIAL_BUCKETS=${AWS_STORAGE_BUCKET_NAME:-mefit-files}
+      - COM_ADOBE_TESTING_S3MOCK_STORE_ROOT=containers3root
+      - COM_ADOBE_TESTING_S3MOCK_STORE_RETAIN_FILES_ON_EXIT=true
+      - debug=false
+    ports:
+      - "9090:9090"   # HTTP (boto3 endpoint_url 용)
+    volumes:
+      - s3mock_data:/containers3root
+    networks:
+      - default
+      - mefit-local
+
+  flower:
+    image: mher/flower:2.0
+    container_name: mefit-flower
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      - FLOWER_UNAUTHENTICATED_API=true
+    command: >
+      celery --broker=redis://redis:6379/0
+      flower
+      --port=5555
+      --url-prefix=admin/flower
+    ports:
+      - "5555:5555"
+    restart: always
+    networks:
+      - default
+      - mefit-local
+
 volumes:
   postgres_data:
   test_postgres_data:
+  s3mock_data:
+
+networks:
+  mefit-local:
+    external: true

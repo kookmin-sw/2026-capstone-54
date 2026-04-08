@@ -6,6 +6,7 @@ from hypothesis.extra.django import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
+from users.factories import UserFactory
 from users.models import User
 
 
@@ -17,17 +18,12 @@ class SignOutAPIViewPropertyTests(TestCase):
     self.client = APIClient()
     self.url = reverse("sign-out")
     User.objects.filter(email="signout_test@example.com").delete()
-    self.user = User.objects.create_user(
-      email="signout_test@example.com",
-      password="ValidPass123!",
-      name="로그아웃테스트",
-    )
+    self.user = UserFactory(email="signout_test@example.com")
 
   @given(st.just(None))
   @settings(max_examples=1, deadline=None)
   def test_sign_out_with_valid_refresh_token_blacklists_token(self, _):
     """유효한 refresh 토큰으로 로그아웃하면 205 응답이 반환되고 해당 토큰이 블랙리스트에 등록되어 재사용이 불가능하다."""
-    # Validates:  4.1
     token = RefreshToken.for_user(self.user)
     refresh_str = str(token)
 
