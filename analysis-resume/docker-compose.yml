@@ -1,0 +1,23 @@
+services:
+  store-resume-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    environment:
+      - CELERY_BROKER_URL=redis://mefit-redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://mefit-redis:6379/1
+      - STORE_RESUME_CONCURRENCY=2
+      # S3 — 개발: S3Mock용 dummy 키 / 운영: 미설정 → EC2 인스턴스 프로파일
+      - AWS_STORAGE_BUCKET_NAME=${AWS_STORAGE_BUCKET_NAME:-mefit-files}
+      - AWS_S3_REGION_NAME=${AWS_S3_REGION_NAME:-us-east-1}
+      - AWS_S3_ENDPOINT_URL=${AWS_S3_ENDPOINT_URL:-http://mefit-s3mock:9090}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-dummy}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-dummy}
+    networks:
+      - mefit-local
+
+networks:
+  mefit-local:
+    external: true
