@@ -77,6 +77,7 @@ PROJECT_APPS = [
   "resumes",
   "tickets",
   "subscriptions",
+  "job_descriptions",
 ]
 
 INSTALLED_APPS = ADMIN_APPS + DJANGO_APPS + PACKAGE_APPS + PROJECT_APPS
