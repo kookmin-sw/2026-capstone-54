@@ -3,8 +3,8 @@
 from rest_framework import serializers
 
 
-class InterviewStartRequestSerializer(serializers.Serializer):
-  """면접 시작 요청: 파일 경로, 난이도를 받아 질문 생성."""
+class InterviewSessionCreateRequestSerializer(serializers.Serializer):
+  """세션 생성 요청: 파일 경로, 난이도 등 세션 기본 정보."""
 
   file_paths = serializers.ListField(
     child=serializers.CharField(max_length=500),
@@ -16,9 +16,21 @@ class InterviewStartRequestSerializer(serializers.Serializer):
     default="normal",
     help_text="면접 난이도",
   )
-  num_questions = serializers.IntegerField(default=3, min_value=1, max_value=10, help_text="생성할 질문 수")
   model_name = serializers.CharField(max_length=50, default="gpt-4o-mini")
   is_auto = serializers.BooleanField(default=False)
+
+
+class InterviewSessionCreateResponseSerializer(serializers.Serializer):
+  """세션 생성 응답."""
+
+  session_id = serializers.IntegerField()
+  status = serializers.CharField()
+
+
+class InterviewGenerateQuestionsRequestSerializer(serializers.Serializer):
+  """질문 생성 요청."""
+
+  num_questions = serializers.IntegerField(default=3, min_value=1, max_value=10, help_text="생성할 질문 수")
 
 
 class InterviewQuestionResponseSerializer(serializers.Serializer):
@@ -28,8 +40,8 @@ class InterviewQuestionResponseSerializer(serializers.Serializer):
   source = serializers.CharField()
 
 
-class InterviewStartResponseSerializer(serializers.Serializer):
-  """면접 시작 응답: 세션 정보 + 생성된 질문 목록."""
+class InterviewGenerateQuestionsResponseSerializer(serializers.Serializer):
+  """질문 생성 응답."""
 
   session_id = serializers.IntegerField()
   questions = InterviewQuestionResponseSerializer(many=True)

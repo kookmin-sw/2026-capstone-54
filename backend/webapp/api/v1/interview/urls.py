@@ -2,9 +2,10 @@ from api.v1.interview.views import (
   InterviewAnswerAPIView,
   InterviewExchangeAPIView,
   InterviewFinishAPIView,
+  InterviewGenerateQuestionsAPIView,
   InterviewSessionAPIView,
+  InterviewSessionCreateAPIView,
   InterviewSessionDetailAPIView,
-  InterviewStartAPIView,
   ReportAPIView,
 )
 from django.urls import path
@@ -15,7 +16,12 @@ urlpatterns = [
   path("sessions/<int:session_id>/", InterviewSessionDetailAPIView.as_view(), name="interview-session-detail"),
   path("exchanges/", InterviewExchangeAPIView.as_view(), name="interview-exchange-create"),
   # 면접 진행 흐름 API
-  path("flow/start/", InterviewStartAPIView.as_view(), name="interview-flow-start"),
+  path("flow/sessions/", InterviewSessionCreateAPIView.as_view(), name="interview-flow-session-create"),
+  path(
+    "flow/sessions/<int:session_id>/questions/",
+    InterviewGenerateQuestionsAPIView.as_view(),
+    name="interview-flow-generate-questions"
+  ),
   path("flow/<int:session_id>/answer/", InterviewAnswerAPIView.as_view(), name="interview-flow-answer"),
   path("flow/<int:session_id>/finish/", InterviewFinishAPIView.as_view(), name="interview-flow-finish"),
   # 면접 분석 리포트 API

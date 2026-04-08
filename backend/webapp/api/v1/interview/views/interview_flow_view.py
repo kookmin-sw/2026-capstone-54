@@ -1,11 +1,13 @@
-"""면접 진행 흐름 API: 시작 → 답변/꼬리질문 → 종료."""
+"""면접 진행 흐름 API: 세션 생성 → 질문 생성 → 답변/꼬리질문 → 종료."""
 
 from api.v1.interview.serializers.interview_flow_serializer import (
   InterviewAnswerRequestSerializer,
   InterviewAnswerResponseSerializer,
   InterviewFinishResponseSerializer,
-  InterviewStartRequestSerializer,
-  InterviewStartResponseSerializer,
+  InterviewGenerateQuestionsRequestSerializer,
+  InterviewGenerateQuestionsResponseSerializer,
+  InterviewSessionCreateRequestSerializer,
+  InterviewSessionCreateResponseSerializer,
 )
 from common.permissions import AllowAny
 from common.views import BaseAPIView
@@ -21,8 +23,43 @@ from rest_framework.response import Response
 
 
 @extend_schema(tags=["면접 진행"])
-class InterviewStartAPIView(BaseAPIView):
-  """면접 시작: 세션 생성 + 질문 생성."""
+class InterviewSessionCreateAPIView(BaseAPIView):
+  """면접 세션 생성."""
+
+  permission_classes = [AllowAny]
+
+  @extend_schema(
+    summary="면접 세션 생성",
+    request=InterviewSessionCreateRequestSerializer,
+    responses={201: InterviewSessionCreateResponseSerializer},
+  )
+  def post(self, request):
+    serializer = InterviewSessionCreateRequestSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    data = serializer.validated_data
+
+    session = InterviewSession.objects.create(
+      model_name=data["model_name"],
+      is_auto=data["is_auto"],
+      difficulty_level=data["difficulty_level"],
+      status=InterviewSessionStatus.IN_PROGRESS,
+      started_at=timezone.now(),
+      resume_file=data["file_paths"][0] if data["file_paths"] else "",
+      job_posting_file=data["file_paths"][1] if len(data["file_paths"]) > 1 else "",
+    )
+
+    return Response(
+      {
+        "session_id": session.id,
+        "status": session.status
+      },
+      status=status.HTTP_201_CREATED,
+    )
+
+
+@extend_schema(tags=["면접 진행"])
+class InterviewGenerateQuestionsAPIView(BaseAPIView):
+  """면접 질문 생성."""
 
   permission_classes = [AllowAny]
 
@@ -37,7 +74,6 @@ class InterviewStartAPIView(BaseAPIView):
       return "resume"
     if job_posting_file and file_path == job_posting_file:
       return "job_posting"
-    # 파일명에 키워드가 포함된 경우 폴백
     lower = file_path.lower()
     if "resume" in lower or "이력서" in lower:
       return "resume"
@@ -46,38 +82,43 @@ class InterviewStartAPIView(BaseAPIView):
     return ""
 
   @extend_schema(
-    summary="면접 시작 (세션 생성 + 질문 생성)",
-    request=InterviewStartRequestSerializer,
-    responses={201: InterviewStartResponseSerializer},
+    summary="면접 질문 생성",
+    request=InterviewGenerateQuestionsRequestSerializer,
+    responses={201: InterviewGenerateQuestionsResponseSerializer},
   )
-  def post(self, request):
-    serializer = InterviewStartRequestSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
-    data = serializer.validated_data
+  def post(self, request, session_id):
+    session = get_object_or_404(InterviewSession, id=session_id)
 
-    # 질문 생성
+    if session.status != InterviewSessionStatus.IN_PROGRESS:
+      return Response(
+        {"detail": "진행 중인 세션에서만 질문을 생성할 수 있습니다."},
+        status=status.HTTP_400_BAD_REQUEST,
+      )
+
+    # 이미 질문이 생성된 세션인지 확인
+    if session.total_initial_questions > 0:
+      return Response(
+        {"detail": "이미 질문이 생성된 세션입니다."},
+        status=status.HTTP_409_CONFLICT,
+      )
+
+    serializer = InterviewGenerateQuestionsRequestSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+
+    file_paths = [f for f in [session.resume_file, session.job_posting_file] if f]
+
     service = InterviewService()
     output = service.generate_questions(
-      file_paths=data["file_paths"],
-      difficulty_level=data["difficulty_level"],
+      file_paths=file_paths,
+      difficulty_level=session.difficulty_level,
     )
 
-    # 세션 생성
-    session = InterviewSession.objects.create(
-      model_name=data["model_name"],
-      is_auto=data["is_auto"],
-      difficulty_level=data["difficulty_level"],
-      status=InterviewSessionStatus.IN_PROGRESS,
-      started_at=timezone.now(),
-      total_initial_questions=len(output.questions),
-      total_chunks_retrieved=output.total_chunks_retrieved,
-      resume_file=data["file_paths"][0] if data["file_paths"] else "",
-      job_posting_file=data["file_paths"][1] if len(data["file_paths"]) > 1 else "",
-      question_sources={q.question: self._resolve_source(q.source, data["file_paths"])
-                        for q in output.questions},
-    )
+    # 세션 업데이트
+    session.total_initial_questions = len(output.questions)
+    session.total_chunks_retrieved = output.total_chunks_retrieved
+    session.question_sources = {q.question: self._resolve_source(q.source, file_paths) for q in output.questions}
+    update_fields = ["total_initial_questions", "total_chunks_retrieved", "question_sources"]
 
-    # 토큰 사용량 기록
     if output.token_usage:
       session.total_input_tokens = output.token_usage.input_tokens
       session.total_output_tokens = output.token_usage.output_tokens
@@ -85,15 +126,12 @@ class InterviewStartAPIView(BaseAPIView):
       cost = calculate_cost(
         output.token_usage.input_tokens,
         output.token_usage.output_tokens,
-        model_name=data["model_name"],
+        model_name=session.model_name,
       )
       session.total_cost_usd = round(cost, 6)
-      session.save(update_fields=[
-        "total_input_tokens",
-        "total_output_tokens",
-        "total_tokens",
-        "total_cost_usd",
-      ])
+      update_fields += ["total_input_tokens", "total_output_tokens", "total_tokens", "total_cost_usd"]
+
+    session.save(update_fields=update_fields)
 
     response_data = {
       "session_id": session.id,
