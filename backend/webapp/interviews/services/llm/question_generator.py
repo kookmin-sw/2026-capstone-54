@@ -11,8 +11,9 @@ from typing import Literal
 
 from common.llm_client import get_llm
 from interviews.schemas import InterviewQuestion, QuestionGeneratorInput, QuestionGeneratorOutput
-from interviews.services.llm import TokenUsageCallback
 from pydantic import BaseModel
+
+from .token_tracker import TokenUsageCallback
 
 logger = logging.getLogger(__name__)
 
