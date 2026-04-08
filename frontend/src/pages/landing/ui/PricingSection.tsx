@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 const FREE_ITEMS = [
   { ok: true, text: "월 5회 면접" },
   { ok: true, text: "기본 AI 리뷰 리포트" },
@@ -75,9 +77,12 @@ export function PricingSection() {
                 </li>
               ))}
             </ul>
-            <button className="w-full py-[14px] rounded-lg border-none font-inter text-[15px] font-bold cursor-pointer transition-opacity duration-200 hover:opacity-85 bg-white text-[#0A0A0A] md:py-4 md:rounded-lg md:text-[16px]">
+            <Link 
+              to="/subscription" 
+              className="w-full py-[14px] rounded-lg border-none font-inter text-[15px] font-bold cursor-pointer transition-opacity duration-200 hover:opacity-85 bg-white text-[#0A0A0A] md:py-4 md:rounded-lg md:text-[16px] flex items-center justify-center no-underline"
+            >
               Pro 업그레이드
-            </button>
+            </Link>
             <div className="text-center text-[12px] text-white/45 mt-2.5 md:text-[13px] md:mt-3">언제든지 취소 가능</div>
           </div>
         </div>
