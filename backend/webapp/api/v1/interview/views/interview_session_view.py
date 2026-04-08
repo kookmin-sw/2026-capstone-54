@@ -5,6 +5,7 @@ from api.v1.interview.serializers import (
 )
 from common.permissions import AllowAny
 from common.views import BaseAPIView
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema
 from interview.models import InterviewSession
@@ -34,7 +35,7 @@ class InterviewSessionDetailAPIView(BaseAPIView):
     summary="면접 세션 토큰 합산 업데이트", request=InterviewSessionUpdateSerializer, responses={200: InterviewSessionSerializer}
   )
   def patch(self, request, session_id):
-    session = InterviewSession.objects.get(id=session_id)
+    session = get_object_or_404(InterviewSession, id=session_id)
     serializer = InterviewSessionUpdateSerializer(session, data=request.data, partial=True)
     serializer.is_valid(raise_exception=True)
     serializer.save()

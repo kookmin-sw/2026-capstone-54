@@ -9,6 +9,7 @@ from api.v1.interview.serializers.interview_flow_serializer import (
 )
 from common.permissions import AllowAny
 from common.views import BaseAPIView
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema
 from interview.models import InterviewExchange, InterviewSession
@@ -121,7 +122,7 @@ class InterviewAnswerAPIView(BaseAPIView):
     serializer.is_valid(raise_exception=True)
     data = serializer.validated_data
 
-    session = InterviewSession.objects.get(id=session_id)
+    session = get_object_or_404(InterviewSession, id=session_id)
 
     # question_source 자동 결정: 클라이언트 값 우선, 없으면 세션 캐시에서 조회
     question_source = data.get("question_source", "")
@@ -226,7 +227,7 @@ class InterviewFinishAPIView(BaseAPIView):
     responses={200: InterviewFinishResponseSerializer},
   )
   def post(self, request, session_id):
-    session = InterviewSession.objects.get(id=session_id)
+    session = get_object_or_404(InterviewSession, id=session_id)
 
     if session.status != InterviewSession.Status.IN_PROGRESS:
       return Response(
