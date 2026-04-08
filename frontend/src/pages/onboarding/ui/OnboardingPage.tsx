@@ -88,8 +88,8 @@ export function OnboardingPage() {
         </div>
       </header>
 
-      <main className="w-full mx-auto px-5 py-8 flex flex-col gap-8 md:px-10 md:py-12">
-        <div className="w-full max-w-[1000px] mx-auto flex flex-col gap-8 md:flex-row md:items-start md:gap-10 lg:gap-12">
+      <main className="flex-1 w-full mx-auto px-5 py-8 flex flex-col justify-center gap-8 md:px-10 md:py-12">
+        <div className="w-full max-w-[1000px] mx-auto flex flex-col gap-8 md:flex-row md:items-center md:gap-10 lg:gap-12">
         {/* ── Left ── */}
         <section className="flex flex-col items-center md:flex-1 md:items-start md:sticky md:top-8">
           <div className="inline-block text-[12px] font-bold text-[#0991B2] bg-[#E6F7FA] rounded px-[14px] py-[5px] mb-[14px] tracking-[0.5px] self-center md:self-start md:text-[13px] md:px-[18px] md:py-[6px] md:mb-[18px]">
@@ -150,7 +150,7 @@ export function OnboardingPage() {
 
         {/* ── Right: Profile Card ── */}
         <section className="flex justify-center w-full md:flex-1">
-          <div className="w-full max-w-[520px] bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg px-5 py-7 shadow-[var(--sc)] sm:px-7 sm:py-9">
+          <div className="w-full max-w-[560px] bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg px-5 py-10 shadow-[var(--sc)] sm:px-7 sm:py-12">
             <h2 className="font-inter text-[22px] font-extrabold text-[#0A0A0A] mb-1.5">나를 알려주세요 👋</h2>
             <p className="text-[14px] text-[#6B7280] leading-[1.6] mb-6">
               면접 질문 맞춤화를 위해 딱 2가지만 입력하면 돼요.

@@ -68,7 +68,7 @@ export function LoginPage() {
 
         {/* Form Card */}
         <section className="w-full flex justify-center">
-          <div className="w-full bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg px-7 py-10 shadow-[var(--sc)] md:max-w-form md:px-9">
+          <div className="w-full max-w-[480px] bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg px-5 py-7 shadow-[var(--sc)] sm:px-7 sm:py-9">
             <form onSubmit={handleSubmit} noValidate>
               <div className="mb-4 md:mb-[18px]">
                 <label className="block text-[13px] font-semibold text-[#374151] mb-1.5" htmlFor="li-email">이메일</label>

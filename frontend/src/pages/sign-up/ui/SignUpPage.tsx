@@ -83,29 +83,30 @@ export function SignUpPage() {
         </Link>
       </header>
 
-      <main className="flex-1 w-full max-w-container mx-auto px-5 flex flex-col gap-10 justify-center items-center text-center md:flex-row md:items-center md:px-10 md:gap-[60px] md:text-left">
+      <main className="flex-1 w-full mx-auto px-5 py-8 flex flex-col justify-center gap-8 md:px-10 md:py-12">
+        <div className="w-full max-w-[1000px] mx-auto flex flex-col gap-8 md:flex-row md:items-center md:gap-10 lg:gap-12">
         {/* Left: Hero + Steps */}
-        <section className="flex flex-col items-center md:flex-none md:flex-1 md:max-w-text md:items-start md:pt-4">
+        <section className="flex flex-col items-center md:flex-1 md:items-start">
           <div className="inline-block text-[12px] font-bold text-[#0991B2] bg-[#E6F7FA] rounded px-[14px] py-[5px] mb-[14px] tracking-[0.5px] md:text-[13px] md:px-[18px] md:py-[6px] md:mb-[18px]">
             ● STEP 1 OF 3
           </div>
-          <h1 className="font-inter text-[clamp(36px,9vw,56px)] font-black leading-[1.08] text-[#0A0A0A] mb-4 tracking-[-2px] md:text-[clamp(40px,4.5vw,56px)]">
+          <h1 className="font-inter text-[clamp(32px,8vw,48px)] font-black leading-[1.1] text-[#0A0A0A] mb-3 tracking-[-2px] text-center md:text-left md:text-[clamp(36px,3.5vw,48px)]">
             핏이 맞는 나를
             <br />
             <span className="gradient-text">완성해가는</span>
             <br />
             여정
           </h1>
-          <p className="text-[14px] text-[#6B7280] leading-[1.7] mb-8 md:text-[15px]">
+          <p className="text-[14px] text-[#6B7280] leading-[1.7] mb-6 text-center md:text-left md:text-[15px]">
             이메일 하나로 시작하는 AI 면접 코치.
             <br className="hidden md:block" />
             3단계만 거치면 바로 연습할 수 있어요.
           </p>
 
-          <div className="flex flex-row gap-2 w-full md:flex-col md:gap-2">
-            <div className="flex flex-col items-center text-center flex-1 px-[10px] py-3 rounded-lg bg-[#0A0A0A] transition-transform duration-200 hover:-translate-y-px md:flex-row md:items-center md:gap-[14px] md:text-left md:px-5 md:py-[14px]">
-              <div className="w-9 h-9 rounded-full flex items-center justify-center text-[14px] font-bold text-white bg-[#0991B2] shrink-0 mx-auto md:mx-0">1</div>
-              <div className="flex flex-col gap-0.5 items-center md:items-start">
+          <div className="hidden md:flex md:flex-col md:gap-2 w-full">
+            <div className="flex flex-row items-center gap-[14px] text-left px-5 py-[14px] rounded-lg bg-[#0A0A0A] transition-transform duration-200 hover:-translate-y-px">
+              <div className="w-9 h-9 rounded-full flex items-center justify-center text-[14px] font-bold text-white bg-[#0991B2] shrink-0">1</div>
+              <div className="flex flex-col gap-0.5">
                 <span className="text-[14px] font-semibold text-white">이메일로 계정 생성</span>
                 <span className="text-[12px] text-white/50">지금 이 단계예요</span>
               </div>
@@ -114,9 +115,9 @@ export function SignUpPage() {
               { num: 2, name: "이메일 인증 완료", sub: "메일함을 확인해요" },
               { num: 3, name: "프로필 작성 후 면접 시작", sub: "직군·경력 입력" },
             ].map((step) => (
-              <div key={step.num} className="flex flex-col items-center text-center flex-1 px-[10px] py-3 rounded-lg md:flex-row md:items-center md:gap-[14px] md:text-left md:px-5 md:py-[14px]">
-                <div className="w-9 h-9 rounded-full flex items-center justify-center text-[14px] font-bold text-[#6B7280] bg-[#E5E7EB] shrink-0 mx-auto md:mx-0">{step.num}</div>
-                <div className="flex flex-col gap-0.5 items-center md:items-start">
+              <div key={step.num} className="flex flex-row items-center gap-[14px] text-left px-5 py-[14px] rounded-lg">
+                <div className="w-9 h-9 rounded-full flex items-center justify-center text-[14px] font-bold text-[#6B7280] bg-[#E5E7EB] shrink-0">{step.num}</div>
+                <div className="flex flex-col gap-0.5">
                   <span className="text-[14px] font-semibold text-[#0A0A0A]">{step.name}</span>
                   <span className="text-[12px] text-[#9CA3AF]">{step.sub}</span>
                 </div>
@@ -126,8 +127,8 @@ export function SignUpPage() {
         </section>
 
         {/* Right: Form Card */}
-        <section className="flex justify-center w-full md:flex-none md:flex-1 md:max-w-form">
-          <div className="w-full bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg px-7 py-10 shadow-[var(--sc)] md:px-9">
+        <section className="flex justify-center w-full md:flex-1">
+          <div className="w-full max-w-[520px] bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg px-5 py-7 shadow-[var(--sc)] sm:px-7 sm:py-9">
             <h2 className="font-inter text-[22px] font-extrabold text-[#0A0A0A] mb-1.5">계정 만들기</h2>
             <p className="text-[14px] text-[#6B7280] mb-7">아직 핏이 맞지 않아도 괜찮아요 — 지금 시작해요.</p>
 
@@ -203,9 +204,10 @@ export function SignUpPage() {
             </p>
           </div>
         </section>
+        </div>
       </main>
 
-      <footer className="w-full max-w-container mx-auto px-5 py-8 flex justify-center gap-5 md:px-10 md:py-10">
+      <footer className="w-full max-w-container mx-auto px-5 py-6 flex justify-center gap-5 md:px-10 md:py-8">
         {["개인정보처리방침", "이용약관", "쿠키"].map((item) => (
           <a key={item} href="#" className="text-[11px] text-[#9CA3AF] no-underline transition-[color] duration-200 hover:text-[#6B7280]">
             {item}
