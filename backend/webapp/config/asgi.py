@@ -31,6 +31,7 @@ django_asgi_app = get_asgi_application()
 # AppRegistry 초기화 이후에 consumer import 가능
 from api.v1.demo.routing import sse_urlpatterns as demo_sse_urlpatterns  # noqa: E402
 from api.v1.demo.routing import websocket_urlpatterns as demo_ws_urlpatterns  # noqa: E402
+from api.v1.interviews.routing import websocket_urlpatterns as interviews_ws_urlpatterns  # noqa: E402
 
 # SSE URL 패턴 — Django middleware(ATOMIC_REQUESTS 등)를 우회해 직접 처리한다.
 sse_urlpatterns = [
@@ -40,6 +41,7 @@ sse_urlpatterns = [
 # WebSocket URL 패턴
 websocket_urlpatterns = [
   *demo_ws_urlpatterns,
+  *interviews_ws_urlpatterns,
 ]
 
 application = ProtocolTypeRouter(
