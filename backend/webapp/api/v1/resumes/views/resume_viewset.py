@@ -29,6 +29,11 @@ from resumes.services import (
 class ResumeViewSet(BaseGenericViewSet):
   """이력서 CRUD ViewSet."""
 
+  SUPPORTED_RESUME_TYPES = [
+    ResumeType.FILE,
+    ResumeType.TEXT,
+  ]
+
   permission_classes = [IsEmailVerified]
   serializer_class = ResumeSerializer
   filter_backends = [filters.DjangoFilterBackend]
@@ -56,6 +61,9 @@ class ResumeViewSet(BaseGenericViewSet):
     serializer = ResumeCreateRequestSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     data = serializer.validated_data
+
+    if data["type"] not in self.SUPPORTED_RESUME_TYPES:
+      raise NotImplementedError(f"{data['type']} 타입은 지원하지 않습니다.")
 
     if data["type"] == ResumeType.TEXT:
       resume = CreateTextResumeService(
@@ -101,6 +109,9 @@ class ResumeViewSet(BaseGenericViewSet):
 
   def _perform_update(self, resume, validated_data):
     """resume.type에 따라 적절한 Update 서비스를 호출한다."""
+    if resume.type not in self.SUPPORTED_RESUME_TYPES:
+      raise NotImplementedError(f"{resume.type} 타입은 지원하지 않습니다.")
+
     if resume.type == ResumeType.TEXT:
       return UpdateTextResumeService(user=self.current_user, resume=resume, **validated_data).perform()
     elif resume.type == ResumeType.FILE:

@@ -5,6 +5,8 @@ from resumes.enums import ResumeType
 class ResumeCreateRequestSerializer(serializers.Serializer):
   """통합 이력서 생성 요청 직렬화."""
 
+  SUPPORTED_RESUME_TYPES = {ResumeType.TEXT, ResumeType.FILE}
+
   type = serializers.ChoiceField(choices=ResumeType.choices)
   title = serializers.CharField(max_length=255)
   content = serializers.CharField(required=False)
@@ -12,6 +14,9 @@ class ResumeCreateRequestSerializer(serializers.Serializer):
 
   def validate(self, attrs):
     resume_type = attrs.get("type")
+
+    if resume_type not in self.SUPPORTED_RESUME_TYPES:
+      raise serializers.ValidationError({"type": f"{resume_type} 타입은 지원하지 않습니다."})
 
     if resume_type == ResumeType.TEXT and not attrs.get("content"):
       raise serializers.ValidationError({"content": "텍스트 이력서는 content 필드가 필수입니다."})
