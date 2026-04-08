@@ -163,24 +163,36 @@ class InterviewAnswerAPIView(BaseAPIView):
 
     session = get_object_or_404(InterviewSession, id=session_id)
 
-    # question_source 자동 결정: 클라이언트 값 우선, 없으면 세션 캐시에서 조회
-    question_source = data.get("question_source", "")
-    if not question_source and data["exchange_type"] == "initial":
-      question_source = (session.question_sources or {}).get(data["question"], "")
+    question_text = data["question"]
+    sources_cache = session.question_sources or {}
+    cached_value = sources_cache.get(question_text, "")
 
-    # question_purpose 자동 결정: 클라이언트 값 우선
-    question_purpose = data.get("question_purpose", "")
-    if not question_purpose and data["exchange_type"] == "followup":
-      cached = (session.question_sources or {}).get(data["question"], "")
-      if cached.startswith("purpose:"):
-        question_purpose = cached[len("purpose:"):]
+    # exchange_type 자동 결정: 캐시에 purpose: 접두사면 followup, 아니면 initial
+    if cached_value.startswith("purpose:"):
+      exchange_type = "followup"
+    else:
+      exchange_type = "initial"
+
+    # depth 자동 계산: 해당 세션의 기존 exchange 수 기반
+    existing_count = InterviewExchange.objects.filter(session=session).count()
+    depth = 0 if exchange_type == "initial" else existing_count
+
+    # question_source 자동 결정: initial이면 캐시에서 조회
+    question_source = ""
+    if exchange_type == "initial":
+      question_source = cached_value  # "resume" 또는 "job_posting"
+
+    # question_purpose 자동 결정: followup이면 캐시에서 추출
+    question_purpose = ""
+    if exchange_type == "followup" and cached_value.startswith("purpose:"):
+      question_purpose = cached_value[len("purpose:"):]
 
     # exchange 저장
     exchange = InterviewExchange.objects.create(
       session=session,
-      exchange_type=data["exchange_type"],
-      depth=data["depth"],
-      question=data["question"],
+      exchange_type=exchange_type,
+      depth=depth,
+      question=question_text,
       answer=data["answer"],
       question_source=question_source,
       question_purpose=question_purpose,
@@ -219,7 +231,7 @@ class InterviewAnswerAPIView(BaseAPIView):
         session_id=session.id,
         original_question=data["question"],
         user_answer=data["answer"],
-        num_followups=data["num_followups"],
+        num_followups=1,
         history=history,
         anchor_question=anchor_question,
       )

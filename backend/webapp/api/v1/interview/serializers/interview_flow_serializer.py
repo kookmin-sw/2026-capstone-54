@@ -50,20 +50,10 @@ class InterviewGenerateQuestionsResponseSerializer(serializers.Serializer):
 
 
 class InterviewAnswerRequestSerializer(serializers.Serializer):
-  """답변 제출 + 꼬리질문 요청."""
-
+  """답변 제출 + 꼬리질문 요청"""
   question = serializers.CharField(help_text="현재 질문 텍스트")
   answer = serializers.CharField(help_text="사용자 답변")
-  exchange_type = serializers.ChoiceField(choices=["initial", "followup"], default="initial")
-  depth = serializers.IntegerField(default=0, min_value=0)
   generate_followup = serializers.BooleanField(default=True, help_text="꼬리질문 생성 여부")
-  num_followups = serializers.IntegerField(default=1, min_value=1, max_value=5)
-  question_source = serializers.CharField(
-    required=False, allow_blank=True, default="", help_text="질문 출처 (resume, job_posting)"
-  )
-  question_purpose = serializers.CharField(
-    required=False, allow_blank=True, default="", help_text="질문 출제 목적 (꼬리질문의 rationale)"
-  )
 
 
 class FollowUpQuestionResponseSerializer(serializers.Serializer):
