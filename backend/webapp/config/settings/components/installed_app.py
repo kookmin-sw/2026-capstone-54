@@ -72,6 +72,7 @@ PROJECT_APPS = [
   "profiles",
   "realtime_docs",
   "interviews",
+  "llm_trackers",
   "terms_documents",
   "streaks",
   "resumes",
