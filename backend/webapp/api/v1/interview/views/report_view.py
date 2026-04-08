@@ -11,7 +11,7 @@ from celery import current_app
 from common.permissions import AllowAny
 from common.views import BaseAPIView
 from drf_spectacular.utils import extend_schema
-from interview.enums import AnalysisReportStatus
+from interview.enums import AnalysisReportStatus, InterviewSessionStatus
 from interview.models import AnalysisReport, InterviewExchange, InterviewSession
 from rest_framework import status
 from rest_framework.response import Response
@@ -40,7 +40,7 @@ class ReportAPIView(BaseAPIView):
       )
 
     # 세션 상태 검증 (completed 여부)
-    if session.status != InterviewSession.Status.COMPLETED:
+    if session.status != InterviewSessionStatus.COMPLETED:
       return Response(
         {"detail": "면접이 완료되지 않은 세션입니다."},
         status=status.HTTP_400_BAD_REQUEST,

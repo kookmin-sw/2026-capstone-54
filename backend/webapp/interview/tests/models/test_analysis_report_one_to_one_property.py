@@ -14,7 +14,7 @@ from django.utils import timezone
 from hypothesis import given, settings
 from hypothesis import strategies as st
 from hypothesis.extra.django import TestCase
-from interview.enums import AnalysisReportStatus
+from interview.enums import AnalysisReportStatus, InterviewSessionStatus
 from interview.models import AnalysisReport, InterviewSession
 
 status_values = st.sampled_from(
@@ -31,7 +31,7 @@ class AnalysisReportOneToOnePropertyTests(TestCase):
     self.session = InterviewSession.objects.create(
       model_name="gpt-4o-mini",
       difficulty_level="normal",
-      status=InterviewSession.Status.COMPLETED,
+      status=InterviewSessionStatus.COMPLETED,
       started_at=timezone.now(),
     )
 
@@ -95,7 +95,7 @@ class AnalysisReportOneToOnePropertyTests(TestCase):
     session2 = InterviewSession.objects.create(
       model_name="gpt-4o-mini",
       difficulty_level="normal",
-      status=InterviewSession.Status.COMPLETED,
+      status=InterviewSessionStatus.COMPLETED,
       started_at=timezone.now(),
     )
 

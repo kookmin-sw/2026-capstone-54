@@ -14,6 +14,7 @@ from django.utils import timezone
 from hypothesis import given, settings
 from hypothesis import strategies as st
 from hypothesis.extra.django import TestCase
+from interview.enums import InterviewSessionStatus
 from interview.models import InterviewExchange, InterviewSession
 
 # --- Strategies ---
@@ -46,7 +47,7 @@ class InterviewExchangeMetadataPropertyTests(TestCase):
     self.session = InterviewSession.objects.create(
       model_name="gpt-4o-mini",
       difficulty_level="normal",
-      status=InterviewSession.Status.IN_PROGRESS,
+      status=InterviewSessionStatus.IN_PROGRESS,
       started_at=timezone.now(),
     )
 

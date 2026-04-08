@@ -8,6 +8,7 @@ from common.views import BaseAPIView
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema
+from interview.enums import InterviewSessionStatus
 from interview.models import InterviewSession
 from rest_framework import status
 from rest_framework.response import Response
@@ -41,9 +42,9 @@ class InterviewSessionDetailAPIView(BaseAPIView):
     serializer.save()
 
     # 종료 시간 및 상태 자동 계산
-    if session.status == InterviewSession.Status.IN_PROGRESS:
+    if session.status == InterviewSessionStatus.IN_PROGRESS:
       session.finished_at = timezone.now()
-      session.status = InterviewSession.Status.COMPLETED
+      session.status = InterviewSessionStatus.COMPLETED
       if session.started_at:
         session.duration_seconds = int((session.finished_at - session.started_at).total_seconds())
       session.save(update_fields=["finished_at", "status", "duration_seconds"])

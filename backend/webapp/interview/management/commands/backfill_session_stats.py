@@ -3,6 +3,7 @@
 from django.core.management.base import BaseCommand
 from django.db.models import Avg
 from django.db.models.functions import Length
+from interview.enums import InterviewSessionStatus
 from interview.models import InterviewSession
 
 
@@ -40,9 +41,9 @@ class Command(BaseCommand):
 
       # 토큰이 있으면 완료로 간주
       if session.total_tokens > 0:
-        session.status = InterviewSession.Status.COMPLETED
+        session.status = InterviewSessionStatus.COMPLETED
       else:
-        session.status = InterviewSession.Status.ABANDONED
+        session.status = InterviewSessionStatus.ABANDONED
 
       session.save(
         update_fields=[

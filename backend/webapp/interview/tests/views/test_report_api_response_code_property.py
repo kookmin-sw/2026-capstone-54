@@ -16,7 +16,7 @@ from django.utils import timezone
 from hypothesis import given, settings
 from hypothesis import strategies as st
 from hypothesis.extra.django import TestCase
-from interview.enums import AnalysisReportStatus
+from interview.enums import AnalysisReportStatus, InterviewSessionStatus
 from interview.models import AnalysisReport, InterviewExchange, InterviewSession
 from rest_framework import status
 from rest_framework.test import APIClient
@@ -45,7 +45,7 @@ class ReportAPIResponseCodePropertyTests(TestCase):
     session = InterviewSession.objects.create(
       model_name="gpt-4o-mini",
       difficulty_level=difficulty,
-      status=InterviewSession.Status.COMPLETED,
+      status=InterviewSessionStatus.COMPLETED,
       started_at=timezone.now(),
       duration_seconds=300,
     )

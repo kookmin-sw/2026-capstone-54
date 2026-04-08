@@ -12,6 +12,7 @@ from common.views import BaseAPIView
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema
+from interview.enums import InterviewSessionStatus
 from interview.models import InterviewExchange, InterviewSession
 from interview.services.interview_service import InterviewService
 from interview.services.rag_pipeline.token_tracker import calculate_cost
@@ -66,7 +67,7 @@ class InterviewStartAPIView(BaseAPIView):
       model_name=data["model_name"],
       is_auto=data["is_auto"],
       difficulty_level=data["difficulty_level"],
-      status=InterviewSession.Status.IN_PROGRESS,
+      status=InterviewSessionStatus.IN_PROGRESS,
       started_at=timezone.now(),
       total_initial_questions=len(output.questions),
       total_chunks_retrieved=output.total_chunks_retrieved,
@@ -238,13 +239,13 @@ class InterviewFinishAPIView(BaseAPIView):
   def post(self, request, session_id):
     session = get_object_or_404(InterviewSession, id=session_id)
 
-    if session.status != InterviewSession.Status.IN_PROGRESS:
+    if session.status != InterviewSessionStatus.IN_PROGRESS:
       return Response(
         {"detail": f"세션이 이미 '{session.get_status_display()}' 상태입니다."},
         status=status.HTTP_409_CONFLICT,
       )
 
-    session.status = InterviewSession.Status.COMPLETED
+    session.status = InterviewSessionStatus.COMPLETED
     session.finished_at = timezone.now()
     if session.started_at:
       session.duration_seconds = int((session.finished_at - session.started_at).total_seconds())

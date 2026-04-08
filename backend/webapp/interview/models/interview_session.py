@@ -6,20 +6,11 @@ model과 마이그레이션은 1:1로 대응됨
 
 from common.models import BaseModel
 from django.db import models
+from interview.enums import InterviewDifficultyLevel, InterviewSessionStatus
 
 
 class InterviewSession(BaseModel):
   """면접 시뮬레이션 세션 1회 실행 단위."""
-
-  class DifficultyLevel(models.TextChoices):
-    FRIENDLY = "friendly", "친절"
-    NORMAL = "normal", "보통"
-    PRESSURE = "pressure", "압박"
-
-  class Status(models.TextChoices):
-    IN_PROGRESS = "in_progress", "진행 중"
-    COMPLETED = "completed", "완료"
-    ABANDONED = "abandoned", "중도 포기"
 
   class Meta(BaseModel.Meta):
     db_table = "interview_sessions"
@@ -28,11 +19,17 @@ class InterviewSession(BaseModel):
 
   # 기본 정보
   model_name = models.CharField(max_length=50)
-  difficulty_level = models.CharField(max_length=10, choices=DifficultyLevel.choices, default=DifficultyLevel.NORMAL)
+  difficulty_level = models.CharField(
+    max_length=10, choices=InterviewDifficultyLevel.choices, default=InterviewDifficultyLevel.NORMAL
+  )
   is_auto = models.BooleanField(default=False)
 
   # 상태 & 시간
-  status = models.CharField(max_length=15, choices=Status.choices, default=Status.IN_PROGRESS)
+  status = models.CharField(
+    max_length=15,
+    choices=InterviewSessionStatus.choices,
+    default=InterviewSessionStatus.IN_PROGRESS,
+  )
   started_at = models.DateTimeField(null=True, blank=True, help_text="면접 시작 시간 (첫 질문 생성 완료 시점)")
   finished_at = models.DateTimeField(null=True, blank=True, help_text="면접 종료 시간")
   duration_seconds = models.IntegerField(null=True, blank=True, help_text="총 소요 시간 (초)")
