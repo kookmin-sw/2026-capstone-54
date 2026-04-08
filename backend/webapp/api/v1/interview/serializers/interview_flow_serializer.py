@@ -44,13 +44,6 @@ class InterviewAnswerRequestSerializer(serializers.Serializer):
   answer = serializers.CharField(help_text="사용자 답변")
   exchange_type = serializers.ChoiceField(choices=["initial", "followup"], default="initial")
   depth = serializers.IntegerField(default=0, min_value=0)
-  anchor_question = serializers.CharField(required=False, allow_blank=True, default="", help_text="원래 메인 질문")
-  history = serializers.ListField(
-    child=serializers.DictField(),
-    required=False,
-    default=list,
-    help_text="이전 대화 히스토리 [{question, answer}, ...]",
-  )
   generate_followup = serializers.BooleanField(default=True, help_text="꼬리질문 생성 여부")
   num_followups = serializers.IntegerField(default=1, min_value=1, max_value=5)
   question_source = serializers.CharField(

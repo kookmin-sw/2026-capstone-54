@@ -167,13 +167,22 @@ class InterviewAnswerAPIView(BaseAPIView):
     # 꼬리질문 생성
     if data["generate_followup"]:
       service = InterviewService()
+
+      # DB에서 히스토리 구성: 현재 세션의 모든 exchange를 시간순 조회
+      previous_exchanges = InterviewExchange.objects.filter(session=session, ).order_by("created_at")
+      history = [{"question": ex.question, "answer": ex.answer} for ex in previous_exchanges]
+
+      # anchor_question 결정: 가장 첫 번째 초기 질문 (depth=0)
+      first_initial = previous_exchanges.filter(exchange_type="initial").first()
+      anchor_question = first_initial.question if first_initial else data["question"]
+
       followup_output = service.generate_followups(
         session_id=session.id,
         original_question=data["question"],
         user_answer=data["answer"],
         num_followups=data["num_followups"],
-        history=data.get("history"),
-        anchor_question=data.get("anchor_question") or data["question"],
+        history=history,
+        anchor_question=anchor_question,
       )
 
       response_data["followup_questions"] = [
