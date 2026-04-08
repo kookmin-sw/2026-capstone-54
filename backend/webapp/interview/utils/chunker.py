@@ -1,4 +1,4 @@
-"""Chunker 모듈 - 문서 청킹."""
+"""Chunker - 문서 청킹."""
 
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter

@@ -2,7 +2,6 @@
 
 import logging
 
-from interview.services.rag_pipeline.chunker import Chunker
 from interview.services.rag_pipeline.config import PipelineConfig
 from interview.services.rag_pipeline.exceptions import PipelineStepError
 from interview.services.rag_pipeline.followup_generator import FollowUpGenerator
@@ -18,6 +17,7 @@ from interview.services.rag_pipeline.models import (
 )
 from interview.services.rag_pipeline.question_generator import QuestionGenerator
 from interview.services.rag_pipeline.token_tracker import TokenUsageCallback
+from interview.utils import Chunker
 
 
 class RAGPipeline:
