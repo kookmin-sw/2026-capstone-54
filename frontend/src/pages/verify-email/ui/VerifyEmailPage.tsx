@@ -153,9 +153,9 @@ export function VerifyEmailPage() {
             </p>
 
             {/* Email display */}
-            <div className="flex items-center justify-center gap-[10px] bg-white border border-[#E5E7EB] rounded-lg px-5 py-[14px] mb-5">
+            <div className="flex items-center justify-center gap-[10px] bg-white border border-[#E5E7EB] rounded-lg px-5 py-[14px] mb-5 overflow-hidden">
               <span className="w-2 h-2 rounded-full bg-[#F59E0B] shrink-0" />
-              <span className="font-inter text-[15px] font-bold text-[#0A0A0A]">{email}</span>
+              <span className="font-inter text-[15px] font-bold text-[#0A0A0A] truncate" title={email}>{email}</span>
             </div>
 
             {/* Code input */}

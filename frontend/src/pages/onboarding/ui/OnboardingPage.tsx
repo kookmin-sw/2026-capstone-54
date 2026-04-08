@@ -118,7 +118,7 @@ export function OnboardingPage() {
             </div>
             <div className="flex flex-col gap-0.5 overflow-hidden">
               <span className="text-[14px] font-bold text-[#059669]">이메일 인증 완료!</span>
-              <span className="text-[13px] text-[#6B7280] truncate">{email}</span>
+              <span className="text-[13px] text-[#6B7280] truncate" title={email}>{email}</span>
             </div>
           </div>
 
