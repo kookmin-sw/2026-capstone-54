@@ -4,7 +4,7 @@ import { StatsSection } from "./StatsSection";
 import { FeaturesSection } from "./FeaturesSection";
 import { HowToSection } from "./HowToSection";
 import { ReviewReportSection } from "./ReviewReportSection";
-import { TestimonialsSection } from "./TestimonialsSection";
+// import { TestimonialsSection } from "./TestimonialsSection";
 import { PricingSection } from "./PricingSection";
 import { WhySection } from "./WhySection";
 import { CtaSection } from "./CtaSection";
@@ -22,7 +22,7 @@ export function LandingPage() {
         <ReviewReportSection />
         <PricingSection />
         <WhySection />
-        <TestimonialsSection />
+        {/* <TestimonialsSection /> */}
         <CtaSection />
       </main>
       <FooterSection />
