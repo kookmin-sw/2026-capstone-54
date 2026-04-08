@@ -5,12 +5,17 @@ const LEGAL_LINKS = ["개인정보처리방침", "이용약관", "쿠키 정책"
 export function FooterSection() {
   return (
     <footer className="bg-[#0A0A0A] pt-12 pb-6 px-5 flex justify-center md:pt-16 md:pb-8 md:px-10">
-      <div className="max-w-content w-full md:max-w-container">
+      <div className="max-w-content w-full md:max-w-[900px]">
         <div className="flex flex-col gap-8 mb-9 md:grid md:grid-cols-[2fr_1fr_1fr_1fr] md:gap-10 md:mb-12">
           {/* 브랜드 */}
           <div>
-            <div className="font-inter text-[20px] font-black text-white mb-[10px] md:text-[22px] md:mb-3">
-              me<span style={{ color: "#0991B2" }}>Fit</span>
+            <div className="mb-[10px] md:mb-3">
+              <img 
+                src="/logo-korean.png" 
+                alt="미핏" 
+                className="h-[46px] w-auto md:h-[56px]"
+                style={{ filter: "brightness(0) invert(1)" }}
+              />
             </div>
             <p className="text-[12px] text-white/40 leading-[1.7] mb-4 md:text-[13px] md:mb-5">
               未fit → meFit. 아직 면접 핏이 맞지 않는 나를,<br />AI와 함께 완성해가는 플랫폼.

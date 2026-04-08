@@ -97,9 +97,9 @@ export function SubscriptionPage() {
       <nav className="sticky top-0 z-[200] bg-[rgba(255,255,255,.92)] backdrop-blur-[20px] border-b border-[#E5E7EB] h-[60px] flex items-center px-4 sm:px-8 gap-3">
         <Link
           to="/home"
-          className="text-xl font-black text-[#0A0A0A] no-underline tracking-[-0.4px] mr-auto"
+          className="flex items-center mr-auto"
         >
-          me<span className="text-[#0991B2]">Fit</span>
+          <img src="/logo-korean.png" alt="미핏" className="h-[36px] w-auto" />
         </Link>
         <Link
           to="/home"

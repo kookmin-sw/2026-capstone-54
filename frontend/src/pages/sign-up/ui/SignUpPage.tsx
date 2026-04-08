@@ -72,8 +72,8 @@ export function SignUpPage() {
     <div className="min-h-screen bg-white flex flex-col">
       {/* Header */}
       <header className="w-full max-w-container mx-auto flex justify-between items-center px-5 pt-5 md:px-10 md:pt-7">
-        <Link to="/" className="font-inter text-[22px] font-black text-[#0A0A0A] no-underline">
-          me<span style={{ color: "#0991B2" }}>Fit</span>
+        <Link to="/" className="flex items-center">
+          <img src="/logo-korean.png" alt="미핏" className="h-[44px] w-auto md:h-[50px]" />
         </Link>
         <Link
           to="/login"

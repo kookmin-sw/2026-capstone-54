@@ -31,14 +31,19 @@ export function MobileNav() {
         <Link
           to="/"
           style={{
-            fontFamily: "'Inter', sans-serif",
-            fontSize: 20,
-            fontWeight: 900,
-            color: "#0A0A0A",
+            display: "flex",
+            alignItems: "center",
             textDecoration: "none",
           }}
         >
-          me<span style={{ color: "#0991B2" }}>Fit</span>
+          <img 
+            src="/logo-korean.png" 
+            alt="미핏" 
+            style={{
+              height: 40,
+              width: "auto",
+            }}
+          />
         </Link>
 
         {/* 우측 */}

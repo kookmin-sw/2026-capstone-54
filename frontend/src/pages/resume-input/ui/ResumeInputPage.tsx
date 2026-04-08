@@ -70,9 +70,9 @@ export function ResumeInputPage() {
             </button>
             <a
               href="/home"
-              className="font-inter text-[20px] font-black text-[#0A0A0A] no-underline"
+              className="flex items-center"
             >
-              me<span className="text-[#0991B2]">Fit</span>
+              <img src="/logo-korean.png" alt="미핏" className="h-[36px] w-auto" />
             </a>
           </div>
           <span className="font-inter text-[16px] font-extrabold text-[#0A0A0A] md:text-[18px]">

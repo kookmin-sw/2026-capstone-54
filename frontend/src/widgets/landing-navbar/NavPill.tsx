@@ -57,15 +57,19 @@ export function NavPill() {
         <Link
           to="/"
           style={{
-            fontFamily: "'Inter', sans-serif",
-            fontSize: 22,
-            fontWeight: 900,
-            letterSpacing: -0.5,
-            color: "#0A0A0A",
+            display: "flex",
+            alignItems: "center",
             textDecoration: "none",
           }}
         >
-          me<span style={{ color: "#0991B2" }}>Fit</span>
+          <img 
+            src="/logo-korean.png" 
+            alt="미핏" 
+            style={{
+              height: 46,
+              width: "auto",
+            }}
+          />
         </Link>
 
         {/* 메뉴 링크 */}

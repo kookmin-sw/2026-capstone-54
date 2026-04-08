@@ -21,8 +21,8 @@ export function InterviewSetupPage() {
     <>
       {/* NAV */}
       <nav className="sticky top-0 z-[200] bg-white/[.92] backdrop-blur-[20px] border-b border-[#E5E7EB] h-[60px] flex items-center px-8 gap-4 max-sm:px-4">
-        <Link to="/home" className="text-[20px] font-black text-[#0A0A0A] no-underline tracking-[-0.4px] mr-auto">
-          me<span className="text-[#0991B2]">Fit</span>
+        <Link to="/home" className="flex items-center mr-auto">
+          <img src="/logo-korean.png" alt="미핏" className="h-[36px] w-auto" />
         </Link>
         <Link to="/home" className="text-sm font-medium text-[#6B7280] no-underline px-3 py-1.5 rounded-lg transition-colors hover:text-[#0A0A0A] hover:bg-[#F9FAFB]">홈</Link>
         <Link to="/resume/input" className="text-sm font-medium text-[#6B7280] no-underline px-3 py-1.5 rounded-lg transition-colors hover:text-[#0A0A0A] hover:bg-[#F9FAFB]">이력서</Link>

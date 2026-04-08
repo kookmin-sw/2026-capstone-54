@@ -9,7 +9,7 @@ const TAGS = ["꼬리질문 방식", "전체 프로세스 방식", "연습 / 실
 export function HowToSection() {
   return (
     <section id="how-to" className="py-16 px-5 flex justify-center bg-white md:py-25 md:px-10">
-      <div className="max-w-content w-full flex flex-col gap-6 md:max-w-container md:gap-10">
+      <div className="max-w-content w-full flex flex-col gap-6 md:max-w-[820px] md:gap-10">
         {/* 좌측 */}
         <div className="flex flex-col">
           <div className="inline-block text-[12px] font-bold text-[#0991B2] bg-[#E6F7FA] rounded px-[14px] py-[5px] mb-[14px] self-start md:text-[13px] md:px-[18px] md:py-[6px] md:mb-[18px]">

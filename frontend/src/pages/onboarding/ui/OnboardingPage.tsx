@@ -79,8 +79,8 @@ export function OnboardingPage() {
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <header className="w-full max-w-container mx-auto flex justify-between items-center px-5 py-5 md:px-10 md:py-7">
-        <Link to="/" className="font-inter text-[22px] font-black text-[#0A0A0A] no-underline">
-          me<span style={{ color: "#0991B2" }}>Fit</span>
+        <Link to="/" className="flex items-center">
+          <img src="/logo-korean.png" alt="미핏" className="h-[44px] w-auto md:h-[50px]" />
         </Link>
         <div className="flex items-center gap-2 text-[13px] font-semibold text-[#059669] bg-[#ECFDF5] border border-[#D1FAE5] rounded-lg px-4 py-2">
           <span className="w-2 h-2 rounded-full bg-[#059669] shrink-0" />

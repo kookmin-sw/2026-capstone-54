@@ -95,8 +95,8 @@ export function SettingsPage() {
               <span className={`w-[18px] h-0.5 bg-[#0A0A0A] rounded-sm transition-all duration-200 ${menuOpen ? "-rotate-45 translate-x-[5px] -translate-y-[5px]" : ""}`} />
             </div>
           </button>
-          <Link to="/home" className="font-inter text-[20px] font-black text-[#0A0A0A] no-underline tracking-[-0.4px] mr-auto">
-            me<span className="text-[#0991B2]">Fit</span>
+          <Link to="/home" className="flex items-center mr-auto">
+            <img src="/logo-korean.png" alt="미핏" className="h-[36px] w-auto" />
           </Link>
           <Link to="/home" className="text-[13px] font-semibold text-[#6B7280] no-underline px-3 py-[6px] rounded-lg flex items-center gap-1 transition-[color,background] duration-150 hover:text-[#0A0A0A] hover:bg-[#F9FAFB]">
             ← 홈으로

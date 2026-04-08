@@ -296,8 +296,8 @@ function NavBar() {
   return (
     <nav className="fixed top-0 left-0 right-0 z-[200] py-[14px] px-8 flex justify-center max-sm:py-3 max-sm:px-4">
       <div className="flex items-center justify-between w-full max-w-container-lg bg-white/[.92] backdrop-blur-[20px] border border-[#E5E7EB] rounded-lg p-[8px_8px_8px_24px] shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)]">
-        <Link to="/home" className="text-[19px] font-black tracking-[-0.3px] text-[#0A0A0A] no-underline">
-          me<span style={{ color: "#0991B2" }}>Fit</span>
+        <Link to="/home" className="flex items-center">
+          <img src="/logo-korean.png" alt="미핏" className="h-[34px] w-auto" />
         </Link>
         <ul className="flex gap-1 list-none">
           <li><Link to="/home" className="text-[13px] font-medium text-[#6B7280] no-underline py-2 px-3.5 rounded-lg transition-all hover:text-[#0A0A0A] hover:bg-[rgba(9,145,178,0.06)]">홈</Link></li>
