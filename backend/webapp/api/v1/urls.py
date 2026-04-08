@@ -9,5 +9,6 @@ urlpatterns = [
   path("terms-documents/", include("api.v1.terms_documents.urls")),
   path("streaks/", include("api.v1.streaks.urls")),
   path("resumes/", include("api.v1.resumes.urls")),
+  path("job-descriptions/", include("api.v1.job_descriptions.urls")),
   path("", include("api.v1.profiles.urls")),
 ]
