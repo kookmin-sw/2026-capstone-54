@@ -36,19 +36,20 @@
 
 .hp-menu-btn {
   display: none;
-  width: 40px;
-  height: 40px;
-  background: none;
+  width: 36px;
+  height: 36px;
+  background: #f9fafb;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   cursor: pointer;
   align-items: center;
   justify-content: center;
   transition: background 0.15s;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03), 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .hp-menu-btn:hover {
-  background: #f9fafb;
+  background: #f3f4f6;
 }
 
 .hp-menu-icon {
@@ -249,7 +250,7 @@
 
 /* ── MAIN ── */
 .hp-main {
-  padding: 28px 32px;
+  padding: 28px 32px 100px;
   min-width: 0;
 }
 
@@ -795,6 +796,9 @@
 @media (max-width: 640px) {
   .hp-nav {
     padding: 0 16px;
+  }
+  .hp-menu-btn {
+    display: none;
   }
   .hp-main {
     padding: 20px 16px;
