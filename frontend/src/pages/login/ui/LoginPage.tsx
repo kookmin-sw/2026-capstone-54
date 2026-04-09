@@ -31,8 +31,10 @@ export function LoginPage() {
     if (result.success) {
       if (result.isEmailConfirmed === false) {
         navigate("/verify-email");
-      } else {
+      } else if (result.isProfileCompleted === false) {
         navigate("/onboarding");
+      } else {
+        navigate("/home");
       }
     }
   };
