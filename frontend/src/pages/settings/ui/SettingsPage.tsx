@@ -30,8 +30,10 @@ export function SettingsPage() {
   const {
     data, loading, saving, error, saveMessage, activePanel, consentBadge,
     profileDraft, notificationsDraft, passwordDraft, aiDataDraft,
+    jobCategories, jobCategoriesLoading, availableJobs, availableJobsLoading,
     fetchSettings, setActivePanel,
-    setProfileDraft, saveProfile, resetProfileDraft,
+    loadJobCategories,
+    setProfileDraftField, toggleJobId, saveProfile, resetProfileDraft,
     setPasswordDraft, savePassword, resetPasswordDraft,
     toggleNotification, saveNotifications, resetNotificationsDraft,
     setAiDataDraft, saveConsents,
@@ -44,7 +46,8 @@ export function SettingsPage() {
 
   useEffect(() => {
     fetchSettings();
-  }, [fetchSettings]);
+    loadJobCategories();
+  }, [fetchSettings, loadJobCategories]);
 
   useEffect(() => {
     if (saveMessage) {
@@ -192,7 +195,7 @@ export function SettingsPage() {
                           type="text"
                           className={inputClass}
                           value={profileDraft.name ?? ""}
-                          onChange={(e) => setProfileDraft("name", e.target.value)}
+                          onChange={(e) => setProfileDraftField("name", e.target.value)}
                           placeholder="이름을 입력하세요"
                         />
                       </div>
@@ -201,33 +204,66 @@ export function SettingsPage() {
                         <input type="email" className={inputClass} value={data.profile.email} readOnly />
                         <p className="text-[11px] text-[#6B7280] leading-[1.45]">이메일 주소는 변경할 수 없습니다. 고객센터로 문의해주세요.</p>
                       </div>
-                      <div className="grid grid-cols-2 gap-3 max-[640px]:grid-cols-1">
+                      <div className="flex flex-col gap-4">
+                        {/* 직군 선택 */}
                         <div className="flex flex-col gap-[5px]">
                           <label className="font-inter text-[12px] font-bold text-[#0A0A0A] tracking-[0.1px] flex items-center gap-1">
                             희망 직군 <span className="text-[#EF4444] text-[10px]">*</span>
                           </label>
-                          <select
-                            className={selectClass}
-                            value={profileDraft.jobCategory ?? ""}
-                            onChange={(e) => setProfileDraft("jobCategory", e.target.value)}
-                          >
-                            {["IT/개발","마케팅/광고","금융/회계","의료/간호","교육","영업","디자인","기획/전략","HR/인사","기타"].map((v) => (
-                              <option key={v}>{v}</option>
-                            ))}
-                          </select>
+                          {jobCategoriesLoading ? (
+                            <div className="text-[12px] text-[#9CA3AF] py-2">직군 목록 불러오는 중...</div>
+                          ) : (
+                            <select
+                              className={selectClass}
+                              value={profileDraft.jobCategoryId ?? ""}
+                              onChange={(e) => {
+                                const id = e.target.value ? Number(e.target.value) : null;
+                                setProfileDraftField("jobCategoryId", id);
+                              }}
+                            >
+                              <option value="">직군을 선택하세요</option>
+                              {jobCategories.map((cat) => (
+                                <option key={cat.id} value={cat.id}>
+                                  {cat.emoji} {cat.name}
+                                </option>
+                              ))}
+                            </select>
+                          )}
                           <p className="text-[11px] text-[#6B7280] leading-[1.45]">면접 질문 생성에 반영됩니다</p>
                         </div>
-                        <div className="flex flex-col gap-[5px]">
-                          <label className="font-inter text-[12px] font-bold text-[#0A0A0A] tracking-[0.1px]">현재 직업 / 직책</label>
-                          <input
-                            type="text"
-                            className={inputClass}
-                            value={profileDraft.jobTitle ?? ""}
-                            onChange={(e) => setProfileDraft("jobTitle", e.target.value)}
-                            placeholder="직업 또는 직책"
-                          />
-                          <p className="text-[11px] text-[#6B7280] leading-[1.45]">면접 맥락 설정에 활용됩니다</p>
-                        </div>
+
+                        {/* 직업 다중 선택 */}
+                        {profileDraft.jobCategoryId && (
+                          <div className="flex flex-col gap-[5px]">
+                            <label className="font-inter text-[12px] font-bold text-[#0A0A0A] tracking-[0.1px]">
+                              직업 선택 <span className="text-[11px] font-normal text-[#6B7280]">(복수 선택 가능)</span>
+                            </label>
+                            {availableJobsLoading ? (
+                              <div className="text-[12px] text-[#9CA3AF]">직업 목록 불러오는 중...</div>
+                            ) : (
+                              <div className="grid grid-cols-2 gap-2 max-[640px]:grid-cols-1">
+                                {availableJobs.map((job) => {
+                                  const isSelected = profileDraft.jobIds.includes(job.id);
+                                  return (
+                                    <button
+                                      key={job.id}
+                                      type="button"
+                                      onClick={() => toggleJobId(job.id)}
+                                      className={`text-left text-[12px] font-semibold px-3 py-2 rounded-lg border-[1.5px] transition-all ${
+                                        isSelected
+                                          ? "border-[#0991B2] bg-[#E6F7FA] text-[#0991B2]"
+                                          : "border-[#E5E7EB] bg-[#F9FAFB] text-[#374151] hover:border-[#0991B2]"
+                                      }`}
+                                    >
+                                      {isSelected ? "✓ " : ""}{job.name}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            )}
+                            <p className="text-[11px] text-[#6B7280] leading-[1.45]">면접 맥락 설정에 활용됩니다</p>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>

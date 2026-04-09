@@ -1,16 +1,20 @@
-// Settings API - Connected to backend
-
 import { apiRequest } from "@/shared/api/client";
+import { profileApi } from "@/shared/api/profileApi";
+import { getMeApi } from "@/features/auth/api/authApi";
+import type { JobCategory, Job } from "@/shared/api/profileApi";
 
-const USE_MOCK = false;
+export type { JobCategory, Job };
 
 /* ── Types ── */
 export interface SettingsProfile {
   name: string;
   email: string;
-  jobCategory: string;
-  jobTitle: string;
   avatarInitial: string;
+  // 프로필 API 연동 필드
+  jobCategoryId: number | null;
+  jobCategory: JobCategory | null;
+  jobIds: number[];
+  jobs: Job[];
 }
 
 export interface SettingsNotifications {
@@ -47,60 +51,75 @@ export interface ApiResult {
   message: string;
 }
 
-/* ── Mock Data ── */
-const MOCK_SETTINGS: SettingsData = {
-  profile: {
-    name: "김지원",
-    email: "jiwon@example.com",
-    jobCategory: "IT/개발",
-    jobTitle: "대학생",
-    avatarInitial: "김",
-  },
-  notifications: {
-    streakReminder: true,
-    streakExpire: true,
-    streakReward: true,
-    reportReady: true,
-    serviceNotice: false,
-    marketing: false,
-  },
-  subscription: {
-    plan: "free",
-    resumeUsed: 1,
-    resumeMax: 3,
-    nextBillingDate: null,
-  },
-  consents: {
-    termsAgreedAt: "2025.01.15",
-    privacyAgreedAt: "2025.01.15",
-    aiDataAgreed: false,
-  },
+/* ── Fallback Mock (비프로필 영역 — 아직 API 미구현) ── */
+const MOCK_NOTIFICATIONS: SettingsNotifications = {
+  streakReminder: true,
+  streakExpire: true,
+  streakReward: true,
+  reportReady: true,
+  serviceNotice: false,
+  marketing: false,
 };
 
-/* ── Fetch Settings ── */
+const MOCK_SUBSCRIPTION: SettingsSubscription = {
+  plan: "free",
+  resumeUsed: 1,
+  resumeMax: 3,
+  nextBillingDate: null,
+};
+
+const MOCK_CONSENTS: SettingsConsents = {
+  termsAgreedAt: "2025.01.15",
+  privacyAgreedAt: "2025.01.15",
+  aiDataAgreed: false,
+};
+
+/* ── Fetch Settings ──
+   - 사용자 기본정보: GET /api/v1/users/me/
+   - 프로필 (직군/직업): GET /api/v1/profiles/me/
+   - 나머지는 미구현 → mock fallback
+*/
 export async function fetchSettingsApi(): Promise<{ success: boolean; data?: SettingsData; error?: string }> {
-  if (USE_MOCK) {
-    await new Promise((r) => setTimeout(r, 350));
-    return { success: true, data: MOCK_SETTINGS };
-  }
   try {
-    const data = await apiRequest<SettingsData>("/api/v1/users/settings/", { method: "GET", auth: true });
-    return { success: true, data };
+    const [me, userProfile] = await Promise.allSettled([
+      getMeApi(),
+      profileApi.getMyProfile(),
+    ]);
+
+    const meData = me.status === "fulfilled" ? me.value : null;
+    const profileData = userProfile.status === "fulfilled" ? userProfile.value : null;
+
+    const profile: SettingsProfile = {
+      name: meData?.name ?? "",
+      email: meData?.email ?? "",
+      avatarInitial: meData?.name ? meData.name[0] : "?",
+      jobCategoryId: profileData?.jobCategory?.id ?? null,
+      jobCategory: profileData?.jobCategory ?? null,
+      jobIds: profileData?.jobs?.map((j) => j.id) ?? [],
+      jobs: profileData?.jobs ?? [],
+    };
+
+    return {
+      success: true,
+      data: {
+        profile,
+        notifications: MOCK_NOTIFICATIONS,
+        subscription: MOCK_SUBSCRIPTION,
+        consents: MOCK_CONSENTS,
+      },
+    };
   } catch {
-    return { success: true, data: MOCK_SETTINGS };
+    return { success: false, error: "설정을 불러오지 못했습니다." };
   }
 }
 
-/* ── Update Profile ── */
-export async function updateProfileApi(payload: Partial<SettingsProfile>): Promise<ApiResult> {
-  if (USE_MOCK) {
-    await new Promise((r) => setTimeout(r, 700));
-    return { success: true, message: "프로필이 저장되었습니다." };
-  }
+/* ── Update Profile ── POST /api/v1/profiles/me/ ── */
+export async function updateProfileApi(payload: {
+  jobCategoryId: number;
+  jobIds: number[];
+}): Promise<ApiResult> {
   try {
-    await apiRequest("/api/v1/users/profile/", {
-      method: "PUT", auth: true, body: JSON.stringify(payload),
-    });
+    await profileApi.saveMyProfile({ jobCategoryId: payload.jobCategoryId, jobIds: payload.jobIds });
     return { success: true, message: "프로필이 저장되었습니다." };
   } catch {
     return { success: false, message: "저장에 실패했습니다." };
@@ -112,10 +131,6 @@ export async function changePasswordApi(payload: {
   currentPassword: string;
   newPassword: string;
 }): Promise<ApiResult> {
-  if (USE_MOCK) {
-    await new Promise((r) => setTimeout(r, 800));
-    return { success: true, message: "비밀번호가 변경되었습니다." };
-  }
   try {
     await apiRequest("/api/v1/users/change-password/", {
       method: "POST", auth: true,
@@ -132,10 +147,6 @@ export async function changePasswordApi(payload: {
 
 /* ── Update Notifications ── */
 export async function updateNotificationsApi(payload: SettingsNotifications): Promise<ApiResult> {
-  if (USE_MOCK) {
-    await new Promise((r) => setTimeout(r, 600));
-    return { success: true, message: "알림 설정이 저장되었습니다." };
-  }
   try {
     await apiRequest("/api/v1/users/notifications/", {
       method: "PUT", auth: true, body: JSON.stringify(payload),
@@ -148,10 +159,6 @@ export async function updateNotificationsApi(payload: SettingsNotifications): Pr
 
 /* ── Update Consents ── */
 export async function updateConsentsApi(payload: { aiDataAgreed: boolean }): Promise<ApiResult> {
-  if (USE_MOCK) {
-    await new Promise((r) => setTimeout(r, 600));
-    return { success: true, message: "동의 설정이 저장되었습니다." };
-  }
   try {
     await apiRequest("/api/v1/users/consents/", {
       method: "PUT", auth: true, body: JSON.stringify({ ai_data_agreed: payload.aiDataAgreed }),
@@ -164,10 +171,6 @@ export async function updateConsentsApi(payload: { aiDataAgreed: boolean }): Pro
 
 /* ── Delete Interview Data ── */
 export async function deleteInterviewDataApi(): Promise<ApiResult> {
-  if (USE_MOCK) {
-    await new Promise((r) => setTimeout(r, 900));
-    return { success: true, message: "면접 데이터가 삭제되었습니다." };
-  }
   try {
     await apiRequest("/api/v1/users/interview-data/", { method: "DELETE", auth: true });
     return { success: true, message: "면접 데이터가 삭제되었습니다." };
@@ -178,10 +181,6 @@ export async function deleteInterviewDataApi(): Promise<ApiResult> {
 
 /* ── Delete Account ── */
 export async function deleteAccountApi(): Promise<ApiResult> {
-  if (USE_MOCK) {
-    await new Promise((r) => setTimeout(r, 1000));
-    return { success: true, message: "계정이 탈퇴 처리되었습니다." };
-  }
   try {
     await apiRequest("/api/v1/users/", { method: "DELETE", auth: true });
     return { success: true, message: "계정이 탈퇴 처리되었습니다." };

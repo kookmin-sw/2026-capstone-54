@@ -1,25 +1,24 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/features/auth";
-import {
-  useOnboardingStore,
-  JOB_CATEGORIES,
-  JOB_STATUS_OPTIONS,
-} from "@/features/onboarding";
+import { useOnboardingStore, JOB_STATUS_OPTIONS } from "@/features/onboarding";
 
 export function OnboardingPage() {
   const navigate = useNavigate();
   const { pendingEmail } = useAuthStore();
   const {
-    selectedJob,
-    jobTitles,
-    jobTitleOptions,
-    jobTitlesLoading,
+    jobCategories,
+    jobCategoriesLoading,
+    selectedJobCategoryId,
+    availableJobs,
+    availableJobsLoading,
+    selectedJobIds,
     jobStatus,
     isLoading,
     error,
-    selectJob,
-    toggleJobTitle,
+    loadJobCategories,
+    selectJobCategory,
+    toggleJobId,
     setJobStatus,
     submitProfile,
     clearError,
@@ -33,11 +32,19 @@ export function OnboardingPage() {
   const acRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const filtered = jobTitleOptions.filter(
-    (o) =>
-      o.label.toLowerCase().includes(acFilter.toLowerCase()) &&
-      !jobTitles.includes(o.label)
+  useEffect(() => {
+    loadJobCategories();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const filteredJobs = availableJobs.filter(
+    (j) =>
+      j.name.toLowerCase().includes(acFilter.toLowerCase()) &&
+      !selectedJobIds.includes(j.id)
   );
+
+  // 선택된 직업 이름 조회 헬퍼
+  const getJobName = (jobId: number) =>
+    availableJobs.find((j) => j.id === jobId)?.name ?? String(jobId);
 
   // 외부 클릭 시 닫기
   useEffect(() => {
@@ -50,30 +57,23 @@ export function OnboardingPage() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const handleSelectTitle = useCallback(
-    (label: string) => {
-      toggleJobTitle(label);
+  const handleSelectJob = useCallback(
+    (jobId: number) => {
+      toggleJobId(jobId);
       setAcFilter("");
       setAcOpen(false);
     },
-    [toggleJobTitle]
-  );
-
-  const handleRemoveTitle = useCallback(
-    (label: string) => {
-      toggleJobTitle(label);
-    },
-    [toggleJobTitle]
+    [toggleJobId]
   );
 
   const filledCount =
-    (selectedJob ? 1 : 0) + (jobTitles.length > 0 ? 1 : 0);
+    (selectedJobCategoryId !== null ? 1 : 0) + (selectedJobIds.length > 0 ? 1 : 0);
   const progress = Math.round((filledCount / 2) * 100);
 
   const handleSubmit = async () => {
     clearError();
     const ok = await submitProfile();
-    if (ok) navigate("/interview");
+    if (ok) navigate("/home");
   };
 
   return (
@@ -125,8 +125,8 @@ export function OnboardingPage() {
           {/* Steps - 모바일에서는 숨김 */}
           <div className="hidden md:flex md:flex-col md:gap-2 w-full">
             {[
-              { done: true, num: null, name: "이메일로 계정 생성", sub: "완료" },
-              { done: true, num: null, name: "이메일 인증 완료", sub: "완료" },
+              { done: true, name: "이메일로 계정 생성", sub: "완료" },
+              { done: true, name: "이메일 인증 완료", sub: "완료" },
             ].map((step, i) => (
               <div key={i} className="flex flex-row items-center gap-[14px] text-left px-5 py-[14px] rounded-lg opacity-60">
                 <div className="w-9 h-9 rounded-full flex items-center justify-center text-[14px] font-bold text-white bg-[#059669] shrink-0">
@@ -168,44 +168,48 @@ export function OnboardingPage() {
               />
             </div>
 
-            {/* Job categories — 단일 선택 */}
+            {/* 직군 선택 */}
             <label className="block text-[14px] font-bold text-[#0A0A0A] mb-2">희망 직군</label>
-            <div className="flex flex-wrap gap-2 mb-6">
-              {JOB_CATEGORIES.map((cat) => (
-                <button
-                  key={cat.id}
-                  type="button"
-                  className={`inline-flex items-center gap-[6px] px-4 py-[9px] font-inter text-[13px] font-semibold rounded-lg cursor-pointer transition-all duration-200 whitespace-nowrap border ${
-                    selectedJob === cat.id
-                      ? "bg-[#E6F7FA] border-[#0991B2] text-[#0991B2]"
-                      : "bg-white border-[#E5E7EB] text-[#374151] hover:border-[#0991B2] hover:text-[#0991B2]"
-                  }`}
-                  onClick={() => selectJob(cat.id)}
-                  aria-pressed={selectedJob === cat.id}
-                >
-                  <span className="text-[14px]">{cat.emoji}</span>
-                  {cat.label}
-                </button>
-              ))}
-            </div>
+            {jobCategoriesLoading ? (
+              <p className="text-[13px] text-[#9CA3AF] mb-6">직군 목록 불러오는 중...</p>
+            ) : (
+              <div className="flex flex-wrap gap-2 mb-6">
+                {jobCategories.map((cat) => (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    className={`inline-flex items-center gap-[6px] px-4 py-[9px] font-inter text-[13px] font-semibold rounded-lg cursor-pointer transition-all duration-200 whitespace-nowrap border ${
+                      selectedJobCategoryId === cat.id
+                        ? "bg-[#E6F7FA] border-[#0991B2] text-[#0991B2]"
+                        : "bg-white border-[#E5E7EB] text-[#374151] hover:border-[#0991B2] hover:text-[#0991B2]"
+                    }`}
+                    onClick={() => selectJobCategory(cat.id)}
+                    aria-pressed={selectedJobCategoryId === cat.id}
+                  >
+                    <span className="text-[14px]">{cat.emoji}</span>
+                    {cat.name}
+                  </button>
+                ))}
+              </div>
+            )}
 
             {/* 희망 직업 — 자동완성 (1~3개) */}
             <label className="block text-[14px] font-bold text-[#0A0A0A] mb-2">
               희망 직업
-              <span className="text-[12px] font-semibold text-[#9CA3AF]"> ({jobTitles.length}/3)</span>
+              <span className="text-[12px] font-semibold text-[#9CA3AF]"> ({selectedJobIds.length}/3)</span>
             </label>
 
             {/* 선택된 직업 태그 */}
-            {jobTitles.length > 0 && (
+            {selectedJobIds.length > 0 && (
               <div className="flex flex-wrap gap-[6px] mb-2">
-                {jobTitles.map((t) => (
-                  <span key={t} className="inline-flex items-center gap-1 px-3 py-[6px] text-[13px] font-semibold text-[#0991B2] bg-[#E6F7FA] border border-[#0991B2] rounded-lg">
-                    {t}
+                {selectedJobIds.map((id) => (
+                  <span key={id} className="inline-flex items-center gap-1 px-3 py-[6px] text-[13px] font-semibold text-[#0991B2] bg-[#E6F7FA] border border-[#0991B2] rounded-lg">
+                    {getJobName(id)}
                     <button
                       type="button"
                       className="inline-flex items-center justify-center w-4 h-4 p-0 text-[14px] leading-none text-[#0991B2] bg-none border-none cursor-pointer rounded-full transition-[background] duration-150 hover:bg-[rgba(9,145,178,0.15)]"
-                      onClick={() => handleRemoveTitle(t)}
-                      aria-label={`${t} 제거`}
+                      onClick={() => toggleJobId(id)}
+                      aria-label={`${getJobName(id)} 제거`}
                     >
                       ×
                     </button>
@@ -220,44 +224,44 @@ export function OnboardingPage() {
                 type="text"
                 className="w-full py-[14px] px-4 font-inter text-[15px] text-[#0A0A0A] bg-white border border-[#E5E7EB] rounded-lg outline-none transition-[border-color] duration-200 placeholder-[#D1D5DB] focus:border-[#0991B2] disabled:bg-[#F3F4F6] disabled:cursor-not-allowed"
                 placeholder={
-                  !selectedJob
+                  selectedJobCategoryId === null
                     ? "먼저 희망 직군을 선택해주세요"
-                    : jobTitlesLoading
+                    : availableJobsLoading
                       ? "직업 목록 불러오는 중..."
-                      : jobTitles.length >= 3
+                      : selectedJobIds.length >= 3
                         ? "최대 3개까지 선택 가능합니다"
                         : "직업을 검색하세요"
                 }
                 value={acFilter}
-                disabled={!selectedJob || jobTitlesLoading || jobTitles.length >= 3}
+                disabled={selectedJobCategoryId === null || availableJobsLoading || selectedJobIds.length >= 3}
                 onChange={(e) => {
                   setAcFilter(e.target.value);
                   setAcOpen(true);
                 }}
                 onFocus={() => {
-                  if (selectedJob && !jobTitlesLoading && jobTitles.length < 3) setAcOpen(true);
+                  if (selectedJobCategoryId !== null && !availableJobsLoading && selectedJobIds.length < 3) setAcOpen(true);
                 }}
                 aria-label="희망 직업"
                 autoComplete="off"
               />
-              {acOpen && filtered.length > 0 && (
+              {acOpen && filteredJobs.length > 0 && (
                 <ul className="absolute top-full left-0 right-0 mt-1 py-[6px] bg-white border border-[#E5E7EB] rounded-lg shadow-[0_4px_16px_rgba(0,0,0,0.08)] list-none max-h-[200px] overflow-y-auto z-10" role="listbox">
-                  {filtered.map((opt) => (
+                  {filteredJobs.map((job) => (
                     <li
-                      key={opt.id}
-                      className="px-4 py-[10px] text-[14px] text-[#374151] cursor-pointer transition-[background] duration-150 hover:bg-[#E6F7FA] hover:text-[#0991B2] aria-selected:bg-[#E6F7FA] aria-selected:text-[#0991B2] aria-selected:font-semibold"
+                      key={job.id}
+                      className="px-4 py-[10px] text-[14px] text-[#374151] cursor-pointer transition-[background] duration-150 hover:bg-[#E6F7FA] hover:text-[#0991B2]"
                       role="option"
-                      aria-selected={jobTitles.includes(opt.label)}
-                      onClick={() => handleSelectTitle(opt.label)}
+                      aria-selected={selectedJobIds.includes(job.id)}
+                      onClick={() => handleSelectJob(job.id)}
                     >
-                      {opt.label}
+                      {job.name}
                     </li>
                   ))}
                 </ul>
               )}
             </div>
 
-            {/* Job status */}
+            {/* 현재 직업 상태 */}
             <label className="block text-[14px] font-bold text-[#0A0A0A] mb-2">현재 직업 상태</label>
             <div className="relative mb-6">
               <select
