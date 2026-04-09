@@ -53,10 +53,7 @@ export async function uploadResumeApi(
               resumeId: response.id || response.resumeId,
             });
           } catch {
-            resolve({
-              success: true,
-              message: "이력서가 업로드되었습니다.",
-            });
+            reject({ message: "서버 응답을 파싱하는 데 실패했습니다." });
           }
         } else {
           try {
