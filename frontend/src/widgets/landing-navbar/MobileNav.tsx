@@ -1,11 +1,11 @@
 import { Link } from "react-router-dom";
 import { useNavbarStore } from "./store";
 import { MobileDrawer } from "./MobileDrawer";
-import { useSessionStore } from "@/entities/session";
+import { useAuthStore } from "@/features/auth";
 
 export function MobileNav() {
   const { isMobileDrawerOpen, toggleDrawer, closeDrawer } = useNavbarStore();
-  const isAuthenticated = useSessionStore((s) => s.isAuthenticated);
+  const isAuthenticated = useAuthStore((s) => s.user !== null);
 
   return (
     <>
