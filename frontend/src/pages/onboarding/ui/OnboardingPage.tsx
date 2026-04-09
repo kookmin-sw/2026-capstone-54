@@ -73,7 +73,10 @@ export function OnboardingPage() {
   const handleSubmit = async () => {
     clearError();
     const ok = await submitProfile();
-    if (ok) navigate("/home");
+    if (ok) {
+      await useAuthStore.getState().fetchMe();
+      navigate("/home");
+    }
   };
 
   return (

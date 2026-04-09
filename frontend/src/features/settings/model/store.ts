@@ -143,15 +143,14 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   setProfileDraftField: (field, value) => {
     set((s) => {
       const next = { ...s.profileDraft, [field]: value } as ProfileDraft;
-      // 직군 변경 시 직업 선택 초기화
       if (field === "jobCategoryId") {
         next.jobIds = [];
-        if (value !== null) {
-          get().loadJobsByCategory(value as number);
-        }
       }
       return { profileDraft: next };
     });
+    if (field === "jobCategoryId" && value !== null) {
+      get().loadJobsByCategory(value as number);
+    }
   },
 
   toggleJobId: (jobId) => {
