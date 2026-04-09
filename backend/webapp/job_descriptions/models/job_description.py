@@ -1,3 +1,5 @@
+from urllib.parse import parse_qs, urlencode, urlsplit, urlunsplit
+
 from common.models import BaseModel
 from django.db import models
 from django.utils import timezone
@@ -110,6 +112,22 @@ class JobDescription(BaseModel):
 
   def __str__(self):
     return f"[{self.get_collection_status_display()}] {self.title or self.url}"
+
+  def save(self, *args, **kwargs):
+    if self.url:
+      self.url = self._strip_utm_params(self.url)
+    super().save(*args, **kwargs)
+
+  @staticmethod
+  def _strip_utm_params(url: str) -> str:
+    """URL에서 utm_ 으로 시작하는 쿼리 파라미터를 제거한다."""
+    parts = urlsplit(url)
+    filtered_params = {
+      key: values
+      for key, values in parse_qs(parts.query, keep_blank_values=True).items() if not key.startswith("utm_")
+    }
+    cleaned_query = urlencode(filtered_params, doseq=True)
+    return urlunsplit(parts._replace(query=cleaned_query))
 
   def mark_in_progress(self):
     """수집 시작 시 호출."""
