@@ -75,8 +75,14 @@ export function ResumeUploadPage() {
   };
 
   const handleGoToResumeList = async () => {
-    await fetchResumes();
-    navigate("/resume");
+    try {
+      await fetchResumes();
+      navigate("/resume");
+    } catch (error) {
+      console.error("이력서 목록을 불러오는데 실패했습니다:", error);
+      // 에러가 발생해도 페이지로 이동 (목록 페이지에서 재시도 가능)
+      navigate("/resume");
+    }
   };
 
   const zoneCls = [
