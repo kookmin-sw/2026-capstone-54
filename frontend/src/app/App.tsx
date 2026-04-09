@@ -1,4 +1,6 @@
+import { useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useAuthStore } from "@/features/auth";
 import { LandingPage } from "@/pages/landing";
 import { InterviewPreCheckPage } from "@/pages/interview-precheck";
 import { SignUpPage } from "@/pages/sign-up";
@@ -20,6 +22,12 @@ import { StreakPage } from "@/pages/streak";
 import { SubscriptionPage } from "@/pages/subscription";
 
 function App() {
+  const { initAuth } = useAuthStore();
+
+  useEffect(() => {
+    initAuth();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   return (
     <BrowserRouter>
       <Routes>
