@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useSessionStore } from "@/entities/session";
+import { useAuthStore } from "@/features/auth";
 
 const NAV_LINKS = [
   { label: "서비스 소개", href: "#hero" },
@@ -11,7 +11,8 @@ const NAV_LINKS = [
 
 export function NavPill() {
   const [scrolled, setScrolled] = useState(false);
-  const isAuthenticated = useSessionStore((s) => s.isAuthenticated);
+  const user = useAuthStore((s) => s.user);
+  const isAuthenticated = user !== null;
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -103,7 +104,7 @@ export function NavPill() {
         <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
           {isAuthenticated ? (
             <button
-              onClick={() => navigate("/dashboard")}
+              onClick={() => navigate("/home")}
               style={{
                 fontFamily: "'Inter', sans-serif",
                 fontSize: 14,

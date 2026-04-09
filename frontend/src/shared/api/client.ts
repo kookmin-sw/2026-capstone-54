@@ -38,21 +38,26 @@ export async function apiRequest<T>(
 }
 
 /* ── Path validation ── */
-function validateApiPath(path: string): string {
+function validateApiPath(path: string): { pathname: string; search: string } {
+  // Parse relative path using a dummy base to extract pathname vs query string
+  const parsed = new URL(path, "http://dummy");
+  const pathname = parsed.pathname;
+  const search = parsed.search;
+
   // Only allow paths starting with /api/
-  if (!path.startsWith("/api/")) {
+  if (!pathname.startsWith("/api/")) {
     throw new Error(`Invalid API path: ${path}. Must start with /api/`);
   }
 
-  // Sanitize path: remove any potentially dangerous characters
-  const safePath = path.replace(/[^/a-zA-Z0-9._~:-]/g, "");
-  
+  // Sanitize pathname only (query string is handled by URL parser)
+  const safePath = pathname.replace(/[^/a-zA-Z0-9._~:-]/g, "");
+
   // Prevent path traversal attacks
   if (safePath.includes("..") || safePath.includes("//")) {
     throw new Error(`Invalid API path: path traversal detected`);
   }
 
-  return safePath;
+  return { pathname: safePath, search };
 }
 
 async function _request<T>(
@@ -73,11 +78,12 @@ async function _request<T>(
   }
 
   // Validate and sanitize the path
-  const safePath = validateApiPath(path);
+  const { pathname, search } = validateApiPath(path);
 
   // Construct URL using only trusted base URL and validated path
   const endpoint = new URL(BASE_URL);
-  endpoint.pathname = safePath;
+  endpoint.pathname = pathname;
+  endpoint.search = search;
 
   const res = await fetch(endpoint.toString(), { ...fetchOptions, headers });
 
@@ -111,15 +117,33 @@ async function _request<T>(
 }
 
 /* ── Token refresh helper ── */
-export async function refreshAccessToken(): Promise<boolean> {
+
+// 동시에 여러 요청이 401을 받아도 refresh는 한 번만 실행되도록 뮤텍스
+let _refreshPromise: Promise<boolean> | null = null;
+
+export function refreshAccessToken(): Promise<boolean> {
+  if (_refreshPromise) return _refreshPromise;
+  _refreshPromise = _doRefresh().finally(() => {
+    _refreshPromise = null;
+  });
+  return _refreshPromise;
+}
+
+async function _doRefresh(): Promise<boolean> {
   const refresh = getRefreshToken();
   if (!refresh) return false;
   try {
-    const res = await apiRequest<{ access: string }>(
-      "/api/v1/users/tokens/refresh/",
-      { method: "POST", body: JSON.stringify({ refresh }) }
-    );
-    setTokens(res.access, refresh);
+    const res = await fetch(new URL("/api/v1/users/tokens/refresh/", BASE_URL).toString(), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refresh }),
+    });
+    if (!res.ok) {
+      clearTokens();
+      return false;
+    }
+    const data = await res.json() as { access: string; refresh?: string };
+    setTokens(data.access, data.refresh ?? refresh);
     return true;
   } catch {
     clearTokens();

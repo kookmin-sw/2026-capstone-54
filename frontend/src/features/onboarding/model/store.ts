@@ -1,17 +1,11 @@
 import { create } from "zustand";
 import {
-  submitProfileApi,
-  fetchJobTitlesApi,
-  type JobTitleOption,
+  fetchJobCategoriesApi,
+  fetchJobsByCategoryApi,
+  submitOnboardingProfileApi,
+  type JobCategory,
+  type Job,
 } from "../api/onboardingApi";
-
-export const JOB_CATEGORIES = [
-  { id: "it", label: "IT/개발", emoji: "💻" },
-  { id: "marketing", label: "마케팅", emoji: "📣" },
-  { id: "finance", label: "금융/회계", emoji: "🏦" },
-  { id: "sales", label: "영업/서비스", emoji: "👋" },
-  { id: "hr", label: "인사/HR", emoji: "🏢" },
-] as const;
 
 export const JOB_STATUS_OPTIONS = [
   { value: "", label: "선택해 주세요" },
@@ -25,65 +19,93 @@ export const JOB_STATUS_OPTIONS = [
 ] as const;
 
 interface OnboardingState {
-  selectedJob: string;
-  jobTitles: string[];
-  jobTitleOptions: JobTitleOption[];
-  jobTitlesLoading: boolean;
+  jobCategories: JobCategory[];
+  jobCategoriesLoading: boolean;
+
+  selectedJobCategoryId: number | null;
+  availableJobs: Job[];
+  availableJobsLoading: boolean;
+  selectedJobIds: number[];
+
   jobStatus: string;
   isLoading: boolean;
   error: string | null;
 
-  selectJob: (jobId: string) => Promise<void>;
-  toggleJobTitle: (title: string) => void;
+  loadJobCategories: () => Promise<void>;
+  selectJobCategory: (jobCategoryId: number) => Promise<void>;
+  toggleJobId: (jobId: number) => void;
   setJobStatus: (status: string) => void;
   submitProfile: () => Promise<boolean>;
   clearError: () => void;
 }
 
 export const useOnboardingStore = create<OnboardingState>()((set, get) => ({
-  selectedJob: "",
-  jobTitles: [],
-  jobTitleOptions: [],
-  jobTitlesLoading: false,
+  jobCategories: [],
+  jobCategoriesLoading: false,
+
+  selectedJobCategoryId: null,
+  availableJobs: [],
+  availableJobsLoading: false,
+  selectedJobIds: [],
+
   jobStatus: "",
   isLoading: false,
   error: null,
 
-  selectJob: async (jobId: string) => {
-    const current = get().selectedJob;
-    if (current === jobId) return;
-
-    set({
-      selectedJob: jobId,
-      jobTitles: [],
-      jobTitleOptions: [],
-      jobTitlesLoading: true,
-    });
-
-    const options = await fetchJobTitlesApi(jobId);
-    // 비동기 완료 후 여전히 같은 직군이 선택되어 있는지 확인
-    if (get().selectedJob === jobId) {
-      set({ jobTitleOptions: options, jobTitlesLoading: false });
+  loadJobCategories: async () => {
+    if (get().jobCategories.length > 0) return;
+    set({ jobCategoriesLoading: true });
+    try {
+      const categories = await fetchJobCategoriesApi();
+      set({ jobCategories: categories, jobCategoriesLoading: false });
+    } catch {
+      set({ jobCategoriesLoading: false });
     }
   },
 
-  toggleJobTitle: (title: string) =>
-    set((state) => {
-      if (state.jobTitles.includes(title)) {
-        return { jobTitles: state.jobTitles.filter((t) => t !== title) };
+  selectJobCategory: async (jobCategoryId: number) => {
+    if (get().selectedJobCategoryId === jobCategoryId) return;
+    set({
+      selectedJobCategoryId: jobCategoryId,
+      selectedJobIds: [],
+      availableJobs: [],
+      availableJobsLoading: true,
+    });
+    try {
+      const jobs = await fetchJobsByCategoryApi(jobCategoryId);
+      if (get().selectedJobCategoryId === jobCategoryId) {
+        set({ availableJobs: jobs, availableJobsLoading: false });
       }
-      if (state.jobTitles.length >= 3) return state;
-      return { jobTitles: [...state.jobTitles, title] };
+    } catch {
+      set({ availableJobsLoading: false });
+    }
+  },
+
+  toggleJobId: (jobId: number) =>
+    set((state) => {
+      if (state.selectedJobIds.includes(jobId)) {
+        return { selectedJobIds: state.selectedJobIds.filter((id) => id !== jobId) };
+      }
+      if (state.selectedJobIds.length >= 3) return state;
+      return { selectedJobIds: [...state.selectedJobIds, jobId] };
     }),
 
   setJobStatus: (status) => set({ jobStatus: status }),
 
   submitProfile: async () => {
-    const { selectedJob, jobTitles, jobStatus } = get();
+    const { selectedJobCategoryId, selectedJobIds, jobStatus } = get();
+    if (!selectedJobCategoryId) {
+      set({ error: "희망 직군을 선택해주세요." });
+      return false;
+    }
+    if (selectedJobIds.length === 0) {
+      set({ error: "희망 직업을 1개 이상 선택해주세요." });
+      return false;
+    }
     set({ isLoading: true, error: null });
-    const res = await submitProfileApi({
-      desiredJob: selectedJob,
-      jobTitles,
+    const res = await submitOnboardingProfileApi({
+      jobCategoryId: selectedJobCategoryId,
+      jobIds: selectedJobIds,
       jobStatus,
     });
     if (!res.success) {

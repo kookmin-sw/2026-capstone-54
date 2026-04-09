@@ -8,9 +8,16 @@ import {
   deleteInterviewDataApi,
   deleteAccountApi,
 } from "../api/settingsApi";
-import type { SettingsData, SettingsProfile, SettingsNotifications } from "../api/settingsApi";
+import type { SettingsData, SettingsProfile, SettingsNotifications, JobCategory, Job } from "../api/settingsApi";
+import { profileApi } from "@/shared/api/profileApi";
 
 export type SettingsPanel = "profile" | "password" | "notifications" | "subscription" | "consent";
+
+interface ProfileDraft {
+  name: string;
+  jobCategoryId: number | null;
+  jobIds: number[];
+}
 
 interface SettingsState {
   data: SettingsData | null;
@@ -21,8 +28,14 @@ interface SettingsState {
   activePanel: SettingsPanel;
   consentBadge: boolean;
 
+  /* 직군/직업 목록 */
+  jobCategories: JobCategory[];
+  jobCategoriesLoading: boolean;
+  availableJobs: Job[];
+  availableJobsLoading: boolean;
+
   /* Draft state for editing */
-  profileDraft: Partial<SettingsProfile>;
+  profileDraft: ProfileDraft;
   notificationsDraft: Partial<SettingsNotifications>;
   passwordDraft: { currentPassword: string; newPassword: string; confirmPassword: string };
   aiDataDraft: boolean | null;
@@ -31,7 +44,10 @@ interface SettingsState {
   fetchSettings: () => Promise<void>;
   setActivePanel: (panel: SettingsPanel) => void;
 
-  setProfileDraft: (field: keyof SettingsProfile, value: string) => void;
+  loadJobCategories: () => Promise<void>;
+  loadJobsByCategory: (jobCategoryId: number) => Promise<void>;
+  setProfileDraftField: <K extends keyof ProfileDraft>(field: K, value: ProfileDraft[K]) => void;
+  toggleJobId: (jobId: number) => void;
   saveProfile: () => Promise<void>;
   resetProfileDraft: () => void;
 
@@ -52,6 +68,8 @@ interface SettingsState {
   clearMessage: () => void;
 }
 
+const EMPTY_PROFILE_DRAFT: ProfileDraft = { name: "", jobCategoryId: null, jobIds: [] };
+
 export const useSettingsStore = create<SettingsState>()((set, get) => ({
   data: null,
   loading: false,
@@ -61,7 +79,12 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   activePanel: "profile",
   consentBadge: true,
 
-  profileDraft: {},
+  jobCategories: [],
+  jobCategoriesLoading: false,
+  availableJobs: [],
+  availableJobsLoading: false,
+
+  profileDraft: EMPTY_PROFILE_DRAFT,
   notificationsDraft: {},
   passwordDraft: { currentPassword: "", newPassword: "", confirmPassword: "" },
   aiDataDraft: null,
@@ -70,13 +93,22 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
     set({ loading: true, error: null });
     const res = await fetchSettingsApi();
     if (res.success && res.data) {
+      const profile = res.data.profile;
       set({
         data: res.data,
         loading: false,
-        profileDraft: { ...res.data.profile },
+        profileDraft: {
+          name: profile.name,
+          jobCategoryId: profile.jobCategoryId,
+          jobIds: profile.jobIds,
+        },
         notificationsDraft: { ...res.data.notifications },
         aiDataDraft: res.data.consents.aiDataAgreed,
       });
+      // 프로필에 직군이 있으면 해당 직군의 직업 목록을 미리 로드
+      if (profile.jobCategoryId) {
+        get().loadJobsByCategory(profile.jobCategoryId);
+      }
     } else {
       set({ error: res.error ?? "설정을 불러오지 못했습니다.", loading: false });
     }
@@ -87,28 +119,80 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
     if (panel === "consent") set({ consentBadge: false });
   },
 
-  setProfileDraft: (field, value) => {
+  loadJobCategories: async () => {
+    if (get().jobCategories.length > 0) return;
+    set({ jobCategoriesLoading: true });
+    try {
+      const res = await profileApi.getJobCategories();
+      set({ jobCategories: res.results, jobCategoriesLoading: false });
+    } catch {
+      set({ jobCategoriesLoading: false });
+    }
+  },
+
+  loadJobsByCategory: async (jobCategoryId) => {
+    set({ availableJobsLoading: true, availableJobs: [] });
+    try {
+      const res = await profileApi.getJobsByCategory(jobCategoryId);
+      set({ availableJobs: res.results, availableJobsLoading: false });
+    } catch {
+      set({ availableJobsLoading: false });
+    }
+  },
+
+  setProfileDraftField: (field, value) => {
     set((s) => {
-      const newDraft = { ...s.profileDraft, [field]: value };
-      // 직군 변경 시 직업도 초기화
-      if (field === "jobCategory") {
-        newDraft.jobTitle = "";
+      const next = { ...s.profileDraft, [field]: value } as ProfileDraft;
+      if (field === "jobCategoryId") {
+        next.jobIds = [];
       }
-      return { profileDraft: newDraft };
+      return { profileDraft: next };
+    });
+    if (field === "jobCategoryId" && value !== null) {
+      get().loadJobsByCategory(value as number);
+    }
+  },
+
+  toggleJobId: (jobId) => {
+    set((s) => {
+      const ids = s.profileDraft.jobIds;
+      const next = ids.includes(jobId) ? ids.filter((id) => id !== jobId) : [...ids, jobId];
+      return { profileDraft: { ...s.profileDraft, jobIds: next } };
     });
   },
 
   saveProfile: async () => {
+    const { profileDraft } = get();
+    if (!profileDraft.jobCategoryId) {
+      set({ error: "직군을 선택해주세요." });
+      return;
+    }
     set({ saving: true, error: null, saveMessage: null });
-    const res = await updateProfileApi(get().profileDraft);
+    const res = await updateProfileApi({
+      jobCategoryId: profileDraft.jobCategoryId,
+      jobIds: profileDraft.jobIds,
+    });
     if (res.success) {
-      set((s) => ({
-        saving: false,
-        saveMessage: res.message,
-        data: s.data
-          ? { ...s.data, profile: { ...s.data.profile, ...s.profileDraft } as SettingsProfile }
-          : s.data,
-      }));
+      // 로컬 data 업데이트
+      set((s) => {
+        if (!s.data) return { saving: false, saveMessage: res.message };
+        const selectedCategory = s.jobCategories.find((c) => c.id === profileDraft.jobCategoryId) ?? null;
+        const selectedJobs = s.availableJobs.filter((j) => profileDraft.jobIds.includes(j.id));
+        return {
+          saving: false,
+          saveMessage: res.message,
+          data: {
+            ...s.data,
+            profile: {
+              ...s.data.profile,
+              jobCategoryId: profileDraft.jobCategoryId,
+              jobCategory: selectedCategory,
+              jobIds: profileDraft.jobIds,
+              jobs: selectedJobs,
+            } as SettingsProfile,
+          },
+        };
+      });
     } else {
       set({ saving: false, error: res.message });
     }
@@ -116,7 +200,16 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
 
   resetProfileDraft: () => {
     const data = get().data;
-    if (data) set({ profileDraft: { ...data.profile }, saveMessage: null });
+    if (data) {
+      set({
+        profileDraft: {
+          name: data.profile.name,
+          jobCategoryId: data.profile.jobCategoryId,
+          jobIds: data.profile.jobIds,
+        },
+        saveMessage: null,
+      });
+    }
   },
 
   setPasswordDraft: (field, value) => {
@@ -147,10 +240,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
 
   toggleNotification: (key) => {
     set((s) => ({
-      notificationsDraft: {
-        ...s.notificationsDraft,
-        [key]: !s.notificationsDraft[key],
-      },
+      notificationsDraft: { ...s.notificationsDraft, [key]: !s.notificationsDraft[key] },
     }));
   },
 
@@ -185,9 +275,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
       set((s) => ({
         saving: false,
         saveMessage: res.message,
-        data: s.data
-          ? { ...s.data, consents: { ...s.data.consents, aiDataAgreed } }
-          : s.data,
+        data: s.data ? { ...s.data, consents: { ...s.data.consents, aiDataAgreed } } : s.data,
       }));
     } else {
       set({ saving: false, error: res.message });
