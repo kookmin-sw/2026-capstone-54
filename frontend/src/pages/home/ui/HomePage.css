@@ -644,6 +644,28 @@
   margin-bottom: 8px;
 }
 
+.hp-streak-detail-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: #0991b2;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.hp-streak-detail-btn:hover {
+  background: #e6f7fa;
+  border-color: #0991b2;
+}
+
 .hp-sc-day {
   aspect-ratio: 1;
   border-radius: 4px;
@@ -801,7 +823,7 @@
     display: none;
   }
   .hp-main {
-    padding: 20px 16px;
+    padding: 20px 16px 120px;
   }
   .hp-stats-grid {
     grid-template-columns: 1fr 1fr;

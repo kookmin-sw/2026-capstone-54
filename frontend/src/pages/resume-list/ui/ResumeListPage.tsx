@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useResumeListStore } from "@/features/resume-list";
+import { MobileTabBar } from "@/shared/ui";
 import type { ResumeItem } from "@/features/resume-list";
 
 /* ─────────────────────────── sub-components ─────────────────────────── */
@@ -281,26 +282,7 @@ export function ResumeListPage() {
         </div>
       </main>
 
-      {/* ── MOBILE TAB BAR ── */}
-      <nav className="fixed bottom-0 left-0 right-0 z-[200] bg-[rgba(255,255,255,.95)] backdrop-blur-[24px] border-t border-[#E5E7EB] flex items-center pb-[max(20px,env(safe-area-inset-bottom))] pt-2 md:hidden">
-        {[
-          { icon: "🏠", label: "홈",    path: "/home" },
-          { icon: "🎤", label: "면접",  path: "/interview/setup" },
-          { icon: "📄", label: "이력서", path: "/resume", active: true },
-          { icon: "📢", label: "공고",  path: "/jd" },
-          { icon: "👤", label: "프로필", path: "#" },
-        ].map((t) => (
-          <button
-            key={t.label}
-            className="flex-1 flex flex-col items-center gap-[3px] cursor-pointer border-none bg-none py-1"
-            onClick={() => navigate(t.path)}
-          >
-            <span className="text-[20px] leading-none">{t.icon}</span>
-            <span className={`text-[10px] font-semibold ${t.active ? "text-[#0991B2]" : "text-[#9CA3AF]"}`}>{t.label}</span>
-            <div className={`w-1 h-1 rounded-full bg-[#0991B2] mx-auto ${t.active ? "opacity-100" : "opacity-0"}`} />
-          </button>
-        ))}
-      </nav>
+      <MobileTabBar activeTab="resume" />
 
       {/* ── CONTEXT MENU ── */}
       {ctxMenu.open && (
