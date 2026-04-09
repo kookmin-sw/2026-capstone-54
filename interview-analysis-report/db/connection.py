@@ -12,7 +12,13 @@ from sqlalchemy.orm import sessionmaker
 
 from config import DATABASE_URL
 
-engine = create_engine(DATABASE_URL)
+engine = create_engine(
+    DATABASE_URL,
+    # AWS RDS 환경에서 장시간 idle 후 끊긴 커넥션을 재사용하지 않도록 방지
+    pool_pre_ping=True,
+    # RDS의 기본 idle connection timeout(보통 8분)보다 짧게 주기적 갱신
+    pool_recycle=300,
+)
 SessionLocal = sessionmaker(bind=engine)
 
 
