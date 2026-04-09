@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mefit-production-interview-analysis-report-worker
+  namespace: mefit-backend-production
+  labels:
+    app: mefit-production-interview-analysis-report-worker
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: mefit-production-interview-analysis-report-worker
+  template:
+    metadata:
+      labels:
+        app: mefit-production-interview-analysis-report-worker
+    spec:
+      imagePullSecrets:
+        - name: mefit-production-dockerhub
+      containers:
+        - name: interview-analysis-report-worker
+          image: teammefit/mefit-interview-analysis-report:production
+          imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+                name: mefit-production-interview-analysis-report-env
+            - secretRef:
+                name: mefit-production-interview-analysis-report-secret
+          resources:
+            requests:
+              cpu: "150m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
