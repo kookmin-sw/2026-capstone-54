@@ -22,8 +22,8 @@ class SubmitAnswerView(BaseAPIView):
   permission_classes = [IsEmailVerified]
 
   @extend_schema(summary="답변 제출")
-  def post(self, request, session_uuid, turn_pk):
-    interview_session = get_interview_session_for_user(session_uuid, self.current_user)
+  def post(self, request, interview_session_uuid, turn_pk):
+    interview_session = get_interview_session_for_user(interview_session_uuid, self.current_user)
     interview_turn = get_object_or_404(InterviewTurn, pk=turn_pk, interview_session=interview_session)
 
     serializer = SubmitAnswerSerializer(data=request.data)
@@ -36,7 +36,10 @@ class SubmitAnswerView(BaseAPIView):
       ).perform()
 
       return Response(
-        InterviewTurnSerializer(result, many=True).data,
+        {
+          "turns": InterviewTurnSerializer(result.turns, many=True).data,
+          "followup_exhausted": result.followup_exhausted,
+        },
         status=status.HTTP_201_CREATED,
       )
     else:

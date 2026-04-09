@@ -18,7 +18,7 @@ class InterviewAnalysisReportView(BaseAPIView):
     interview_session = get_interview_session_for_user(interview_session_uuid, self.current_user)
 
     try:
-      report = interview_session.interview_analysis_report
+      report = interview_session.analysis_report
     except InterviewAnalysisReport.DoesNotExist:
       raise NotFoundException(detail="아직 분석 리포트가 생성되지 않았습니다.")
 

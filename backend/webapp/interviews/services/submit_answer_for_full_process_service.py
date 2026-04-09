@@ -23,7 +23,7 @@ class SubmitAnswerForFullProcessService(BaseService):
     interview_turn: InterviewTurn = self.kwargs["interview_turn"]
     answer: str = self.kwargs["answer"]
 
-    if interview_session.session_status != InterviewSessionStatus.IN_PROGRESS:
+    if interview_session.interview_session_status != InterviewSessionStatus.IN_PROGRESS:
       raise ValidationError("진행 중인 세션에서만 답변을 제출할 수 있습니다.")
 
     if interview_session.interview_session_type != InterviewSessionType.FULL_PROCESS:

@@ -54,14 +54,14 @@ class InterviewAnalysisReport(BaseModel):
     return f"AnalysisReport #{self.pk} [{self.get_interview_analysis_report_status_display()}]"
 
   def mark_generating(self) -> None:
-    self.analysis_report_status = InterviewAnalysisReportStatus.GENERATING
-    self.save(update_fields=["analysis_report_status", "updated_at"])
+    self.interview_analysis_report_status = InterviewAnalysisReportStatus.GENERATING
+    self.save(update_fields=["interview_analysis_report_status", "updated_at"])
 
   def mark_completed(self) -> None:
-    self.analysis_report_status = InterviewAnalysisReportStatus.COMPLETED
-    self.save(update_fields=["analysis_report_status", "updated_at"])
+    self.interview_analysis_report_status = InterviewAnalysisReportStatus.COMPLETED
+    self.save(update_fields=["interview_analysis_report_status", "updated_at"])
 
   def mark_failed(self, message: str = "") -> None:
-    self.analysis_report_status = InterviewAnalysisReportStatus.FAILED
+    self.interview_analysis_report_status = InterviewAnalysisReportStatus.FAILED
     self.error_message = message
-    self.save(update_fields=["analysis_report_status", "error_message", "updated_at"])
+    self.save(update_fields=["interview_analysis_report_status", "error_message", "updated_at"])

@@ -78,12 +78,12 @@ class InterviewSession(BaseModelWithUUID):
   )
 
   def __str__(self):
-    return f"InterviewSession #{self.pk} [{self.get_session_status_display()}]"
+    return f"InterviewSession #{self.pk} [{self.get_interview_session_status_display()}]"
 
   def mark_completed(self) -> None:
-    self.session_status = InterviewSessionStatus.COMPLETED
-    self.save(update_fields=["session_status", "updated_at"])
+    self.interview_session_status = InterviewSessionStatus.COMPLETED
+    self.save(update_fields=["interview_session_status", "updated_at"])
 
   def mark_abandoned(self) -> None:
-    self.session_status = InterviewSessionStatus.ABANDONED
-    self.save(update_fields=["session_status", "updated_at"])
+    self.interview_session_status = InterviewSessionStatus.ABANDONED
+    self.save(update_fields=["interview_session_status", "updated_at"])

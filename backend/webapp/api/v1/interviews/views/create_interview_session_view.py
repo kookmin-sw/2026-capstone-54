@@ -35,7 +35,7 @@ class CreateInterviewSessionView(BaseAPIView):
       user=self.current_user,
       resume=resume,
       user_job_description=user_job_description,
-      interview_session_type=data["session_type"],
-      interview_difficulty_level=data["difficulty_level"],
+      interview_session_type=data["interview_session_type"],
+      interview_difficulty_level=data["interview_difficulty_level"],
     )
     return Response(InterviewSessionSerializer(session).data, status=status.HTTP_201_CREATED)

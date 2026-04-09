@@ -55,7 +55,7 @@ class GenerateInitialQuestionsService(BaseService):
       return self.execute()
 
   def validate(self):
-    if self.interview_session.session_status != InterviewSessionStatus.IN_PROGRESS:
+    if self.interview_session.interview_session_status != InterviewSessionStatus.IN_PROGRESS:
       raise ValidationException("진행 중인 세션에서만 질문을 생성할 수 있습니다.")
 
     if self.interview_session.total_questions > 0:
@@ -90,7 +90,7 @@ class GenerateInitialQuestionsService(BaseService):
 
     turns = [
       InterviewTurn(
-        session=self.interview_session,
+        interview_session=self.interview_session,
         turn_type=InterviewExchangeType.INITIAL,
         question_source=_SOURCE_MAP.get(q.source, QuestionSource.UNKNOWN),
         question=q.question,

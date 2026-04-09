@@ -44,7 +44,7 @@ class QuestionGenerator:
 
     structured_llm = llm.with_structured_output(_QuestionsOutputSchema)
 
-    system_prompt = self._get_system_prompt(input_data.difficulty_level)
+    system_prompt = self._get_system_prompt(input_data.question_difficulty_level)
     questions_count = self._get_questions_count(input_data)
     prompt = self._build_prompt(system_prompt, input_data, questions_count)
 

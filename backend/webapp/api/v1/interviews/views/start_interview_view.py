@@ -14,8 +14,8 @@ class StartInterviewView(BaseAPIView):
   permission_classes = [IsEmailVerified]
 
   @extend_schema(summary="면접 시작 — 초기 질문 생성")
-  def post(self, request, session_uuid):
-    interview_session = get_interview_session_for_user(session_uuid, self.current_user)
+  def post(self, request, interview_session_uuid):
+    interview_session = get_interview_session_for_user(interview_session_uuid, self.current_user)
 
     interview_turns = GenerateInitialQuestionsService(interview_session=interview_session).perform()
 
