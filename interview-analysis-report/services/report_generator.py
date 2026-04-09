@@ -1,8 +1,9 @@
 """
 리포트 생성 오케스트레이션 서비스.
 
-SQLAlchemy로 면접 데이터를 조회하고, 문서를 로드한 뒤
+SQLAlchemy로 면접 데이터를 조회하고, DB에서 이력서·채용공고 콘텐츠를 로드한 뒤
 LLMAnalyzer를 호출하여 분석 결과를 DB에 저장한다.
+토큰 사용량은 AnalysisReport에 직접 기록하지 않고 TokenUsage 테이블에 별도 저장한다.
 """
 
 from __future__ import annotations
@@ -10,14 +11,17 @@ from __future__ import annotations
 import logging
 from datetime import datetime
 
+from config import OPENAI_MODEL
 from db.connection import get_session
 from db.models import (
     AnalysisReportTable,
-    InterviewExchangeTable,
+    DjangoContentTypeTable,
     InterviewSessionTable,
+    InterviewTurnTable,
+    TokenUsageTable,
 )
 from services.llm_analyzer import AnalysisContext, ExchangeData, LLMAnalyzer
-from utils.document_loader import load_document
+from utils.content_loader import get_job_description_content, get_resume_content
 
 logger = logging.getLogger(__name__)
 
@@ -43,56 +47,52 @@ class ReportGeneratorService:
     def _do_generate(self, report_id: int) -> None:
         """실제 생성 로직. 예외는 호출자가 처리한다."""
         with get_session() as session:
-            # 1) AnalysisReport 조회 → session_id 획득
+            # 1) AnalysisReport 조회 → interview_session_id 획득
             report = (
                 session.query(AnalysisReportTable)
                 .filter(AnalysisReportTable.id == report_id)
                 .one()
             )
-            session_id = report.session_id
+            session_id = report.interview_session_id
 
             # 2) InterviewSession 조회
             interview = (
                 session.query(InterviewSessionTable)
-                .filter(InterviewSessionTable.id == session_id)
+                .filter(InterviewSessionTable.uuid == session_id)
                 .one()
             )
 
-            # 3) InterviewExchange 목록 조회
-            exchanges = (
-                session.query(InterviewExchangeTable)
-                .filter(InterviewExchangeTable.session_id == session_id)
-                .order_by(InterviewExchangeTable.id)
+            # 3) InterviewTurn 목록 조회
+            turns = (
+                session.query(InterviewTurnTable)
+                .filter(InterviewTurnTable.interview_session_id == session_id)
+                .order_by(InterviewTurnTable.turn_number)
                 .all()
             )
 
-            # 4) 이력서 / 채용공고 파일 로드
-            resume_content = load_document(interview.resume_file or "")
-            job_posting_content = load_document(interview.job_posting_file or "")
+            # 4) 이력서 / 채용공고 콘텐츠 DB 조회 (UUID 기반)
+            resume_content = get_resume_content(session, interview.resume_id or "")
+            job_posting_content = get_job_description_content(
+                session, interview.user_job_description_id or ""
+            )
 
             # 5) AnalysisContext 구성
             exchange_data_list = [
                 ExchangeData(
-                    exchange_id=ex.id,
-                    question=ex.question or "",
-                    answer=ex.answer or "",
-                    exchange_type=ex.exchange_type or "",
-                    question_source=ex.question_source or "",
-                    question_purpose=ex.question_purpose or "",
+                    turn_id=turn.id,
+                    question=turn.question or "",
+                    answer=turn.answer or "",
+                    turn_type=turn.turn_type or "",
+                    question_source=turn.question_source or "",
                 )
-                for ex in exchanges
+                for turn in turns
             ]
 
             context = AnalysisContext(
                 session_id=session_id,
-                started_at=str(interview.started_at or ""),
-                duration_seconds=interview.duration_seconds or 0,
-                difficulty_level=interview.difficulty_level or "",
-                resume_file=interview.resume_file or "",
-                job_posting_file=interview.job_posting_file or "",
-                total_initial_questions=interview.total_initial_questions or 0,
+                difficulty_level=interview.interview_difficulty_level or "",
+                total_questions=interview.total_questions or 0,
                 total_followup_questions=interview.total_followup_questions or 0,
-                avg_answer_length=interview.avg_answer_length or 0,
                 exchanges=exchange_data_list,
                 resume_content=resume_content,
                 job_posting_content=job_posting_content,
@@ -102,7 +102,7 @@ class ReportGeneratorService:
             result = self._analyzer.analyze(context)
 
             # 7) 결과를 AnalysisReport에 저장
-            report.status = "completed"
+            report.interview_analysis_report_status = "completed"
             report.overall_score = result.overall_score
             report.overall_grade = result.overall_grade
             report.overall_comment = result.overall_comment
@@ -110,11 +110,26 @@ class ReportGeneratorService:
             report.question_feedbacks = result.question_feedbacks
             report.strengths = result.strengths
             report.improvement_areas = result.improvement_areas
-            report.input_tokens = result.input_tokens
-            report.output_tokens = result.output_tokens
-            report.total_tokens = result.total_tokens
-            report.total_cost_usd = result.total_cost_usd
             report.updated_at = datetime.utcnow()
+
+            # 8) TokenUsage 별도 저장 (GenericForeignKey: InterviewAnalysisReport)
+            content_type = (
+                session.query(DjangoContentTypeTable)
+                .filter_by(app_label="interviews", model="interviewanalysisreport")
+                .one()
+            )
+            token_usage = TokenUsageTable(
+                token_usable_type_id=content_type.id,
+                token_usable_id=str(report.id),
+                operation="completion",
+                context="interview_analysis",
+                model_name=OPENAI_MODEL,
+                input_tokens=result.input_tokens,
+                output_tokens=result.output_tokens,
+                total_tokens=result.total_tokens,
+                cost_usd=result.total_cost_usd,
+            )
+            session.add(token_usage)
 
     def _mark_failed(self, report_id: int, error_message: str) -> None:
         """리포트 상태를 failed로 업데이트한다."""
@@ -125,7 +140,7 @@ class ReportGeneratorService:
                     .filter(AnalysisReportTable.id == report_id)
                     .one()
                 )
-                report.status = "failed"
+                report.interview_analysis_report_status = "failed"
                 report.error_message = error_message
                 report.updated_at = datetime.utcnow()
         except Exception:

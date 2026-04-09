@@ -41,29 +41,23 @@ _GRADE_TABLE: list[tuple[int, int, str]] = [
 
 @dataclass
 class ExchangeData:
-    """질문-답변 교환 데이터."""
+    """질문-답변 턴 데이터."""
 
-    exchange_id: int
+    turn_id: int
     question: str
     answer: str
-    exchange_type: str  # "initial" or "followup"
+    turn_type: str  # "initial" or "followup"
     question_source: str  # "resume", "job_posting", ""
-    question_purpose: str  # rationale text or ""
 
 
 @dataclass
 class AnalysisContext:
     """LLM 분석에 필요한 컨텍스트."""
 
-    session_id: int
-    started_at: str
-    duration_seconds: int
+    session_id: str
     difficulty_level: str
-    resume_file: str
-    job_posting_file: str
-    total_initial_questions: int
+    total_questions: int
     total_followup_questions: int
-    avg_answer_length: int
     exchanges: list[ExchangeData] = field(default_factory=list)
     resume_content: str = ""
     job_posting_content: str = ""
@@ -133,10 +127,8 @@ class LLMAnalyzer:
 
 ## 면접 정보
 - 난이도: {context.difficulty_level}
-- 총 소요 시간: {context.duration_seconds}초
-- 초기 질문 수: {context.total_initial_questions}
+- 총 질문 수: {context.total_questions}
 - 꼬리질문 수: {context.total_followup_questions}
-- 평균 답변 길이: {context.avg_answer_length}자
 
 ## 채용공고 내용
 {context.job_posting_content or "(제공되지 않음)"}
@@ -180,7 +172,7 @@ class LLMAnalyzer:
   ],
   "question_feedbacks": [
     {{
-      "exchange_id": <교환 ID>,
+      "turn_id": <턴 ID>,
       "question": "<질문 텍스트>",
       "strengths": ["<잘한 점 1>", ...],
       "improvements": ["<개선할 점 1>", ...],
@@ -209,15 +201,10 @@ strengths와 improvement_areas는 각각 최소 2개 이상 생성하세요.
 
         parts: list[str] = []
         for ex in exchanges:
-            meta_parts: list[str] = []
-            if ex.question_source:
-                meta_parts.append(f"출처: {ex.question_source}")
-            if ex.question_purpose:
-                meta_parts.append(f"출제 목적: {ex.question_purpose}")
-            meta = f" ({', '.join(meta_parts)})" if meta_parts else ""
+            meta = f" (출처: {ex.question_source})" if ex.question_source else ""
 
             parts.append(
-                f"### [{ex.exchange_type}] 질문 #{ex.exchange_id}{meta}\n"
+                f"### [{ex.turn_type}] 질문 #{ex.turn_id}{meta}\n"
                 f"Q: {ex.question}\n"
                 f"A: {ex.answer}"
             )
@@ -335,11 +322,11 @@ strengths와 improvement_areas는 각각 최소 2개 이상 생성하세요.
         result: list[dict] = []
         raw_by_id: dict[int, dict] = {}
         for item in raw if isinstance(raw, list) else []:
-            if isinstance(item, dict) and "exchange_id" in item:
-                raw_by_id[item["exchange_id"]] = item
+            if isinstance(item, dict) and "turn_id" in item:
+                raw_by_id[item["turn_id"]] = item
 
         for ex in exchanges:
-            item = raw_by_id.get(ex.exchange_id, {})
+            item = raw_by_id.get(ex.turn_id, {})
             strengths = item.get("strengths", [])
             if not isinstance(strengths, list) or len(strengths) < 1:
                 strengths = ["피드백이 제공되지 않았습니다."]
@@ -349,7 +336,7 @@ strengths와 improvement_areas는 각각 최소 2개 이상 생성하세요.
             model_answer = item.get("model_answer", "") or "모범답변이 제공되지 않았습니다."
 
             result.append({
-                "exchange_id": ex.exchange_id,
+                "turn_id": ex.turn_id,
                 "question": ex.question,
                 "strengths": strengths,
                 "improvements": improvements,
