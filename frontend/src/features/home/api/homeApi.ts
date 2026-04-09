@@ -1,6 +1,7 @@
 // Home API - Real backend integration with mock fallback
 
 import { apiRequest } from "@/shared/api/client";
+import { userApi } from "@/shared/api/userApi";
 
 const USE_MOCK = true; // Set to false when backend is ready
 
@@ -127,10 +128,31 @@ const MOCK_DATA: HomeData = {
  * GET /api/v1/home/dashboard/
  */
 export async function fetchHomeDataApi(): Promise<{ success: boolean; data?: HomeData; error?: string }> {
-  // Use mock data if backend is not ready
-  if (USE_MOCK) {
-    await new Promise((r) => setTimeout(r, 400));
-    return { success: true, data: MOCK_DATA };
+  // Fetch real user data
+  try {
+    const userData = await userApi.getMe();
+    
+    // Use mock data if backend is not ready, but with real user name
+    if (USE_MOCK) {
+      await new Promise((r) => setTimeout(r, 400));
+      return { 
+        success: true, 
+        data: {
+          ...MOCK_DATA,
+          user: {
+            ...MOCK_DATA.user,
+            name: userData.name || "사용자",
+          }
+        }
+      };
+    }
+  } catch (error) {
+    console.error("Failed to fetch user data:", error);
+    // Continue with mock data if user fetch fails
+    if (USE_MOCK) {
+      await new Promise((r) => setTimeout(r, 400));
+      return { success: true, data: MOCK_DATA };
+    }
   }
 
   try {
