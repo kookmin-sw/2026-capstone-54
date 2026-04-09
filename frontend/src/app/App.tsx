@@ -56,8 +56,6 @@ function App() {
         <Route path="/resume/upload" element={<ProtectedRoute><ResumeUploadPage /></ProtectedRoute>} />
         <Route path="/interview/setup" element={<ProtectedRoute><InterviewSetupPage /></ProtectedRoute>} />
         <Route path="/interview/precheck" element={<ProtectedRoute><InterviewPreCheckPage /></ProtectedRoute>} />
-        <Route path="/interview/session/:interviewSessionUuid" element={<ProtectedRoute><InterviewSessionPage /></ProtectedRoute>} />
-        <Route path="/interview/session/:interviewSessionUuid/report" element={<ProtectedRoute><InterviewReportPage /></ProtectedRoute>} />
         <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
         <Route path="/streak" element={<ProtectedRoute><StreakPage /></ProtectedRoute>} />
         <Route path="/subscription" element={<ProtectedRoute><SubscriptionPage /></ProtectedRoute>} />
