@@ -97,13 +97,10 @@ export function ResumeUploadPage() {
         <div className="max-w-container-xl mx-auto px-6 h-16 flex items-center justify-between gap-3">
           <div className="flex items-center gap-[10px]">
             <button
-              className="w-9 h-9 rounded-[14px] bg-[#F9FAFB] border border-[#E5E7EB] cursor-pointer flex items-center justify-center shadow-[var(--sw)] text-[#0A0A0A] text-lg transition-colors hover:bg-[#F3F4F6]"
+              className="w-9 h-9 rounded-[8px] bg-[#F9FAFB] border border-[#E5E7EB] cursor-pointer flex items-center justify-center shadow-[var(--sw)] text-[#0A0A0A] text-lg transition-colors hover:bg-[#F3F4F6]"
               onClick={() => navigate(-1)}
               aria-label="뒤로가기"
             >←</button>
-            <a href="/home" className="flex items-center">
-              <img src="/logo-korean.png" alt="미핏" className="h-[36px] w-auto" />
-            </a>
           </div>
           <span className="text-base md:text-lg font-extrabold text-[#0A0A0A]">이력서 등록</span>
           <div style={{ width: 36 }} />
@@ -146,23 +143,26 @@ export function ResumeUploadPage() {
           </p>
         </div>
 
-        {/* Method toggle */}
-        <div className="flex justify-center mb-8 animate-[ru-fadeUp_.45s_ease_.08s_both]">
-          <div className="flex bg-[#F9FAFB] border border-[#E5E7EB] rounded-2xl p-1 shadow-[var(--sw)] w-full max-w-content">
-            <button className="flex-1 py-[11px] md:py-[13px] border-none rounded-[13px] text-[13px] md:text-sm font-bold cursor-pointer transition-all bg-[#0A0A0A] text-white shadow-[0_2px_8px_rgba(0,0,0,.18)]">
-              📎 파일 업로드
-            </button>
-            <button
-              className="flex-1 py-[11px] md:py-[13px] border-none rounded-[13px] text-[13px] md:text-sm font-bold cursor-pointer transition-all text-[#6B7280] bg-transparent"
-              onClick={() => navigate("/resume/input")}
-            >
-              ✏️ 직접 입력
-            </button>
+        {/* Container wrapper */}
+        <div className="max-w-[1200px] mx-auto">
+          
+          {/* Method toggle */}
+          <div className="flex justify-center mb-8 animate-[ru-fadeUp_.45s_ease_.08s_both]">
+            <div className="flex bg-[#F9FAFB] border border-[#E5E7EB] rounded-2xl p-1 shadow-[var(--sw)] w-full">
+              <button className="flex-1 py-[11px] md:py-[13px] border-none rounded-[13px] text-[13px] md:text-sm font-bold cursor-pointer transition-all bg-[#0A0A0A] text-white shadow-[0_2px_8px_rgba(0,0,0,.18)]">
+                📎 파일 업로드
+              </button>
+              <button
+                className="flex-1 py-[11px] md:py-[13px] border-none rounded-[13px] text-[13px] md:text-sm font-bold cursor-pointer transition-all text-[#6B7280] bg-transparent"
+                onClick={() => navigate("/resume/input")}
+              >
+                ✏️ 직접 입력
+              </button>
+            </div>
           </div>
-        </div>
 
-        {/* 2-col grid */}
-        <div className="grid grid-cols-1 min-[900px]:grid-cols-[1.2fr_1fr] gap-5 min-[900px]:gap-7 max-w-[900px] mx-auto min-[900px]:items-start">
+          {/* 2-col grid */}
+          <div className="grid grid-cols-1 min-[900px]:grid-cols-[1.2fr_1fr] gap-5 min-[900px]:gap-7 min-[900px]:items-stretch">
 
           {/* ── LEFT FORM ── */}
           <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-[24px] md:rounded-[28px] p-6 md:p-8 shadow-[var(--sc)] animate-[ru-fadeUp_.45s_ease_.1s_both]">
@@ -281,7 +281,7 @@ export function ResumeUploadPage() {
           </div>
 
           {/* ── RIGHT SIDEBAR ── */}
-          <div className="flex flex-col gap-4 animate-[ru-fadeUp_.45s_ease_.18s_both] min-[900px]:sticky min-[900px]:top-20">
+          <div className="flex flex-col gap-4 animate-[ru-fadeUp_.45s_ease_.18s_both] min-[900px]:h-full">
 
             {/* Info 2x2 grid */}
             <div className="grid grid-cols-2 gap-[10px] md:gap-3">
@@ -326,6 +326,7 @@ export function ResumeUploadPage() {
             </div>
 
           </div>
+        </div>
         </div>
       </main>
 
