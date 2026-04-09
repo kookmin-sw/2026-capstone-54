@@ -12,9 +12,12 @@ export interface UploadResumeResponse {
 }
 
 function parseApiError(err: unknown, fallback: string): string {
-  const e = err as { message?: string; fieldErrors?: Record<string, string[]> };
-  const fieldMsg = e.fieldErrors ? Object.values(e.fieldErrors).flat()[0] : undefined;
-  return fieldMsg ?? e.message ?? fallback;
+  if (typeof err === "object" && err !== null) {
+    const e = err as { message?: string; fieldErrors?: Record<string, string[]> };
+    const fieldMsg = e.fieldErrors ? Object.values(e.fieldErrors).flat()[0] : undefined;
+    return fieldMsg ?? e.message ?? fallback;
+  }
+  return fallback;
 }
 
 export async function uploadResumeApi(
