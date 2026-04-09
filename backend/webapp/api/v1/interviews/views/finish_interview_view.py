@@ -11,6 +11,8 @@ from interviews.models import InterviewAnalysisReport
 from interviews.services import get_interview_session_for_user
 from rest_framework.response import Response
 
+# from streaks.services import RecordInterviewParticipationService
+
 
 @extend_schema(tags=["면접"])
 class FinishInterviewView(BaseAPIView):
@@ -30,6 +32,7 @@ class FinishInterviewView(BaseAPIView):
       interview_session.mark_abandoned()
     else:
       interview_session.mark_completed()
+      # RecordInterviewParticipationService(user=interview_session.user).perform()
 
     # 분석 리포트 레코드 생성 후 Celery 태스크 발행
     report = InterviewAnalysisReport.objects.create(interview_session=interview_session)

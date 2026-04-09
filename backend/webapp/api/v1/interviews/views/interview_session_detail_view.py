@@ -14,6 +14,6 @@ class InterviewSessionDetailView(BaseAPIView):
   permission_classes = [IsEmailVerified]
 
   @extend_schema(summary="면접 세션 조회")
-  def get(self, request, session_uuid):
-    session = get_interview_session_for_user(session_uuid, self.current_user)
+  def get(self, request, interview_session_uuid):
+    session = get_interview_session_for_user(interview_session_uuid, self.current_user)
     return Response(InterviewSessionSerializer(session).data)
