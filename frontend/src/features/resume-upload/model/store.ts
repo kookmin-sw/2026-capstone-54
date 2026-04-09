@@ -42,7 +42,7 @@ export const useResumeUploadStore = create<ResumeUploadState>()((set, get) => ({
     }
     set({ uploading: true, uploadPct: 0, error: null });
     const res = await uploadResumeApi(
-      { title, fileName: file.name, fileSize: file.size },
+      { title, file },
       (pct) => set({ uploadPct: pct })
     );
     if (!res.success) {
