@@ -202,23 +202,37 @@ export function JdListPage() {
         </div>
 
         {/* STATS */}
-        <div className="grid grid-cols-4 gap-3.5 mb-7 max-[900px]:grid-cols-2">
-          {[
-            { icon: "📋", val: stats.total,   lbl: "전체 공고"  },
-            { icon: "🔵", val: stats.planned, lbl: "지원 예정"  },
-            { icon: "✅", val: stats.applied, lbl: "지원 완료"  },
-            { icon: "⭐", val: stats.saved,   lbl: "관심 저장"  },
-          ].map((s, i) => (
-            <div
-              key={i}
-              className="py-[22px] px-6 bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)] animate-[jdl-fadeUp_.5s_ease_both] transition-shadow hover:shadow-[0_4px_6px_rgba(0,0,0,0.07),0_2px_4px_rgba(0,0,0,0.06)]"
-              style={{ animationDelay: `${i * 0.07}s` }}
-            >
-              <div className="w-10 h-10 rounded-lg bg-white border border-[#E5E7EB] flex items-center justify-center text-[18px] mb-3.5">{s.icon}</div>
-              <div className="text-[32px] font-black tracking-[-1px] text-[#0991B2] leading-none">{s.val}</div>
-              <div className="text-[12px] text-[#6B7280] font-semibold mt-1">{s.lbl}</div>
-            </div>
-          ))}
+        <div className="relative overflow-hidden bg-gradient-to-br from-[#065F79] to-[#0991B2] rounded-lg px-6 py-[22px] mb-7 shadow-[0_12px_32px_rgba(9,145,178,.35)] animate-[jdl-fadeUp_.5s_ease_.05s_both] flex items-center gap-[18px] flex-wrap before:content-[''] before:absolute before:top-[-40px] before:right-[-40px] before:w-[160px] before:h-[160px] before:rounded-full before:bg-[rgba(255,255,255,.07)] md:px-9 md:py-7 md:gap-8">
+          <div className="flex flex-col gap-[2px] relative">
+            <span className="font-inter text-[clamp(28px,4vw,46px)] font-black text-white leading-none">{stats.total}</span>
+            <span className="text-[12px] font-semibold text-white/65">전체 공고</span>
+          </div>
+          <div className="w-px h-10 bg-white/20 shrink-0" />
+          <div className="flex flex-col gap-[2px] relative">
+            <span className="font-inter text-[clamp(28px,4vw,46px)] font-black text-white leading-none">{stats.planned}</span>
+            <span className="text-[12px] font-semibold text-white/65">지원 예정</span>
+          </div>
+          <div className="w-px h-10 bg-white/20 shrink-0" />
+          <div className="flex flex-col gap-[2px] relative">
+            <span className="font-inter text-[clamp(28px,4vw,46px)] font-black text-white leading-none">{stats.applied}</span>
+            <span className="text-[12px] font-semibold text-white/65">지원 완료</span>
+          </div>
+          <div className="w-px h-10 bg-white/20 shrink-0" />
+          <div className="flex flex-col gap-[2px] relative">
+            <span className="font-inter text-[clamp(28px,4vw,46px)] font-black text-white leading-none">{stats.saved}</span>
+            <span className="text-[12px] font-semibold text-white/65">관심 저장</span>
+          </div>
+          <div className="flex gap-2 flex-wrap relative ml-auto">
+            <span className="flex items-center gap-[5px] bg-white/15 backdrop-blur-[8px] rounded-full px-[13px] py-[6px] text-[12px] font-semibold text-white">
+              <span className="w-[6px] h-[6px] rounded-full bg-[#0EA5E9] shrink-0" />지원 예정 {stats.planned}개
+            </span>
+            <span className="flex items-center gap-[5px] bg-white/15 backdrop-blur-[8px] rounded-full px-[13px] py-[6px] text-[12px] font-semibold text-white">
+              <span className="w-[6px] h-[6px] rounded-full bg-[#10B981] shrink-0" />지원 완료 {stats.applied}개
+            </span>
+            <span className="flex items-center gap-[5px] bg-white/15 backdrop-blur-[8px] rounded-full px-[13px] py-[6px] text-[12px] font-semibold text-white">
+              ⭐ 관심 저장 {stats.saved}개
+            </span>
+          </div>
         </div>
 
         {/* FILTER */}
