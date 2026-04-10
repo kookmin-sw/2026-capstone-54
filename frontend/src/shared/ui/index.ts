@@ -6,7 +6,6 @@ export { Card } from "./Card";
 export { Chip } from "./Chip";
 export { Divider } from "./Divider";
 export { Input } from "./Input";
-export { Navigation } from "./Navigation";
 export { PageHeader } from "./PageHeader";
 export { ProgressBar } from "./ProgressBar";
 export { SectionHeader } from "./SectionHeader";
