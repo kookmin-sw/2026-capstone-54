@@ -128,13 +128,12 @@ const MOCK_DATA: HomeData = {
  * GET /api/v1/home/dashboard/
  */
 export async function fetchHomeDataApi(): Promise<{ success: boolean; data?: HomeData; error?: string }> {
-  // Fetch real user data
-  try {
-    const userData = await userApi.getMe();
+  // Early return for mock mode
+  if (USE_MOCK) {
+    await new Promise((r) => setTimeout(r, 400));
     
-    // Use mock data if backend is not ready, but with real user name
-    if (USE_MOCK) {
-      await new Promise((r) => setTimeout(r, 400));
+    try {
+      const userData = await userApi.getMe();
       return { 
         success: true, 
         data: {
@@ -145,16 +144,13 @@ export async function fetchHomeDataApi(): Promise<{ success: boolean; data?: Hom
           }
         }
       };
-    }
-  } catch (error) {
-    console.error("Failed to fetch user data:", error);
-    // Continue with mock data if user fetch fails
-    if (USE_MOCK) {
-      await new Promise((r) => setTimeout(r, 400));
+    } catch (error) {
+      console.error("Failed to fetch user data in mock mode:", error);
       return { success: true, data: MOCK_DATA };
     }
   }
 
+  // Real API mode
   try {
     const data = await apiRequest<BackendHomeData>(
       "/api/v1/home/dashboard/",
@@ -202,6 +198,9 @@ export async function fetchHomeDataApi(): Promise<{ success: boolean; data?: Hom
     };
   } catch (error) {
     console.error("Failed to fetch home data:", error);
-    return { success: true, data: MOCK_DATA };
+    return { 
+      success: false, 
+      error: "홈 데이터를 불러오는데 실패했습니다." 
+    };
   }
 }
