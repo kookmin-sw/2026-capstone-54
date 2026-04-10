@@ -1,53 +1,151 @@
-import { Link } from "react-router-dom";
-import { useSessionStore } from "@/entities/session";
-
-interface NavItem {
-  to: string;
-  label: string;
-  active?: boolean;
-}
+import { useState, useRef, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuthStore } from "@/features/auth";
+import { MobileTabBar } from "./MobileTabBar";
 
 interface NavigationProps {
-  items?: NavItem[];
+  activeTab?: "home" | "interview" | "resume" | "jd" | "settings";
   className?: string;
+  title?: string;
 }
 
-const defaultItems: NavItem[] = [
-  { to: "/home", label: "홈" },
-  { to: "/jd", label: "채용공고" },
-  { to: "/interview", label: "면접 시작" },
-  { to: "/resume", label: "이력서" },
-];
+export function Navigation({ activeTab = "jd", className = "", title }: NavigationProps) {
+  const navigate = useNavigate();
+  const { user, logout } = useAuthStore();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
-export function Navigation({ items = defaultItems, className = "" }: NavigationProps) {
-  const { user } = useSessionStore();
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setProfileOpen(false);
+      }
+    };
+    if (profileOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [profileOpen]);
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login");
+  };
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-[200] py-[14px] px-8 flex justify-center max-sm:py-3 max-sm:px-4 ${className}`}>
-      <div className="flex items-center justify-between w-full max-w-container-lg bg-white/[.92] backdrop-blur-[20px] border border-[#E5E7EB] rounded-lg p-[8px_8px_8px_24px] shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)]">
-        <Link to="/home" className="flex items-center">
-          <img src="/logo-korean.png" alt="미핏" className="h-[34px] w-auto" />
-        </Link>
-        <ul className="flex gap-1 list-none">
-          {items.map((item) => (
-            <li key={item.to}>
+    <>
+      <nav className={`hp-nav nav-shared relative ${className}`}>
+        <button
+          className={`hp-menu-btn${menuOpen ? " open" : ""}`}
+          onClick={() => setMenuOpen(!menuOpen)}
+          aria-label="메뉴"
+        >
+          <div className="hp-menu-icon">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </button>
+
+        <div className="flex-1" />
+
+        {title && (
+          <span className="absolute left-1/2 -translate-x-1/2 text-[15px] font-bold text-[#0A0A0A]">
+            {title}
+          </span>
+        )}
+
+        <Link to="/resume" className="hp-nav-link">이력서</Link>
+        <Link to="/jd" className="hp-nav-link">채용공고</Link>
+
+        {/* Profile dropdown */}
+        <div className="relative" ref={dropdownRef}>
+          <button
+            onClick={() => setProfileOpen(!profileOpen)}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[#F3F4F6] transition-colors"
+            aria-label="프로필 메뉴"
+          >
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#0991B2] to-[#06B6D4] flex items-center justify-center text-white text-sm font-bold">
+              {user?.name?.[0]?.toUpperCase() || "U"}
+            </div>
+            <span className="text-sm font-semibold text-[#0A0A0A] hidden md:block">
+              {user?.name || "사용자"}
+            </span>
+            <svg
+              className={`w-4 h-4 text-[#6B7280] transition-transform ${profileOpen ? "rotate-180" : ""}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          {profileOpen && (
+            <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.1)] border border-[#E5E7EB] py-2 z-50">
               <Link
-                to={item.to}
-                className={`text-[13px] font-${item.active ? "bold" : "medium"} ${
-                  item.active
-                    ? "text-[#0991B2] bg-[#E6F7FA]"
-                    : "text-[#6B7280] hover:text-[#0A0A0A] hover:bg-[rgba(9,145,178,0.06)]"
-                } no-underline py-2 px-3.5 rounded-lg transition-all`}
+                to="/settings"
+                className="block px-4 py-2.5 text-sm text-[#0A0A0A] hover:bg-[#F3F4F6] transition-colors"
+                onClick={() => setProfileOpen(false)}
               >
-                {item.label}
+                ⚙️ 설정
               </Link>
-            </li>
-          ))}
-        </ul>
-        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#06B6D4] to-[#0891B2] flex items-center justify-center text-[13px] font-bold text-white shadow-[0_1px_3px_rgba(0,0,0,0.1)] cursor-pointer">
-          {user?.initial || "U"}
+              <div className="h-px bg-[#E5E7EB] my-1" />
+              <button
+                onClick={handleLogout}
+                className="w-full text-left px-4 py-2.5 text-sm text-[#DC2626] hover:bg-[#FEF2F2] transition-colors"
+              >
+                🚪 로그아웃
+              </button>
+            </div>
+          )}
         </div>
-      </div>
-    </nav>
+      </nav>
+
+      {/* Sidebar overlay */}
+      <div
+        className={`hp-sidebar-overlay${menuOpen ? " open" : ""}`}
+        onClick={() => setMenuOpen(false)}
+      />
+
+      {/* Sidebar */}
+      <aside className={`hp-sidebar nav-sidebar${menuOpen ? " open" : ""}`}>
+        <div className="hp-sb-sep">메인</div>
+        <Link to="/home" className="hp-sb-item" onClick={() => setMenuOpen(false)}>
+          <span className="hp-sb-icon">🏠</span>홈
+        </Link>
+        <Link to="/interview/setup" className="hp-sb-item" onClick={() => setMenuOpen(false)}>
+          <span className="hp-sb-icon">🎥</span>면접 시작
+        </Link>
+        <div className="hp-sb-sep">관리</div>
+        <Link to="/resume" className="hp-sb-item" onClick={() => setMenuOpen(false)}>
+          <span className="hp-sb-icon">📄</span>이력서
+        </Link>
+        <Link to="/jd" className={`hp-sb-item${activeTab === "jd" ? " active" : ""}`} onClick={() => setMenuOpen(false)}>
+          <span className="hp-sb-icon">🏢</span>채용공고
+        </Link>
+        <div className="hp-sb-sep">분석</div>
+        <Link to="#" className="hp-sb-item" onClick={() => setMenuOpen(false)}>
+          <span className="hp-sb-icon">📊</span>리뷰 리포트
+        </Link>
+        <Link to="/streak" className="hp-sb-item" onClick={() => setMenuOpen(false)}>
+          <span className="hp-sb-icon">🔥</span>스트릭
+        </Link>
+        <div className="hp-sb-sep">설정</div>
+        <Link to="/subscription" className="hp-sb-item" onClick={() => setMenuOpen(false)}>
+          <span className="hp-sb-icon">💳</span>요금제
+        </Link>
+        <Link to="/settings" className="hp-sb-item" onClick={() => setMenuOpen(false)}>
+          <span className="hp-sb-icon">⚙️</span>계정 설정
+        </Link>
+        <div className="hp-sb-streak-card">
+          <div className="hp-ssc-label">프로필</div>
+          <div className="hp-ssc-num" style={{ fontSize: 18 }}>{user?.name || "사용자"}</div>
+        </div>
+      </aside>
+
+      <MobileTabBar activeTab={activeTab} />
+    </>
   );
 }

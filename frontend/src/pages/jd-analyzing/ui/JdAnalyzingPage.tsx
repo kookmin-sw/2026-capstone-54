@@ -6,7 +6,7 @@ import { Navigation, Card, Badge, Button } from "@/shared/ui";
 function StepBadge({ label, status }: { label: string; status: StepStatus }) {
   const variant = status === "done" ? "success" : status === "active" ? "info" : "default";
   const icon = status === "done" ? "✓ " : status === "active" ? "⟳ " : "";
-  
+
   return (
     <Badge variant={variant} className={status === "active" ? "animate-[jan-pulse_1.5s_ease-in-out_infinite]" : ""}>
       {icon}{label}
@@ -33,18 +33,11 @@ export function JdAnalyzingPage() {
       : "잠깐만요, 금방 끝나요 ✨"
     : "분석 완료! 잠시 후 이동합니다...";
 
-  const navItems = [
-    { to: "/home", label: "홈" },
-    { to: "/jd", label: "채용공고", active: true },
-    { to: "/interview", label: "면접 시작" },
-    { to: "/resume", label: "이력서" },
-  ];
-
   return (
     <div className="min-h-screen bg-white text-[#0A0A0A]">
-      <Navigation items={navItems} />
+      <Navigation title="채용공고" />
 
-      <div className="max-w-container-sm mx-auto pt-[100px] px-8 pb-[60px] max-[640px]:pt-20 max-[640px]:px-4 max-[640px]:pb-10">
+      <div className="max-w-container-sm mx-auto pt-[28px] px-8 pb-[60px] max-[640px]:pt-5 max-[640px]:px-4 max-[640px]:pb-10">
         {/* BREADCRUMB */}
         <div className="flex items-center gap-2 text-[13px] text-[#6B7280] mb-6">
           <Link

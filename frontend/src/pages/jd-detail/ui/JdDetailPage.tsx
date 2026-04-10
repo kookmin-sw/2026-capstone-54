@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useJdDetailStore, type JdStatus } from "@/features/jd";
-import { useSessionStore } from "@/entities/session";
+import { Navigation } from "@/shared/ui";
 
 const STATUS_OPTIONS: { value: JdStatus; icon: string; label: string; sub: string }[] = [
   { value: "planned", icon: "📅", label: "지원 예정",  sub: "곧 지원할 예정" },
@@ -38,8 +38,8 @@ export function JdDetailPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-white">
-        <NavBar />
-        <div className="max-w-container-lg mx-auto px-8 pt-[100px] pb-[60px] max-sm:px-4 max-sm:pt-20">
+        <Navigation title="채용공고" />
+        <div className="max-w-container-lg mx-auto px-8 pt-[28px] pb-[60px] max-sm:px-4 max-sm:pt-5">
           <div className="text-center py-20 text-[15px] text-[#6B7280]">불러오는 중...</div>
         </div>
       </div>
@@ -50,8 +50,8 @@ export function JdDetailPage() {
   if (error || !jd) {
     return (
       <div className="min-h-screen bg-white">
-        <NavBar />
-        <div className="max-w-container-lg mx-auto px-8 pt-[100px] pb-[60px] max-sm:px-4 max-sm:pt-20">
+        <Navigation title="채용공고" />
+        <div className="max-w-container-lg mx-auto px-8 pt-[28px] pb-[60px] max-sm:px-4 max-sm:pt-5">
           <div className="text-center py-[60px] flex flex-col items-center text-[15px] text-[#DC2626]">
             <p>{error ?? "채용공고를 찾을 수 없습니다."}</p>
             <Link to="/jd" className="inline-flex items-center gap-2 text-[13px] font-bold text-white bg-[#0A0A0A] border-none cursor-pointer py-3 px-5 rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.1)] transition-opacity hover:opacity-85 no-underline mt-4">
@@ -65,9 +65,9 @@ export function JdDetailPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <NavBar />
+      <Navigation title="채용공고" />
 
-      <div className="max-w-container-lg mx-auto px-8 pt-[100px] pb-[60px] max-sm:px-4 max-sm:pt-20">
+      <div className="max-w-container-lg mx-auto px-8 pt-[28px] pb-[60px] max-sm:px-4 max-sm:pt-5">
         {/* BREADCRUMB */}
         <div className="flex items-center gap-2 text-[13px] text-[#6B7280] mb-6">
           <Link to="/jd" className="text-[#6B7280] no-underline transition-colors hover:text-[#0991B2]">채용공고</Link>
@@ -273,28 +273,5 @@ export function JdDetailPage() {
         </div>
       </div>
     </div>
-  );
-}
-
-function NavBar() {
-  const { user } = useSessionStore();
-
-  return (
-    <nav className="fixed top-0 left-0 right-0 z-[200] py-[14px] px-8 flex justify-center max-sm:py-3 max-sm:px-4">
-      <div className="flex items-center justify-between w-full max-w-container-lg bg-white/[.92] backdrop-blur-[20px] border border-[#E5E7EB] rounded-lg p-[8px_8px_8px_24px] shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)]">
-        <Link to="/home" className="flex items-center">
-          <img src="/logo-korean.png" alt="미핏" className="h-[34px] w-auto" />
-        </Link>
-        <ul className="flex gap-1 list-none">
-          <li><Link to="/home" className="text-[13px] font-medium text-[#6B7280] no-underline py-2 px-3.5 rounded-lg transition-all hover:text-[#0A0A0A] hover:bg-[rgba(9,145,178,0.06)]">홈</Link></li>
-          <li><Link to="/jd" className="text-[13px] font-bold text-[#0991B2] bg-[#E6F7FA] no-underline py-2 px-3.5 rounded-lg">채용공고</Link></li>
-          <li><Link to="/interview" className="text-[13px] font-medium text-[#6B7280] no-underline py-2 px-3.5 rounded-lg transition-all hover:text-[#0A0A0A] hover:bg-[rgba(9,145,178,0.06)]">면접 시작</Link></li>
-          <li><Link to="/resume" className="text-[13px] font-medium text-[#6B7280] no-underline py-2 px-3.5 rounded-lg transition-all hover:text-[#0A0A0A] hover:bg-[rgba(9,145,178,0.06)]">이력서</Link></li>
-        </ul>
-        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#06B6D4] to-[#0891B2] flex items-center justify-center text-[13px] font-bold text-white shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)] cursor-pointer">
-          {user?.initial || "U"}
-        </div>
-      </div>
-    </nav>
   );
 }
