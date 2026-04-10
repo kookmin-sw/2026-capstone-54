@@ -1,9 +1,12 @@
+import { useNavigate } from "react-router-dom";
+
 interface StreakCalendarProps {
   streakData: number[];
   revealed: boolean;
 }
 
 export function StreakCalendar({ streakData, revealed }: StreakCalendarProps) {
+  const navigate = useNavigate();
   const currentMonth = new Date().toLocaleDateString('ko-KR', { month: 'long' });
   
   return (
@@ -13,7 +16,16 @@ export function StreakCalendar({ streakData, revealed }: StreakCalendarProps) {
     >
       <div className="hp-sec-head" style={{ marginBottom: 12 }}>
         <div className="hp-sec-title" style={{ fontSize: 13 }}>🔥 이번 달 스트릭</div>
-        <span className="hp-badge" style={{ fontSize: 10 }}>{currentMonth}</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span className="hp-badge" style={{ fontSize: 10 }}>{currentMonth}</span>
+          <button
+            className="hp-streak-detail-btn"
+            onClick={() => navigate("/streak")}
+            aria-label="스트릭 상세보기"
+          >
+            →
+          </button>
+        </div>
       </div>
       <div className="hp-streak-cal">
         {streakData.map((v, i) => (

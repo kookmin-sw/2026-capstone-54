@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useResumeUploadStore } from "@/features/resume-upload";
+import { useResumeListStore } from "@/features/resume-list";
 
 const MAX_FILE_MB = 10;
 
@@ -31,6 +32,8 @@ export function ResumeUploadPage() {
     title, file, isDragging, uploading, uploadPct, showSuccess, error,
     setTitle, setFile, removeFile, setDragging, upload, closeSuccess,
   } = useResumeUploadStore();
+
+  const { fetchResumes } = useResumeListStore();
 
   const canUpload = !!file && !uploading;
   const ext = file ? file.name.split(".").pop()?.toUpperCase() ?? "" : "";
@@ -69,6 +72,17 @@ export function ResumeUploadPage() {
       document.getElementById("ru-title-input")?.focus();
     }
     upload();
+  };
+
+  const handleGoToResumeList = async () => {
+    try {
+      await fetchResumes();
+      navigate("/resume");
+    } catch (error) {
+      console.error("이력서 목록을 불러오는데 실패했습니다:", error);
+      // 에러가 발생해도 페이지로 이동 (목록 페이지에서 재시도 가능)
+      navigate("/resume");
+    }
   };
 
   const zoneCls = [
@@ -359,7 +373,7 @@ export function ResumeUploadPage() {
             </div>
             <button
               className="w-full py-[15px] border-none rounded-2xl cursor-pointer text-[15px] font-black bg-[#0A0A0A] text-white shadow-[var(--sb)] mb-[10px] transition-opacity hover:opacity-85"
-              onClick={() => navigate("/resume")}
+              onClick={handleGoToResumeList}
             >이력서 목록 보기</button>
             <button
               className="w-full py-[15px] border border-[#0991B2] rounded-2xl cursor-pointer text-sm font-bold bg-[#E6F7FA] text-[#0991B2] transition-colors hover:bg-[#cceef6]"

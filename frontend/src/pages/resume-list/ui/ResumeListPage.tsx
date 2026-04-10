@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useResumeListStore } from "@/features/resume-list";
+import { MobileTabBar } from "@/shared/ui";
 import type { ResumeItem } from "@/features/resume-list";
 
 /* ─────────────────────────── sub-components ─────────────────────────── */
@@ -155,9 +156,6 @@ export function ResumeListPage() {
         <div className="max-w-container-xl mx-auto px-8 h-[60px] flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <button className="w-9 h-9 rounded-lg bg-[#F9FAFB] border border-[#E5E7EB] cursor-pointer flex items-center justify-center shadow-[var(--sw)] text-[#0A0A0A] text-[18px] transition-[background] duration-[150ms] hover:bg-[#F3F4F6]" onClick={() => navigate("/home")} aria-label="홈으로">←</button>
-            <a href="/home" className="flex items-center">
-              <img src="/logo-korean.png" alt="미핏" className="h-[36px] w-auto" />
-            </a>
           </div>
           <span className="font-inter text-[17px] font-extrabold text-[#0A0A0A]">내 이력서</span>
           <button className="w-9 h-9 rounded-lg bg-[#0A0A0A] border-none cursor-pointer flex items-center justify-center text-white text-[20px] font-bold shadow-[var(--sb)] transition-opacity duration-[150ms] hover:opacity-85" onClick={() => navigate("/resume/upload")} aria-label="이력서 추가">＋</button>
@@ -284,29 +282,7 @@ export function ResumeListPage() {
         </div>
       </main>
 
-      {/* ── MOBILE FAB ── */}
-      <button className="fixed bottom-[84px] right-5 z-[100] w-[54px] h-[54px] rounded-lg bg-[#0A0A0A] border-none cursor-pointer flex items-center justify-center shadow-[0_8px_24px_rgba(0,0,0,.25)] text-[26px] text-white transition-transform duration-[150ms] active:scale-90 md:hidden" onClick={() => navigate("/resume/upload")} aria-label="이력서 추가">＋</button>
-
-      {/* ── MOBILE TAB BAR ── */}
-      <nav className="fixed bottom-0 left-0 right-0 z-[200] bg-[rgba(255,255,255,.95)] backdrop-blur-[24px] border-t border-[#E5E7EB] flex items-center pb-[max(20px,env(safe-area-inset-bottom))] pt-2 md:hidden">
-        {[
-          { icon: "🏠", label: "홈",    path: "/home" },
-          { icon: "🎤", label: "면접",  path: "/interview/setup" },
-          { icon: "📄", label: "이력서", path: "/resume", active: true },
-          { icon: "📢", label: "공고",  path: "/jd" },
-          { icon: "👤", label: "프로필", path: "#" },
-        ].map((t) => (
-          <button
-            key={t.label}
-            className="flex-1 flex flex-col items-center gap-[3px] cursor-pointer border-none bg-none py-1"
-            onClick={() => navigate(t.path)}
-          >
-            <span className="text-[20px] leading-none">{t.icon}</span>
-            <span className={`text-[10px] font-semibold ${t.active ? "text-[#0991B2]" : "text-[#9CA3AF]"}`}>{t.label}</span>
-            <div className={`w-1 h-1 rounded-full bg-[#0991B2] mx-auto ${t.active ? "opacity-100" : "opacity-0"}`} />
-          </button>
-        ))}
-      </nav>
+      <MobileTabBar activeTab="resume" />
 
       {/* ── CONTEXT MENU ── */}
       {ctxMenu.open && (

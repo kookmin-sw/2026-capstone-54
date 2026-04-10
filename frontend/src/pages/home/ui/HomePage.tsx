@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useHomeStore } from "@/features/home";
+import { MobileTabBar } from "@/shared/ui";
 import {
   HomeNavbar,
   HomeSidebar,
@@ -71,6 +72,8 @@ export function HomePage() {
           </main>
         </div>
       </div>
+
+      <MobileTabBar activeTab="home" />
     </>
   );
 }
