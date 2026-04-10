@@ -54,7 +54,9 @@ const TIME_UNITS = [
  * 상대 시간 표시 (예: "2일 전", "1주 전")
  */
 export function getRelativeTime(dateString: string): string {
-  const diffMs = Date.now() - new Date(dateString).getTime();
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return "날짜 정보 없음";
+  const diffMs = Date.now() - date.getTime();
 
   if (diffMs < 60000) return "방금 전 등록";
 
