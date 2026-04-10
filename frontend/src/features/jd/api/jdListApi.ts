@@ -1,5 +1,11 @@
-// Mock JD List API
+import { apiRequest } from "@/shared/api/client";
 import type { JdStatus } from "./jdApi";
+import {
+  getCompanyInitial,
+  getCompanyColor,
+  getTagColor,
+  getRelativeTime,
+} from "./jdListHelpers";
 
 export type JdListStatus = JdStatus | "analyzing";
 
@@ -27,87 +33,47 @@ export interface JdListStats {
   saved: number;
 }
 
-const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
+/** 백엔드 API 응답 타입 */
+interface JdListApiResponse {
+  id: number;
+  company_name: string;
+  job_title: string;
+  status: JdListStatus;
+  tags?: string[];
+  created_at: string;
+  is_analyzed: boolean;
+}
 
-const MOCK_LIST: JdListItem[] = [
-  {
-    id: "mock-jd-analyzing",
-    company: "카카오",
-    companyInitial: "카",
-    companyColor: "linear-gradient(135deg,#60A5FA,#2563EB)",
-    title: "프론트엔드 개발자 (React)",
-    status: "analyzing",
-    tags: [
-      { label: "React", color: "default" },
-      { label: "TypeScript", color: "blue" },
-    ],
-    registeredAt: "방금 전 등록",
-    analyzed: false,
-  },
-  {
-    id: "mock-jd-1",
-    company: "네이버",
-    companyInitial: "네",
-    companyColor: "linear-gradient(135deg,#34D399,#059669)",
-    title: "백엔드 엔지니어 — Spring Boot / MSA",
-    status: "applied",
-    tags: [
-      { label: "Spring", color: "green" },
-      { label: "Java", color: "blue" },
-      { label: "MSA", color: "default" },
-    ],
-    registeredAt: "2일 전",
-    analyzed: true,
-  },
-  {
-    id: "mock-jd-3",
-    company: "라인플러스",
-    companyInitial: "라",
-    companyColor: "linear-gradient(135deg,#F472B6,#DB2777)",
-    title: "Android 앱 개발자 (Kotlin)",
-    status: "planned",
-    tags: [
-      { label: "Android", color: "pink" },
-      { label: "Kotlin", color: "default" },
-    ],
-    registeredAt: "4일 전",
-    analyzed: true,
-  },
-  {
-    id: "mock-jd-4",
-    company: "토스",
-    companyInitial: "토",
-    companyColor: "linear-gradient(135deg,#FCD34D,#D97706)",
-    title: "데이터 엔지니어 (Spark / Airflow)",
-    status: "saved",
-    tags: [
-      { label: "Spark", color: "blue" },
-      { label: "Python", color: "default" },
-      { label: "Airflow", color: "green" },
-    ],
-    registeredAt: "1주 전",
-    analyzed: true,
-  },
-  {
-    id: "mock-jd-5",
-    company: "쿠팡",
-    companyInitial: "쿠",
-    companyColor: "linear-gradient(135deg,#A78BFA,#6D28D9)",
-    title: "DevOps / SRE 엔지니어",
-    status: "applied",
-    tags: [
-      { label: "K8s", color: "default" },
-      { label: "AWS", color: "blue" },
-      { label: "Terraform", color: "green" },
-    ],
-    registeredAt: "2주 전",
-    analyzed: true,
-  },
-];
+function transformJdListItem(item: JdListApiResponse): JdListItem {
+  return {
+    id: String(item.id),
+    company: item.company_name,
+    companyInitial: getCompanyInitial(item.company_name),
+    companyColor: getCompanyColor(item.company_name),
+    title: item.job_title,
+    status: item.status,
+    tags: (item.tags || []).map((tag) => ({
+      label: tag,
+      color: getTagColor(tag),
+    })),
+    registeredAt: getRelativeTime(item.created_at),
+    analyzed: item.is_analyzed,
+  };
+}
 
+/** 채용공고 목록 조회 API */
 export async function fetchJdListApi(): Promise<{ success: boolean; data: JdListItem[] }> {
-  await delay(500);
-  return { success: true, data: [...MOCK_LIST] };
+  try {
+    const response = await apiRequest<JdListApiResponse[]>("/api/v1/job-descriptions/", {
+      auth: true,
+    });
+
+    const data = Array.isArray(response) ? response.map(transformJdListItem) : [];
+    return { success: true, data };
+  } catch (error) {
+    console.error("Failed to fetch JD list:", error);
+    return { success: false, data: [] };
+  }
 }
 
 export function calcStats(list: JdListItem[]): JdListStats {

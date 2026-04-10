@@ -1,7 +1,17 @@
 import { apiRequest } from "./client";
 
 /**
- * 사용자 정보 타입
+ * 백엔드 API 응답 타입 (snake_case)
+ */
+interface BackendUserMe {
+  name: string;
+  email: string;
+  is_email_confirmed: boolean;
+  is_profile_completed: boolean;
+}
+
+/**
+ * 사용자 정보 타입 (camelCase)
  */
 export interface UserMe {
   name: string;
@@ -34,20 +44,34 @@ export const userApi = {
    * 현재 로그인한 사용자 정보 조회
    * @returns UserMe 사용자 정보
    */
-  getMe: () =>
-    apiRequest<UserMe>("/api/v1/users/me/", { auth: true }),
+  getMe: async (): Promise<UserMe> => {
+    const data = await apiRequest<BackendUserMe>("/api/v1/users/me/", { auth: true });
+    return {
+      name: data.name,
+      email: data.email,
+      isEmailConfirmed: data.is_email_confirmed,
+      isProfileCompleted: data.is_profile_completed,
+    };
+  },
 
   /**
    * 사용자 정보 수정
    * @param params 수정할 사용자 정보
    * @returns 수정된 사용자 정보
    */
-  updateMe: (params: UpdateUserParams) =>
-    apiRequest<UserMe>("/api/v1/users/me/", {
+  updateMe: async (params: UpdateUserParams): Promise<UserMe> => {
+    const data = await apiRequest<BackendUserMe>("/api/v1/users/me/", {
       method: "PATCH",
       auth: true,
       body: JSON.stringify(params),
-    }),
+    });
+    return {
+      name: data.name,
+      email: data.email,
+      isEmailConfirmed: data.is_email_confirmed,
+      isProfileCompleted: data.is_profile_completed,
+    };
+  },
 
   /**
    * 비밀번호 변경

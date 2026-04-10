@@ -67,18 +67,11 @@ export function JdAddPage() {
     return "";
   };
 
-  const navItems = [
-    { to: "/home", label: "홈" },
-    { to: "/jd", label: "채용공고", active: true },
-    { to: "/interview", label: "면접 시작" },
-    { to: "/resume", label: "이력서" },
-  ];
-
   return (
     <div className="min-h-screen bg-white">
-      <Navigation items={navItems} />
+      <Navigation title="채용공고" />
 
-      <div className="relative max-w-container-lg mx-auto px-8 pt-[100px] pb-[60px] max-sm:px-4 max-sm:pt-20">
+      <div className="relative max-w-container-lg mx-auto px-8 pt-[28px] pb-[60px] max-sm:px-4 max-sm:pt-5">
         <PageHeader
           badge="+ 채용공고 추가"
           title="새 채용공고 등록"
