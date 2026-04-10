@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useJdAnalyzingStore, type StepStatus } from "@/features/jd";
-import { Navigation, Card, Badge, Button } from "@/shared/ui";
+import { Card, Badge, Button } from "@/shared/ui";
 
 function StepBadge({ label, status }: { label: string; status: StepStatus }) {
   const variant = status === "done" ? "success" : status === "active" ? "info" : "default";
@@ -35,7 +35,6 @@ export function JdAnalyzingPage() {
 
   return (
     <div className="min-h-screen bg-white text-[#0A0A0A]">
-      <Navigation title="채용공고" />
 
       <div className="max-w-container-sm mx-auto pt-[28px] px-8 pb-[60px] max-[640px]:pt-5 max-[640px]:px-4 max-[640px]:pb-10">
         {/* BREADCRUMB */}

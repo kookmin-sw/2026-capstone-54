@@ -57,31 +57,6 @@ export function ResumeInputPage() {
 
   return (
     <div className="bg-white font-inter text-[#0A0A0A] min-h-screen pb-[100px] antialiased">
-      {/* ── NAV ── */}
-      <nav className="sticky top-0 z-[100] bg-white/92 backdrop-blur-[24px] border-b border-[#E5E7EB]">
-        <div className="max-w-container-xl mx-auto px-6 h-16 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-[10px]">
-            <button
-              className="w-9 h-9 rounded-[14px] bg-[#F9FAFB] border border-[#E5E7EB] cursor-pointer flex items-center justify-center shadow-[var(--sw)] text-[#0A0A0A] text-[18px] transition-[background] duration-150 hover:bg-[#F3F4F6]"
-              onClick={() => navigate(-1)}
-              aria-label="뒤로가기"
-            >
-              ←
-            </button>
-            <a
-              href="/home"
-              className="flex items-center"
-            >
-              <img src="/logo-korean.png" alt="미핏" className="h-[36px] w-auto" />
-            </a>
-          </div>
-          <span className="font-inter text-[16px] font-extrabold text-[#0A0A0A] md:text-[18px]">
-            이력서 등록
-          </span>
-          <div style={{ width: 36 }} />
-        </div>
-      </nav>
-
       {/* ── STEP BAR ── */}
       <div className="bg-white/50 backdrop-blur-[12px] border-b border-[#E5E7EB]">
         <div className="max-w-container-xl mx-auto px-6 py-[14px] flex items-center justify-center gap-2 md:gap-3 md:py-4 md:px-8">

@@ -30,28 +30,6 @@ export function StreakPage() {
 
   return (
     <>
-      {/* NAV */}
-      <nav className="sticky top-0 z-[200] bg-white/[.92] backdrop-blur-[20px] border-b border-[#E5E7EB] h-[60px] flex items-center px-8 gap-3 max-sm:px-4">
-        <Link
-          to="/home"
-          className="flex items-center mr-auto"
-        >
-          <img src="/logo-korean.png" alt="미핏" className="h-[36px] w-auto" />
-        </Link>
-        <Link
-          to="/home"
-          className="text-[13px] font-semibold text-[#6B7280] no-underline py-1.5 px-3 rounded-lg transition-colors hover:text-[#0A0A0A] hover:bg-[#F9FAFB]"
-        >
-          ← 홈으로
-        </Link>
-        <Link
-          to="/interview/setup"
-          className="text-[13px] font-bold text-white bg-[#0A0A0A] border-none rounded-lg py-[9px] px-[18px] cursor-pointer no-underline whitespace-nowrap inline-flex items-center gap-[5px] transition-[opacity,transform] hover:opacity-85 hover:-translate-y-px"
-        >
-          면접 시작 →
-        </Link>
-      </nav>
-
       <div className="bg-white min-h-[calc(100vh-60px)] p-8 max-w-container mx-auto max-sm:p-[20px_16px]">
         {loading && !data ? (
           <div className="flex flex-col gap-4">

@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useJdDetailStore, type JdStatus } from "@/features/jd";
-import { Navigation } from "@/shared/ui";
 
 const STATUS_OPTIONS: { value: JdStatus; icon: string; label: string; sub: string }[] = [
   { value: "planned", icon: "📅", label: "지원 예정",  sub: "곧 지원할 예정" },
@@ -38,7 +37,6 @@ export function JdDetailPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-white">
-        <Navigation title="채용공고" />
         <div className="max-w-container-lg mx-auto px-8 pt-[28px] pb-[60px] max-sm:px-4 max-sm:pt-5">
           <div className="text-center py-20 text-[15px] text-[#6B7280]">불러오는 중...</div>
         </div>
@@ -50,7 +48,6 @@ export function JdDetailPage() {
   if (error || !jd) {
     return (
       <div className="min-h-screen bg-white">
-        <Navigation title="채용공고" />
         <div className="max-w-container-lg mx-auto px-8 pt-[28px] pb-[60px] max-sm:px-4 max-sm:pt-5">
           <div className="text-center py-[60px] flex flex-col items-center text-[15px] text-[#DC2626]">
             <p>{error ?? "채용공고를 찾을 수 없습니다."}</p>
@@ -65,7 +62,6 @@ export function JdDetailPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <Navigation title="채용공고" />
 
       <div className="max-w-container-lg mx-auto px-8 pt-[28px] pb-[60px] max-sm:px-4 max-sm:pt-5">
         {/* BREADCRUMB */}

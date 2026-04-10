@@ -1,7 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useJdAddStore, type JdStatus } from "@/features/jd";
 import {
-  Navigation,
   PageHeader,
   Card,
   Input,
@@ -69,7 +68,6 @@ export function JdAddPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <Navigation title="채용공고" />
 
       <div className="relative max-w-container-lg mx-auto px-8 pt-[28px] pb-[60px] max-sm:px-4 max-sm:pt-5">
         <PageHeader

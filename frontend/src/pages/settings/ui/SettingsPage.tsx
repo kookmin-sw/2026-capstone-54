@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useSettingsStore } from "@/features/settings";
 import type { SettingsPanel } from "@/features/settings";
 
@@ -85,26 +85,6 @@ export function SettingsPage() {
   return (
     <>
       <div className="sp-wrap">
-        {/* NAV */}
-        <nav className="sticky top-0 z-[200] bg-white/92 backdrop-blur-[20px] border-b border-[#E5E7EB] h-[60px] flex items-center px-8 gap-4">
-          <button
-            className={`${menuOpen ? "open" : ""} hidden w-10 h-10 bg-none border border-[#E5E7EB] rounded-lg cursor-pointer items-center justify-center transition-[background] duration-150 hover:bg-[#F9FAFB] max-[1024px]:flex`}
-            onClick={() => setMenuOpen(!menuOpen)}
-            aria-label="메뉴"
-          >
-            <div className="flex flex-col gap-1">
-              <span className={`w-[18px] h-0.5 bg-[#0A0A0A] rounded-sm transition-all duration-200 ${menuOpen ? "rotate-45 translate-x-[5px] translate-y-[5px]" : ""}`} />
-              <span className={`w-[18px] h-0.5 bg-[#0A0A0A] rounded-sm transition-all duration-200 ${menuOpen ? "opacity-0" : ""}`} />
-              <span className={`w-[18px] h-0.5 bg-[#0A0A0A] rounded-sm transition-all duration-200 ${menuOpen ? "-rotate-45 translate-x-[5px] -translate-y-[5px]" : ""}`} />
-            </div>
-          </button>
-          <Link to="/home" className="flex items-center mr-auto">
-            <img src="/logo-korean.png" alt="미핏" className="h-[36px] w-auto" />
-          </Link>
-          <Link to="/home" className="text-[13px] font-semibold text-[#6B7280] no-underline px-3 py-[6px] rounded-lg flex items-center gap-1 transition-[color,background] duration-150 hover:text-[#0A0A0A] hover:bg-[#F9FAFB]">
-            ← 홈으로
-          </Link>
-        </nav>
 
         {/* Overlay */}
         <div
