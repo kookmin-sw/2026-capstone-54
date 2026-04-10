@@ -50,8 +50,6 @@ export function HomeNavbar({ menuOpen, onMenuToggle }: HomeNavbarProps) {
       <Link to="/" className="hp-nav-logo flex items-center">
         <img src="/logo-korean.png" alt="미핏" className="h-[36px] w-auto" />
       </Link>
-      <Link to="/resume" className="hp-nav-link">이력서</Link>
-      <Link to="/jd" className="hp-nav-link">채용공고</Link>
       
       {/* User Profile Dropdown */}
       <div className="relative" ref={dropdownRef}>

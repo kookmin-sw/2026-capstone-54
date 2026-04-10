@@ -151,17 +151,6 @@ export function ResumeListPage() {
   return (
     <div className="bg-white font-inter text-[#0A0A0A] min-h-screen pb-20 [-webkit-font-smoothing:antialiased]">
 
-      {/* ── NAV ── */}
-      <nav className="sticky top-0 z-[100] bg-[rgba(255,255,255,.92)] backdrop-blur-[24px] border-b border-[#E5E7EB]">
-        <div className="max-w-container-xl mx-auto px-8 h-[60px] flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <button className="w-9 h-9 rounded-lg bg-[#F9FAFB] border border-[#E5E7EB] cursor-pointer flex items-center justify-center shadow-[var(--sw)] text-[#0A0A0A] text-[18px] transition-[background] duration-[150ms] hover:bg-[#F3F4F6]" onClick={() => navigate("/home")} aria-label="홈으로">←</button>
-          </div>
-          <span className="font-inter text-[17px] font-extrabold text-[#0A0A0A]">내 이력서</span>
-          <button className="w-9 h-9 rounded-lg bg-[#0A0A0A] border-none cursor-pointer flex items-center justify-center text-white text-[20px] font-bold shadow-[var(--sb)] transition-opacity duration-[150ms] hover:opacity-85" onClick={() => navigate("/resume/upload")} aria-label="이력서 추가">＋</button>
-        </div>
-      </nav>
-
       {/* ── MAIN ── */}
       <main className="max-w-container-xl mx-auto px-5 md:px-10">
 

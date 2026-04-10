@@ -106,21 +106,6 @@ export function ResumeUploadPage() {
   return (
     <div className="bg-white font-['Inter',sans-serif] text-[#0A0A0A] min-h-screen pb-[100px] antialiased">
 
-      {/* ── NAV ── */}
-      <nav className="sticky top-0 z-[100] bg-[rgba(255,255,255,.92)] backdrop-blur-[24px] border-b border-[#E5E7EB]">
-        <div className="max-w-container-xl mx-auto px-6 h-16 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-[10px]">
-            <button
-              className="w-9 h-9 rounded-[8px] bg-[#F9FAFB] border border-[#E5E7EB] cursor-pointer flex items-center justify-center shadow-[var(--sw)] text-[#0A0A0A] text-lg transition-colors hover:bg-[#F3F4F6]"
-              onClick={() => navigate(-1)}
-              aria-label="뒤로가기"
-            >←</button>
-          </div>
-          <span className="text-base md:text-lg font-extrabold text-[#0A0A0A]">이력서 등록</span>
-          <div style={{ width: 36 }} />
-        </div>
-      </nav>
-
       {/* ── STEP BAR ── */}
       <div className="bg-[rgba(255,255,255,.5)] backdrop-blur-[12px] border-b border-[#E5E7EB]">
         <div className="max-w-container-xl mx-auto px-6 py-[14px] md:py-4 md:px-8 flex items-center justify-center gap-2 md:gap-3">

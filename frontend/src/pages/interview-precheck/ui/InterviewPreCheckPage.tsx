@@ -83,17 +83,6 @@ export function InterviewPreCheckPage() {
 
   return (
     <>
-      {/* ── NAV ── */}
-      <nav className="sticky top-0 z-[200] bg-white/[.92] backdrop-blur-[20px] border-b border-[#E5E7EB] h-[60px] flex items-center px-8 gap-4">
-        <a className="flex items-center mr-auto" href="/home">
-          <img src="/logo-korean.png" alt="미핏" className="h-[36px] w-auto" />
-        </a>
-        <a className="text-sm font-medium text-[#6B7280] no-underline px-3 py-1.5 rounded-lg transition-colors hover:text-[#0A0A0A] hover:bg-[#F9FAFB]" href="/home">홈</a>
-        <a className="text-sm font-medium text-[#6B7280] no-underline px-3 py-1.5 rounded-lg transition-colors hover:text-[#0A0A0A] hover:bg-[#F9FAFB]" href="#">이력서</a>
-        <a className="text-sm font-medium text-[#6B7280] no-underline px-3 py-1.5 rounded-lg transition-colors hover:text-[#0A0A0A] hover:bg-[#F9FAFB]" href="#">채용공고</a>
-        <a className="inline-flex items-center gap-1.5 text-[13px] font-bold text-white bg-[#0A0A0A] border-none rounded-lg py-[9px] px-[18px] cursor-pointer no-underline whitespace-nowrap transition-[opacity,transform] hover:opacity-85 hover:-translate-y-px" href="/interview/setup">면접 설정</a>
-      </nav>
-
       <div className="max-w-container-md mx-auto px-8 pt-9 pb-[60px]">
 
         {/* ── BREADCRUMB ── */}

@@ -19,58 +19,7 @@ export function InterviewSetupPage() {
 
   return (
     <>
-      {/* NAV */}
-      <nav className="sticky top-0 z-[200] bg-white/[.92] backdrop-blur-[20px] border-b border-[#E5E7EB] h-[60px] flex items-center px-8 gap-4 max-sm:px-4">
-        <Link to="/home" className="flex items-center mr-auto">
-          <img src="/logo-korean.png" alt="미핏" className="h-[36px] w-auto" />
-        </Link>
-        <Link to="/home" className="text-sm font-medium text-[#6B7280] no-underline px-3 py-1.5 rounded-lg transition-colors hover:text-[#0A0A0A] hover:bg-[#F9FAFB]">홈</Link>
-        <Link to="/resume/input" className="text-sm font-medium text-[#6B7280] no-underline px-3 py-1.5 rounded-lg transition-colors hover:text-[#0A0A0A] hover:bg-[#F9FAFB]">이력서</Link>
-        <Link to="/jd" className="text-sm font-medium text-[#6B7280] no-underline px-3 py-1.5 rounded-lg transition-colors hover:text-[#0A0A0A] hover:bg-[#F9FAFB]">채용공고</Link>
-        <Link to="/interview/setup" className="inline-flex items-center gap-1.5 text-[13px] font-bold text-white bg-[#0A0A0A] border-none rounded-lg py-[9px] px-[18px] cursor-pointer no-underline whitespace-nowrap transition-[opacity,transform] hover:opacity-85 hover:-translate-y-px">면접 시작 →</Link>
-      </nav>
-
-      <div className="grid grid-cols-[220px_1fr] min-h-[calc(100vh-60px)] max-lg:grid-cols-1">
-        {/* SIDEBAR */}
-        <aside className="sticky top-[60px] h-[calc(100vh-60px)] overflow-y-auto border-r border-[#E5E7EB] py-5 px-3 flex flex-col gap-0.5 bg-white max-lg:hidden">
-          <div className="text-[10px] font-bold tracking-[.1em] uppercase text-[#9CA3AF] px-3 pt-4 pb-1.5">메인</div>
-          <Link to="/home" className="flex items-center gap-[9px] px-3 py-2 rounded-lg text-[13px] font-medium text-[#6B7280] cursor-pointer transition-all no-underline hover:bg-[#F9FAFB] hover:text-[#0A0A0A]">
-            <span className="w-7 h-7 rounded-lg flex items-center justify-center text-sm shrink-0 bg-[#F9FAFB]">🏠</span>홈
-          </Link>
-          <Link to="/interview/setup" className="flex items-center gap-[9px] px-3 py-2 rounded-lg text-[13px] font-bold text-[#0991B2] bg-[#E6F7FA] cursor-pointer transition-all no-underline">
-            <span className="w-7 h-7 rounded-lg flex items-center justify-center text-sm shrink-0 bg-[rgba(9,145,178,.12)]">🎥</span>면접 시작
-          </Link>
-          <div className="text-[10px] font-bold tracking-[.1em] uppercase text-[#9CA3AF] px-3 pt-4 pb-1.5">관리</div>
-          <Link to="/resume/input" className="flex items-center gap-[9px] px-3 py-2 rounded-lg text-[13px] font-medium text-[#6B7280] cursor-pointer transition-all no-underline hover:bg-[#F9FAFB] hover:text-[#0A0A0A]">
-            <span className="w-7 h-7 rounded-lg flex items-center justify-center text-sm shrink-0 bg-[#F9FAFB]">📄</span>이력서
-          </Link>
-          <Link to="/jd" className="flex items-center gap-[9px] px-3 py-2 rounded-lg text-[13px] font-medium text-[#6B7280] cursor-pointer transition-all no-underline hover:bg-[#F9FAFB] hover:text-[#0A0A0A]">
-            <span className="w-7 h-7 rounded-lg flex items-center justify-center text-sm shrink-0 bg-[#F9FAFB]">🏢</span>채용공고
-            <span className="ml-auto text-[10px] font-bold bg-[#E6F7FA] text-[#0991B2] py-0.5 px-[7px] rounded-full">3</span>
-          </Link>
-          <div className="text-[10px] font-bold tracking-[.1em] uppercase text-[#9CA3AF] px-3 pt-4 pb-1.5">분석</div>
-          <Link to="#" className="flex items-center gap-[9px] px-3 py-2 rounded-lg text-[13px] font-medium text-[#6B7280] cursor-pointer transition-all no-underline hover:bg-[#F9FAFB] hover:text-[#0A0A0A]">
-            <span className="w-7 h-7 rounded-lg flex items-center justify-center text-sm shrink-0 bg-[#F9FAFB]">📊</span>리뷰 리포트
-          </Link>
-          <Link to="#" className="flex items-center gap-[9px] px-3 py-2 rounded-lg text-[13px] font-medium text-[#6B7280] cursor-pointer transition-all no-underline hover:bg-[#F9FAFB] hover:text-[#0A0A0A]">
-            <span className="w-7 h-7 rounded-lg flex items-center justify-center text-sm shrink-0 bg-[#F9FAFB]">🔥</span>스트릭
-          </Link>
-          <div className="text-[10px] font-bold tracking-[.1em] uppercase text-[#9CA3AF] px-3 pt-4 pb-1.5">설정</div>
-          <Link to="#" className="flex items-center gap-[9px] px-3 py-2 rounded-lg text-[13px] font-medium text-[#6B7280] cursor-pointer transition-all no-underline hover:bg-[#F9FAFB] hover:text-[#0A0A0A]">
-            <span className="w-7 h-7 rounded-lg flex items-center justify-center text-sm shrink-0 bg-[#F9FAFB]">💳</span>요금제
-          </Link>
-          <Link to="#" className="flex items-center gap-[9px] px-3 py-2 rounded-lg text-[13px] font-medium text-[#6B7280] cursor-pointer transition-all no-underline hover:bg-[#F9FAFB] hover:text-[#0A0A0A]">
-            <span className="w-7 h-7 rounded-lg flex items-center justify-center text-sm shrink-0 bg-[#F9FAFB]">⚙️</span>계정 설정
-          </Link>
-          <div className="mt-auto bg-[#0991B2] rounded-lg p-4 text-white">
-            <div className="text-[10px] font-semibold opacity-70 mb-1">🔥 현재 스트릭</div>
-            <div className="text-[30px] font-black leading-none tracking-[-1px]">12</div>
-            <div className="text-[11px] opacity-65 mt-0.5">연속 일수</div>
-          </div>
-        </aside>
-
-        {/* MAIN */}
-        <main className="p-[28px_32px] min-w-0 max-sm:p-[20px_16px]">
+      <main className="p-[28px_32px] min-w-0 max-sm:p-[20px_16px]">
           {/* Page Header */}
           <div className="mb-6 animate-[isetup-fadeUp_.4s_ease_both]">
             <div className="flex items-center gap-1.5 text-[12px] text-[#6B7280] mb-2.5">
@@ -341,7 +290,6 @@ export function InterviewSetupPage() {
             </div>
           </div>
         </main>
-      </div>
     </>
   );
 }

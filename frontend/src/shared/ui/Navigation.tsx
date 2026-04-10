@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/features/auth";
-import { MobileTabBar } from "./MobileTabBar";
 
 interface NavigationProps {
   activeTab?: "home" | "interview" | "resume" | "jd" | "settings";
@@ -144,8 +143,6 @@ export function Navigation({ activeTab = "jd", className = "", title }: Navigati
           <div className="hp-ssc-num" style={{ fontSize: 18 }}>{user?.name || "사용자"}</div>
         </div>
       </aside>
-
-      <MobileTabBar activeTab={activeTab} />
     </>
   );
 }

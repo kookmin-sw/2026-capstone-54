@@ -4,11 +4,14 @@ interface HomeSidebarProps {
   menuOpen: boolean;
   currentStreak: number;
   jdCount?: number;
+  /** grid 밖에서 렌더될 때 항상 fixed position으로 동작 */
+  floating?: boolean;
 }
 
-export function HomeSidebar({ menuOpen, currentStreak, jdCount = 0 }: HomeSidebarProps) {
+export function HomeSidebar({ menuOpen, currentStreak, jdCount = 0, floating = false }: HomeSidebarProps) {
+  const cls = `hp-sidebar${floating ? " hp-sidebar--floating" : ""}${menuOpen ? " open" : ""}`;
   return (
-    <aside className={`hp-sidebar${menuOpen ? " open" : ""}`}>
+    <aside className={cls}>
       <div className="hp-sb-sep">메인</div>
       <Link to="/home" className="hp-sb-item active">
         <span className="hp-sb-icon">🏠</span>홈

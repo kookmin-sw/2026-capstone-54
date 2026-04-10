@@ -1,5 +1,4 @@
 import { useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
 import { useSubscriptionStore } from "@/features/subscription";
 
 /* ── Feature comparison rows ── */
@@ -93,22 +92,6 @@ export function SubscriptionPage() {
 
   return (
     <>
-      {/* NAV */}
-      <nav className="sticky top-0 z-[200] bg-[rgba(255,255,255,.92)] backdrop-blur-[20px] border-b border-[#E5E7EB] h-[60px] flex items-center px-4 sm:px-8 gap-3">
-        <Link
-          to="/home"
-          className="flex items-center mr-auto"
-        >
-          <img src="/logo-korean.png" alt="미핏" className="h-[36px] w-auto" />
-        </Link>
-        <Link
-          to="/home"
-          className="text-[13px] font-semibold text-[#6B7280] no-underline px-3 py-1.5 rounded-lg transition-[color,background] hover:text-[#0A0A0A] hover:bg-[#F9FAFB]"
-        >
-          ← 홈으로
-        </Link>
-      </nav>
-
       <div className="bg-white min-h-[calc(100vh-60px)] pb-20">
         <div className="max-w-[900px] mx-auto px-4 sm:px-8">
 

@@ -146,6 +146,24 @@
   background: #ffffff;
 }
 
+/* grid 밖에서 렌더될 때: 항상 fixed로 슬라이드 */
+.hp-sidebar--floating {
+  position: fixed;
+  left: 0;
+  top: 60px;
+  bottom: 0;
+  width: 280px;
+  z-index: 201;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+  border-right: 1px solid #e5e7eb;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+}
+
+.hp-sidebar--floating.open {
+  transform: translateX(0);
+}
+
 .hp-sidebar-overlay {
   display: none;
   position: fixed;
@@ -252,6 +270,12 @@
 .hp-main {
   padding: 28px 32px 100px;
   min-width: 0;
+}
+
+/* 다른 페이지용: 각 페이지가 자체 padding 관리 */
+.hp-page-main {
+  min-width: 0;
+  overflow: hidden;
 }
 
 /* ── BADGE ── */
