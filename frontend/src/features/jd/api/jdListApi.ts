@@ -93,17 +93,25 @@ function getRelativeTime(dateString: string): string {
   const date = new Date(dateString);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMs / 3600000);
-  const diffDays = Math.floor(diffMs / 86400000);
-  const diffWeeks = Math.floor(diffDays / 7);
+  
+  const timeUnits = [
+    { threshold: 60000, divisor: 60000, unit: "분" },
+    { threshold: 3600000, divisor: 3600000, unit: "시간" },
+    { threshold: 86400000 * 7, divisor: 86400000, unit: "일" },
+    { threshold: 86400000 * 28, divisor: 86400000 * 7, unit: "주" },
+    { threshold: Infinity, divisor: 86400000 * 28, unit: "개월" },
+  ];
 
-  if (diffMins < 1) return "방금 전 등록";
-  if (diffMins < 60) return `${diffMins}분 전`;
-  if (diffHours < 24) return `${diffHours}시간 전`;
-  if (diffDays < 7) return `${diffDays}일 전`;
-  if (diffWeeks < 4) return `${diffWeeks}주 전`;
-  return `${Math.floor(diffWeeks / 4)}개월 전`;
+  if (diffMs < 60000) return "방금 전 등록";
+
+  for (const { threshold, divisor, unit } of timeUnits) {
+    if (diffMs < threshold) {
+      const value = Math.floor(diffMs / divisor);
+      return `${value}${unit} 전`;
+    }
+  }
+
+  return "방금 전 등록";
 }
 
 /**
