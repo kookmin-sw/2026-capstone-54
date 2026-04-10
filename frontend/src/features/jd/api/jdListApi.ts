@@ -143,7 +143,7 @@ export async function fetchJdListApi(): Promise<{ success: boolean; data: JdList
       auth: true,
     });
     
-    const transformedData = response.map(transformJdListItem);
+    const transformedData = Array.isArray(response) ? response.map(transformJdListItem) : [];
     return { success: true, data: transformedData };
   } catch (error) {
     console.error("Failed to fetch JD list:", error);
