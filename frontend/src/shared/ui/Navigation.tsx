@@ -18,6 +18,8 @@ export function Navigation({ className = "", title }: NavigationProps) {
     if (path.startsWith("/interview")) return "interview";
     if (path.startsWith("/resume")) return "resume";
     if (path.startsWith("/jd")) return "jd";
+    if (path.startsWith("/streak")) return "streak";
+    if (path.startsWith("/subscription")) return "subscription";
     if (path.startsWith("/settings")) return "settings";
     return null;
   };
