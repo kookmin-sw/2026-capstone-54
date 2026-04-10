@@ -23,6 +23,7 @@ import { InterviewPreCheckPage } from "@/pages/interview-precheck";
 import { SettingsPage } from "@/pages/settings";
 import { StreakPage } from "@/pages/streak";
 import { SubscriptionPage } from "@/pages/subscription";
+import { NotificationsPage } from "@/pages/notifications";
 
 function App() {
   const { initAuth } = useAuthStore();
@@ -59,6 +60,7 @@ function App() {
         <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
         <Route path="/streak" element={<ProtectedRoute><StreakPage /></ProtectedRoute>} />
         <Route path="/subscription" element={<ProtectedRoute><SubscriptionPage /></ProtectedRoute>} />
+        <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
   );

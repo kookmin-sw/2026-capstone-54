@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { useSettingsStore } from "@/features/settings";
 import type { SettingsPanel } from "@/features/settings";
 
@@ -41,8 +41,15 @@ export function SettingsPage() {
     clearMessage,
   } = useSettingsStore();
 
+  const [searchParams] = useSearchParams();
   const [menuOpen, setMenuOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<"data" | "account" | null>(null);
+
+  // URL 쿼리로 패널 초기화 (?panel=notifications)
+  useEffect(() => {
+    const panel = searchParams.get("panel") as SettingsPanel | null;
+    if (panel) setActivePanel(panel);
+  }, [searchParams, setActivePanel]);
 
   useEffect(() => {
     fetchSettings();
@@ -127,6 +134,16 @@ export function SettingsPage() {
                 )}
               </button>
             ))}
+
+            <div className="text-[10px] font-bold tracking-[0.1em] uppercase text-[#9CA3AF] px-3 pt-[14px] pb-[6px]">알림</div>
+            <Link
+              to="/notifications"
+              className="flex items-center gap-[9px] px-3 py-2 rounded-lg text-[13px] font-medium text-[#6B7280] hover:bg-[#F9FAFB] hover:text-[#0A0A0A] transition-all duration-150 no-underline"
+              onClick={() => setMenuOpen(false)}
+            >
+              <span className="w-7 h-7 rounded-lg flex items-center justify-center text-[14px] shrink-0 bg-[#F9FAFB]">🔔</span>
+              알림 내역
+            </Link>
           </aside>
 
           {/* MAIN CONTENT */}
