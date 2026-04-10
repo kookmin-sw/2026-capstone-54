@@ -11,7 +11,8 @@ interface HomeNavbarProps {
 export function HomeNavbar({ menuOpen, onMenuToggle }: HomeNavbarProps) {
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
-  const { notifications, unreadCount, markAllRead } = useNotificationStore();
+  const { notifications, markAllRead } = useNotificationStore();
+  const unreadCount = notifications.filter((n) => !n.read).length;
   const [profileOpen, setProfileOpen] = useState(false);
   const [notiOpen, setNotiOpen] = useState(false);
 
@@ -68,7 +69,7 @@ export function HomeNavbar({ menuOpen, onMenuToggle }: HomeNavbarProps) {
           <svg className="w-5 h-5 text-[#6B7280]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
           </svg>
-          {unreadCount() > 0 && (
+          {unreadCount > 0 && (
             <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
           )}
         </button>
@@ -77,9 +78,9 @@ export function HomeNavbar({ menuOpen, onMenuToggle }: HomeNavbarProps) {
           <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.12)] border border-[#E5E7EB] z-50">
             <div className="flex items-center justify-between px-4 py-3 border-b border-[#E5E7EB]">
               <span className="text-sm font-semibold text-[#0A0A0A]">
-                알림 {unreadCount() > 0 && <span className="text-[#0991B2]">({unreadCount()})</span>}
+                알림 {unreadCount > 0 && <span className="text-[#0991B2]">({unreadCount})</span>}
               </span>
-              {unreadCount() > 0 && (
+              {unreadCount > 0 && (
                 <button onClick={markAllRead} className="text-xs text-[#6B7280] hover:text-[#0991B2] transition-colors">
                   모두 읽음
                 </button>
