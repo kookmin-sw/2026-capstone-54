@@ -1,16 +1,30 @@
 import { useState, useRef, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "@/features/auth";
 
 interface NavigationProps {
-  activeTab?: "home" | "interview" | "resume" | "jd" | "settings";
   className?: string;
   title?: string;
 }
 
-export function Navigation({ activeTab = "jd", className = "", title }: NavigationProps) {
+export function Navigation({ className = "", title }: NavigationProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, logout } = useAuthStore();
+
+  const getActiveTab = () => {
+    const path = location.pathname;
+    if (path.startsWith("/home")) return "home";
+    if (path.startsWith("/interview")) return "interview";
+    if (path.startsWith("/resume")) return "resume";
+    if (path.startsWith("/jd")) return "jd";
+    if (path.startsWith("/streak")) return "streak";
+    if (path.startsWith("/subscription")) return "subscription";
+    if (path.startsWith("/settings")) return "settings";
+    return null;
+  };
+
+  const activeTab = getActiveTab();
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -55,8 +69,8 @@ export function Navigation({ activeTab = "jd", className = "", title }: Navigati
           </span>
         )}
 
-        <Link to="/resume" className="hp-nav-link">이력서</Link>
-        <Link to="/jd" className="hp-nav-link">채용공고</Link>
+        <Link to="/resume" className={`hp-nav-link${activeTab === "resume" ? " active" : ""}`}>이력서</Link>
+        <Link to="/jd" className={`hp-nav-link${activeTab === "jd" ? " active" : ""}`}>채용공고</Link>
 
         {/* Profile dropdown */}
         <div className="relative" ref={dropdownRef}>
@@ -111,14 +125,14 @@ export function Navigation({ activeTab = "jd", className = "", title }: Navigati
       {/* Sidebar */}
       <aside className={`hp-sidebar nav-sidebar${menuOpen ? " open" : ""}`}>
         <div className="hp-sb-sep">메인</div>
-        <Link to="/home" className="hp-sb-item" onClick={() => setMenuOpen(false)}>
+        <Link to="/home" className={`hp-sb-item${activeTab === "home" ? " active" : ""}`} onClick={() => setMenuOpen(false)}>
           <span className="hp-sb-icon">🏠</span>홈
         </Link>
-        <Link to="/interview/setup" className="hp-sb-item" onClick={() => setMenuOpen(false)}>
+        <Link to="/interview/setup" className={`hp-sb-item${activeTab === "interview" ? " active" : ""}`} onClick={() => setMenuOpen(false)}>
           <span className="hp-sb-icon">🎥</span>면접 시작
         </Link>
         <div className="hp-sb-sep">관리</div>
-        <Link to="/resume" className="hp-sb-item" onClick={() => setMenuOpen(false)}>
+        <Link to="/resume" className={`hp-sb-item${activeTab === "resume" ? " active" : ""}`} onClick={() => setMenuOpen(false)}>
           <span className="hp-sb-icon">📄</span>이력서
         </Link>
         <Link to="/jd" className={`hp-sb-item${activeTab === "jd" ? " active" : ""}`} onClick={() => setMenuOpen(false)}>

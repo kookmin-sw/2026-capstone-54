@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 interface HomeSidebarProps {
   menuOpen: boolean;
@@ -9,21 +9,26 @@ interface HomeSidebarProps {
 }
 
 export function HomeSidebar({ menuOpen, currentStreak, jdCount = 0, floating = false }: HomeSidebarProps) {
+  const location = useLocation();
+  const path = location.pathname;
+
+  const isActive = (prefix: string) => path === prefix || path.startsWith(prefix + "/");
+
   const cls = `hp-sidebar${floating ? " hp-sidebar--floating" : ""}${menuOpen ? " open" : ""}`;
   return (
     <aside className={cls}>
       <div className="hp-sb-sep">메인</div>
-      <Link to="/home" className="hp-sb-item active">
+      <Link to="/home" className={`hp-sb-item${isActive("/home") ? " active" : ""}`}>
         <span className="hp-sb-icon">🏠</span>홈
       </Link>
-      <Link to="/interview/setup" className="hp-sb-item">
+      <Link to="/interview/setup" className={`hp-sb-item${isActive("/interview") ? " active" : ""}`}>
         <span className="hp-sb-icon">🎥</span>면접 시작
       </Link>
       <div className="hp-sb-sep">관리</div>
-      <Link to="/resume" className="hp-sb-item">
+      <Link to="/resume" className={`hp-sb-item${isActive("/resume") ? " active" : ""}`}>
         <span className="hp-sb-icon">📄</span>이력서
       </Link>
-      <Link to="/jd" className="hp-sb-item">
+      <Link to="/jd" className={`hp-sb-item${isActive("/jd") ? " active" : ""}`}>
         <span className="hp-sb-icon">🏢</span>채용공고
         {jdCount > 0 && <span className="hp-sb-badge">{jdCount}</span>}
       </Link>
@@ -31,14 +36,14 @@ export function HomeSidebar({ menuOpen, currentStreak, jdCount = 0, floating = f
       <Link to="#" className="hp-sb-item">
         <span className="hp-sb-icon">📊</span>리뷰 리포트
       </Link>
-      <Link to="/streak" className="hp-sb-item">
+      <Link to="/streak" className={`hp-sb-item${isActive("/streak") ? " active" : ""}`}>
         <span className="hp-sb-icon">🔥</span>스트릭
       </Link>
       <div className="hp-sb-sep">설정</div>
-      <Link to="/subscription" className="hp-sb-item">
+      <Link to="/subscription" className={`hp-sb-item${isActive("/subscription") ? " active" : ""}`}>
         <span className="hp-sb-icon">💳</span>요금제
       </Link>
-      <Link to="/settings" className="hp-sb-item">
+      <Link to="/settings" className={`hp-sb-item${isActive("/settings") ? " active" : ""}`}>
         <span className="hp-sb-icon">⚙️</span>계정 설정
       </Link>
       <div className="hp-sb-streak-card">
