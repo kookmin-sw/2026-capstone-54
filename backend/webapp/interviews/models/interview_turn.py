@@ -41,5 +41,14 @@ class InterviewTurn(BaseModel):
 
   turn_number = models.PositiveIntegerField(default=1, verbose_name="턴 번호")
 
+  anchor_turn = models.ForeignKey(
+    "self",
+    null=True,
+    blank=True,
+    on_delete=models.SET_NULL,
+    related_name="followup_turns",
+    verbose_name="앵커 질문",
+  )
+
   def __str__(self):
     return f"InterviewTurn #{self.pk} [{self.get_turn_type_display()}] (Session {self.interview_session_id})"

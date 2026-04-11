@@ -6,6 +6,7 @@ from django.contrib.contenttypes.fields import GenericRelation
 from django.db import models
 from interviews.enums import (
   InterviewDifficultyLevel,
+  InterviewPracticeMode,
   InterviewSessionStatus,
   InterviewSessionType,
 )
@@ -66,6 +67,13 @@ class InterviewSession(BaseModelWithUUID):
     verbose_name="난이도",
   )
 
+  interview_practice_mode = models.CharField(
+    max_length=20,
+    choices=InterviewPracticeMode.choices,
+    default=InterviewPracticeMode.PRACTICE,
+    verbose_name="연습/실전 모드",
+  )
+
   # 세션 통계
   total_questions = models.PositiveIntegerField(default=0, verbose_name="총 질문 수")
   total_followup_questions = models.PositiveIntegerField(default=0, verbose_name="총 꼬리질문 수")
@@ -82,8 +90,4 @@ class InterviewSession(BaseModelWithUUID):
 
   def mark_completed(self) -> None:
     self.interview_session_status = InterviewSessionStatus.COMPLETED
-    self.save(update_fields=["interview_session_status", "updated_at"])
-
-  def mark_abandoned(self) -> None:
-    self.interview_session_status = InterviewSessionStatus.ABANDONED
     self.save(update_fields=["interview_session_status", "updated_at"])
