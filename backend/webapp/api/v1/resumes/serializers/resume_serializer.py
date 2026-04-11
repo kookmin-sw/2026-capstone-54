@@ -12,6 +12,7 @@ class ResumeSerializer(serializers.ModelSerializer):
       "type",
       "title",
       "is_active",
+      "is_parsed",
       "analysis_status",
       "analysis_step",
       "analyzed_at",
