@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useSettingsStore } from "@/features/settings";
 import type { SettingsPanel } from "@/features/settings";
 
@@ -28,7 +28,7 @@ function getPwdStrength(val: string): { width: string; color: string; label: str
 export function SettingsPage() {
   const navigate = useNavigate();
   const {
-    data, loading, saving, error, saveMessage, activePanel, consentBadge,
+    data, loading, saving, error, saveMessage, activePanel,
     profileDraft, notificationsDraft, passwordDraft, aiDataDraft,
     jobCategories, jobCategoriesLoading, availableJobs, availableJobsLoading,
     fetchSettings, setActivePanel,
@@ -41,8 +41,14 @@ export function SettingsPage() {
     clearMessage,
   } = useSettingsStore();
 
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [searchParams] = useSearchParams();
   const [deleteConfirm, setDeleteConfirm] = useState<"data" | "account" | null>(null);
+
+  // URL 쿼리로 패널 초기화 (?panel=notifications)
+  useEffect(() => {
+    const panel = searchParams.get("panel") as SettingsPanel | null;
+    if (panel) setActivePanel(panel);
+  }, [searchParams, setActivePanel]);
 
   useEffect(() => {
     fetchSettings();
@@ -71,63 +77,13 @@ export function SettingsPage() {
     setDeleteConfirm(null);
   };
 
-  const navItems: { key: SettingsPanel; icon: string; label: string; badge?: boolean }[] = [
-    { key: "profile", icon: "👤", label: "프로필" },
-    { key: "password", icon: "🔑", label: "비밀번호" },
-    { key: "notifications", icon: "🔔", label: "알림 설정" },
-    { key: "subscription", icon: "💎", label: "요금제" },
-    { key: "consent", icon: "📋", label: "동의 관리", badge: consentBadge },
-  ];
-
   const inputClass = "font-inter text-[14px] text-[#0A0A0A] bg-white border-[1.5px] border-[#E5E7EB] rounded-lg px-[14px] py-[10px] outline-none transition-[border-color,box-shadow] duration-[180ms] w-full placeholder-[#9CA3AF] focus:border-[#0991B2] focus:shadow-[0_0_0_3px_rgba(9,145,178,0.1)] read-only:opacity-50 read-only:cursor-not-allowed read-only:bg-[#F9FAFB]";
   const selectClass = "font-inter text-[14px] text-[#0A0A0A] bg-white border-[1.5px] border-[#E5E7EB] rounded-lg px-[14px] py-[10px] outline-none appearance-none cursor-pointer w-full transition-[border-color] duration-[180ms] focus:border-[#0991B2] focus:shadow-[0_0_0_3px_rgba(9,145,178,0.1)]";
 
   return (
     <>
       <div className="sp-wrap">
-
-        {/* Overlay */}
-        <div
-          className={`${menuOpen ? "block" : "hidden"} fixed inset-0 z-[199] bg-black/40`}
-          onClick={() => setMenuOpen(false)}
-        />
-
-        <div className="grid grid-cols-[240px_1fr] min-h-[calc(100vh-60px)] bg-white max-[1024px]:grid-cols-1">
-          {/* SIDEBAR */}
-          <aside className={`${menuOpen ? "translate-x-0" : ""} sticky top-[60px] h-[calc(100vh-60px)] overflow-y-auto border-r border-[#E5E7EB] px-3 py-5 flex flex-col gap-0.5 bg-white max-[1024px]:fixed max-[1024px]:left-0 max-[1024px]:top-[60px] max-[1024px]:bottom-0 max-[1024px]:w-[260px] max-[1024px]:z-[201] max-[1024px]:-translate-x-full max-[1024px]:transition-transform max-[1024px]:duration-300 max-[1024px]:shadow-[2px_0_8px_rgba(0,0,0,0.1)]`}>
-            {data && (
-              <div className="bg-[#0A0A0A] rounded-lg px-4 py-[14px] mb-4 flex items-center gap-[10px]">
-                <div className="w-9 h-9 rounded-full bg-[#0991B2] flex items-center justify-center font-black text-[14px] text-white shrink-0">
-                  {data.profile.avatarInitial}
-                </div>
-                <div>
-                  <div className="font-inter text-[13px] font-extrabold text-white">{data.profile.name}</div>
-                  <div className="text-[11px] text-white/45 mt-0.5 overflow-hidden text-ellipsis whitespace-nowrap max-w-[130px]">{data.profile.email}</div>
-                </div>
-              </div>
-            )}
-
-            <div className="text-[10px] font-bold tracking-[0.1em] uppercase text-[#9CA3AF] px-3 pt-[14px] pb-[6px]">설정</div>
-            {navItems.map((item) => (
-              <button
-                key={item.key}
-                className={`flex items-center gap-[9px] px-3 py-2 rounded-lg text-[13px] font-medium cursor-pointer select-none relative border-none w-full text-left font-inter transition-all duration-150 ${
-                  activePanel === item.key
-                    ? "bg-[#E6F7FA] text-[#0991B2] font-bold before:content-[''] before:absolute before:left-0 before:top-[20%] before:bottom-[20%] before:w-[3px] before:bg-[#0991B2] before:rounded-[0_4px_4px_0]"
-                    : "text-[#6B7280] bg-none hover:bg-[#F9FAFB] hover:text-[#0A0A0A]"
-                }`}
-                onClick={() => { setActivePanel(item.key); setMenuOpen(false); }}
-              >
-                <span className={`w-7 h-7 rounded-lg flex items-center justify-center text-[14px] shrink-0 ${activePanel === item.key ? "bg-[rgba(9,145,178,0.12)]" : "bg-[#F9FAFB]"}`}>
-                  {item.icon}
-                </span>
-                {item.label}
-                {item.badge && item.key !== activePanel && (
-                  <span className="ml-auto text-[10px] font-bold bg-[#E6F7FA] text-[#0991B2] px-[7px] py-0.5 rounded-full">1</span>
-                )}
-              </button>
-            ))}
-          </aside>
+        <div className="grid grid-cols-1 min-h-[calc(100vh-60px)] bg-white">
 
           {/* MAIN CONTENT */}
           <main className="px-10 py-8 min-w-0 bg-white max-[640px]:px-4 max-[640px]:py-5">

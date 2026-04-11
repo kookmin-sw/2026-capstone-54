@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useLocation } from "react-router-dom";
-import { MobileTabBar } from "@/shared/ui";
+import { MobileTabBar, SettingsTabBar } from "@/shared/ui";
 import { HomeNavbar } from "@/pages/home/ui/components/HomeNavbar";
 import { HomeSidebar } from "@/pages/home/ui/components/HomeSidebar";
+import { SettingsSidebar } from "@/pages/home/ui/components/SettingsSidebar";
 import { useHomeStore } from "@/features/home";
 import "@/pages/home/ui/HomePage.css";
 
@@ -26,6 +27,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   const { data } = useHomeStore();
 
   const activeTab = getActiveTab(location.pathname);
+  const isSettingsArea = location.pathname.startsWith("/settings") || location.pathname.startsWith("/notifications");
 
   return (
     <>
@@ -39,15 +41,19 @@ export function AppLayout({ children }: AppLayoutProps) {
           onClick={() => setMenuOpen(false)}
         />
         <div className="hp-shell">
-          <HomeSidebar
-            menuOpen={menuOpen}
-            currentStreak={data?.currentStreak ?? 0}
-            jdCount={data?.jobs.length ?? 0}
-          />
+          {isSettingsArea ? (
+            <SettingsSidebar menuOpen={menuOpen} />
+          ) : (
+            <HomeSidebar
+              menuOpen={menuOpen}
+              currentStreak={data?.currentStreak ?? 0}
+              jdCount={data?.jobs.length ?? 0}
+            />
+          )}
           <main className="hp-page-main">{children}</main>
         </div>
       </div>
-      <MobileTabBar activeTab={activeTab} />
+      {isSettingsArea ? <SettingsTabBar /> : <MobileTabBar activeTab={activeTab} />}
     </>
   );
 }
