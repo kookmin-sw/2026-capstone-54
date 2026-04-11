@@ -20,16 +20,14 @@ const DUMMY_NOTIFICATIONS: Notification[] = [
 
 interface NotificationState {
   notifications: Notification[];
-  unreadCount: () => number;
   markAllRead: () => void;
   markRead: (id: number) => void;
   deleteNotification: (id: number) => void;
   deleteAll: () => void;
 }
 
-export const useNotificationStore = create<NotificationState>((set, get) => ({
+export const useNotificationStore = create<NotificationState>((set) => ({
   notifications: DUMMY_NOTIFICATIONS,
-  unreadCount: () => get().notifications.filter((n) => !n.read).length,
   markAllRead: () =>
     set((s) => ({ notifications: s.notifications.map((n) => ({ ...n, read: true })) })),
   markRead: (id) =>
