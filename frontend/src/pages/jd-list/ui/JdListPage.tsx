@@ -202,38 +202,40 @@ export function JdListPage() {
         </div>
 
         {/* STATS */}
-        <div className="relative overflow-hidden bg-gradient-to-br from-[#065F79] to-[#0991B2] rounded-lg px-6 py-[22px] mb-7 shadow-[0_12px_32px_rgba(9,145,178,.35)] animate-[jdl-fadeUp_.5s_ease_.05s_both] flex items-center gap-[18px] flex-wrap before:content-[''] before:absolute before:top-[-40px] before:right-[-40px] before:w-[160px] before:h-[160px] before:rounded-full before:bg-[rgba(255,255,255,.07)] md:px-9 md:py-7 md:gap-8">
-          <div className="flex flex-col gap-[2px] relative">
-            <span className="font-inter text-[clamp(28px,4vw,46px)] font-black text-white leading-none">{stats.total}</span>
-            <span className="text-[12px] font-semibold text-white/65">전체 공고</span>
-          </div>
-          <div className="w-px h-10 bg-white/20 shrink-0" />
-          <div className="flex flex-col gap-[2px] relative">
-            <span className="font-inter text-[clamp(28px,4vw,46px)] font-black text-white leading-none">{stats.planned}</span>
-            <span className="text-[12px] font-semibold text-white/65">지원 예정</span>
-          </div>
-          <div className="w-px h-10 bg-white/20 shrink-0" />
-          <div className="flex flex-col gap-[2px] relative">
-            <span className="font-inter text-[clamp(28px,4vw,46px)] font-black text-white leading-none">{stats.applied}</span>
-            <span className="text-[12px] font-semibold text-white/65">지원 완료</span>
-          </div>
-          <div className="w-px h-10 bg-white/20 shrink-0" />
-          <div className="flex flex-col gap-[2px] relative">
-            <span className="font-inter text-[clamp(28px,4vw,46px)] font-black text-white leading-none">{stats.saved}</span>
-            <span className="text-[12px] font-semibold text-white/65">관심 저장</span>
-          </div>
-          <div className="flex gap-2 flex-wrap relative ml-auto">
-            <span className="flex items-center gap-[5px] bg-white/15 backdrop-blur-[8px] rounded-full px-[13px] py-[6px] text-[12px] font-semibold text-white">
-              <span className="w-[6px] h-[6px] rounded-full bg-[#0EA5E9] shrink-0" />지원 예정 {stats.planned}개
-            </span>
-            <span className="flex items-center gap-[5px] bg-white/15 backdrop-blur-[8px] rounded-full px-[13px] py-[6px] text-[12px] font-semibold text-white">
-              <span className="w-[6px] h-[6px] rounded-full bg-[#10B981] shrink-0" />지원 완료 {stats.applied}개
-            </span>
-            <span className="flex items-center gap-[5px] bg-white/15 backdrop-blur-[8px] rounded-full px-[13px] py-[6px] text-[12px] font-semibold text-white">
-              ⭐ 관심 저장 {stats.saved}개
-            </span>
-          </div>
-        </div>
+        {(() => {
+          const statItems = [
+            { value: stats.total,   label: "전체 공고" },
+            { value: stats.planned, label: "지원 예정" },
+            { value: stats.applied, label: "지원 완료" },
+            { value: stats.saved,   label: "관심 저장" },
+          ];
+          const badges = [
+            { dot: "#0EA5E9", text: `지원 예정 ${stats.planned}개` },
+            { dot: "#10B981", text: `지원 완료 ${stats.applied}개` },
+            { dot: null,      text: `⭐ 관심 저장 ${stats.saved}개` },
+          ];
+          return (
+            <div className="relative overflow-hidden bg-gradient-to-br from-[#065F79] to-[#0991B2] rounded-lg px-6 py-[22px] mb-7 shadow-[0_12px_32px_rgba(9,145,178,.35)] animate-[jdl-fadeUp_.5s_ease_.05s_both] flex items-center gap-[18px] flex-wrap before:content-[''] before:absolute before:top-[-40px] before:right-[-40px] before:w-[160px] before:h-[160px] before:rounded-full before:bg-[rgba(255,255,255,.07)] md:px-9 md:py-7 md:gap-8">
+              {statItems.map((item, i) => (
+                <>
+                  <div key={item.label} className="flex flex-col gap-[2px] relative">
+                    <span className="font-inter text-[clamp(28px,4vw,46px)] font-black text-white leading-none">{item.value}</span>
+                    <span className="text-[12px] font-semibold text-white/65">{item.label}</span>
+                  </div>
+                  {i < statItems.length - 1 && <div className="w-px h-10 bg-white/20 shrink-0" />}
+                </>
+              ))}
+              <div className="flex gap-2 flex-wrap relative ml-auto">
+                {badges.map((badge) => (
+                  <span key={badge.text} className="flex items-center gap-[5px] bg-white/15 backdrop-blur-[8px] rounded-full px-[13px] py-[6px] text-[12px] font-semibold text-white">
+                    {badge.dot && <span className="w-[6px] h-[6px] rounded-full shrink-0" style={{ backgroundColor: badge.dot }} />}
+                    {badge.text}
+                  </span>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* FILTER */}
         <div className="flex items-center gap-2.5 mb-6 flex-wrap max-sm:flex-col max-sm:items-stretch">
