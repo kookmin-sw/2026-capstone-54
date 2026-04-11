@@ -41,7 +41,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           onClick={() => setMenuOpen(false)}
         />
         <div className="hp-shell">
-          {location.pathname.startsWith("/settings") || location.pathname.startsWith("/notifications") ? (
+          {isSettingsArea ? (
             <SettingsSidebar menuOpen={menuOpen} />
           ) : (
             <HomeSidebar
