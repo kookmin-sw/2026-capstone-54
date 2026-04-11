@@ -1,3 +1,4 @@
+/** 아이콘과 제목과 우측 액션 슬롯으로 구성된 섹션 헤더. */
 import type { ReactNode } from "react";
 
 interface SectionHeaderProps {

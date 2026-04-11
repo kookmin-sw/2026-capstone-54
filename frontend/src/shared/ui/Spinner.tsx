@@ -1,3 +1,4 @@
+/** 로딩 상태를 나타내는 회전 스피너. sm, md, lg 크기를 지원한다. */
 interface SpinnerProps {
   size?: "sm" | "md" | "lg";
   className?: string;

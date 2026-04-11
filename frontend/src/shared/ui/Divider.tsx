@@ -1,3 +1,4 @@
+/** 수평 구분선. spacing으로 상하 여백을 조절한다. */
 interface DividerProps {
   className?: string;
   spacing?: "sm" | "md" | "lg";

@@ -1,3 +1,4 @@
+/** label과 error 메시지를 포함하는 텍스트 입력 필드. */
 import type { InputHTMLAttributes } from "react";
 
 interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "className"> {

@@ -1,3 +1,4 @@
+/** label과 error 메시지를 포함하는 여러 줄 텍스트 입력 필드. */
 import type { TextareaHTMLAttributes } from "react";
 
 interface TextareaLabelProps {

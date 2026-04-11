@@ -1,3 +1,4 @@
+/** 진행률을 시각적으로 표시하는 수평 바. 라벨 표시를 선택할 수 있다. */
 interface ProgressBarProps {
   value: number;
   max?: number;

@@ -1,3 +1,4 @@
+/** 아이콘과 라벨과 설명이 있는 옵션 목록에서 하나를 선택하는 카드 그룹. */
 interface StatusCardOption<T = string> {
   value: T;
   icon: string;
