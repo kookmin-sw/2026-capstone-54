@@ -40,7 +40,7 @@ export function SettingsTabBar() {
         className="flex-1 min-w-[60px] flex flex-col items-center gap-[3px] cursor-pointer border-none bg-none py-1"
         onClick={() => navigate("/notifications")}
       >
-        <span className="text-[20px] leading-none">🔕</span>
+        <span className="text-[20px] leading-none">🔔</span>
         <span className={`text-[10px] font-semibold whitespace-nowrap ${isNotifications ? "text-[#0991B2]" : "text-[#9CA3AF]"}`}>
           알림 내역
         </span>
