@@ -1,10 +1,12 @@
 import { create } from "zustand";
 import { fetchSetupJdListApi } from "../api/setupApi";
 import type { SetupJdItem } from "../api/setupApi";
-
-export type JdTab = "saved" | "direct" | "skip";
-export type InterviewMode = "tail" | "full";
-export type PracticeMode = "practice" | "real";
+import { interviewSetupApi, TEMP_USER_JOB_DESCRIPTION_UUID } from "../api/interviewSetupApi";
+import type { ResumeOption, CreatedInterviewSession } from "../api/interviewSetupApi";
+import type { InterviewDifficultyLevel, InterviewSessionType } from "@/features/interview-session";
+import { isApiError } from "@/shared/api/client";
+import type { JdTab, InterviewMode, PracticeMode } from "./types";
+import { buildSummary } from "../lib/buildSummary";
 
 interface InterviewSetupState {
   jdList: SetupJdItem[];
@@ -20,6 +22,27 @@ interface InterviewSetupState {
 
   interviewMode: InterviewMode;
   practiceMode: PracticeMode;
+  interviewDifficultyLevel: InterviewDifficultyLevel;
+
+  // 면접 세션 생성에 필요한 실제 UUID (setup 완료 후 채워짐)
+  pendingResumeUuid: string | null;
+  pendingUserJobDescriptionUuid: string | null;
+
+  // ── Real resume selection (backed by /api/v1/resumes/) ──
+  resumes: ResumeOption[];
+  selectedResumeUuid: string | null;
+  resumesLoading: boolean;
+  resumesError: string | null;
+
+  // ── JD selection: currently a single fixed UJD uuid ──
+  // TODO: Replace with `ujds`, `selectedUjdUuid`, `ujdsLoading` once the UJD list
+  // API is available (see interviewSetupApi.fetchUserJobDescriptions).
+  userJobDescriptionUuid: string;
+
+  // ── Session creation ──
+  creatingSession: boolean;
+  createError: string | null;
+  createdSessionUuid: string | null;
 
   loadJdList: () => Promise<void>;
   setJdTab: (tab: JdTab) => void;
@@ -27,6 +50,15 @@ interface InterviewSetupState {
   setDirectField: (field: "directCompany" | "directRole" | "directStage" | "directUrl", value: string) => void;
   setInterviewMode: (mode: InterviewMode) => void;
   setPracticeMode: (mode: PracticeMode) => void;
+  setInterviewDifficultyLevel: (level: InterviewDifficultyLevel) => void;
+  setPendingUuids: (resumeUuid: string, userJobDescriptionUuid: string) => void;
+
+  fetchResumes: () => Promise<void>;
+  selectResume: (uuid: string) => void;
+  createSession: () => Promise<CreatedInterviewSession | null>;
+  resetSetup: () => void;
+
+  getInterviewSessionType: () => InterviewSessionType;
 
   getSummary: () => {
     company: string;
@@ -34,6 +66,7 @@ interface InterviewSetupState {
     stage: string;
     interviewModeLabel: string;
     practiceModeLabel: string;
+    difficultyLabel: string;
   };
 }
 
@@ -51,6 +84,21 @@ export const useInterviewSetupStore = create<InterviewSetupState>()((set, get) =
 
   interviewMode: "tail",
   practiceMode: "practice",
+  interviewDifficultyLevel: "normal",
+
+  pendingResumeUuid: null,
+  pendingUserJobDescriptionUuid: null,
+
+  resumes: [],
+  selectedResumeUuid: null,
+  resumesLoading: false,
+  resumesError: null,
+
+  userJobDescriptionUuid: TEMP_USER_JOB_DESCRIPTION_UUID,
+
+  creatingSession: false,
+  createError: null,
+  createdSessionUuid: null,
 
   loadJdList: async () => {
     set({ jdListLoading: true });
@@ -63,32 +111,70 @@ export const useInterviewSetupStore = create<InterviewSetupState>()((set, get) =
   setDirectField: (field, value) => set({ [field]: value } as Partial<InterviewSetupState>),
   setInterviewMode: (mode) => set({ interviewMode: mode }),
   setPracticeMode: (mode) => set({ practiceMode: mode }),
+  setInterviewDifficultyLevel: (level) => set({ interviewDifficultyLevel: level }),
+  setPendingUuids: (resumeUuid, userJobDescriptionUuid) =>
+    set({ pendingResumeUuid: resumeUuid, pendingUserJobDescriptionUuid: userJobDescriptionUuid }),
 
-  getSummary: () => {
-    const s = get();
-    let company = "—";
-    let role = "—";
-    let stage = "—";
-
-    if (s.jdTab === "saved") {
-      const jd = s.jdList.find((j) => j.id === s.selectedJdId);
-      if (jd) { company = jd.company; role = jd.role; stage = jd.stage; }
-    } else if (s.jdTab === "direct") {
-      company = s.directCompany || "—";
-      role = s.directRole || "—";
-      stage = s.directStage;
-    } else {
-      company = "프로필 기반";
-      role = "프로필 기반";
-      stage = "—";
+  fetchResumes: async () => {
+    set({ resumesLoading: true, resumesError: null });
+    try {
+      const resumes = await interviewSetupApi.fetchResumes();
+      // Auto-select the first parsed/completed resume if nothing is selected yet
+      const eligible = resumes.find(
+        (r) => r.isParsed || r.analysisStatus === "completed"
+      );
+      set((s) => ({
+        resumes,
+        resumesLoading: false,
+        selectedResumeUuid: s.selectedResumeUuid ?? eligible?.uuid ?? null,
+      }));
+    } catch (e) {
+      const message = isApiError(e) && e.message ? e.message : "이력서를 불러오지 못했습니다.";
+      set({ resumesLoading: false, resumesError: message });
     }
-
-    return {
-      company,
-      role,
-      stage,
-      interviewModeLabel: s.interviewMode === "tail" ? "꼬리질문 방식" : "전체 프로세스",
-      practiceModeLabel: s.practiceMode === "practice" ? "연습 모드" : "실전 모드",
-    };
   },
+
+  selectResume: (uuid) => set({ selectedResumeUuid: uuid }),
+
+  createSession: async () => {
+    const s = get();
+    if (!s.selectedResumeUuid) {
+      set({ createError: "이력서를 선택해 주세요." });
+      return null;
+    }
+    set({ creatingSession: true, createError: null });
+    try {
+      const session = await interviewSetupApi.createSession({
+        resume_uuid: s.selectedResumeUuid,
+        user_job_description_uuid: s.userJobDescriptionUuid,
+        interview_session_type: s.interviewMode === "tail" ? "followup" : "full_process",
+        interview_difficulty_level: s.interviewDifficultyLevel,
+        interview_practice_mode: s.practiceMode,
+      });
+      set({
+        creatingSession: false,
+        createdSessionUuid: session.uuid,
+        pendingResumeUuid: s.selectedResumeUuid,
+        pendingUserJobDescriptionUuid: s.userJobDescriptionUuid,
+      });
+      return session;
+    } catch (e) {
+      const message = isApiError(e) && e.message ? e.message : "면접 세션 생성에 실패했습니다.";
+      set({ creatingSession: false, createError: message });
+      return null;
+    }
+  },
+
+  resetSetup: () =>
+    set({
+      creatingSession: false,
+      createError: null,
+      createdSessionUuid: null,
+    }),
+
+  getInterviewSessionType: (): InterviewSessionType => {
+    return get().interviewMode === "tail" ? "followup" : "full_process";
+  },
+
+  getSummary: () => buildSummary(get()),
 }));
