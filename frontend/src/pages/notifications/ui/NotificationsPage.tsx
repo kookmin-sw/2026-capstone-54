@@ -14,6 +14,94 @@ const TABS = [
 
 type TabKey = (typeof TABS)[number]["key"];
 
+type Notification = ReturnType<typeof useNotificationStore>["notifications"][number];
+
+function NotificationItem({
+  n,
+  onMarkRead,
+  onDelete,
+}: {
+  n: Notification;
+  onMarkRead: (id: string) => void;
+  onDelete: (id: string) => void;
+}) {
+  return (
+    <div
+      className={`flex items-start gap-4 px-5 py-4 border-b border-[#F3F4F6] last:border-0 transition-colors ${
+        !n.read ? "bg-[#F0F9FF]" : "hover:bg-white"
+      }`}
+    >
+      <div
+        className={`w-10 h-10 rounded-xl flex items-center justify-center text-[18px] shrink-0 ${
+          !n.read ? "bg-[#E0F2FE]" : "bg-[#F3F4F6]"
+        }`}
+      >
+        {CATEGORY_ICON[n.category]}
+      </div>
+
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 mb-0.5">
+          <span className="text-[10px] font-bold text-[#0991B2] bg-[#E0F2FE] px-2 py-0.5 rounded-full">
+            {CATEGORY_LABEL[n.category]}
+          </span>
+          {!n.read && <span className="w-1.5 h-1.5 rounded-full bg-[#0991B2]" />}
+        </div>
+        <p className={`text-[13px] leading-[1.55] ${!n.read ? "font-semibold text-[#0A0A0A]" : "text-[#374151]"}`}>
+          {n.message}
+        </p>
+        <p className="text-[11px] text-[#9CA3AF] mt-1">{n.time}</p>
+      </div>
+
+      <div className="flex items-center gap-1 shrink-0 mt-0.5">
+        {!n.read && (
+          <button
+            onClick={() => onMarkRead(n.id)}
+            className="text-[11px] font-semibold text-[#0991B2] bg-[#E6F7FA] px-2.5 py-1 rounded-lg hover:bg-[#cceef6] transition-colors"
+          >
+            확인
+          </button>
+        )}
+        <button
+          onClick={() => onDelete(n.id)}
+          className="w-7 h-7 flex items-center justify-center rounded-lg text-[#9CA3AF] hover:bg-[#FEF2F2] hover:text-[#EF4444] transition-colors"
+          aria-label="알림 삭제"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function NotificationList({
+  notifications,
+  onMarkRead,
+  onDelete,
+}: {
+  notifications: Notification[];
+  onMarkRead: (id: string) => void;
+  onDelete: (id: string) => void;
+}) {
+  if (notifications.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <span className="text-4xl mb-3">🔔</span>
+        <p className="text-[14px] text-[#9CA3AF]">알림이 없습니다.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl overflow-hidden shadow-[var(--sc)]">
+      {notifications.map((n) => (
+        <NotificationItem key={n.id} n={n} onMarkRead={onMarkRead} onDelete={onDelete} />
+      ))}
+    </div>
+  );
+}
+
 export function NotificationsPage() {
   const { notifications, markAllRead, markRead, deleteNotification, deleteAll } = useNotificationStore();
   const unreadCount = notifications.filter((n) => !n.read).length;
@@ -82,67 +170,11 @@ export function NotificationsPage() {
 
           {/* List */}
           <div className="animate-[spFadeUp_0.3s_ease_.1s_both]">
-            {filtered.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-20 text-center">
-                <span className="text-4xl mb-3">🔔</span>
-                <p className="text-[14px] text-[#9CA3AF]">알림이 없습니다.</p>
-              </div>
-            ) : (
-              <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl overflow-hidden shadow-[var(--sc)]">
-                {filtered.map((n) => (
-                  <div
-                    key={n.id}
-                    className={`flex items-start gap-4 px-5 py-4 border-b border-[#F3F4F6] last:border-0 transition-colors ${
-                      !n.read ? "bg-[#F0F9FF]" : "hover:bg-white"
-                    }`}
-                  >
-                    {/* 아이콘 */}
-                    <div
-                      className={`w-10 h-10 rounded-xl flex items-center justify-center text-[18px] shrink-0 ${
-                        !n.read ? "bg-[#E0F2FE]" : "bg-[#F3F4F6]"
-                      }`}
-                    >
-                      {CATEGORY_ICON[n.category]}
-                    </div>
-
-                    {/* 내용 */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <span className="text-[10px] font-bold text-[#0991B2] bg-[#E0F2FE] px-2 py-0.5 rounded-full">
-                          {CATEGORY_LABEL[n.category]}
-                        </span>
-                        {!n.read && <span className="w-1.5 h-1.5 rounded-full bg-[#0991B2]" />}
-                      </div>
-                      <p className={`text-[13px] leading-[1.55] ${!n.read ? "font-semibold text-[#0A0A0A]" : "text-[#374151]"}`}>
-                        {n.message}
-                      </p>
-                      <p className="text-[11px] text-[#9CA3AF] mt-1">{n.time}</p>
-                    </div>
-
-                    {/* 액션 버튼 */}
-                    <div className="flex items-center gap-1 shrink-0 mt-0.5">
-                      {!n.read && (
-                        <button
-                          onClick={() => markRead(n.id)}
-                          className="text-[11px] font-semibold text-[#0991B2] bg-[#E6F7FA] px-2.5 py-1 rounded-lg hover:bg-[#cceef6] transition-colors"
-                        >
-                          확인
-                        </button>
-                      )}
-                      <button
-                        onClick={() => deleteNotification(n.id)}
-                        className="w-7 h-7 flex items-center justify-center rounded-lg text-[#9CA3AF] hover:bg-[#FEF2F2] hover:text-[#EF4444] transition-colors"
-                        aria-label="알림 삭제"
-                      >
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+            <NotificationList
+              notifications={filtered}
+              onMarkRead={markRead}
+              onDelete={deleteNotification}
+            />
           </div>
 
         </main>
