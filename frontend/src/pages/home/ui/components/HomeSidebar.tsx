@@ -6,13 +6,18 @@ interface HomeSidebarProps {
   jdCount?: number;
   /** grid 밖에서 렌더될 때 항상 fixed position으로 동작 */
   floating?: boolean;
+  activeItem?: "home" | "results";
 }
 
-export function HomeSidebar({ menuOpen, currentStreak, jdCount = 0, floating = false }: HomeSidebarProps) {
+export function HomeSidebar({ menuOpen, currentStreak, jdCount = 0, floating = false, activeItem }: HomeSidebarProps) {
   const location = useLocation();
   const path = location.pathname;
 
-  const isActive = (prefix: string) => path === prefix || path.startsWith(prefix + "/");
+  const isActive = (prefix: string) => {
+    if (activeItem === "results" && prefix === "/interview/results") return true;
+    if (activeItem === "home" && prefix === "/home") return true;
+    return path === prefix || path.startsWith(prefix + "/");
+  };
 
   const cls = `hp-sidebar${floating ? " hp-sidebar--floating" : ""}${menuOpen ? " open" : ""}`;
   return (
@@ -21,7 +26,7 @@ export function HomeSidebar({ menuOpen, currentStreak, jdCount = 0, floating = f
       <Link to="/home" className={`hp-sb-item${isActive("/home") ? " active" : ""}`}>
         <span className="hp-sb-icon">🏠</span>홈
       </Link>
-      <Link to="/interview/setup" className={`hp-sb-item${isActive("/interview") ? " active" : ""}`}>
+      <Link to="/interview/setup" className={`hp-sb-item${isActive("/interview/setup") ? " active" : ""}`}>
         <span className="hp-sb-icon">🎥</span>면접 시작
       </Link>
       <div className="hp-sb-sep">관리</div>
@@ -33,8 +38,8 @@ export function HomeSidebar({ menuOpen, currentStreak, jdCount = 0, floating = f
         {jdCount > 0 && <span className="hp-sb-badge">{jdCount}</span>}
       </Link>
       <div className="hp-sb-sep">분석</div>
-      <Link to="#" className="hp-sb-item">
-        <span className="hp-sb-icon">📊</span>리뷰 리포트
+      <Link to="/interview/results" className={`hp-sb-item${isActive("/interview/results") ? " active" : ""}`}>
+        <span className="hp-sb-icon">📊</span>면접 결과
       </Link>
       <Link to="/streak" className={`hp-sb-item${isActive("/streak") ? " active" : ""}`}>
         <span className="hp-sb-icon">🔥</span>스트릭
