@@ -15,6 +15,7 @@ spec:
       containers:
         - name: collectstatic
           image: teammefit/mefit-backend:production
+          imagePullPolicy: Always
           command: ["python", "manage.py", "collectstatic", "--noinput"]
           envFrom:
             - configMapRef:
