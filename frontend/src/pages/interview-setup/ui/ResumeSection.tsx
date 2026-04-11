@@ -1,0 +1,74 @@
+import { SetupSection } from "@/shared/ui/SetupSection";
+import { SelectableCard } from "@/shared/ui/SelectableCard";
+
+interface Resume {
+  uuid: string;
+  title: string;
+  type: string;
+  createdAt: string;
+  isParsed: boolean;
+  analysisStatus: string;
+}
+
+interface ResumeSectionProps {
+  resumes: Resume[];
+  selectedResumeUuid: string | null;
+  resumesLoading: boolean;
+  resumesError: string | null;
+  userJobDescriptionUuid: string;
+  onSelectResume: (uuid: string) => void;
+}
+
+function isEligible(r: Resume) {
+  return r.isParsed || r.analysisStatus === "completed";
+}
+
+export function ResumeSection({
+  resumes, selectedResumeUuid, resumesLoading, resumesError,
+  userJobDescriptionUuid, onSelectResume,
+}: ResumeSectionProps) {
+  return (
+    <SetupSection eyebrow="이력서" title="사용할 이력서를 선택하세요" description="파싱이 완료된 이력서만 면접에 사용할 수 있어요." className="flex-1 min-h-0">
+      {resumesError && (
+        <div className="mb-2.5 p-2.5 rounded-lg border border-[#FECACA] bg-[#FEF2F2] text-[12px] text-[#B91C1C]">{resumesError}</div>
+      )}
+
+      {resumesLoading ? (
+        <div className="p-4 text-center text-[13px] text-[#9CA3AF]">이력서 목록을 불러오는 중...</div>
+      ) : resumes.length === 0 ? (
+        <div className="p-4 text-center text-[13px] text-[#6B7280] border border-dashed border-[#E5E7EB] rounded-lg">
+          등록된 이력서가 없어요. 먼저 이력서를 업로드해 주세요.
+        </div>
+      ) : (
+        <div className="flex flex-col gap-[7px] flex-1 overflow-y-auto min-h-0">
+          {resumes.map((r) => {
+            const eligible = isEligible(r);
+            return (
+              <SelectableCard key={r.uuid} selected={selectedResumeUuid === r.uuid} disabled={!eligible} onClick={() => onSelectResume(r.uuid)}>
+                <div className="w-8 h-8 rounded-lg bg-white border border-[#E5E7EB] flex items-center justify-center text-sm shrink-0">
+                  {r.type === "file" ? "📄" : "📝"}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-[12px] font-bold truncate">{r.title}</div>
+                  <div className="text-[11px] text-[#6B7280] mt-px">
+                    {r.type === "file" ? "파일" : "텍스트"} · {new Date(r.createdAt).toLocaleDateString("ko-KR")}
+                  </div>
+                </div>
+                <span className={`inline-flex items-center text-[10px] font-bold py-[3px] px-2.5 rounded-full ${eligible ? "text-[#059669] bg-[#ECFDF5]" : "text-[#B45309] bg-[#FEF3C7]"}`}>
+                  {eligible ? "사용 가능" : "파싱 중"}
+                </span>
+              </SelectableCard>
+            );
+          })}
+        </div>
+      )}
+
+      <div className="mt-3 p-3 rounded-lg border border-[rgba(9,145,178,.2)] bg-[#E6F7FA]">
+        <div className="text-[11px] font-bold text-[#0991B2] mb-1">현재 고정 채용공고 사용 중</div>
+        <div className="text-[11px] text-[#6B7280] leading-[1.5] break-all">
+          UJD UUID: <span className="font-mono">{userJobDescriptionUuid}</span>
+        </div>
+      </div>
+    </SetupSection>
+  );
+}
