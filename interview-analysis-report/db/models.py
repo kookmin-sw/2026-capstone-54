@@ -26,6 +26,7 @@ class InterviewSessionTable(Base):
     interview_session_status = Column(String(20))
     interview_session_type = Column(String(20))
     interview_difficulty_level = Column(String(20))
+    interview_practice_mode = Column(String(20))
     resume_id = Column(UUID(as_uuid=False))
     user_job_description_id = Column(UUID(as_uuid=False))
     total_questions = Column(Integer)
