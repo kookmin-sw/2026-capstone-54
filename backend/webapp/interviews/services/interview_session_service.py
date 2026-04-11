@@ -14,6 +14,7 @@ def create_interview_session(
   user_job_description,
   interview_session_type: str,
   interview_difficulty_level: str,
+  interview_practice_mode: str = "practice",
 ) -> InterviewSession:
   """면접 세션을 생성한다.
 
@@ -27,6 +28,7 @@ def create_interview_session(
     user_job_description=user_job_description,
     interview_session_type=interview_session_type,
     interview_difficulty_level=interview_difficulty_level,
+    interview_practice_mode=interview_practice_mode,
   )
 
 

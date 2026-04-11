@@ -115,4 +115,11 @@ class GenerateInitialQuestionsService(BaseService):
       cost_usd=calculate_cost(usage.input_tokens, usage.output_tokens, model_name),
     )
 
-    return InterviewTurn.objects.filter(interview_session=self.interview_session).order_by("turn_number")
+    all_turns = list(InterviewTurn.objects.filter(interview_session=self.interview_session).order_by("turn_number"))
+
+    # FOLLOWUP: DB에 앵커 전체를 저장하되, 첫 번째 앵커만 반환한다.
+    # 나머지 앵커는 각 앵커 체인이 소진될 때 SubmitAnswerAndGenerateFollowupService가 순차 반환한다.
+    if self.interview_session.interview_session_type == InterviewSessionType.FOLLOWUP:
+      return all_turns[:1]
+
+    return all_turns
