@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { isApiError } from "@/shared/api/client";
 import {
   fetchJobCategoriesApi,
   fetchJobsByCategoryApi,
@@ -110,8 +111,9 @@ export const useOnboardingStore = create<OnboardingState>()((set, get) => ({
       });
       set({ isLoading: false });
       return true;
-    } catch {
-      set({ isLoading: false, error: "프로필 저장에 실패했습니다." });
+    } catch (e) {
+      const message = isApiError(e) && e.message ? e.message : "프로필 저장에 실패했습니다.";
+      set({ isLoading: false, error: message });
       return false;
     }
   },
