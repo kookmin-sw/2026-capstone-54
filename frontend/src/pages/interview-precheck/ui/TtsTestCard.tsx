@@ -1,0 +1,47 @@
+import { useEffect, useRef, useState } from "react";
+import { getAccessToken } from "@/shared/api/client";
+import { VOICE_API_BASE, TTS_DEFAULT_VOICE } from "@/shared/lib/tts/useTts";
+
+export function TtsTestCard() {
+  const [loading, setLoading] = useState(false);
+  const [done, setDone] = useState(false);
+  const [error, setError] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => () => { if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; } }, []);
+
+  const handleTest = async () => {
+    if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
+    setLoading(true); setError(false); setDone(false);
+    try {
+      const token = getAccessToken();
+      const res = await fetch(`${VOICE_API_BASE}/tts`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({ text: "안녕하세요, 저는 AI 면접관입니다. 오늘 면접에서 좋은 결과 있으시길 바랍니다.", language: "ko", voice: TTS_DEFAULT_VOICE, rate: "+0%", volume: "+0%", pitch: "+0Hz" }),
+      });
+      if (!res.ok) throw new Error(`TTS ${res.status}`);
+      const data = await res.json() as { audio_base64: string };
+      const audio = new Audio(`data:audio/mp3;base64,${data.audio_base64}`);
+      audioRef.current = audio;
+      audio.onended = () => { setDone(true); setLoading(false); };
+      audio.onerror = () => { setError(true); setLoading(false); };
+      await audio.play();
+    } catch { setError(true); setLoading(false); }
+  };
+
+  return (
+    <div className="bg-white border border-[#E5E7EB] rounded-lg p-5 shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
+      <div className="flex items-center gap-2 mb-3">
+        <span className="text-lg">🔊</span>
+        <h3 className="text-[14px] font-extrabold text-[#0A0A0A]">면접관 음성 테스트</h3>
+      </div>
+      <p className="text-[12px] text-[#6B7280] leading-[1.5] mb-3">버튼을 눌러 음성이 잘 들리는지 확인하세요.</p>
+      <button onClick={handleTest} disabled={loading} className="w-full py-3 rounded-lg font-bold text-[13px] border-none cursor-pointer transition-all disabled:opacity-50 bg-[#0991B2] text-white hover:enabled:bg-[#0E7490]">
+        {loading ? "재생 중..." : done ? "다시 재생하기" : "테스트 음성 재생"}
+      </button>
+      {done && <div className="mt-2 text-[12px] font-semibold text-[#059669]">✓ 음성이 정상적으로 재생되었습니다</div>}
+      {error && <div className="mt-2 text-[12px] font-semibold text-[#E11D48]">✕ 재생 실패. 스피커를 확인하세요.</div>}
+    </div>
+  );
+}
