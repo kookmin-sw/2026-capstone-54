@@ -1,12 +1,10 @@
 import uuid
-from unittest.mock import patch
 
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 from interviews.enums import InterviewSessionStatus, InterviewSessionType
 from interviews.factories import InterviewSessionFactory, InterviewTurnFactory
-from interviews.models import InterviewAnalysisReport
 from rest_framework import status
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -31,43 +29,26 @@ class FinishInterviewViewCompletedTests(TestCase):
     InterviewTurnFactory(interview_session=self.session, answer="답변2", turn_number=2)
     self.url = reverse("interview-finish", kwargs={"interview_session_uuid": str(self.session.pk)})
 
-  @patch("api.v1.interviews.views.finish_interview_view.current_app")
-  def test_returns_200(self, mock_celery):
+  def test_returns_200(self):
     """정상 종료 시 200을 반환한다."""
     response = self.client.post(self.url)
     self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-  @patch("api.v1.interviews.views.finish_interview_view.current_app")
-  def test_session_status_set_to_completed(self, mock_celery):
+  def test_session_status_set_to_completed(self):
     """모든 답변이 완료된 경우 세션 상태가 completed로 변경된다."""
     self.client.post(self.url)
     self.session.refresh_from_db()
     self.assertEqual(self.session.interview_session_status, InterviewSessionStatus.COMPLETED)
 
-  @patch("api.v1.interviews.views.finish_interview_view.current_app")
-  def test_creates_analysis_report(self, mock_celery):
-    """분석 리포트 레코드가 생성된다."""
-    self.client.post(self.url)
-    self.assertTrue(InterviewAnalysisReport.objects.filter(interview_session=self.session).exists())
-
-  @patch("api.v1.interviews.views.finish_interview_view.current_app")
-  def test_sends_celery_task(self, mock_celery):
-    """Celery 분석 태스크가 발행된다."""
-    self.client.post(self.url)
-    mock_celery.send_task.assert_called_once()
-    call_args = mock_celery.send_task.call_args
-    self.assertEqual(call_args[1]["queue"], "analysis")
-
-  @patch("api.v1.interviews.views.finish_interview_view.current_app")
-  def test_response_contains_session_data(self, mock_celery):
+  def test_response_contains_session_data(self):
     """응답에 세션 데이터가 포함된다."""
     response = self.client.post(self.url)
     self.assertIn("uuid", response.data)
     self.assertIn("interview_session_status", response.data)
 
 
-class FinishInterviewViewAbandonedTests(TestCase):
-  """FinishInterviewView — 중도 종료(미답변 턴 존재) 테스트"""
+class FinishInterviewViewWithUnansweredTurnsTests(TestCase):
+  """FinishInterviewView — 미답변 턴이 있어도 정상 종료 테스트 (이어하기 정책)"""
 
   def setUp(self):
     self.client = APIClient()
@@ -84,18 +65,16 @@ class FinishInterviewViewAbandonedTests(TestCase):
     InterviewTurnFactory(interview_session=self.session, answer="", turn_number=2)
     self.url = reverse("interview-finish", kwargs={"interview_session_uuid": str(self.session.pk)})
 
-  @patch("api.v1.interviews.views.finish_interview_view.current_app")
-  def test_session_status_set_to_abandoned(self, mock_celery):
-    """미답변 턴이 있으면 세션 상태가 abandoned로 변경된다."""
+  def test_returns_200(self):
+    """미답변 턴이 있어도 200을 반환한다."""
+    response = self.client.post(self.url)
+    self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+  def test_session_status_set_to_completed(self):
+    """미답변 턴이 있어도 세션 상태가 completed로 변경된다."""
     self.client.post(self.url)
     self.session.refresh_from_db()
-    self.assertEqual(self.session.interview_session_status, InterviewSessionStatus.ABANDONED)
-
-  @patch("api.v1.interviews.views.finish_interview_view.current_app")
-  def test_creates_analysis_report_even_when_abandoned(self, mock_celery):
-    """중도 종료 시에도 분석 리포트 레코드가 생성된다."""
-    self.client.post(self.url)
-    self.assertTrue(InterviewAnalysisReport.objects.filter(interview_session=self.session).exists())
+    self.assertEqual(self.session.interview_session_status, InterviewSessionStatus.COMPLETED)
 
 
 class FinishInterviewViewErrorTests(TestCase):
@@ -112,19 +91,6 @@ class FinishInterviewViewErrorTests(TestCase):
     session = InterviewSessionFactory(
       user=self.user,
       interview_session_status=InterviewSessionStatus.COMPLETED,
-    )
-    url = reverse("interview-finish", kwargs={"interview_session_uuid": str(session.pk)})
-    response = self.client.post(url)
-    self.assertIn(
-      response.status_code,
-      [status.HTTP_400_BAD_REQUEST, status.HTTP_403_FORBIDDEN, status.HTTP_422_UNPROCESSABLE_ENTITY]
-    )
-
-  def test_already_abandoned_session_returns_error(self):
-    """이미 이탈된 세션에 finish를 시도하면 에러를 반환한다."""
-    session = InterviewSessionFactory(
-      user=self.user,
-      interview_session_status=InterviewSessionStatus.ABANDONED,
     )
     url = reverse("interview-finish", kwargs={"interview_session_uuid": str(session.pk)})
     response = self.client.post(url)

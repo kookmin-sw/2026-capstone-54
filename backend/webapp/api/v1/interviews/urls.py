@@ -1,33 +1,31 @@
 from api.v1.interviews.views import (
-  CreateInterviewSessionView,
   FinishInterviewView,
+  GenerateAnalysisReportView,
   InterviewAnalysisReportView,
-  InterviewSessionDetailView,
+  InterviewSessionViewSet,
   InterviewTurnListView,
   StartInterviewView,
   SubmitAnswerView,
 )
-from django.urls import path
+from django.urls import include, path
+from rest_framework.routers import DefaultRouter
+
+router = DefaultRouter(trailing_slash=True)
+router.register("interview-sessions", InterviewSessionViewSet, basename="interview-session")
 
 urlpatterns = [
-  # 세션
-  path("interview-sessions/", CreateInterviewSessionView.as_view(), name="interview-session-create"),
-  path(
-    "interview-sessions/<uuid:interview_session_uuid>/",
-    InterviewSessionDetailView.as_view(),
-    name="interview-session-detail"
-  ),
+  path("", include(router.urls)),
   # 면접 진행
   path("interview-sessions/<uuid:interview_session_uuid>/start/", StartInterviewView.as_view(), name="interview-start"),
   path(
     "interview-sessions/<uuid:interview_session_uuid>/turns/",
     InterviewTurnListView.as_view(),
-    name="interview-turn-list"
+    name="interview-turn-list",
   ),
   path(
     "interview-sessions/<uuid:interview_session_uuid>/turns/<int:turn_pk>/answer/",
     SubmitAnswerView.as_view(),
-    name="interview-answer"
+    name="interview-answer",
   ),
   path(
     "interview-sessions/<uuid:interview_session_uuid>/finish/", FinishInterviewView.as_view(), name="interview-finish"
@@ -36,6 +34,11 @@ urlpatterns = [
   path(
     "interview-sessions/<uuid:interview_session_uuid>/analysis-report/",
     InterviewAnalysisReportView.as_view(),
-    name="interview-report"
+    name="interview-report",
+  ),
+  path(
+    "interview-sessions/<uuid:interview_session_uuid>/generate-report/",
+    GenerateAnalysisReportView.as_view(),
+    name="interview-generate-report",
   ),
 ]

@@ -51,7 +51,8 @@ class GenerateInitialQuestionsServiceHappyPathTests(TestCase):
     ):
       turns = GenerateInitialQuestionsService(interview_session=session).perform()
 
-    self.assertEqual(len(list(turns)), 2)
+    # FOLLOWUP 세션은 첫 번째 앵커만 반환한다 (나머지는 체인 소진 시 순차 반환)
+    self.assertEqual(len(list(turns)), 1)
 
   @patch("interviews.services.generate_initial_questions_service.TokenUsage.log")
   @patch("interviews.services.generate_initial_questions_service.FullProcessInterviewQuestionGenerator")
@@ -136,9 +137,9 @@ class GenerateInitialQuestionsServiceValidationTests(TestCase):
       GenerateInitialQuestionsService(interview_session=session).perform()
 
   def test_raises_when_session_abandoned(self):
-    """이탈된 세션이면 ValidationException을 발생시킨다."""
+    """완료된 세션이면 ValidationException을 발생시킨다."""
     session = InterviewSessionFactory(
-      interview_session_status=InterviewSessionStatus.ABANDONED,
+      interview_session_status=InterviewSessionStatus.COMPLETED,
       total_questions=0,
     )
     with self.assertRaises(ValidationException):

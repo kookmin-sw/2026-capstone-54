@@ -22,25 +22,6 @@ class InterviewSessionMarkCompletedTests(TestCase):
     self.assertEqual(updated.interview_session_status, InterviewSessionStatus.COMPLETED)
 
 
-class InterviewSessionMarkAbandonedTests(TestCase):
-  """InterviewSession.mark_abandoned 테스트"""
-
-  def test_mark_abandoned_sets_status_to_abandoned(self):
-    """mark_abandoned 호출 시 상태가 abandoned로 변경된다."""
-    session = InterviewSessionFactory(interview_session_status=InterviewSessionStatus.IN_PROGRESS)
-    session.mark_abandoned()
-    session.refresh_from_db()
-    self.assertEqual(session.interview_session_status, InterviewSessionStatus.ABANDONED)
-
-  def test_mark_abandoned_persists_to_db(self):
-    """mark_abandoned는 DB에 저장된다."""
-    session = InterviewSessionFactory()
-    session.mark_abandoned()
-    from interviews.models import InterviewSession
-    updated = InterviewSession.objects.get(pk=session.pk)
-    self.assertEqual(updated.interview_session_status, InterviewSessionStatus.ABANDONED)
-
-
 class InterviewSessionStrTests(TestCase):
   """InterviewSession.__str__ 테스트"""
 

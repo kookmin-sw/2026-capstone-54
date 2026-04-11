@@ -1,13 +1,15 @@
-"""면접 종료 뷰."""
+"""면접 종료 뷰.
+
+리포트 생성은 자동으로 하지 않는다.
+사용자가 분석 > 면접 결과 화면에서 직접 리포트 생성을 요청해야 한다.
+"""
 
 from api.v1.interviews.serializers import InterviewSessionSerializer
-from celery import current_app
 from common.exceptions import ValidationException
 from common.permissions import IsEmailVerified
 from common.views import BaseAPIView
 from drf_spectacular.utils import extend_schema
 from interviews.enums import InterviewSessionStatus
-from interviews.models import InterviewAnalysisReport
 from interviews.services import get_interview_session_for_user
 from rest_framework.response import Response
 
@@ -26,20 +28,7 @@ class FinishInterviewView(BaseAPIView):
     if interview_session.interview_session_status != InterviewSessionStatus.IN_PROGRESS:
       raise ValidationException(detail="진행 중인 세션만 종료할 수 있습니다.")
 
-    # 미답변 턴이 있으면 중도 종료, 없으면 정상 종료
-    has_unanswered = interview_session.turns.filter(answer="").exists()
-    if has_unanswered:
-      interview_session.mark_abandoned()
-    else:
-      interview_session.mark_completed()
-      # RecordInterviewParticipationService(user=interview_session.user).perform()
-
-    # 분석 리포트 레코드 생성 후 Celery 태스크 발행
-    report = InterviewAnalysisReport.objects.create(interview_session=interview_session)
-    current_app.send_task(
-      "analysis.tasks.generate_report.generate_analysis_report",
-      args=[report.pk],
-      queue="analysis",
-    )
+    interview_session.mark_completed()
+    # RecordInterviewParticipationService(user=interview_session.user).perform()
 
     return Response(InterviewSessionSerializer(interview_session).data)

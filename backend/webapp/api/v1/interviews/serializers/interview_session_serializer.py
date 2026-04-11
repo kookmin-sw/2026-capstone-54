@@ -13,6 +13,7 @@ class InterviewSessionSerializer(serializers.ModelSerializer):
       "interview_session_type",
       "interview_session_status",
       "interview_difficulty_level",
+      "interview_practice_mode",
       "total_questions",
       "total_followup_questions",
       "created_at",

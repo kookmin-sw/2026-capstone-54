@@ -2,10 +2,11 @@ from unittest.mock import MagicMock, patch
 
 from django.core.exceptions import ValidationError
 from django.test import TestCase
+from interviews.constants import MAX_FOLLOWUP_PER_ANCHOR
 from interviews.enums import InterviewExchangeType, InterviewSessionStatus, InterviewSessionType
 from interviews.factories import InterviewSessionFactory, InterviewTurnFactory
 from interviews.services import SubmitAnswerAndGenerateFollowupService
-from interviews.services.submit_answer_and_generate_followup_service import MAX_FOLLOWUP_QUESTIONS, FollowupResult
+from interviews.services.submit_answer_and_generate_followup_service import FollowupResult
 
 
 def _make_followup_output(followup_questions=None):
@@ -148,14 +149,37 @@ class SubmitAnswerAndGenerateFollowupServiceHappyPathTests(TestCase):
   @patch("interviews.services.submit_answer_and_generate_followup_service.TokenUsage.log")
   @patch("interviews.services.submit_answer_and_generate_followup_service.FollowUpQuestionGenerator")
   def test_followup_exhausted_true_when_at_max(self, MockGenerator, mock_log):
-    """꼬리질문 수가 최대에 도달하면 followup_exhausted는 True이다."""
+    """앵커의 꼬리질문이 최대에 도달하고 다음 앵커가 없으면 followup_exhausted는 True이다."""
     session = InterviewSessionFactory(
       interview_session_type=InterviewSessionType.FOLLOWUP,
       interview_session_status=InterviewSessionStatus.IN_PROGRESS,
-      total_questions=3,
-      total_followup_questions=MAX_FOLLOWUP_QUESTIONS - 1,
+      total_questions=1,
+      total_followup_questions=MAX_FOLLOWUP_PER_ANCHOR - 1,
     )
-    turn = InterviewTurnFactory(interview_session=session, answer="")
+    # 앵커 턴 (INITIAL)
+    anchor = InterviewTurnFactory(
+      interview_session=session,
+      answer="앵커답변",
+      turn_number=1,
+      turn_type=InterviewExchangeType.INITIAL,
+    )
+    # 앵커에 MAX-1개의 기존 followup 턴 연결
+    for i in range(MAX_FOLLOWUP_PER_ANCHOR - 1):
+      InterviewTurnFactory(
+        interview_session=session,
+        answer="답변",
+        turn_number=10 + i,
+        turn_type=InterviewExchangeType.FOLLOWUP,
+        anchor_turn=anchor,
+      )
+    # 현재 답변할 마지막 followup 턴
+    turn = InterviewTurnFactory(
+      interview_session=session,
+      answer="",
+      turn_number=20,
+      turn_type=InterviewExchangeType.FOLLOWUP,
+      anchor_turn=anchor,
+    )
     mock_instance = MockGenerator.return_value
     mock_instance.generate.return_value = _make_followup_output()
 
@@ -170,17 +194,43 @@ class SubmitAnswerAndGenerateFollowupServiceHappyPathTests(TestCase):
 
 
 class SubmitAnswerAndGenerateFollowupServiceExhaustedTests(TestCase):
-  """꼬리질문 한도 도달 시 테스트"""
+  """앵커당 꼬리질문 한도 도달 시 테스트"""
 
-  def test_saves_answer_only_when_exhausted(self):
-    """꼬리질문 한도 도달 시 답변만 저장하고 빈 turns를 반환한다."""
+  def _make_exhausted_session_and_turn(self):
+    """앵커의 followup_turns가 MAX_FOLLOWUP_PER_ANCHOR에 도달한 세션과 턴을 생성한다."""
     session = InterviewSessionFactory(
       interview_session_type=InterviewSessionType.FOLLOWUP,
       interview_session_status=InterviewSessionStatus.IN_PROGRESS,
-      total_questions=3,
-      total_followup_questions=MAX_FOLLOWUP_QUESTIONS,
+      total_questions=1,
+      total_followup_questions=MAX_FOLLOWUP_PER_ANCHOR,
     )
-    turn = InterviewTurnFactory(interview_session=session, answer="")
+    anchor = InterviewTurnFactory(
+      interview_session=session,
+      answer="앵커답변",
+      turn_number=1,
+      turn_type=InterviewExchangeType.INITIAL,
+    )
+    for i in range(MAX_FOLLOWUP_PER_ANCHOR):
+      InterviewTurnFactory(
+        interview_session=session,
+        answer="답변",
+        turn_number=10 + i,
+        turn_type=InterviewExchangeType.FOLLOWUP,
+        anchor_turn=anchor,
+      )
+    # 현재 답변할 턴 (이 앵커의 마지막 followup)
+    turn = InterviewTurnFactory(
+      interview_session=session,
+      answer="",
+      turn_number=20,
+      turn_type=InterviewExchangeType.FOLLOWUP,
+      anchor_turn=anchor,
+    )
+    return session, turn
+
+  def test_saves_answer_only_when_exhausted(self):
+    """앵커 꼬리질문 한도 도달 시 답변만 저장하고 다음 앵커가 없으면 빈 turns를 반환한다."""
+    session, turn = self._make_exhausted_session_and_turn()
 
     result = SubmitAnswerAndGenerateFollowupService(interview_session=session, interview_turn=turn,
                                                     answer="내 답변").perform()
@@ -191,14 +241,8 @@ class SubmitAnswerAndGenerateFollowupServiceExhaustedTests(TestCase):
     self.assertTrue(result.followup_exhausted)
 
   def test_no_llm_call_when_exhausted(self):
-    """꼬리질문 한도 도달 시 LLM을 호출하지 않는다."""
-    session = InterviewSessionFactory(
-      interview_session_type=InterviewSessionType.FOLLOWUP,
-      interview_session_status=InterviewSessionStatus.IN_PROGRESS,
-      total_questions=3,
-      total_followup_questions=MAX_FOLLOWUP_QUESTIONS,
-    )
-    turn = InterviewTurnFactory(interview_session=session, answer="")
+    """앵커 꼬리질문 한도 도달 시 LLM을 호출하지 않는다."""
+    session, turn = self._make_exhausted_session_and_turn()
 
     with patch("interviews.services.submit_answer_and_generate_followup_service.FollowUpQuestionGenerator") as MockGen:
       SubmitAnswerAndGenerateFollowupService(interview_session=session, interview_turn=turn, answer="답변").perform()
