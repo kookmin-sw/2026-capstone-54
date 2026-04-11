@@ -17,8 +17,5 @@ export async function submitOnboardingProfileApi(payload: {
   jobCategoryId: number;
   jobIds: number[];
 }): Promise<void> {
-  await profileApi.saveMyProfile({
-    jobCategoryId: payload.jobCategoryId,
-    jobIds: payload.jobIds,
-  });
+  await profileApi.saveMyProfile(payload);
 }
