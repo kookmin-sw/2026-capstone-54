@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { isApiError } from "@/shared/api/client";
 import {
   fetchJobCategoriesApi,
   fetchJobsByCategoryApi,
@@ -27,7 +28,7 @@ interface OnboardingState {
   availableJobsLoading: boolean;
   selectedJobIds: number[];
 
-  jobStatus: string;
+  jobStatus: string; // 프론트 전용 (백엔드 미지원)
   isLoading: boolean;
   error: string | null;
 
@@ -93,7 +94,7 @@ export const useOnboardingStore = create<OnboardingState>()((set, get) => ({
   setJobStatus: (status) => set({ jobStatus: status }),
 
   submitProfile: async () => {
-    const { selectedJobCategoryId, selectedJobIds, jobStatus } = get();
+    const { selectedJobCategoryId, selectedJobIds } = get();
     if (!selectedJobCategoryId) {
       set({ error: "희망 직군을 선택해주세요." });
       return false;
@@ -103,17 +104,18 @@ export const useOnboardingStore = create<OnboardingState>()((set, get) => ({
       return false;
     }
     set({ isLoading: true, error: null });
-    const res = await submitOnboardingProfileApi({
-      jobCategoryId: selectedJobCategoryId,
-      jobIds: selectedJobIds,
-      jobStatus,
-    });
-    if (!res.success) {
-      set({ isLoading: false, error: res.message });
+    try {
+      await submitOnboardingProfileApi({
+        jobCategoryId: selectedJobCategoryId,
+        jobIds: selectedJobIds,
+      });
+      set({ isLoading: false });
+      return true;
+    } catch (e) {
+      const message = isApiError(e) && e.message ? e.message : "프로필 저장에 실패했습니다.";
+      set({ isLoading: false, error: message });
       return false;
     }
-    set({ isLoading: false });
-    return true;
   },
 
   clearError: () => set({ error: null }),
