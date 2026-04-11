@@ -20,6 +20,7 @@ export function HomeNavbar({ menuOpen, onMenuToggle }: HomeNavbarProps) {
   const notiRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (!profileOpen && !notiOpen) return;
     const handleClickOutside = (event: MouseEvent) => {
       if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
         setProfileOpen(false);
@@ -30,7 +31,7 @@ export function HomeNavbar({ menuOpen, onMenuToggle }: HomeNavbarProps) {
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [profileOpen, notiOpen]);
 
   const handleLogout = async () => {
     await logout();
