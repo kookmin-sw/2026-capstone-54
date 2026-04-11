@@ -805,6 +805,12 @@
 }
 
 /* ── RESPONSIVE ── */
+@media (max-width: 767px) {
+  .hp-menu-btn {
+    display: none !important;
+  }
+}
+
 @media (max-width: 1024px) {
   .hp-shell {
     grid-template-columns: 1fr;
