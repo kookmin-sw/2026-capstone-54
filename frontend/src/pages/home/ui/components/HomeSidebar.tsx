@@ -12,7 +12,7 @@ export function HomeSidebar({ menuOpen, currentStreak, jdCount = 0, floating = f
   const location = useLocation();
   const path = location.pathname;
 
-  const isActive = (prefix: string) => path.startsWith(prefix);
+  const isActive = (prefix: string) => path === prefix || path.startsWith(prefix + "/");
 
   const cls = `hp-sidebar${floating ? " hp-sidebar--floating" : ""}${menuOpen ? " open" : ""}`;
   return (
