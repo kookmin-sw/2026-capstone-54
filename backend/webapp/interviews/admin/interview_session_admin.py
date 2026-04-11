@@ -11,6 +11,7 @@ class InterviewSessionAdmin(ModelAdmin):
     "interview_session_type",
     "interview_session_status",
     "interview_difficulty_level",
+    "interview_practice_mode",
     "total_questions",
     "total_followup_questions",
     "created_at",
@@ -19,6 +20,7 @@ class InterviewSessionAdmin(ModelAdmin):
     "interview_session_type",
     "interview_session_status",
     "interview_difficulty_level",
+    "interview_practice_mode",
   )
   list_select_related = ("user", "resume", "user_job_description")
   search_fields = ("user__email", )
@@ -34,13 +36,16 @@ class InterviewSessionAdmin(ModelAdmin):
         "user_job_description",
       ),
     }),
-    ("인터뷰 세션 설정", {
-      "fields": (
-        "interview_session_type",
-        "interview_session_status",
-        "interview_difficulty_level",
-      ),
-    }),
+    (
+      "인터뷰 세션 설정", {
+        "fields": (
+          "interview_session_type",
+          "interview_session_status",
+          "interview_difficulty_level",
+          "interview_practice_mode",
+        ),
+      }
+    ),
     ("통계", {
       "fields": (
         "total_questions",
