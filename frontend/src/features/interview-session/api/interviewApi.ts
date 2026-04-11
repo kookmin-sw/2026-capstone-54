@@ -1,4 +1,4 @@
-import { apiRequest, BASE_URL } from "@/shared/api/client";
+import { apiRequest } from "@/shared/api/client";
 import type {
   InterviewSession,
   InterviewTurn,
@@ -48,9 +48,6 @@ export const interviewApi = {
       auth: true,
     }),
 
-  getWsTicket: () =>
-    apiRequest<{ ticket: string }>("/api/v1/realtime/ws-ticket/", { method: "POST", auth: true }),
-
   getMyInterviews: (page = 1) =>
     apiRequest<PaginatedResponse<InterviewSessionListItem>>(`/api/v1/interviews/my-interviews/?page=${page}`, { auth: true }),
 
@@ -59,9 +56,4 @@ export const interviewApi = {
       method: "POST",
       auth: true,
     }),
-
-  buildWsUrl: (interviewSessionUuid: string, ticket: string) => {
-    const wsBase = BASE_URL.replace(/^http/, "ws");
-    return `${wsBase}/ws/interviews/${interviewSessionUuid}/?ticket=${ticket}`;
-  },
 };

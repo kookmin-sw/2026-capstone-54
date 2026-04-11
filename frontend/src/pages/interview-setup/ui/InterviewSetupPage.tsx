@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useInterviewSetupStore } from "@/features/interview-setup";
-import { StepIndicator } from "@/shared/ui/StepIndicator";
 import { StepLayout } from "@/shared/ui/StepLayout";
 import { ResumeSection } from "./ResumeSection";
 import { JdSection } from "./JdSection";
@@ -15,7 +13,6 @@ const prevCls = `${navBtnCls} text-[#6B7280] bg-transparent border border-[#E5E7
 const nextCls = `${navBtnCls} text-white bg-[#0A0A0A] border-none shadow-[0_4px_6px_rgba(0,0,0,0.07)] hover:enabled:opacity-[.88] disabled:bg-[#D1D5DB] disabled:text-[#9CA3AF] disabled:cursor-not-allowed`;
 
 export function InterviewSetupPage() {
-  const navigate = useNavigate();
   const [step, setStep] = useState<SetupStep>(1);
   const {
     jdList, jdListLoading, jdTab, selectedJdId,
@@ -38,15 +35,9 @@ export function InterviewSetupPage() {
   const handleStartInterview = async () => {
     const session = await createSession();
     if (session) {
-      navigate(`/interview/precheck?sessionUuid=${session.uuid}`);
+      window.open(`/interview/precheck/${session.uuid}`, "_blank");
     }
   };
-
-  const stepperSteps = [
-    { label: "지원 컨텍스트", state: (step > 1 ? "done" : "active") as "done" | "active" | "pending" },
-    { label: "면접 방식", state: (step === 2 ? "active" : "pending") as "done" | "active" | "pending" },
-    { label: "환경 점검", state: "pending" as const },
-  ];
 
   const canProceedStep1 = !!selectedResumeUuid;
 
@@ -57,12 +48,6 @@ export function InterviewSetupPage() {
           <h1 className="text-[clamp(22px,2.5vw,30px)] font-black tracking-[-0.5px] mb-1.5">AI 맞춤 면접을 시작해요</h1>
           <p className="text-sm text-[#6B7280]">채용공고와 면접 방식을 선택하고 AI 맞춤 면접을 시작하세요.</p>
         </div>
-
-        <StepIndicator
-          steps={stepperSteps}
-          onStepClick={(i) => { if (i === 0) setStep(1); else if (i === 1 && canProceedStep1) setStep(2); }}
-          className="mb-8"
-        />
 
         {/* ══════ STEP 1: 지원 컨텍스트 ══════ */}
         {step === 1 && (
@@ -142,7 +127,7 @@ export function InterviewSetupPage() {
                     onClick={handleStartInterview}
                     className={nextCls}
                   >
-                    {creatingSession ? "생성 중..." : "다음 →"}
+                    {creatingSession ? "생성 중..." : "면접 시작"}
                   </button>
                 </div>
               </>

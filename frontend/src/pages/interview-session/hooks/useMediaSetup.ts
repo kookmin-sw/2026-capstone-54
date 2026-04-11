@@ -1,7 +1,12 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useCallback } from "react";
 import { WebSpeechSTTProvider } from "@/shared/lib/stt/WebSpeechSTTProvider";
 
+/**
+ * Manages camera/mic stream, audio level metering, and STT provider.
+ * Returns state values and refs separately to satisfy react-hooks/refs lint rule.
+ */
 export function useMediaSetup() {
+  // ── Refs (not used in render / dependency arrays) ──
   const videoRef = useRef<HTMLVideoElement>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
@@ -9,18 +14,18 @@ export function useMediaSetup() {
   const audioRafRef = useRef<number | null>(null);
   const sttRef = useRef<WebSpeechSTTProvider | null>(null);
 
+  // ── State (safe for render / dependency arrays) ──
   const [isListening, setIsListening] = useState(false);
   const [finalText, setFinalText] = useState("");
   const [interimText, setInterimText] = useState("");
   const [audioLevel, setAudioLevel] = useState(0);
   const [mediaReady, setMediaReady] = useState(false);
 
-  const setupMedia = async () => {
+  const setupMedia = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
       mediaStreamRef.current = stream;
       if (videoRef.current) videoRef.current.srcObject = stream;
-      // Audio meter
       try {
         audioCtxRef.current = new AudioContext();
         const source = audioCtxRef.current.createMediaStreamSource(stream);
@@ -39,7 +44,7 @@ export function useMediaSetup() {
         drawMeter();
       } catch { /* AudioContext unavailable */ }
     } catch { console.warn("미디어 장치 접근 실패"); }
-    // STT
+
     sttRef.current = new WebSpeechSTTProvider();
     sttRef.current.onResult((result) => {
       if (result.isFinal) { setFinalText((prev) => prev + (prev ? " " : "") + result.text); setInterimText(""); }
@@ -47,23 +52,51 @@ export function useMediaSetup() {
     });
     sttRef.current.onError((e) => console.warn("STT 오류:", e));
     setMediaReady(true);
-  };
+  }, []);
 
-  const cleanupMedia = () => {
+  const cleanupMedia = useCallback(() => {
     sttRef.current?.stop();
     mediaStreamRef.current?.getTracks().forEach((t) => t.stop());
     mediaStreamRef.current = null;
     if (audioRafRef.current) cancelAnimationFrame(audioRafRef.current);
     audioCtxRef.current?.close();
     analyserRef.current = null;
-  };
+  }, []);
+
+  const startStt = useCallback((lang = "ko-KR") => {
+    sttRef.current?.start(lang);
+    setIsListening(true);
+  }, []);
+
+  const stopStt = useCallback(() => {
+    sttRef.current?.stop();
+    setIsListening(false);
+  }, []);
+
+  const resetText = useCallback(() => {
+    setFinalText("");
+    setInterimText("");
+  }, []);
 
   return {
-    videoRef, sttRef, mediaStreamRef, audioRafRef,
-    isListening, setIsListening,
-    finalText, setFinalText,
-    interimText, setInterimText,
-    audioLevel, mediaReady,
-    setupMedia, cleanupMedia,
+    // Refs — only pass to ref= props or use inside callbacks/effects
+    videoRef,
+    sttRef,
+    // State — safe for render and dependency arrays
+    isListening,
+    finalText,
+    interimText,
+    audioLevel,
+    mediaReady,
+    // Setters
+    setIsListening,
+    setFinalText,
+    setInterimText,
+    // Actions
+    setupMedia,
+    cleanupMedia,
+    startStt,
+    stopStt,
+    resetText,
   };
 }

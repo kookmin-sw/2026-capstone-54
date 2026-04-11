@@ -31,7 +31,7 @@ export function QuestionPanel({
   const isGenerating = interviewPhase === "generating_followup" || interviewPhase === "starting";
 
   return (
-    <div className="bg-slate-800/60 border border-white/10 rounded-2xl p-5 min-h-[180px] flex flex-col">
+    <div className="bg-slate-800/60 border border-white/10 rounded-2xl p-6 min-h-[260px] flex flex-col">
       {/* ── 상단: 라벨 + 카운터 + TTS 컨트롤 ── */}
       <div className="flex items-center gap-2 mb-3">
         <span className="text-[10px] font-bold tracking-widest uppercase text-indigo-400">
@@ -102,7 +102,7 @@ export function QuestionPanel({
             <span className="text-sm">질문을 생성하고 있습니다...</span>
           </div>
         ) : currentInterviewTurn ? (
-          <p className="text-white text-base leading-relaxed font-medium">
+          <p className="text-white text-lg leading-relaxed font-medium">
             {currentInterviewTurn.question}
           </p>
         ) : (

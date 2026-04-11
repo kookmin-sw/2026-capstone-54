@@ -22,7 +22,7 @@ interface AppLayoutProps {
 }
 
 /** Pages that use their own full-screen layout (no nav/sidebar) */
-const FULL_SCREEN_PREFIXES = ["/interview/session/"];
+const FULL_SCREEN_PREFIXES = ["/interview/session/", "/interview/precheck/"];
 
 export function AppLayout({ children }: AppLayoutProps) {
   const [menuOpen, setMenuOpen] = useState(false);

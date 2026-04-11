@@ -1,3 +1,4 @@
+/** 면접관 TTS 음성 테스트 카드 (다크 테마). */
 import { useEffect, useRef, useState } from "react";
 import { getAccessToken } from "@/shared/api/client";
 import { VOICE_API_BASE, TTS_DEFAULT_VOICE } from "@/shared/lib/tts/useTts";
@@ -31,17 +32,17 @@ export function TtsTestCard() {
   };
 
   return (
-    <div className="bg-white border border-[#E5E7EB] rounded-lg p-5 shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
+    <div className="bg-slate-800/60 border border-white/10 rounded-xl p-5">
       <div className="flex items-center gap-2 mb-3">
         <span className="text-lg">🔊</span>
-        <h3 className="text-[14px] font-extrabold text-[#0A0A0A]">면접관 음성 테스트</h3>
+        <h3 className="text-[14px] font-extrabold text-slate-200">면접관 음성 테스트</h3>
       </div>
-      <p className="text-[12px] text-[#6B7280] leading-[1.5] mb-3">버튼을 눌러 음성이 잘 들리는지 확인하세요.</p>
-      <button onClick={handleTest} disabled={loading} className="w-full py-3 rounded-lg font-bold text-[13px] border-none cursor-pointer transition-all disabled:opacity-50 bg-[#0991B2] text-white hover:enabled:bg-[#0E7490]">
+      <p className="text-[12px] text-slate-400 leading-[1.5] mb-3">버튼을 눌러 음성이 잘 들리는지 확인하세요.</p>
+      <button onClick={handleTest} disabled={loading} className="w-full py-3 rounded-lg font-bold text-[13px] border-none cursor-pointer transition-all disabled:opacity-50 bg-cyan-600 text-white hover:enabled:bg-cyan-500">
         {loading ? "재생 중..." : done ? "다시 재생하기" : "테스트 음성 재생"}
       </button>
-      {done && <div className="mt-2 text-[12px] font-semibold text-[#059669]">✓ 음성이 정상적으로 재생되었습니다</div>}
-      {error && <div className="mt-2 text-[12px] font-semibold text-[#E11D48]">✕ 재생 실패. 스피커를 확인하세요.</div>}
+      {done && <div className="mt-2 text-[12px] font-semibold text-emerald-400">✓ 음성이 정상적으로 재생되었습니다</div>}
+      {error && <div className="mt-2 text-[12px] font-semibold text-red-400">✕ 재생 실패. 스피커를 확인하세요.</div>}
     </div>
   );
 }

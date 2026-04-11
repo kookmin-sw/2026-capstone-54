@@ -1,5 +1,10 @@
-import { Loader2, Mic } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Loader2 } from "lucide-react";
 import type { InterviewPhase, AnswerState } from "@/features/interview-session";
+import { SpeakingWarning } from "./SpeakingWarning";
+
+const AUDIO_WARN_THRESHOLD = 25;
+const WARN_HOLD_MS = 3000;
 
 interface SessionActionPanelProps {
   hasStarted: boolean;
@@ -20,23 +25,37 @@ interface SessionActionPanelProps {
   onSubmitAnswer: () => void;
 }
 
-const AUDIO_WARN_THRESHOLD = 25;
-
 export function SessionActionPanel({
   hasStarted, isFinished, isRealMode, isStarting, isModelLoading,
   isSubmitting, interviewPhase, answerState, countdown, ttsPlaying,
   audioLevel, finalText, interimText,
   onStart, onPracticeStart, onSubmitAnswer,
 }: SessionActionPanelProps) {
-  // Practice mode: warn if user appears to be speaking before pressing start
-  const showSpeakingWarning =
-    !isRealMode &&
-    hasStarted &&
-    !isFinished &&
+  const shouldWarn =
+    !isRealMode && hasStarted && !isFinished &&
     (answerState === "waiting_ready" || answerState === "waiting_start") &&
-    !ttsPlaying &&
-    !isSubmitting &&
-    audioLevel >= AUDIO_WARN_THRESHOLD;
+    !ttsPlaying && !isSubmitting;
+
+  const [warnVisible, setWarnVisible] = useState(false);
+  const warnTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (!shouldWarn) {
+      setWarnVisible(false); // eslint-disable-line react-hooks/set-state-in-effect -- clearing on deactivation
+      if (warnTimerRef.current) { clearTimeout(warnTimerRef.current); warnTimerRef.current = null; }
+      return;
+    }
+    if (audioLevel >= AUDIO_WARN_THRESHOLD) {
+      setWarnVisible(true);  
+      if (warnTimerRef.current) clearTimeout(warnTimerRef.current);
+      warnTimerRef.current = setTimeout(() => {
+        setWarnVisible(false);
+        warnTimerRef.current = null;
+      }, WARN_HOLD_MS);
+    }
+  }, [audioLevel, shouldWarn]);
+
+  useEffect(() => () => { if (warnTimerRef.current) clearTimeout(warnTimerRef.current); }, []);
 
   return (
     <div className="shrink-0 p-4 border-b border-white/10 flex flex-col gap-2">
@@ -54,7 +73,6 @@ export function SessionActionPanel({
 
       {hasStarted && !isFinished && (
         <>
-          {/* 실전 모드: TTS 재생 중 */}
           {isRealMode && ttsPlaying && countdown === null && (
             <div className="w-full py-3 rounded-xl bg-indigo-500/10 border border-indigo-500/30 text-center">
               <p className="text-indigo-300 text-xs font-semibold flex items-center justify-center gap-1.5">
@@ -63,7 +81,6 @@ export function SessionActionPanel({
             </div>
           )}
 
-          {/* 실전 모드: 카운트다운 */}
           {isRealMode && countdown !== null && countdown > 0 && (
             <div className="w-full py-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-center">
               <p className="text-amber-400 text-xs font-semibold mb-1">잠시 후 자동 시작</p>
@@ -71,7 +88,6 @@ export function SessionActionPanel({
             </div>
           )}
 
-          {/* 연습 모드: 말하기 시작 (TTS 재생 중 비활성화) */}
           {!isRealMode && (answerState === "waiting_ready" || answerState === "waiting_start") && !isSubmitting && (
             <button
               onClick={onPracticeStart}
@@ -80,20 +96,12 @@ export function SessionActionPanel({
             >
               {ttsPlaying
                 ? <><Loader2 size={14} className="animate-spin" /> 질문 음성 재생 중...</>
-                : <><Mic size={16} /> 말하기 시작</>}
+                : "말하기 시작"}
             </button>
           )}
 
-          {/* 연습 모드: 마이크 감지 경고 */}
-          {showSpeakingWarning && (
-            <div className="w-full py-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-center">
-              <p className="text-amber-400 text-[11px] font-semibold flex items-center justify-center gap-1.5">
-                <Mic size={12} /> 음성이 감지되고 있어요. 위 버튼을 눌러 답변을 시작해주세요!
-              </p>
-            </div>
-          )}
+          <SpeakingWarning visible={warnVisible} />
 
-          {/* 답변 제출 */}
           {(answerState === "speaking" || isSubmitting) && (
             <button
               onClick={onSubmitAnswer}
@@ -108,7 +116,6 @@ export function SessionActionPanel({
             </button>
           )}
 
-          {/* 대기 표시 */}
           {isSubmitting && answerState !== "speaking" && (
             <div className="w-full py-2.5 rounded-xl bg-slate-800/50 text-center text-[12px] text-slate-400 flex items-center justify-center gap-1.5">
               <Loader2 size={12} className="animate-spin" />

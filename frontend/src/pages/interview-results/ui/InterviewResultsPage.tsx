@@ -97,7 +97,7 @@ export function InterviewResultsPage() {
                 key={s.uuid}
                 session={s}
                 isGenerating={generatingUuid === s.uuid}
-                onContinue={(uuid) => navigate(`/interview/session/${uuid}`)}
+                onContinue={(uuid) => window.open(`/interview/precheck/${uuid}`, "_blank")}
                 onViewReport={(uuid) => navigate(`/interview/session/${uuid}/report`)}
                 onGenerateReport={handleGenerateReport}
               />
