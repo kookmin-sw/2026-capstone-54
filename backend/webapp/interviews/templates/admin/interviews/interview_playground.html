@@ -1,0 +1,740 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block content %}
+{# ── CSRF 헬퍼 ───────────────────────────────────────────────────── #}
+{% csrf_token %}
+
+<style>
+  .pg-card {
+    @apply border border-base-200 rounded-default p-5 mb-6 shadow-sm dark:border-base-800;
+  }
+  .pg-label { font-weight: 600; margin-bottom: 4px; }
+  .pg-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .pg-badge-blue   { background: #dbeafe; color: #1d4ed8; }
+  .pg-badge-green  { background: #dcfce7; color: #166534; }
+  .pg-badge-yellow { background: #fef9c3; color: #854d0e; }
+  .pg-badge-red    { background: #fee2e2; color: #991b1b; }
+  .pg-badge-gray   { background: #f3f4f6; color: #374151; }
+  .dark .pg-badge-blue   { background: #1e3a8a; color: #bfdbfe; }
+  .dark .pg-badge-green  { background: #14532d; color: #bbf7d0; }
+  .dark .pg-badge-yellow { background: #713f12; color: #fef08a; }
+  .dark .pg-badge-red    { background: #7f1d1d; color: #fecaca; }
+  .dark .pg-badge-gray   { background: #374151; color: #d1d5db; }
+</style>
+
+<div id="playground" class="max-w-4xl">
+
+  {# ── 이어서 실험하기 ───────────────────────────────────────────── #}
+  <div id="section-resume" class="border border-base-200 dark:border-base-800 rounded-default p-5 mb-6 shadow-sm">
+    <h2 class="text-base font-semibold text-base-800 dark:text-base-200 mb-3">진행 중인 세션 이어서 실험하기</h2>
+    <div class="flex items-end gap-3">
+      <div class="flex-1">
+        <label class="block text-sm font-medium text-base-700 dark:text-base-300 mb-1">진행 중인 세션</label>
+        <select id="sel-resume-session"
+                class="w-full border border-base-300 dark:border-base-700 rounded px-3 py-2 text-sm
+                       bg-white dark:bg-base-900 text-base-800 dark:text-base-200">
+          <option value="">— 세션을 선택하세요 —</option>
+        </select>
+      </div>
+      <button onclick="loadSession()"
+              class="inline-flex items-center gap-2 px-4 py-2 rounded text-sm font-medium
+                     bg-primary-600 hover:bg-primary-700 text-white transition-colors self-end">
+        불러오기
+      </button>
+    </div>
+  </div>
+
+  {# ── Step 1: 세션 설정 ─────────────────────────────────────────── #}
+  <div id="section-setup">
+    <div class="border border-base-200 dark:border-base-800 rounded-default p-5 mb-6 shadow-sm">
+      <h2 class="text-base font-semibold text-base-800 dark:text-base-200 mb-4">① 면접 세션 설정</h2>
+
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-base-700 dark:text-base-300 mb-1">이력서</label>
+          <select id="sel-resume"
+                  class="w-full border border-base-300 dark:border-base-700 rounded px-3 py-2 text-sm
+                         bg-white dark:bg-base-900 text-base-800 dark:text-base-200">
+            <option value="">— 이력서를 선택하세요 —</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-base-700 dark:text-base-300 mb-1">채용공고</label>
+          <select id="sel-ujd"
+                  class="w-full border border-base-300 dark:border-base-700 rounded px-3 py-2 text-sm
+                         bg-white dark:bg-base-900 text-base-800 dark:text-base-200">
+            <option value="">— 채용공고를 선택하세요 —</option>
+          </select>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-base-700 dark:text-base-300 mb-1">세션 유형</label>
+            <select id="sel-type"
+                    class="w-full border border-base-300 dark:border-base-700 rounded px-3 py-2 text-sm
+                           bg-white dark:bg-base-900 text-base-800 dark:text-base-200">
+              {% for value, label in session_types %}
+                <option value="{{ value }}">{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-base-700 dark:text-base-300 mb-1">난이도</label>
+            <select id="sel-difficulty"
+                    class="w-full border border-base-300 dark:border-base-700 rounded px-3 py-2 text-sm
+                           bg-white dark:bg-base-900 text-base-800 dark:text-base-200">
+              {% for value, label in difficulty_levels %}
+                <option value="{{ value }}" {% if value == "normal" %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-5 flex justify-end">
+        <button id="btn-create"
+                onclick="createSession()"
+                class="inline-flex items-center gap-2 px-4 py-2 rounded text-sm font-medium
+                       bg-primary-600 hover:bg-primary-700 text-white transition-colors">
+          세션 생성
+        </button>
+      </div>
+    </div>
+  </div>
+
+  {# ── Step 2: 세션 정보 + 면접 시작 ────────────────────────────── #}
+  <div id="section-session" style="display:none">
+    <div class="border border-base-200 dark:border-base-800 rounded-default p-5 mb-6 shadow-sm">
+      <h2 class="text-base font-semibold text-base-800 dark:text-base-200 mb-3">② 세션 생성 완료</h2>
+      <div class="text-sm space-y-2 text-base-600 dark:text-base-400">
+        <p>세션 UUID: <code id="txt-session-uuid" class="font-mono text-xs bg-base-100 dark:bg-base-800 px-2 py-0.5 rounded"></code></p>
+        <p>유형: <span id="txt-session-type" class="pg-badge pg-badge-blue"></span></p>
+        <p>난이도: <span id="txt-difficulty" class="pg-badge pg-badge-gray"></span></p>
+      </div>
+      <div class="mt-4 flex justify-end">
+        <button id="btn-start"
+                onclick="startInterview()"
+                class="inline-flex items-center gap-2 px-4 py-2 rounded text-sm font-medium
+                       bg-green-600 hover:bg-green-700 text-white transition-colors">
+          면접 시작 (초기 질문 생성)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  {# ── Step 3: 질문·답변 영역 ────────────────────────────────────── #}
+  <div id="section-qa" style="display:none">
+    <div class="border border-base-200 dark:border-base-800 rounded-default p-5 mb-6 shadow-sm">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-base font-semibold text-base-800 dark:text-base-200">③ 질문·답변</h2>
+        <div class="flex items-center gap-3">
+          <span id="txt-turn-counter" class="text-sm text-base-500 dark:text-base-400"></span>
+          <button id="btn-abandon"
+                  onclick="finishInterview(true)"
+                  class="inline-flex items-center gap-2 px-4 py-2 rounded text-sm font-medium
+                         bg-base-400 hover:bg-base-500 text-white transition-colors">
+            중도 종료
+          </button>
+          <button id="btn-finish"
+                  onclick="finishInterview(false)"
+                  disabled
+                  class="inline-flex items-center gap-2 px-4 py-2 rounded text-sm font-medium
+                         bg-primary-600 hover:bg-primary-700 text-white transition-colors
+                         disabled:opacity-40 disabled:cursor-not-allowed">
+            면접 종료
+          </button>
+        </div>
+      </div>
+      <div id="turns-container" class="space-y-4"></div>
+    </div>
+  </div>
+
+  {# ── Step 4: 리포트 ────────────────────────────────────────────── #}
+  <div id="section-report" style="display:none">
+    <div class="border border-base-200 dark:border-base-800 rounded-default p-5 mb-6 shadow-sm">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-base font-semibold text-base-800 dark:text-base-200">④ 분석 리포트</h2>
+        <button id="btn-report"
+                onclick="fetchReport()"
+                class="inline-flex items-center gap-2 px-4 py-2 rounded text-sm font-medium
+                       bg-primary-600 hover:bg-primary-700 text-white transition-colors">
+          리포트 조회
+        </button>
+      </div>
+      <div id="report-status" class="text-sm text-base-500 dark:text-base-400 mb-4"></div>
+      <div id="report-content" style="display:none">
+        <div class="space-y-4">
+          <div class="flex items-center gap-4">
+            <div>
+              <span class="text-3xl font-bold text-base-800 dark:text-base-200" id="rpt-score"></span>
+              <span class="text-base-500 dark:text-base-400 text-sm">/100</span>
+            </div>
+            <span id="rpt-grade" class="pg-badge pg-badge-green text-base"></span>
+            <span id="rpt-report-status" class="pg-badge pg-badge-blue text-xs"></span>
+          </div>
+          <p id="rpt-comment" class="text-sm text-base-600 dark:text-base-400 leading-relaxed"></p>
+
+          <details open>
+            <summary class="cursor-pointer text-sm font-medium text-base-700 dark:text-base-300 py-2">
+              카테고리별 점수
+            </summary>
+            <table class="w-full mt-2 text-sm">
+              <thead>
+                <tr class="border-b border-base-200 dark:border-base-800">
+                  <th class="text-left py-1 px-2 text-xs text-base-500">카테고리</th>
+                  <th class="text-left py-1 px-2 text-xs text-base-500">점수</th>
+                  <th class="text-left py-1 px-2 text-xs text-base-500">코멘트</th>
+                </tr>
+              </thead>
+              <tbody id="rpt-categories"></tbody>
+            </table>
+          </details>
+
+          <details>
+            <summary class="cursor-pointer text-sm font-medium text-base-700 dark:text-base-300 py-2">
+              강점 / 개선 영역
+            </summary>
+            <div class="grid grid-cols-2 gap-4 mt-2">
+              <div>
+                <p class="text-xs font-semibold text-green-700 dark:text-green-400 mb-2">강점</p>
+                <ul id="rpt-strengths" class="space-y-2 text-sm text-base-600 dark:text-base-400"></ul>
+              </div>
+              <div>
+                <p class="text-xs font-semibold text-yellow-700 dark:text-yellow-400 mb-2">개선 영역</p>
+                <ul id="rpt-improvements" class="space-y-2 text-sm text-base-600 dark:text-base-400"></ul>
+              </div>
+            </div>
+          </details>
+
+          <details>
+            <summary class="cursor-pointer text-sm font-medium text-base-700 dark:text-base-300 py-2">
+              질문별 피드백
+            </summary>
+            <div id="rpt-feedbacks" class="space-y-4 mt-2"></div>
+          </details>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {# ── 전역 에러 ─────────────────────────────────────────────────── #}
+  <div id="global-error" style="display:none"
+       class="border border-red-300 dark:border-red-800 rounded-default p-4
+              bg-red-50 dark:bg-red-900/20 text-sm text-red-700 dark:text-red-400 mb-4">
+  </div>
+
+</div>
+
+<script>
+// ── 초기 데이터 (Django template → JS) ─────────────────────────────
+const RESUMES = {{ resumes|safe }};
+const UJDS = {{ ujds|safe }};
+const IN_PROGRESS_SESSIONS = {{ in_progress_sessions|safe }};
+const API_BASE = "{{ playground_api_base }}";
+
+// ── 상태 ───────────────────────────────────────────────────────────
+const S = {
+  sessionUuid: null,
+  sessionType: null,
+  turns: [],          // {id, question, turn_type, question_source, answered, answer, followups}
+  pollTimer: null,
+};
+
+// ── 초기화 ─────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  populateDropdown('sel-resume', RESUMES, r => ({ value: r.id, text: r.title || r.id }));
+  populateDropdown('sel-ujd', UJDS, u => ({ value: u.id, text: u.label }));
+  populateDropdown('sel-resume-session', IN_PROGRESS_SESSIONS, s => ({ value: s.uuid, text: s.label }));
+  if (IN_PROGRESS_SESSIONS.length === 0) {
+    document.getElementById('section-resume').style.display = 'none';
+  }
+});
+
+function populateDropdown(id, items, mapper) {
+  const sel = document.getElementById(id);
+  items.forEach(item => {
+    const { value, text } = mapper(item);
+    const opt = document.createElement('option');
+    opt.value = value;
+    opt.textContent = text;
+    sel.appendChild(opt);
+  });
+}
+
+// ── CSRF ───────────────────────────────────────────────────────────
+function getCsrf() {
+  return document.querySelector('[name=csrfmiddlewaretoken]').value;
+}
+
+async function apiPost(url, body = null) {
+  const opts = {
+    method: 'POST',
+    headers: { 'X-CSRFToken': getCsrf(), 'Content-Type': 'application/json' },
+  };
+  if (body !== null) opts.body = JSON.stringify(body);
+  const resp = await fetch(url, opts);
+  const data = await resp.json();
+  return { ok: resp.ok, status: resp.status, data };
+}
+
+async function apiGet(url) {
+  const resp = await fetch(url, { headers: { 'X-CSRFToken': getCsrf() } });
+  const data = await resp.json();
+  return { ok: resp.ok, status: resp.status, data };
+}
+
+// ── 에러 표시 ──────────────────────────────────────────────────────
+function showError(msg) {
+  const el = document.getElementById('global-error');
+  el.textContent = msg;
+  el.style.display = 'block';
+  el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+function clearError() {
+  const el = document.getElementById('global-error');
+  el.style.display = 'none';
+  el.textContent = '';
+}
+
+function setLoading(btnId, loading) {
+  const btn = document.getElementById(btnId);
+  if (!btn) return;
+  btn.disabled = loading;
+  btn.textContent = loading ? '처리 중…' : btn.dataset.label || btn.textContent;
+}
+
+// ── 이어서 실험하기: 기존 세션 불러오기 ─────────────────────────────
+async function loadSession() {
+  clearError();
+  const uuid = document.getElementById('sel-resume-session').value;
+  if (!uuid) { showError('불러올 세션을 선택해주세요.'); return; }
+
+  const { ok, data } = await apiGet(API_BASE + `load/${uuid}/`);
+  if (!ok) { showError('세션 불러오기 실패: ' + JSON.stringify(data)); return; }
+
+  // 상태 초기화 후 복원
+  S.sessionUuid = data.uuid;
+  S.sessionType = data.interview_session_type;
+  S.turns = [];
+
+  // 세션 생성 섹션 숨기고 QA 섹션 표시
+  document.getElementById('section-setup').style.display = 'none';
+  document.getElementById('section-session').style.display = 'none';
+  document.getElementById('section-qa').style.display = 'block';
+
+  const container = document.getElementById('turns-container');
+  container.innerHTML = '';
+
+  // 기존 턴 복원
+  for (const t of data.turns) {
+    const turn = {
+      id: t.id,
+      question: t.question,
+      turn_type: t.turn_type,
+      question_source: t.question_source || '',
+      answered: !!t.answer,
+      answer: t.answer || '',
+      parentId: null,
+    };
+    S.turns.push(turn);
+    renderTurn(turn, null);
+
+    if (turn.answered) {
+      // 답변 완료 상태로 표시
+      document.getElementById(`answer-area-${t.id}`).style.display = 'none';
+      const aa = document.getElementById(`answered-area-${t.id}`);
+      aa.textContent = `A. ${t.answer}`;
+      aa.style.display = 'block';
+    }
+  }
+
+  updateTurnCounter();
+  updateFinishButton();
+  document.getElementById('section-qa').scrollIntoView({ behavior: 'smooth' });
+}
+
+// ── Step 1: 세션 생성 ──────────────────────────────────────────────
+async function createSession() {
+  clearError();
+  const resumeUuid = document.getElementById('sel-resume').value;
+  const ujdUuid    = document.getElementById('sel-ujd').value;
+  const sessionType = document.getElementById('sel-type').value;
+  const difficulty  = document.getElementById('sel-difficulty').value;
+
+  if (!resumeUuid) { showError('이력서를 선택해주세요.'); return; }
+  if (!ujdUuid)    { showError('채용공고를 선택해주세요.'); return; }
+
+  const btn = document.getElementById('btn-create');
+  btn.disabled = true;
+  btn.textContent = '세션 생성 중…';
+
+  const { ok, data } = await apiPost(API_BASE + 'create-session/', {
+    resume_uuid: resumeUuid,
+    user_job_description_uuid: ujdUuid,
+    interview_session_type: sessionType,
+    interview_difficulty_level: difficulty,
+  });
+
+  btn.disabled = false;
+  btn.textContent = '세션 생성';
+
+  if (!ok) {
+    showError('세션 생성 실패: ' + JSON.stringify(data));
+    return;
+  }
+
+  S.sessionUuid = data.id || data.uuid;
+  S.sessionType = sessionType;
+
+  document.getElementById('txt-session-uuid').textContent = S.sessionUuid;
+  document.getElementById('txt-session-type').textContent = sessionType === 'followup' ? '꼬리질문형' : '전체 프로세스';
+  document.getElementById('txt-difficulty').textContent = difficulty;
+  document.getElementById('section-session').style.display = 'block';
+  document.getElementById('section-session').scrollIntoView({ behavior: 'smooth' });
+}
+
+// ── Step 2: 면접 시작 (초기 질문 생성) ────────────────────────────
+async function startInterview() {
+  clearError();
+  const btn = document.getElementById('btn-start');
+  btn.disabled = true;
+  btn.textContent = '질문 생성 중…';
+
+  const { ok, data } = await apiPost(API_BASE + `start/${S.sessionUuid}/`);
+
+  btn.disabled = false;
+  btn.textContent = '면접 시작 (초기 질문 생성)';
+
+  if (!ok) {
+    showError('면접 시작 실패: ' + JSON.stringify(data));
+    return;
+  }
+
+  const turns = Array.isArray(data) ? data : [data];
+  turns.forEach(t => addTurn(t, null));
+
+  document.getElementById('section-qa').style.display = 'block';
+  document.getElementById('section-qa').scrollIntoView({ behavior: 'smooth' });
+  updateTurnCounter();
+  updateFinishButton();
+}
+
+// ── 턴 추가 ────────────────────────────────────────────────────────
+function addTurn(turnData, parentId) {
+  const turn = {
+    id: turnData.id,
+    question: turnData.question,
+    turn_type: turnData.turn_type,
+    question_source: turnData.question_source || '',
+    answered: false,
+    answer: '',
+    parentId,
+  };
+  S.turns.push(turn);
+  renderTurn(turn, parentId);
+}
+
+function renderTurn(turn, parentId) {
+  const container = parentId
+    ? document.getElementById(`followups-${parentId}`)
+    : document.getElementById('turns-container');
+  if (!container) return;
+
+  const isFollowup = turn.turn_type !== 'initial';
+  const typeBadge = isFollowup
+    ? '<span class="pg-badge pg-badge-yellow ml-2">꼬리질문</span>'
+    : '<span class="pg-badge pg-badge-blue ml-2">초기질문</span>';
+  const sourceBadge = turn.question_source
+    ? `<span class="pg-badge pg-badge-gray ml-1 text-xs">${turn.question_source}</span>`
+    : '';
+
+  const div = document.createElement('div');
+  div.id = `turn-${turn.id}`;
+  div.className = `border border-base-200 dark:border-base-700 rounded p-4 ${isFollowup ? 'ml-6 bg-base-50 dark:bg-base-900/50' : 'bg-white dark:bg-base-900'}`;
+  div.innerHTML = `
+    <div class="flex items-start justify-between gap-2 mb-3">
+      <p class="text-sm font-medium text-base-800 dark:text-base-200 leading-relaxed flex-1">
+        Q. ${escHtml(turn.question)}
+      </p>
+      <div class="flex-shrink-0">${typeBadge}${sourceBadge}</div>
+    </div>
+    <div id="answer-area-${turn.id}">
+      <textarea id="textarea-${turn.id}" rows="3"
+        placeholder="답변을 입력하세요…"
+        class="w-full border border-base-300 dark:border-base-600 rounded px-3 py-2 text-sm
+               bg-white dark:bg-base-800 text-base-800 dark:text-base-200 resize-y"></textarea>
+      <div class="flex justify-end mt-2">
+        <button id="btn-answer-${turn.id}"
+                onclick="submitAnswer(${turn.id})"
+                class="px-4 py-1.5 rounded text-sm font-medium bg-primary-600 hover:bg-primary-700
+                       text-white transition-colors">
+          답변 제출
+        </button>
+      </div>
+    </div>
+    <div id="answered-area-${turn.id}" style="display:none"
+         class="text-sm text-base-500 dark:text-base-400 italic bg-base-50 dark:bg-base-800/50 rounded px-3 py-2">
+    </div>
+    <div id="followups-${turn.id}" class="mt-3 space-y-3"></div>
+  `;
+  container.appendChild(div);
+}
+
+// ── Step 3: 답변 제출 ──────────────────────────────────────────────
+async function submitAnswer(turnId) {
+  clearError();
+  const textarea = document.getElementById(`textarea-${turnId}`);
+  const answer = textarea.value.trim();
+  if (!answer) { showError('답변을 입력해주세요.'); return; }
+
+  const btn = document.getElementById(`btn-answer-${turnId}`);
+  btn.disabled = true;
+  btn.textContent = '제출 중…';
+
+  const { ok, data } = await apiPost(
+    API_BASE + `answer/${S.sessionUuid}/${turnId}/`,
+    { answer }
+  );
+
+  if (!ok) {
+    btn.disabled = false;
+    btn.textContent = '답변 제출';
+    showError('답변 제출 실패: ' + JSON.stringify(data));
+    return;
+  }
+
+  // 답변 완료 처리
+  const turn = S.turns.find(t => t.id === turnId);
+  if (turn) { turn.answered = true; turn.answer = answer; }
+
+  document.getElementById(`answer-area-${turnId}`).style.display = 'none';
+  const answeredArea = document.getElementById(`answered-area-${turnId}`);
+  answeredArea.textContent = `A. ${answer}`;
+  answeredArea.style.display = 'block';
+
+  // 응답에 따라 새 턴 처리
+  if (S.sessionType === 'followup') {
+    // {turns: [...], followup_exhausted: bool} 형태
+    const followups = data.turns || [];
+    followups.forEach(ft => addTurn(ft, turnId));
+
+    if (data.followup_exhausted) {
+      const container = document.getElementById(`followups-${turnId}`);
+      if (container) {
+        const notice = document.createElement('p');
+        notice.className = 'text-xs text-base-400 dark:text-base-500 italic mt-1';
+        notice.textContent = '꼬리질문 한도에 도달했습니다.';
+        container.appendChild(notice);
+      }
+      document.getElementById('btn-finish').disabled = false;
+    }
+  } else {
+    // 전체 프로세스: 다음 질문 or 완료 메시지
+    if (data && data.id) {
+      addTurn(data, null);
+    }
+    // data.detail === "모든 질문에 답변하였습니다." 이면 종료 가능
+  }
+
+  updateTurnCounter();
+  updateFinishButton();
+}
+
+// ── 완료 상태 업데이트 ─────────────────────────────────────────────
+function updateTurnCounter() {
+  const total = S.turns.length;
+  const answered = S.turns.filter(t => t.answered).length;
+  document.getElementById('txt-turn-counter').textContent = `${answered} / ${total} 답변 완료`;
+}
+
+function updateFinishButton() {
+  const allAnswered = S.turns.length > 0 && S.turns.every(t => t.answered);
+  document.getElementById('btn-finish').disabled = !allAnswered;
+}
+
+// ── Step 4: 면접 종료 ──────────────────────────────────────────────
+async function finishInterview(isAbandoned = false) {
+  clearError();
+
+  const confirmMsg = isAbandoned
+    ? '아직 답변하지 않은 질문이 있습니다. 중도 종료하시겠습니까?\n(세션이 "중도 종료" 상태로 저장됩니다.)'
+    : '면접을 종료하고 분석 리포트 생성을 트리거하시겠습니까?';
+  if (!confirm(confirmMsg)) return;
+
+  const btn = isAbandoned
+    ? document.getElementById('btn-abandon')
+    : document.getElementById('btn-finish');
+  btn.disabled = true;
+  btn.textContent = '종료 중…';
+
+  const { ok, data } = await apiPost(API_BASE + `finish/${S.sessionUuid}/`);
+
+  if (!ok) {
+    btn.disabled = false;
+    btn.textContent = isAbandoned ? '중도 종료' : '면접 종료';
+    showError('면접 종료 실패: ' + JSON.stringify(data));
+    return;
+  }
+
+  // 두 버튼 모두 비활성화
+  document.getElementById('btn-finish').disabled = true;
+  document.getElementById('btn-finish').textContent = '종료됨';
+  document.getElementById('btn-abandon').disabled = true;
+  document.getElementById('btn-abandon').textContent = '종료됨';
+
+  const sessionStatus = data.interview_session_status || '';
+  const isCompletedStatus = sessionStatus === 'completed';
+  const statusLabel = isCompletedStatus
+    ? '✓ 정상 종료 (completed)'
+    : '⚠ 중도 종료 (abandoned)';
+  const statusClass = isCompletedStatus ? 'pg-badge-green' : 'pg-badge-yellow';
+
+  document.getElementById('section-report').style.display = 'block';
+  document.getElementById('section-report').scrollIntoView({ behavior: 'smooth' });
+  document.getElementById('report-status').innerHTML =
+    `<span class="pg-badge ${statusClass}">${statusLabel}</span> ` +
+    '분석 리포트가 비동기로 생성됩니다. "리포트 조회"를 눌러 확인하세요.';
+}
+
+// ── Step 5: 리포트 조회 ────────────────────────────────────────────
+let pollAttempts = 0;
+
+async function fetchReport() {
+  clearError();
+  document.getElementById('btn-report').disabled = true;
+  document.getElementById('btn-report').textContent = '조회 중…';
+  document.getElementById('report-status').textContent = '리포트 조회 중…';
+
+  const { ok, status, data } = await apiGet(API_BASE + `report/${S.sessionUuid}/`);
+
+  if (status === 404) {
+    document.getElementById('report-status').textContent =
+      '리포트가 아직 생성되지 않았습니다. (pending/generating 상태일 수 있습니다)';
+    document.getElementById('btn-report').disabled = false;
+    document.getElementById('btn-report').textContent = '리포트 재조회';
+    return;
+  }
+
+  if (!ok) {
+    showError('리포트 조회 실패: ' + JSON.stringify(data));
+    document.getElementById('btn-report').disabled = false;
+    document.getElementById('btn-report').textContent = '리포트 재조회';
+    return;
+  }
+
+  const rptStatus = data.interview_analysis_report_status || data.status || '';
+
+  if (rptStatus === 'pending' || rptStatus === 'generating') {
+    document.getElementById('report-status').textContent =
+      `리포트 생성 중... (상태: ${rptStatus}) — 잠시 후 다시 조회하세요.`;
+    document.getElementById('btn-report').disabled = false;
+    document.getElementById('btn-report').textContent = '리포트 재조회';
+    return;
+  }
+
+  if (rptStatus === 'failed') {
+    document.getElementById('report-status').textContent =
+      `리포트 생성 실패: ${data.error_message || ''}`;
+    document.getElementById('btn-report').disabled = false;
+    document.getElementById('btn-report').textContent = '리포트 재조회';
+    return;
+  }
+
+  // 완료
+  document.getElementById('report-status').textContent = '리포트 생성 완료';
+  document.getElementById('btn-report').textContent = '리포트 재조회';
+  document.getElementById('btn-report').disabled = false;
+  renderReport(data);
+}
+
+function renderReport(d) {
+  document.getElementById('report-content').style.display = 'block';
+  document.getElementById('rpt-score').textContent = d.overall_score ?? '—';
+  document.getElementById('rpt-grade').textContent = d.overall_grade || '—';
+  document.getElementById('rpt-report-status').textContent =
+    d.interview_analysis_report_status || d.status || '';
+  document.getElementById('rpt-comment').textContent = d.overall_comment || '';
+
+  // 카테고리 점수
+  const tbody = document.getElementById('rpt-categories');
+  tbody.innerHTML = '';
+  (d.category_scores || []).forEach(c => {
+    const tr = document.createElement('tr');
+    tr.className = 'border-b border-base-100 dark:border-base-800';
+    tr.innerHTML = `
+      <td class="py-1 px-2 text-base-700 dark:text-base-300">${escHtml(c.category)}</td>
+      <td class="py-1 px-2 font-semibold">${c.score}</td>
+      <td class="py-1 px-2 text-base-500 dark:text-base-400">${escHtml(c.comment || '')}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // 강점
+  const strList = document.getElementById('rpt-strengths');
+  strList.innerHTML = '';
+  (d.strengths || []).forEach(s => {
+    const li = document.createElement('li');
+    li.innerHTML = `<strong>${escHtml(s.title)}</strong><br><span class="text-xs">${escHtml(s.evidence)}</span>`;
+    strList.appendChild(li);
+  });
+
+  // 개선 영역
+  const impList = document.getElementById('rpt-improvements');
+  impList.innerHTML = '';
+  (d.improvement_areas || []).forEach(a => {
+    const li = document.createElement('li');
+    li.innerHTML = `<strong>${escHtml(a.title)}</strong><br><span class="text-xs">${escHtml(a.evidence)}</span>`;
+    impList.appendChild(li);
+  });
+
+  // 질문별 피드백
+  const fbDiv = document.getElementById('rpt-feedbacks');
+  fbDiv.innerHTML = '';
+  (d.question_feedbacks || []).forEach((fb, i) => {
+    const div = document.createElement('div');
+    div.className = 'border border-base-200 dark:border-base-700 rounded p-3';
+    div.innerHTML = `
+      <p class="text-sm font-medium text-base-700 dark:text-base-300 mb-2">
+        #${i + 1}. ${escHtml(fb.question)}
+      </p>
+      <div class="grid grid-cols-2 gap-3 text-sm">
+        <div>
+          <p class="text-xs font-semibold text-green-700 dark:text-green-400 mb-1">잘한 점</p>
+          <ul class="list-disc list-inside space-y-0.5 text-base-600 dark:text-base-400">
+            ${(fb.strengths || []).map(s => `<li>${escHtml(s)}</li>`).join('')}
+          </ul>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-yellow-700 dark:text-yellow-400 mb-1">개선할 점</p>
+          <ul class="list-disc list-inside space-y-0.5 text-base-600 dark:text-base-400">
+            ${(fb.improvements || []).map(s => `<li>${escHtml(s)}</li>`).join('')}
+          </ul>
+        </div>
+      </div>
+      <details class="mt-2">
+        <summary class="cursor-pointer text-xs text-indigo-600 dark:text-indigo-400">모범답변 보기</summary>
+        <p class="mt-1 text-sm text-base-600 dark:text-base-400 whitespace-pre-wrap">${escHtml(fb.model_answer || '')}</p>
+      </details>
+    `;
+    fbDiv.appendChild(div);
+  });
+}
+
+// ── 유틸 ────────────────────────────────────────────────────────────
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+</script>
+{% endblock %}
