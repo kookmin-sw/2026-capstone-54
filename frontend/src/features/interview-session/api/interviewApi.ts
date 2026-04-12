@@ -49,7 +49,7 @@ export const interviewApi = {
     }),
 
   getMyInterviews: (page = 1) =>
-    apiRequest<PaginatedResponse<InterviewSessionListItem>>(`/api/v1/interviews/my-interviews/?page=${page}`, { auth: true }),
+    apiRequest<PaginatedResponse<InterviewSessionListItem>>(`/api/v1/interviews/interview-sessions/?page=${page}`, { auth: true }),
 
   generateReport: (interviewSessionUuid: string) =>
     apiRequest<InterviewAnalysisReport>(`${BASE}/${interviewSessionUuid}/generate-report/`, {
