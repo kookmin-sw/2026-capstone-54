@@ -45,8 +45,8 @@ export function InterviewSetupPage() {
     <div className="min-h-screen bg-white">
       <div className="max-w-container-lg mx-auto px-8 pt-[28px] pb-[60px] max-sm:px-4 max-sm:pt-5">
         <div className="mb-6">
-          <h1 className="text-[clamp(22px,2.5vw,30px)] font-black tracking-[-0.5px] mb-1.5">AI 맞춤 면접을 시작해요</h1>
-          <p className="text-sm text-[#6B7280]">채용공고와 면접 방식을 선택하고 AI 맞춤 면접을 시작하세요.</p>
+          <h1 className="text-[clamp(22px,2.5vw,30px)] font-black tracking-[-0.5px] mb-1.5">맞춤 가상 면접을 시작해요</h1>
+          <p className="text-sm text-[#6B7280]">채용공고와 면접 방식을 선택하고 맞춤 가상 면접을 시작하세요.</p>
         </div>
 
         {/* ══════ STEP 1: 지원 컨텍스트 ══════ */}
