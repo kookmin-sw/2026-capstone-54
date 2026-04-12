@@ -67,7 +67,7 @@ class 모델ViewSet(
   def create(self, request, *args, **kwargs):
     serializer = Create모델Serializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    result = create_모델(user=self.current_user, **serializer.validated_data)
+    result = Create모델Service(user=self.current_user, **serializer.validated_data).perform()
     return Response(모델Serializer(result).data, status=status.HTTP_201_CREATED)
 ```
 
