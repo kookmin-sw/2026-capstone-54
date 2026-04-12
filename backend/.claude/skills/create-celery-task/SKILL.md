@@ -25,7 +25,7 @@ from common.tasks.base_task import BaseTask
 from config.celery import app
 
 
-class Xxx태스크Task(BaseTask):
+class XxxTask(BaseTask):
   """태스크 설명 (한국어)."""
 
   def run(self, user_id: int, **kwargs):
@@ -37,7 +37,7 @@ class Xxx태스크Task(BaseTask):
 
 
 # 반드시 명시적 등록
-RegisteredXxx태스크Task = app.register_task(Xxx태스크Task())
+RegisteredXxxTask = app.register_task(XxxTask())
 ```
 
 ### 3. 주기 태스크 템플릿
