@@ -37,7 +37,7 @@ from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.mixins import CreateModelMixin, ListModelMixin, RetrieveModelMixin
 from rest_framework.response import Response
-from {앱명}.services import create_모델
+from {앱명}.services import Create모델Service
 
 
 @extend_schema(tags=["태그명"])
