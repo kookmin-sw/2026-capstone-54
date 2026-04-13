@@ -1,6 +1,4 @@
-// Streak API — Mocked (set USE_MOCK = false when backend is ready)
-
-const USE_MOCK = true;
+import { apiRequest } from "@/shared/api/client";
 
 /* ── Types ── */
 export interface StreakMilestone {
@@ -23,7 +21,7 @@ export interface StreakRewardHistory {
 export interface StreakNextReward {
   targetDays: number;
   daysRemaining: number;
-  progress: number; // 0–100
+  progress: number;
   reward: string;
   rewardDetail: string;
 }
@@ -41,75 +39,96 @@ export interface StreakData {
   rewardHistory: StreakRewardHistory[];
 }
 
-/* ── Mock Data ── */
-const MOCK_DATA: StreakData = {
-  currentStreak: 12,
-  bestStreak: 28,
-  totalDays: 43,
-  rewardsCount: 3,
-  todayCompleted: true,
-  calendarDoneMap: {
-    "2026-4": [1, 2, 3],
-    "2026-3": [1, 3, 4, 5, 6, 7, 8, 10, 12, 14, 15, 16, 17, 18, 20, 22, 24, 25, 26, 27, 28, 29, 30, 31],
-    "2026-2": [3, 4, 5, 6, 7, 10, 11, 12, 13, 14, 15, 17, 18, 19, 20, 21],
-    "2025-12": [10, 11, 12, 15, 16, 17, 20, 21, 22, 23, 24],
-  },
-  nextReward: {
-    targetDays: 14,
-    daysRemaining: 2,
-    progress: 86,
-    reward: "시선 추적 3회",
-    rewardDetail: "14일 연속 달성 시 시선 추적 분석 3회를 무료로 받을 수 있어요. 오늘도 면접 연습으로 스트릭을 이어가세요!",
-  },
-  milestones: [
-    { days: 7,  reward: "시선 추적 5회 제공",       rewardIcon: "👁️", status: "achieved", daysRemaining: 0  },
-    { days: 14, reward: "시선 추적 3회 제공",        rewardIcon: "🔥", status: "next",     daysRemaining: 2  },
-    { days: 30, reward: "실전 모드 5회 제공",        rewardIcon: "🔒", status: "locked",   daysRemaining: 18 },
-    { days: 60, reward: "상세 리포트 PDF 10회 제공", rewardIcon: "🔒", status: "locked",   daysRemaining: 48 },
-  ],
-  rewardHistory: [
-    {
-      id: "r1",
-      icon: "👁️",
-      iconBg: "cyan",
-      title: "시선 추적 5회 제공",
-      description: "7일 스트릭 달성",
-      date: "2026.04.01",
-    },
-    {
-      id: "r2",
-      icon: "⚡",
-      iconBg: "green",
-      title: "실전 모드 3회 제공",
-      description: "30일 스트릭 달성",
-      date: "2026.03.20",
-    },
-    {
-      id: "r3",
-      icon: "📄",
-      iconBg: "amber",
-      title: "상세 리포트 PDF 3회 제공",
-      description: "7일 스트릭 달성",
-      date: "2026.02.14",
-    },
-  ],
-};
+/* ── API Response Types ── */
+interface StreakStatisticsResponse {
+  currentStreak: number;
+  longestStreak: number;
+  lastParticipatedDate: string | null;
+}
+
+interface StreakLogEntry {
+  date: string; // "YYYY-MM-DD"
+  interviewResultsCount: number;
+}
+
+/* ── Helpers ── */
+function buildCalendarDoneMap(logs: StreakLogEntry[]): Record<string, number[]> {
+  const map: Record<string, number[]> = {};
+  for (const log of logs) {
+    if (log.interviewResultsCount < 1) continue;
+    const [year, month, day] = log.date.split("-").map(Number);
+    const key = `${year}-${month}`;
+    if (!map[key]) map[key] = [];
+    map[key].push(day);
+  }
+  return map;
+}
+
+function buildMilestones(currentStreak: number): StreakMilestone[] {
+  const MILESTONES = [
+    { days: 7,  reward: "시선 추적 5회 제공",       rewardIcon: "👁️" },
+    { days: 14, reward: "시선 추적 3회 제공",        rewardIcon: "🔥" },
+    { days: 30, reward: "실전 모드 5회 제공",        rewardIcon: "⚡" },
+    { days: 60, reward: "상세 리포트 PDF 10회 제공", rewardIcon: "📄" },
+  ];
+  return MILESTONES.map((m) => {
+    const daysRemaining = Math.max(0, m.days - currentStreak);
+    const status: StreakMilestone["status"] =
+      currentStreak >= m.days ? "achieved" : daysRemaining === m.days - currentStreak && daysRemaining <= 7 ? "next" : "locked";
+    return { ...m, status: currentStreak >= m.days ? "achieved" : status, daysRemaining };
+  });
+}
+
+function buildNextReward(currentStreak: number): StreakNextReward {
+  const TARGETS = [7, 14, 30, 60];
+  const REWARDS = [
+    { reward: "시선 추적 5회", detail: "7일 연속 달성 시 시선 추적 분석 5회를 무료로 받을 수 있어요." },
+    { reward: "시선 추적 3회", detail: "14일 연속 달성 시 시선 추적 분석 3회를 무료로 받을 수 있어요." },
+    { reward: "실전 모드 5회", detail: "30일 연속 달성 시 실전 모드 5회를 무료로 받을 수 있어요." },
+    { reward: "상세 리포트 PDF 10회", detail: "60일 연속 달성 시 상세 리포트 PDF 10회를 무료로 받을 수 있어요." },
+  ];
+  const idx = TARGETS.findIndex((t) => currentStreak < t);
+  const target = idx === -1 ? TARGETS[TARGETS.length - 1] : TARGETS[idx];
+  const info = idx === -1 ? REWARDS[REWARDS.length - 1] : REWARDS[idx];
+  const daysRemaining = Math.max(0, target - currentStreak);
+  const progress = Math.min(100, Math.round((currentStreak / target) * 100));
+  return { targetDays: target, daysRemaining, progress, reward: info.reward, rewardDetail: info.detail };
+}
 
 /* ── Fetch Streak Data ── */
 export async function fetchStreakApi(): Promise<{ success: boolean; data?: StreakData; error?: string }> {
-  if (USE_MOCK) {
-    await new Promise((r) => setTimeout(r, 380));
-    return { success: true, data: MOCK_DATA };
-  }
   try {
-    const res = await fetch("/api/v1/streak/", {
-      method: "GET",
-      credentials: "include",
-    });
-    if (!res.ok) return { success: true, data: MOCK_DATA };
-    const json = await res.json();
-    return { success: true, data: json };
+    // 통계 + 최근 6개월 로그 병렬 조회
+    const now = new Date();
+    const startDate = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+    const startStr = startDate.toISOString().slice(0, 10);
+    const endStr = now.toISOString().slice(0, 10);
+
+    const [stats, logs] = await Promise.all([
+      apiRequest<StreakStatisticsResponse>("/api/v1/streaks/statistics/", { auth: true }),
+      apiRequest<StreakLogEntry[]>(`/api/v1/streaks/logs/?start_date=${startStr}&end_date=${endStr}`, { auth: true }),
+    ]);
+
+    const logsArray = Array.isArray(logs) ? logs : [];
+    const today = now.toISOString().slice(0, 10);
+    const todayLog = logsArray.find((l) => l.date === today);
+    const todayCompleted = (todayLog?.interviewResultsCount ?? 0) > 0;
+    const totalDays = logsArray.filter((l) => l.interviewResultsCount > 0).length;
+
+    const data: StreakData = {
+      currentStreak: stats.currentStreak,
+      bestStreak: stats.longestStreak,
+      totalDays,
+      rewardsCount: 0,
+      todayCompleted,
+      calendarDoneMap: buildCalendarDoneMap(logsArray),
+      nextReward: buildNextReward(stats.currentStreak),
+      milestones: buildMilestones(stats.currentStreak),
+      rewardHistory: [],
+    };
+
+    return { success: true, data };
   } catch {
-    return { success: true, data: MOCK_DATA };
+    return { success: false, error: "스트릭 정보를 불러오지 못했습니다." };
   }
 }

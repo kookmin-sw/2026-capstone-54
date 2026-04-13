@@ -1,6 +1,7 @@
 import { apiRequest } from "@/shared/api/client";
 import { profileApi } from "@/shared/api/profileApi";
 import { getMeApi } from "@/features/auth/api/authApi";
+import { getMyConsentsApi } from "@/features/auth/api/termsApi";
 import type { JobCategory, Job } from "@/shared/api/profileApi";
 
 export type { JobCategory, Job };
@@ -10,7 +11,7 @@ export interface SettingsProfile {
   name: string;
   email: string;
   avatarInitial: string;
-  // 프로필 API 연동 필드
+  avatarUrl: string | null;
   jobCategoryId: number | null;
   jobCategory: JobCategory | null;
   jobIds: number[];
@@ -37,6 +38,8 @@ export interface SettingsConsents {
   termsAgreedAt: string;
   privacyAgreedAt: string;
   aiDataAgreed: boolean;
+  // my-consents API 원본 데이터
+  myConsents: { termsDocumentId: number; title: string; version: string; agreedAt: string }[];
 }
 
 export interface SettingsData {
@@ -68,11 +71,7 @@ const MOCK_SUBSCRIPTION: SettingsSubscription = {
   nextBillingDate: null,
 };
 
-const MOCK_CONSENTS: SettingsConsents = {
-  termsAgreedAt: "2025.01.15",
-  privacyAgreedAt: "2025.01.15",
-  aiDataAgreed: false,
-};
+
 
 /* ── Fetch Settings ──
    - 사용자 기본정보: GET /api/v1/users/me/
@@ -81,22 +80,48 @@ const MOCK_CONSENTS: SettingsConsents = {
 */
 export async function fetchSettingsApi(): Promise<{ success: boolean; data?: SettingsData; error?: string }> {
   try {
-    const [me, userProfile] = await Promise.allSettled([
+    const [me, userProfile, myConsents, avatar] = await Promise.allSettled([
       getMeApi(),
       profileApi.getMyProfile(),
+      getMyConsentsApi(),
+      profileApi.getAvatar(),
     ]);
 
     const meData = me.status === "fulfilled" ? me.value : null;
     const profileData = userProfile.status === "fulfilled" ? userProfile.value : null;
+    const consentsData = myConsents.status === "fulfilled" ? myConsents.value : [];
+    const avatarData = avatar.status === "fulfilled" ? avatar.value : null;
 
     const profile: SettingsProfile = {
       name: meData?.name ?? "",
       email: meData?.email ?? "",
       avatarInitial: meData?.name ? meData.name[0] : "?",
+      avatarUrl: avatarData?.avatarUrl ?? null,
       jobCategoryId: profileData?.jobCategory?.id ?? null,
       jobCategory: profileData?.jobCategory ?? null,
       jobIds: profileData?.jobs?.map((j) => j.id) ?? [],
       jobs: profileData?.jobs ?? [],
+    };
+
+    // my-consents에서 이용약관/개인정보처리방침 동의일 추출
+    const formatDate = (iso: string) => {
+      if (!iso) return "";
+      const d = new Date(iso);
+      return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
+    };
+
+    const termsConsent = consentsData.find((c) =>
+      c.title?.includes("이용약관") || c.title?.toLowerCase().includes("terms")
+    );
+    const privacyConsent = consentsData.find((c) =>
+      c.title?.includes("개인정보") || c.title?.toLowerCase().includes("privacy")
+    );
+
+    const consents: SettingsConsents = {
+      termsAgreedAt: termsConsent ? formatDate(termsConsent.agreedAt) : "",
+      privacyAgreedAt: privacyConsent ? formatDate(privacyConsent.agreedAt) : "",
+      aiDataAgreed: false,
+      myConsents: consentsData,
     };
 
     return {
@@ -105,11 +130,21 @@ export async function fetchSettingsApi(): Promise<{ success: boolean; data?: Set
         profile,
         notifications: MOCK_NOTIFICATIONS,
         subscription: MOCK_SUBSCRIPTION,
-        consents: MOCK_CONSENTS,
+        consents,
       },
     };
   } catch {
     return { success: false, error: "설정을 불러오지 못했습니다." };
+  }
+}
+
+/* ── Upload Avatar ── */
+export async function uploadAvatarApi(file: File): Promise<{ success: boolean; avatarUrl?: string; message: string }> {
+  try {
+    const res = await profileApi.uploadAvatar(file);
+    return { success: true, avatarUrl: res.avatarUrl ?? undefined, message: "프로필 사진이 변경되었습니다." };
+  } catch {
+    return { success: false, message: "사진 업로드에 실패했습니다." };
   }
 }
 

@@ -123,7 +123,7 @@ export const useAuthStore = create<AuthState>()((set) => ({
       }
     }
 
-    const me = await getMeApi();
+    const me = await getMeApi({ noRetry: true });
     set({ user: me ?? null, authReady: true });
   },
 

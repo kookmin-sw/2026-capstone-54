@@ -31,6 +31,10 @@ export interface PaginatedJobCategories {
   results: JobCategory[];
 }
 
+export interface AvatarResponse {
+  avatarUrl: string | null;
+}
+
 export const profileApi = {
   getJobCategories: () =>
     apiRequest<PaginatedJobCategories>("/api/v1/job-categories/?per_page=100"),
@@ -49,4 +53,19 @@ export const profileApi = {
       auth: true,
       body: JSON.stringify({ jobCategoryId: params.jobCategoryId, jobIds: params.jobIds }),
     }),
+
+  getAvatar: () =>
+    apiRequest<AvatarResponse>("/api/v1/profiles/me/avatar/", { auth: true }),
+
+  uploadAvatar: (file: File) => {
+    const formData = new FormData();
+    formData.append("avatar", file);
+    // Content-Type은 브라우저가 multipart/form-data로 자동 설정
+    return apiRequest<AvatarResponse>("/api/v1/profiles/me/avatar/", {
+      method: "POST",
+      auth: true,
+      headers: {},
+      body: formData,
+    });
+  },
 };

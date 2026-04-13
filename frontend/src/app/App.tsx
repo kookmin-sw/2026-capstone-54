@@ -2,6 +2,8 @@ import { useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "sonner";
 import { useAuthStore } from "@/features/auth";
+import { useNotificationStore } from "@/features/notifications";
+import { setOnRefreshFailed } from "@/shared/api/client";
 import { ProtectedRoute } from "./ProtectedRoute";
 
 import { LandingPage } from "@/pages/landing";
@@ -30,11 +32,22 @@ import { SubscriptionPage } from "@/pages/subscription";
 import { NotificationsPage } from "@/pages/notifications";
 
 function App() {
-  const { initAuth } = useAuthStore();
+  const { initAuth, logout, user } = useAuthStore();
+  const { connectWs, disconnectWs } = useNotificationStore();
 
   useEffect(() => {
+    setOnRefreshFailed(() => logout());
     initAuth();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // 로그인 상태 변화에 따라 WebSocket 연결/해제
+  useEffect(() => {
+    if (user) {
+      connectWs();
+    } else {
+      disconnectWs();
+    }
+  }, [user, connectWs, disconnectWs]);
 
   return (
     <BrowserRouter>
