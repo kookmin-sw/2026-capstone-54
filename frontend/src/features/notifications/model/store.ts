@@ -1,4 +1,6 @@
 import { create } from "zustand";
+import { RealtimeClient } from "@/shared/api/realtimeApi";
+import type { WsNotificationMessage } from "@/shared/api/realtimeApi";
 
 export interface Notification {
   id: number;
@@ -8,26 +10,42 @@ export interface Notification {
   category: "interview" | "resume" | "jd" | "system";
 }
 
-// 프론트 확인용 더미 데이터
-const DUMMY_NOTIFICATIONS: Notification[] = [
-  { id: 1, message: "새로운 채용공고가 등록되었습니다.", time: "방금 전", read: false, category: "jd" },
-  { id: 2, message: "이력서 분석이 완료되었습니다.", time: "10분 전", read: false, category: "resume" },
-  { id: 3, message: "면접 연습 결과를 확인해보세요.", time: "1시간 전", read: true, category: "interview" },
-  { id: 4, message: "스트릭 7일 달성! 보상이 지급되었습니다.", time: "어제", read: true, category: "system" },
-  { id: 5, message: "채용공고 '카카오 프론트엔드' 마감이 3일 남았습니다.", time: "2일 전", read: true, category: "jd" },
-  { id: 6, message: "AI 면접 리포트가 생성되었습니다.", time: "3일 전", read: true, category: "interview" },
-];
+function formatTime(isoString: string): string {
+  const diff = Math.floor((Date.now() - new Date(isoString).getTime()) / 1000);
+  if (diff < 60) return "방금 전";
+  if (diff < 3600) return `${Math.floor(diff / 60)}분 전`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}시간 전`;
+  if (diff < 172800) return "어제";
+  return `${Math.floor(diff / 86400)}일 전`;
+}
+
+function wsMessageToNotification(msg: WsNotificationMessage): Notification {
+  return {
+    id: msg.id,
+    message: msg.message,
+    time: formatTime(msg.createdAt),
+    read: false,
+    category: msg.category,
+  };
+}
 
 interface NotificationState {
   notifications: Notification[];
+  connected: boolean;
   markAllRead: () => void;
   markRead: (id: number) => void;
   deleteNotification: (id: number) => void;
   deleteAll: () => void;
+  connectWs: () => void;
+  disconnectWs: () => void;
 }
 
+let _client: RealtimeClient | null = null;
+
 export const useNotificationStore = create<NotificationState>((set) => ({
-  notifications: DUMMY_NOTIFICATIONS,
+  notifications: [],
+  connected: false,
+
   markAllRead: () =>
     set((s) => ({ notifications: s.notifications.map((n) => ({ ...n, read: true })) })),
   markRead: (id) =>
@@ -37,4 +55,23 @@ export const useNotificationStore = create<NotificationState>((set) => ({
   deleteNotification: (id) =>
     set((s) => ({ notifications: s.notifications.filter((n) => n.id !== id) })),
   deleteAll: () => set({ notifications: [] }),
+
+  connectWs: () => {
+    if (_client) return; // 이미 연결 중
+    _client = new RealtimeClient({
+      onMessage: (msg) => {
+        set((s) => ({
+          notifications: [wsMessageToNotification(msg), ...s.notifications],
+        }));
+      },
+      onClose: () => set({ connected: false }),
+    });
+    _client.connect().then(() => set({ connected: true }));
+  },
+
+  disconnectWs: () => {
+    _client?.disconnect();
+    _client = null;
+    set({ connected: false });
+  },
 }));

@@ -122,10 +122,15 @@ export function ResumeListPage() {
   const navigate = useNavigate();
   const ctxRef = useRef<HTMLDivElement>(null);
 
-  const {
-    resumes, summary, loading, ctxMenu,
-    fetchResumes, toggleActive, deleteResume, openCtx, closeCtx,
-  } = useResumeListStore();
+  const resumes = useResumeListStore((s) => s.resumes);
+  const summary = useResumeListStore((s) => s.summary);
+  const loading = useResumeListStore((s) => s.loading);
+  const error = useResumeListStore((s) => s.error);
+  const ctxMenu = useResumeListStore((s) => s.ctxMenu);
+  const fetchResumes = useResumeListStore((s) => s.fetchResumes);
+  const deleteResume = useResumeListStore((s) => s.deleteResume);
+  const openCtx = useResumeListStore((s) => s.openCtx);
+  const closeCtx = useResumeListStore((s) => s.closeCtx);
 
   useEffect(() => {
     fetchResumes();
@@ -187,12 +192,6 @@ export function ResumeListPage() {
             </div>
             <div className="flex gap-2 flex-wrap relative ml-auto">
               <span className="flex items-center gap-[5px] bg-white/15 backdrop-blur-[8px] rounded-full px-[13px] py-[6px] text-[12px] font-semibold text-white">
-                <span className="w-[6px] h-[6px] rounded-full bg-[#34D399] shrink-0" />활성 {summary.active}개
-              </span>
-              <span className="flex items-center gap-[5px] bg-white/15 backdrop-blur-[8px] rounded-full px-[13px] py-[6px] text-[12px] font-semibold text-white">
-                <span className="w-[6px] h-[6px] rounded-full bg-white/40 shrink-0" />비활성 {summary.inactive}개
-              </span>
-              <span className="flex items-center gap-[5px] bg-white/15 backdrop-blur-[8px] rounded-full px-[13px] py-[6px] text-[12px] font-semibold text-white">
                 📎 파일 {summary.fileCount} · ✏️ 텍스트 {summary.textCount}
               </span>
             </div>
@@ -213,6 +212,11 @@ export function ResumeListPage() {
                 <div className="w-6 h-6 rounded-full border-2 border-[#E5E7EB] border-t-[#0991B2] animate-[rl-spin_.8s_linear_infinite]" />
                 <span>이력서를 불러오는 중...</span>
               </div>
+            ) : error ? (
+              <div className="flex flex-col items-center justify-center gap-3 py-[60px] text-[14px] text-[#EF4444] font-semibold">
+                <span>⚠️ {error}</span>
+                <button className="text-[13px] font-bold px-4 py-2 rounded-lg bg-[#0A0A0A] text-white" onClick={fetchResumes}>다시 시도</button>
+              </div>
             ) : (
               <div className="grid grid-cols-1 gap-[14px] pb-20 sm:grid-cols-2 lg:grid-cols-3">
                 {resumes.map((item, i) => (
@@ -222,7 +226,7 @@ export function ResumeListPage() {
                     delay={0.06 + i * 0.06}
                     onMenu={handleMenu}
                     onUse={(id) => { void id; navigate("/interview/setup"); }}
-                    onEdit={(id) => { void id; navigate("/resume/input"); }}
+                    onEdit={(id) => navigate(`/resume/input?uuid=${id}`)}
                   />
                 ))}
 
@@ -286,21 +290,11 @@ export function ResumeListPage() {
             <div className="font-inter text-[14px] font-extrabold text-[#0A0A0A] mb-1 text-center md:text-[13px] md:text-left md:ml-1">{activeResume?.title ?? ""}</div>
             <div className="text-[12px] text-[#6B7280] text-center mb-[14px] md:hidden">이 이력서에 대해 무엇을 할까요?</div>
 
-            <button className="flex items-center gap-3 px-[14px] py-3 rounded-lg bg-[#F9FAFB] border border-[#E5E7EB] mb-2 cursor-pointer w-full text-left transition-[background] duration-[120ms] active:scale-[.97] md:bg-transparent md:border-none md:mb-[2px] md:px-[10px] md:py-[9px] md:hover:bg-[rgba(9,145,178,.07)]" onClick={() => { navigate("/resume/input"); closeCtx(); }}>
+            <button className="flex items-center gap-3 px-[14px] py-3 rounded-lg bg-[#F9FAFB] border border-[#E5E7EB] mb-2 cursor-pointer w-full text-left transition-[background] duration-[120ms] active:scale-[.97] md:bg-transparent md:border-none md:mb-[2px] md:px-[10px] md:py-[9px] md:hover:bg-[rgba(9,145,178,.07)]" onClick={() => { navigate(`/resume/input?uuid=${ctxMenu.resumeId}`); closeCtx(); }}>
               <div className="w-9 h-9 rounded-lg flex items-center justify-center text-[15px] shrink-0 bg-gradient-to-br from-[#BAE6FD] to-[#2563EB] md:w-7 md:h-7 md:text-[13px]">✏️</div>
               <div>
                 <div className="text-[14px] font-bold text-[#0A0A0A] md:text-[13px]">수정하기</div>
                 <div className="text-[12px] text-[#6B7280] font-medium md:hidden">이력서 내용을 편집합니다</div>
-              </div>
-            </button>
-
-            <button className="flex items-center gap-3 px-[14px] py-3 rounded-lg bg-[#F9FAFB] border border-[#E5E7EB] mb-2 cursor-pointer w-full text-left transition-[background] duration-[120ms] active:scale-[.97] md:bg-transparent md:border-none md:mb-[2px] md:px-[10px] md:py-[9px] md:hover:bg-[rgba(9,145,178,.07)]" onClick={() => ctxMenu.resumeId && toggleActive(ctxMenu.resumeId)}>
-              <div className="w-9 h-9 rounded-lg flex items-center justify-center text-[15px] shrink-0 bg-gradient-to-br from-[#A7F3D0] to-[#059669] md:w-7 md:h-7 md:text-[13px]">🔄</div>
-              <div>
-                <div className="text-[14px] font-bold text-[#0A0A0A] md:text-[13px]">
-                  {activeResume?.status === "active" ? "비활성화" : "활성화"}
-                </div>
-                <div className="text-[12px] text-[#6B7280] font-medium md:hidden">면접 질문 생성에서 제외됩니다</div>
               </div>
             </button>
 

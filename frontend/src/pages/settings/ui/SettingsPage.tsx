@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useSettingsStore } from "@/features/settings";
 import type { SettingsPanel } from "@/features/settings";
@@ -33,7 +33,7 @@ export function SettingsPage() {
     jobCategories, jobCategoriesLoading, availableJobs, availableJobsLoading,
     fetchSettings, setActivePanel,
     loadJobCategories,
-    setProfileDraftField, toggleJobId, saveProfile, resetProfileDraft,
+    setProfileDraftField, toggleJobId, uploadAvatar, saveProfile, resetProfileDraft,
     setPasswordDraft, savePassword, resetPasswordDraft,
     toggleNotification, saveNotifications, resetNotificationsDraft,
     setAiDataDraft, saveConsents,
@@ -43,6 +43,7 @@ export function SettingsPage() {
 
   const [searchParams] = useSearchParams();
   const [deleteConfirm, setDeleteConfirm] = useState<"data" | "account" | null>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
   // URL 쿼리로 패널 초기화 (?panel=notifications)
   useEffect(() => {
@@ -105,15 +106,17 @@ export function SettingsPage() {
                   <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl px-7 py-7 shadow-[var(--sc)] mb-4 max-[640px]:px-[18px]">
                     <div className="font-inter text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">👤 프로필 사진</div>
                     <div className="flex items-center gap-4 mb-5">
-                      <div className="w-16 h-16 rounded-full bg-[#0991B2] flex items-center justify-center font-inter text-[24px] font-black text-white shadow-[0_2px_8px_rgba(9,145,178,0.3)] shrink-0">
-                        {data.profile.avatarInitial}
-                      </div>
+                      {data.profile.avatarUrl ? (
+                        <img src={data.profile.avatarUrl} alt="프로필" className="w-16 h-16 rounded-full object-cover shadow-[0_2px_8px_rgba(9,145,178,0.3)] shrink-0" />
+                      ) : (
+                        <div className="w-16 h-16 rounded-full bg-[#0991B2] flex items-center justify-center font-inter text-[24px] font-black text-white shadow-[0_2px_8px_rgba(9,145,178,0.3)] shrink-0">
+                          {data.profile.avatarInitial}
+                        </div>
+                      )}
                       <div className="flex flex-col gap-[6px]">
-                        <button className="font-inter text-[13px] font-bold text-[#0991B2] bg-[rgba(9,145,178,0.08)] border-[1.5px] border-[rgba(9,145,178,0.25)] rounded-lg px-4 py-[7px] cursor-pointer transition-all duration-150 hover:bg-[rgba(9,145,178,0.14)]">
+                        <input ref={avatarInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadAvatar(f); e.target.value = ""; }} />
+                        <button className="font-inter text-[13px] font-bold text-[#0991B2] bg-[rgba(9,145,178,0.08)] border-[1.5px] border-[rgba(9,145,178,0.25)] rounded-lg px-4 py-[7px] cursor-pointer transition-all duration-150 hover:bg-[rgba(9,145,178,0.14)]" onClick={() => avatarInputRef.current?.click()} disabled={saving}>
                           사진 변경
-                        </button>
-                        <button className="font-inter text-[12px] font-semibold text-[#6B7280] bg-none border-none cursor-pointer transition-[color] duration-150 hover:text-[#0A0A0A]">
-                          사진 삭제
                         </button>
                       </div>
                     </div>
@@ -128,6 +131,8 @@ export function SettingsPage() {
                           이름 <span className="text-[#EF4444] text-[10px]">*</span>
                         </label>
                         <input
+                          id="settings-name"
+                          name="name"
                           type="text"
                           className={inputClass}
                           value={profileDraft.name ?? ""}
@@ -137,7 +142,7 @@ export function SettingsPage() {
                       </div>
                       <div className="flex flex-col gap-[5px]">
                         <label className="font-inter text-[12px] font-bold text-[#0A0A0A] tracking-[0.1px]">이메일 주소</label>
-                        <input type="email" className={inputClass} value={data.profile.email} readOnly />
+                        <input id="settings-email" name="email" type="email" className={inputClass} value={data.profile.email} readOnly />
                         <p className="text-[11px] text-[#6B7280] leading-[1.45]">이메일 주소는 변경할 수 없습니다. 고객센터로 문의해주세요.</p>
                       </div>
                       <div className="flex flex-col gap-4">
@@ -226,11 +231,11 @@ export function SettingsPage() {
                     <div className="flex flex-col gap-4">
                       <div className="flex flex-col gap-[5px]">
                         <label className="font-inter text-[12px] font-bold text-[#0A0A0A] tracking-[0.1px] flex items-center gap-1">현재 비밀번호 <span className="text-[#EF4444] text-[10px]">*</span></label>
-                        <input type="password" className={inputClass} value={passwordDraft.currentPassword} onChange={(e) => setPasswordDraft("currentPassword", e.target.value)} placeholder="현재 비밀번호를 입력하세요" />
+                        <input id="settings-current-password" name="currentPassword" type="password" className={inputClass} value={passwordDraft.currentPassword} onChange={(e) => setPasswordDraft("currentPassword", e.target.value)} placeholder="현재 비밀번호를 입력하세요" />
                       </div>
                       <div className="flex flex-col gap-[5px]">
                         <label className="font-inter text-[12px] font-bold text-[#0A0A0A] tracking-[0.1px] flex items-center gap-1">새 비밀번호 <span className="text-[#EF4444] text-[10px]">*</span></label>
-                        <input type="password" className={inputClass} value={passwordDraft.newPassword} onChange={(e) => setPasswordDraft("newPassword", e.target.value)} placeholder="새 비밀번호를 입력하세요" />
+                        <input id="settings-new-password" name="newPassword" type="password" className={inputClass} value={passwordDraft.newPassword} onChange={(e) => setPasswordDraft("newPassword", e.target.value)} placeholder="새 비밀번호를 입력하세요" />
                         <div className="h-1 bg-[#E5E7EB] rounded-full mt-2 overflow-hidden">
                           <div className="h-full rounded-full transition-[width_0.4s_ease,background_0.3s]" style={{ width: pwdStrength.width, background: pwdStrength.color }} />
                         </div>
@@ -238,7 +243,7 @@ export function SettingsPage() {
                       </div>
                       <div className="flex flex-col gap-[5px]">
                         <label className="font-inter text-[12px] font-bold text-[#0A0A0A] tracking-[0.1px] flex items-center gap-1">새 비밀번호 확인 <span className="text-[#EF4444] text-[10px]">*</span></label>
-                        <input type="password" className={inputClass} value={passwordDraft.confirmPassword} onChange={(e) => setPasswordDraft("confirmPassword", e.target.value)} placeholder="새 비밀번호를 다시 입력하세요" />
+                        <input id="settings-confirm-password" name="confirmPassword" type="password" className={inputClass} value={passwordDraft.confirmPassword} onChange={(e) => setPasswordDraft("confirmPassword", e.target.value)} placeholder="새 비밀번호를 다시 입력하세요" />
                         {passwordDraft.confirmPassword && (
                           <p className="text-[11px] leading-[1.45]" style={{ color: pwdMatch ? "#059669" : "#EF4444" }}>
                             {pwdMatch ? "✓ 비밀번호가 일치합니다" : "✕ 비밀번호가 일치하지 않습니다"}
@@ -409,7 +414,13 @@ export function SettingsPage() {
                           <span className="text-[10px] text-[#EF4444] font-bold">(필수)</span>
                         </div>
                         <p className="text-[12px] text-[#6B7280] leading-[1.55]">서비스 이용에 관한 권리·의무 및 규칙에 동의합니다</p>
-                        <div className="inline-flex items-center gap-1 text-[10px] font-bold text-[#0991B2] bg-[#E6F7FA] px-2 py-0.5 rounded-full mt-[5px]">v2025-01 · {data.consents.termsAgreedAt} 동의</div>
+                        {data.consents.termsAgreedAt ? (
+                          <div className="inline-flex items-center gap-1 text-[10px] font-bold text-[#0991B2] bg-[#E6F7FA] px-2 py-0.5 rounded-full mt-[5px]">
+                            {data.consents.myConsents.find((c) => c.title?.includes("이용약관") || c.title?.toLowerCase().includes("terms"))?.version ?? "v2025-01"} · {data.consents.termsAgreedAt} 동의
+                          </div>
+                        ) : (
+                          <div className="inline-flex items-center gap-1 text-[10px] font-bold text-[#9CA3AF] bg-[#F3F4F6] px-2 py-0.5 rounded-full mt-[5px]">동의 정보 없음</div>
+                        )}
                       </div>
                     </div>
 
@@ -421,7 +432,13 @@ export function SettingsPage() {
                           <span className="text-[10px] text-[#EF4444] font-bold">(필수)</span>
                         </div>
                         <p className="text-[12px] text-[#6B7280] leading-[1.55]">수집되는 개인정보의 항목, 목적, 보존 기간에 동의합니다</p>
-                        <div className="inline-flex items-center gap-1 text-[10px] font-bold text-[#0991B2] bg-[#E6F7FA] px-2 py-0.5 rounded-full mt-[5px]">v2025-01 · {data.consents.privacyAgreedAt} 동의</div>
+                        {data.consents.privacyAgreedAt ? (
+                          <div className="inline-flex items-center gap-1 text-[10px] font-bold text-[#0991B2] bg-[#E6F7FA] px-2 py-0.5 rounded-full mt-[5px]">
+                            {data.consents.myConsents.find((c) => c.title?.includes("개인정보") || c.title?.toLowerCase().includes("privacy"))?.version ?? "v2025-01"} · {data.consents.privacyAgreedAt} 동의
+                          </div>
+                        ) : (
+                          <div className="inline-flex items-center gap-1 text-[10px] font-bold text-[#9CA3AF] bg-[#F3F4F6] px-2 py-0.5 rounded-full mt-[5px]">동의 정보 없음</div>
+                        )}
                       </div>
                     </div>
 
