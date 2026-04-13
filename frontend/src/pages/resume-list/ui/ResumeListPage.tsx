@@ -122,14 +122,20 @@ export function ResumeListPage() {
   const navigate = useNavigate();
   const ctxRef = useRef<HTMLDivElement>(null);
 
-  const {
-    resumes, summary, loading, error, ctxMenu,
-    fetchResumes, deleteResume, openCtx, closeCtx,
-  } = useResumeListStore();
+  const resumes = useResumeListStore((s) => s.resumes);
+  const summary = useResumeListStore((s) => s.summary);
+  const loading = useResumeListStore((s) => s.loading);
+  const error = useResumeListStore((s) => s.error);
+  const ctxMenu = useResumeListStore((s) => s.ctxMenu);
+  const fetchResumes = useResumeListStore((s) => s.fetchResumes);
+  const deleteResume = useResumeListStore((s) => s.deleteResume);
+  const openCtx = useResumeListStore((s) => s.openCtx);
+  const closeCtx = useResumeListStore((s) => s.closeCtx);
 
   useEffect(() => {
     fetchResumes();
-  }, [fetchResumes]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   /* close ctx on outside click */
   useEffect(() => {
@@ -221,7 +227,7 @@ export function ResumeListPage() {
                     delay={0.06 + i * 0.06}
                     onMenu={handleMenu}
                     onUse={(id) => { void id; navigate("/interview/setup"); }}
-                    onEdit={(id) => { void id; navigate("/resume/input"); }}
+                    onEdit={(id) => navigate(`/resume/input?uuid=${id}`)}
                   />
                 ))}
 
