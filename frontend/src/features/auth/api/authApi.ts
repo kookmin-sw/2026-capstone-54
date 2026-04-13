@@ -151,3 +151,50 @@ export async function getMeApi(): Promise<UserMe | null> {
     return null;
   }
 }
+
+/* ── Change Password ── */
+export interface ChangePasswordPayload {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export interface ChangePasswordResult {
+  success: boolean;
+  message: string;
+}
+
+export async function changePasswordApi(payload: ChangePasswordPayload): Promise<ChangePasswordResult> {
+  try {
+    await apiRequest("/api/v1/users/change-password/", {
+      method: "POST",
+      auth: true,
+      body: JSON.stringify({
+        current_password: payload.currentPassword,
+        new_password1: payload.newPassword,
+        new_password2: payload.newPassword,
+      }),
+    });
+    return { success: true, message: "비밀번호가 변경되었습니다." };
+  } catch (err: unknown) {
+    return { success: false, message: parseApiError(err, "비밀번호 변경에 실패했습니다.") };
+  }
+}
+
+/* ── Unregister ── */
+export interface UnregisterResult {
+  success: boolean;
+  message: string;
+}
+
+export async function unregisterApi(): Promise<UnregisterResult> {
+  try {
+    await apiRequest("/api/v1/users/unregister/", {
+      method: "DELETE",
+      auth: true,
+    });
+    clearTokens();
+    return { success: true, message: "회원탈퇴가 완료되었습니다." };
+  } catch (err: unknown) {
+    return { success: false, message: parseApiError(err, "회원탈퇴에 실패했습니다.") };
+  }
+}
