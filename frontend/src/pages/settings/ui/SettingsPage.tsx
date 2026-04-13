@@ -128,6 +128,8 @@ export function SettingsPage() {
                           이름 <span className="text-[#EF4444] text-[10px]">*</span>
                         </label>
                         <input
+                          id="settings-name"
+                          name="name"
                           type="text"
                           className={inputClass}
                           value={profileDraft.name ?? ""}
@@ -137,7 +139,7 @@ export function SettingsPage() {
                       </div>
                       <div className="flex flex-col gap-[5px]">
                         <label className="font-inter text-[12px] font-bold text-[#0A0A0A] tracking-[0.1px]">이메일 주소</label>
-                        <input type="email" className={inputClass} value={data.profile.email} readOnly />
+                        <input id="settings-email" name="email" type="email" className={inputClass} value={data.profile.email} readOnly />
                         <p className="text-[11px] text-[#6B7280] leading-[1.45]">이메일 주소는 변경할 수 없습니다. 고객센터로 문의해주세요.</p>
                       </div>
                       <div className="flex flex-col gap-4">
@@ -226,11 +228,11 @@ export function SettingsPage() {
                     <div className="flex flex-col gap-4">
                       <div className="flex flex-col gap-[5px]">
                         <label className="font-inter text-[12px] font-bold text-[#0A0A0A] tracking-[0.1px] flex items-center gap-1">현재 비밀번호 <span className="text-[#EF4444] text-[10px]">*</span></label>
-                        <input type="password" className={inputClass} value={passwordDraft.currentPassword} onChange={(e) => setPasswordDraft("currentPassword", e.target.value)} placeholder="현재 비밀번호를 입력하세요" />
+                        <input id="settings-current-password" name="currentPassword" type="password" className={inputClass} value={passwordDraft.currentPassword} onChange={(e) => setPasswordDraft("currentPassword", e.target.value)} placeholder="현재 비밀번호를 입력하세요" />
                       </div>
                       <div className="flex flex-col gap-[5px]">
                         <label className="font-inter text-[12px] font-bold text-[#0A0A0A] tracking-[0.1px] flex items-center gap-1">새 비밀번호 <span className="text-[#EF4444] text-[10px]">*</span></label>
-                        <input type="password" className={inputClass} value={passwordDraft.newPassword} onChange={(e) => setPasswordDraft("newPassword", e.target.value)} placeholder="새 비밀번호를 입력하세요" />
+                        <input id="settings-new-password" name="newPassword" type="password" className={inputClass} value={passwordDraft.newPassword} onChange={(e) => setPasswordDraft("newPassword", e.target.value)} placeholder="새 비밀번호를 입력하세요" />
                         <div className="h-1 bg-[#E5E7EB] rounded-full mt-2 overflow-hidden">
                           <div className="h-full rounded-full transition-[width_0.4s_ease,background_0.3s]" style={{ width: pwdStrength.width, background: pwdStrength.color }} />
                         </div>
@@ -238,7 +240,7 @@ export function SettingsPage() {
                       </div>
                       <div className="flex flex-col gap-[5px]">
                         <label className="font-inter text-[12px] font-bold text-[#0A0A0A] tracking-[0.1px] flex items-center gap-1">새 비밀번호 확인 <span className="text-[#EF4444] text-[10px]">*</span></label>
-                        <input type="password" className={inputClass} value={passwordDraft.confirmPassword} onChange={(e) => setPasswordDraft("confirmPassword", e.target.value)} placeholder="새 비밀번호를 다시 입력하세요" />
+                        <input id="settings-confirm-password" name="confirmPassword" type="password" className={inputClass} value={passwordDraft.confirmPassword} onChange={(e) => setPasswordDraft("confirmPassword", e.target.value)} placeholder="새 비밀번호를 다시 입력하세요" />
                         {passwordDraft.confirmPassword && (
                           <p className="text-[11px] leading-[1.45]" style={{ color: pwdMatch ? "#059669" : "#EF4444" }}>
                             {pwdMatch ? "✓ 비밀번호가 일치합니다" : "✕ 비밀번호가 일치하지 않습니다"}
