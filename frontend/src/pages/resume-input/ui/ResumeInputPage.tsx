@@ -55,7 +55,7 @@ export function ResumeInputPage() {
     } else {
       reset();
     }
-  }, [editingUuid]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [editingUuid, loadForEdit, reset]);
 
   const contentLen = content.length;
   const titleLen = title.length;
