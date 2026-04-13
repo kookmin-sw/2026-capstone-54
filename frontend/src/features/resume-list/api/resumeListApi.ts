@@ -1,4 +1,4 @@
-const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
+import { apiRequest } from "@/shared/api/client";
 
 export type ResumeStatus = "active" | "inactive" | "parsing";
 export type ResumeType = "file" | "text";
@@ -27,79 +27,85 @@ export interface ResumeSummary {
   recentQuestions: string[];
 }
 
-const MOCK_RESUMES: ResumeItem[] = [
-  {
-    id: "r1",
-    title: "백엔드 개발자 이력서 v2",
-    type: "file",
-    fileExt: "PDF",
-    skills: ["Python", "Django", "PostgreSQL", "AWS"],
-    extraSkillCount: 3,
-    meta: "🏢 스타트업 3년",
-    status: "active",
-    date: "03.20",
-  },
-  {
-    id: "r2",
-    title: "신입 개발자 자기소개",
-    type: "text",
-    skills: ["React", "TypeScript", "Node.js"],
-    extraSkillCount: 0,
-    meta: "🎓 졸업예정 2025",
-    status: "active",
-    date: "03.15",
-  },
-  {
-    id: "r3",
-    title: "프론트엔드 포트폴리오",
-    type: "file",
-    fileExt: "DOCX",
-    skills: ["Vue.js", "Figma"],
-    extraSkillCount: 0,
-    meta: "📂 업로드 완료",
-    status: "parsing",
-    date: "방금 전",
-  },
-];
+/* ── 백엔드 응답 타입 ── */
+interface ResumeApiItem {
+  uuid: string;
+  type: "file" | "text";
+  title: string;
+  isActive: boolean;
+  analysisStatus: "pending" | "processing" | "completed" | "failed";
+  analysisStep: string;
+  analyzedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
 
-const MOCK_SUMMARY: ResumeSummary = {
-  total: 3,
-  active: 2,
-  parsing: 1,
-  inactive: 0,
-  fileCount: 2,
-  textCount: 1,
-  interviewCount: 12,
-  avgScore: 83,
-  recentQuestions: [
-    "Django REST Framework에서 성능 최적화를 위해 사용한 방법은?",
-    "AWS에서 비용을 줄이기 위해 어떤 아키텍처를 선택했나요?",
-    "팀 내 코드 리뷰 문화를 어떻게 형성했나요?",
-  ],
-};
+interface ResumeListApiResponse {
+  count: number;
+  totalPagesCount: number;
+  nextPage: number | null;
+  previousPage: number | null;
+  results: ResumeApiItem[];
+}
+
+function toResumeStatus(item: ResumeApiItem): ResumeStatus {
+  if (item.analysisStatus === "pending" || item.analysisStatus === "processing") return "parsing";
+  if (!item.isActive) return "inactive";
+  return "active";
+}
+
+function formatDate(dateStr: string): string {
+  try {
+    const d = new Date(dateStr);
+    return `${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
+  } catch {
+    return "";
+  }
+}
+
+function transformResume(item: ResumeApiItem): ResumeItem {
+  return {
+    id: item.uuid,
+    title: item.title,
+    type: item.type,
+    skills: [],
+    extraSkillCount: 0,
+    meta: "",
+    status: toResumeStatus(item),
+    date: formatDate(item.createdAt),
+  };
+}
+
+function buildSummary(items: ResumeApiItem[]): ResumeSummary {
+  const transformed = items.map(transformResume);
+  return {
+    total: items.length,
+    active: transformed.filter((r) => r.status === "active").length,
+    parsing: transformed.filter((r) => r.status === "parsing").length,
+    inactive: transformed.filter((r) => r.status === "inactive").length,
+    fileCount: items.filter((r) => r.type === "file").length,
+    textCount: items.filter((r) => r.type === "text").length,
+    interviewCount: 0,
+    avgScore: 0,
+    recentQuestions: [],
+  };
+}
 
 export async function fetchResumesApi(): Promise<{
   resumes: ResumeItem[];
   summary: ResumeSummary;
 }> {
-  await delay(400);
+  const response = await apiRequest<ResumeListApiResponse>("/api/v1/resumes/", { auth: true });
+  const items = response.results ?? [];
   return {
-    resumes: MOCK_RESUMES.map((r) => ({ ...r })),
-    summary: { ...MOCK_SUMMARY },
+    resumes: items.map(transformResume),
+    summary: buildSummary(items),
   };
 }
 
-export async function toggleResumeActiveApi(id: string): Promise<void> {
-  await delay(300);
-  const idx = MOCK_RESUMES.findIndex((r) => r.id === id);
-  if (idx !== -1) {
-    const r = MOCK_RESUMES[idx];
-    r.status = r.status === "active" ? "inactive" : "active";
-  }
-}
-
 export async function deleteResumeApi(id: string): Promise<void> {
-  await delay(300);
-  const idx = MOCK_RESUMES.findIndex((r) => r.id === id);
-  if (idx !== -1) MOCK_RESUMES.splice(idx, 1);
+  await apiRequest(`/api/v1/resumes/${id}/`, {
+    method: "DELETE",
+    auth: true,
+  });
 }
