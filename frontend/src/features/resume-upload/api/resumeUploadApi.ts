@@ -30,6 +30,7 @@ export async function uploadResumeApi(
 
   try {
     const formData = new FormData();
+    formData.append("type", "file");
     formData.append("title", payload.title);
     formData.append("file", payload.file);
 
@@ -50,7 +51,7 @@ export async function uploadResumeApi(
             resolve({
               success: true,
               message: "이력서가 업로드되었습니다.",
-              resumeId: response.id || response.resumeId,
+              resumeId: response.uuid ?? response.id,
             });
           } catch {
             reject({ message: "서버 응답을 파싱하는 데 실패했습니다." });
@@ -73,8 +74,8 @@ export async function uploadResumeApi(
         reject({ message: "업로드가 취소되었습니다." });
       });
 
-      xhr.open("POST", `${BASE_URL}/api/v1/resumes/upload/`);
-      
+      xhr.open("POST", `${BASE_URL}/api/v1/resumes/`);
+
       const token = getAccessToken();
       if (token) {
         xhr.setRequestHeader("Authorization", `Bearer ${token}`);
