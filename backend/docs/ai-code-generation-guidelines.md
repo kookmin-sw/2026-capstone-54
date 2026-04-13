@@ -333,7 +333,9 @@ api/v1/앱/tests/
 - `django.test.TestCase` 사용 (트랜잭션 자동 롤백)
 - Factory Boy로 테스트 데이터 생성 (`UserFactory`, `InterviewSessionFactory` 등)
 - 외부 의존성(LLM, S3, Celery)은 `unittest.mock.patch`로 모킹
-- 테스트 메서드명: 한국어 서술형 (`test_이력서_생성`, `test_celery_태스크_발행`)
+- 테스트 식별자(메서드/클래스/변수)는 **영어 snake_case**, docstring 만 한국어
+  - 예: `def test_create_text_resume_success(self):` + `"""텍스트 이력서 생성 성공 케이스."""`
+  - 상세 규칙: `docs/testing-conventions.md`
 - Hypothesis로 속성 기반 테스트 작성 가능
 
 ```python
@@ -342,7 +344,8 @@ class CreateFileResumeServiceTests(TestCase):
         self.user = UserFactory()
 
     @patch("resumes.services.mixins.resume_pipeline_mixin.current_app.send_task")
-    def test_이력서_생성(self, mock_send_task):
+    def test_create_file_resume_success(self, mock_send_task):
+        """파일 이력서 생성 성공 케이스."""
         resume = CreateFileResumeService(
             user=self.user, title="파일 이력서", file=self.pdf_file,
         ).perform()
@@ -530,7 +533,7 @@ checks:
 1. `setUp()`에서 Factory로 테스트 데이터 생성
 2. 정상 케이스 + 예외 케이스 모두 작성
 3. 외부 의존성은 `@patch`로 모킹
-4. 테스트 메서드명은 한국어 서술형
+4. 테스트 메서드명은 영어 snake_case, docstring 은 한국어 (`docs/testing-conventions.md`)
 5. `django.test.TestCase` 사용
 
 뷰 테스트 생성 시:
