@@ -1,4 +1,5 @@
 import { apiRequest } from "@/shared/api/client";
+import type { PaginatedResponse } from "@/features/resume";
 import type {
   InterviewSessionType,
   InterviewDifficultyLevel,
@@ -45,9 +46,12 @@ export interface CreatedInterviewSession {
 }
 
 export const interviewSetupApi = {
-  // Fetch user's resumes for selection
+  // Fetch user's resumes for selection.
+  // 백엔드는 DRF 페이지네이션 응답({ count, results, ... })을 반환하므로 results 만 꺼낸다.
+  // 인터뷰 준비 화면에서는 현재 1페이지만 사용한다.
   fetchResumes: (): Promise<ResumeOption[]> =>
-    apiRequest<ResumeOption[]>("/api/v1/resumes/", { auth: true }),
+    apiRequest<PaginatedResponse<ResumeOption>>("/api/v1/resumes/?page=1", { auth: true })
+      .then((res) => res.results),
 
   // TODO: Fetch user job descriptions once the list API is available.
   // Until then callers should use TEMP_USER_JOB_DESCRIPTION_UUID below.
