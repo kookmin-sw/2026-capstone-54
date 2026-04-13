@@ -1,4 +1,5 @@
-import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useResumeInputStore } from "@/features/resume";
 import {
   Card,
@@ -26,6 +27,7 @@ const CHIPS = [
 
 export function ResumeInputPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const {
     title,
     content,
@@ -39,9 +41,21 @@ export function ResumeInputPage() {
     setTitle,
     setContent,
     applyTemplate,
+    loadForEdit,
     submit,
     closeSuccess,
+    reset,
   } = useResumeInputStore();
+
+  const editingUuid = searchParams.get("uuid");
+
+  useEffect(() => {
+    if (editingUuid) {
+      loadForEdit(editingUuid);
+    } else {
+      reset();
+    }
+  }, [editingUuid]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const contentLen = content.length;
   const titleLen = title.length;

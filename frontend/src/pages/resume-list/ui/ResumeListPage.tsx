@@ -285,7 +285,7 @@ export function ResumeListPage() {
             <div className="font-inter text-[14px] font-extrabold text-[#0A0A0A] mb-1 text-center md:text-[13px] md:text-left md:ml-1">{activeResume?.title ?? ""}</div>
             <div className="text-[12px] text-[#6B7280] text-center mb-[14px] md:hidden">이 이력서에 대해 무엇을 할까요?</div>
 
-            <button className="flex items-center gap-3 px-[14px] py-3 rounded-lg bg-[#F9FAFB] border border-[#E5E7EB] mb-2 cursor-pointer w-full text-left transition-[background] duration-[120ms] active:scale-[.97] md:bg-transparent md:border-none md:mb-[2px] md:px-[10px] md:py-[9px] md:hover:bg-[rgba(9,145,178,.07)]" onClick={() => { navigate("/resume/input"); closeCtx(); }}>
+            <button className="flex items-center gap-3 px-[14px] py-3 rounded-lg bg-[#F9FAFB] border border-[#E5E7EB] mb-2 cursor-pointer w-full text-left transition-[background] duration-[120ms] active:scale-[.97] md:bg-transparent md:border-none md:mb-[2px] md:px-[10px] md:py-[9px] md:hover:bg-[rgba(9,145,178,.07)]" onClick={() => { navigate(`/resume/input?uuid=${ctxMenu.resumeId}`); closeCtx(); }}>
               <div className="w-9 h-9 rounded-lg flex items-center justify-center text-[15px] shrink-0 bg-gradient-to-br from-[#BAE6FD] to-[#2563EB] md:w-7 md:h-7 md:text-[13px]">✏️</div>
               <div>
                 <div className="text-[14px] font-bold text-[#0A0A0A] md:text-[13px]">수정하기</div>

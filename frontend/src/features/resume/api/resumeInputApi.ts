@@ -75,3 +75,20 @@ export interface ResumeDetail {
 export async function fetchResumeDetailApi(uuid: string): Promise<ResumeDetail> {
   return apiRequest<ResumeDetail>(`/api/v1/resumes/${uuid}/`, { auth: true });
 }
+
+export async function updateResumeApi(
+  uuid: string,
+  payload: SaveResumePayload
+): Promise<SaveResumeResponse> {
+  try {
+    await apiRequest<ResumeDetail>(`/api/v1/resumes/${uuid}/`, {
+      method: "PATCH",
+      auth: true,
+      body: JSON.stringify({ title: payload.title, content: payload.content }),
+    });
+    return { success: true, message: "이력서가 수정되었습니다.", resumeId: uuid };
+  } catch (err: unknown) {
+    const e = err as { message?: string };
+    return { success: false, message: e?.message ?? "이력서 수정에 실패했습니다." };
+  }
+}

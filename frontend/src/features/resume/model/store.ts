@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { saveResumeApi } from "../api/resumeInputApi";
+import { saveResumeApi, fetchResumeDetailApi, updateResumeApi } from "../api/resumeInputApi";
 
 /* ── Templates ── */
 export const TEMPLATES: Record<string, string> = {
@@ -105,6 +105,7 @@ function buildSummary(text: string, tags: string[]): string {
 interface ResumeInputState {
   title: string;
   content: string;
+  editingUuid: string | null;
   detectedTags: string[];
   previewSummary: string;
   showPreview: boolean;
@@ -116,6 +117,7 @@ interface ResumeInputState {
   setTitle: (v: string) => void;
   setContent: (v: string) => void;
   applyTemplate: (key: string) => void;
+  loadForEdit: (uuid: string) => Promise<void>;
   submit: () => Promise<void>;
   closeSuccess: () => void;
   reset: () => void;
@@ -126,6 +128,7 @@ let previewTimer: ReturnType<typeof setTimeout> | null = null;
 export const useResumeInputStore = create<ResumeInputState>()((set, get) => ({
   title: "",
   content: "",
+  editingUuid: null,
   detectedTags: [],
   previewSummary: "",
   showPreview: false,
@@ -156,10 +159,23 @@ export const useResumeInputStore = create<ResumeInputState>()((set, get) => ({
 
   applyTemplate: (key) => get().setContent(TEMPLATES[key] ?? ""),
 
+  loadForEdit: async (uuid) => {
+    set({ error: null });
+    try {
+      const detail = await fetchResumeDetailApi(uuid);
+      get().setContent(detail.content ?? "");
+      set({ title: detail.title, editingUuid: uuid });
+    } catch {
+      set({ error: "이력서를 불러오지 못했습니다." });
+    }
+  },
+
   submit: async () => {
-    const { title, content } = get();
+    const { title, content, editingUuid } = get();
     set({ isSubmitting: true, error: null });
-    const res = await saveResumeApi({ title, content });
+    const res = editingUuid
+      ? await updateResumeApi(editingUuid, { title, content })
+      : await saveResumeApi({ title, content });
     if (!res.success) {
       set({ isSubmitting: false, error: res.message });
       return;
@@ -173,6 +189,7 @@ export const useResumeInputStore = create<ResumeInputState>()((set, get) => ({
     set({
       title: "",
       content: "",
+      editingUuid: null,
       detectedTags: [],
       previewSummary: "",
       showPreview: false,
