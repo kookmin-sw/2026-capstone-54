@@ -15,9 +15,10 @@ import { JdAnalyzingPage } from "@/pages/jd-analyzing";
 import { JdDetailPage } from "@/pages/jd-detail";
 import { JdEditPage } from "@/pages/jd-edit";
 import { JdListPage } from "@/pages/jd-list";
-import { ResumeInputPage } from "@/pages/resume-input";
-import { ResumeUploadPage } from "@/pages/resume-upload";
+import { ResumeNewPage } from "@/pages/resume-new";
+import { ResumeEditPage } from "@/pages/resume-edit";
 import { ResumeListPage } from "@/pages/resume-list";
+import { ResumeDetailPage } from "@/pages/resume-detail";
 import { InterviewSetupPage } from "@/pages/interview-setup";
 import { InterviewPreCheckPage } from "@/pages/interview-precheck";
 import { InterviewSessionPage } from "@/pages/interview-session";
@@ -56,8 +57,9 @@ function App() {
         <Route path="/jd/edit/:id" element={<ProtectedRoute><JdEditPage /></ProtectedRoute>} />
         <Route path="/jd" element={<ProtectedRoute><JdListPage /></ProtectedRoute>} />
         <Route path="/resume" element={<ProtectedRoute><ResumeListPage /></ProtectedRoute>} />
-        <Route path="/resume/input" element={<ProtectedRoute><ResumeInputPage /></ProtectedRoute>} />
-        <Route path="/resume/upload" element={<ProtectedRoute><ResumeUploadPage /></ProtectedRoute>} />
+        <Route path="/resume/new" element={<ProtectedRoute><ResumeNewPage /></ProtectedRoute>} />
+        <Route path="/resume/:uuid" element={<ProtectedRoute><ResumeDetailPage /></ProtectedRoute>} />
+        <Route path="/resume/edit/:uuid" element={<ProtectedRoute><ResumeEditPage /></ProtectedRoute>} />
         <Route path="/interview/setup" element={<ProtectedRoute><InterviewSetupPage /></ProtectedRoute>} />
         <Route path="/interview/precheck/:interviewSessionUuid" element={<ProtectedRoute><InterviewPreCheckPage /></ProtectedRoute>} />
         <Route path="/interview/session/:interviewSessionUuid" element={<ProtectedRoute><InterviewSessionPage /></ProtectedRoute>} />
