@@ -11,7 +11,6 @@ const emptyParsed: ParsedData = {
   certifications: [],
   projects: [],
   languagesSpoken: [],
-  careerLevel: null,
   totalExperienceYears: null,
   industryDomains: [],
   keywords: [],
@@ -43,18 +42,16 @@ describe("ParsedDataView", () => {
     expect(screen.getByText("Docker")).toBeInTheDocument();
   });
 
-  it("경력 레벨과 총 경력 연차가 메타카드로 표시된다", () => {
+  it("총 경력 연차와 직군이 메타카드로 표시된다", () => {
     render(
       <ParsedDataView
         data={{
           ...emptyParsed,
-          careerLevel: "senior",
           totalExperienceYears: 5,
           jobCategory: "IT/개발",
         }}
       />,
     );
-    expect(screen.getByText("시니어")).toBeInTheDocument();
     expect(screen.getByText("5년")).toBeInTheDocument();
     expect(screen.getByText("IT/개발")).toBeInTheDocument();
   });

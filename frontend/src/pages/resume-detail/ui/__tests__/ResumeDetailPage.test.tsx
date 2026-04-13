@@ -35,7 +35,7 @@ const fakeResume: ResumeDetail = {
   analyzedAt: "2024-03-10T10:00:00Z",
   createdAt: "2024-03-01T09:00:00Z",
   updatedAt: "2024-03-10T10:00:00Z",
-  jobCategory: { uuid: "jc-1", name: "IT/개발", emoji: "💻" },
+  resumeJobCategory: { uuid: "jc-1", name: "IT/개발", emoji: "💻" },
   content: "안녕하세요. 저는 5년 경력의 백엔드 개발자입니다.",
   originalFilename: null,
   fileSizeBytes: null,
@@ -51,7 +51,6 @@ const fakeResume: ResumeDetail = {
     certifications: [],
     projects: [],
     languagesSpoken: [],
-    careerLevel: "senior",
     totalExperienceYears: 5,
     industryDomains: [],
     keywords: [],
@@ -82,9 +81,8 @@ describe("ResumeDetailPage", () => {
     expect(await screen.findByText("백엔드 개발 전문가입니다.")).toBeInTheDocument();
   });
 
-  it("parsedData 경력 레벨과 연차가 표시된다", async () => {
+  it("parsedData 총 경력 연차가 표시된다", async () => {
     render(<ResumeDetailPage />);
-    expect(await screen.findByText("시니어")).toBeInTheDocument();
     expect(await screen.findByText("5년")).toBeInTheDocument();
   });
 });

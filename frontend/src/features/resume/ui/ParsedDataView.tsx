@@ -5,14 +5,6 @@ interface ParsedDataViewProps {
   data: ParsedData | null;
 }
 
-const CAREER_LEVEL_LABEL: Record<string, string> = {
-  junior: "주니어",
-  mid: "미드 레벨",
-  senior: "시니어",
-  lead: "리드",
-  executive: "임원",
-};
-
 export function ParsedDataView({ data }: ParsedDataViewProps) {
   if (!data) {
     return <div className="text-[13px] text-[#9CA3AF] italic">분석 결과가 아직 없어요.</div>;
@@ -35,12 +27,9 @@ export function ParsedDataView({ data }: ParsedDataViewProps) {
       )}
 
       {/* 메타 정보 */}
-      {(data.careerLevel || data.totalExperienceYears != null || data.jobCategory) && (
-        <div className="grid grid-cols-3 gap-3 max-sm:grid-cols-1">
+      {(data.totalExperienceYears != null || data.jobCategory) && (
+        <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
           {data.jobCategory && <MetaCard label="직군" value={data.jobCategory} />}
-          {data.careerLevel && (
-            <MetaCard label="경력 레벨" value={CAREER_LEVEL_LABEL[data.careerLevel] ?? data.careerLevel} />
-          )}
           {data.totalExperienceYears != null && (
             <MetaCard label="총 경력" value={`${data.totalExperienceYears}년`} />
           )}

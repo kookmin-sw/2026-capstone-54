@@ -74,7 +74,6 @@ export interface ParsedData {
   certifications: ParsedCertification[];
   projects: ParsedProject[];
   languagesSpoken: ParsedLanguage[];
-  careerLevel: string | null;
   totalExperienceYears: number | null;
   industryDomains: string[];
   keywords: string[];
@@ -93,7 +92,7 @@ export interface ResumeListItem {
   analyzedAt: string | null;
   createdAt: string;
   updatedAt: string;
-  jobCategory: ResumeJobCategory | null;
+  resumeJobCategory: ResumeJobCategory | null;
 }
 
 export interface ResumeDetail extends ResumeListItem {

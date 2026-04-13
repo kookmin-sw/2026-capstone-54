@@ -30,9 +30,9 @@ export function ResumeDetailHeader({
         <div className="text-[12px] text-[#6B7280] flex items-center gap-3 flex-wrap">
           <span>생성일: {formatDateTime(resume.createdAt)}</span>
           <span>수정일: {formatDateTime(resume.updatedAt)}</span>
-          {resume.jobCategory && (
+          {resume.resumeJobCategory && (
             <span>
-              {resume.jobCategory.emoji} {resume.jobCategory.name}
+              {resume.resumeJobCategory.emoji} {resume.resumeJobCategory.name}
             </span>
           )}
         </div>

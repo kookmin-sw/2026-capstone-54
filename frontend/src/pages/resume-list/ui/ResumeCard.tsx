@@ -47,7 +47,7 @@ export function ResumeCard({ resume, onDetail, onEdit, onDelete, onToggleActive 
           </div>
           <div className="text-[11px] text-[#6B7280]">
             {formatDateTime(resume.createdAt)}
-            {resume.jobCategory && <> · {resume.jobCategory.emoji} {resume.jobCategory.name}</>}
+            {resume.resumeJobCategory && <> · {resume.resumeJobCategory.emoji} {resume.resumeJobCategory.name}</>}
           </div>
         </div>
 
