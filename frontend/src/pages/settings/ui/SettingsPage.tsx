@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useSettingsStore } from "@/features/settings";
 import type { SettingsPanel } from "@/features/settings";
@@ -33,7 +33,7 @@ export function SettingsPage() {
     jobCategories, jobCategoriesLoading, availableJobs, availableJobsLoading,
     fetchSettings, setActivePanel,
     loadJobCategories,
-    setProfileDraftField, toggleJobId, saveProfile, resetProfileDraft,
+    setProfileDraftField, toggleJobId, uploadAvatar, saveProfile, resetProfileDraft,
     setPasswordDraft, savePassword, resetPasswordDraft,
     toggleNotification, saveNotifications, resetNotificationsDraft,
     setAiDataDraft, saveConsents,
@@ -43,6 +43,7 @@ export function SettingsPage() {
 
   const [searchParams] = useSearchParams();
   const [deleteConfirm, setDeleteConfirm] = useState<"data" | "account" | null>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
   // URL 쿼리로 패널 초기화 (?panel=notifications)
   useEffect(() => {
@@ -105,15 +106,17 @@ export function SettingsPage() {
                   <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl px-7 py-7 shadow-[var(--sc)] mb-4 max-[640px]:px-[18px]">
                     <div className="font-inter text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">👤 프로필 사진</div>
                     <div className="flex items-center gap-4 mb-5">
-                      <div className="w-16 h-16 rounded-full bg-[#0991B2] flex items-center justify-center font-inter text-[24px] font-black text-white shadow-[0_2px_8px_rgba(9,145,178,0.3)] shrink-0">
-                        {data.profile.avatarInitial}
-                      </div>
+                      {data.profile.avatarUrl ? (
+                        <img src={data.profile.avatarUrl} alt="프로필" className="w-16 h-16 rounded-full object-cover shadow-[0_2px_8px_rgba(9,145,178,0.3)] shrink-0" />
+                      ) : (
+                        <div className="w-16 h-16 rounded-full bg-[#0991B2] flex items-center justify-center font-inter text-[24px] font-black text-white shadow-[0_2px_8px_rgba(9,145,178,0.3)] shrink-0">
+                          {data.profile.avatarInitial}
+                        </div>
+                      )}
                       <div className="flex flex-col gap-[6px]">
-                        <button className="font-inter text-[13px] font-bold text-[#0991B2] bg-[rgba(9,145,178,0.08)] border-[1.5px] border-[rgba(9,145,178,0.25)] rounded-lg px-4 py-[7px] cursor-pointer transition-all duration-150 hover:bg-[rgba(9,145,178,0.14)]">
+                        <input ref={avatarInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadAvatar(f); e.target.value = ""; }} />
+                        <button className="font-inter text-[13px] font-bold text-[#0991B2] bg-[rgba(9,145,178,0.08)] border-[1.5px] border-[rgba(9,145,178,0.25)] rounded-lg px-4 py-[7px] cursor-pointer transition-all duration-150 hover:bg-[rgba(9,145,178,0.14)]" onClick={() => avatarInputRef.current?.click()} disabled={saving}>
                           사진 변경
-                        </button>
-                        <button className="font-inter text-[12px] font-semibold text-[#6B7280] bg-none border-none cursor-pointer transition-[color] duration-150 hover:text-[#0A0A0A]">
-                          사진 삭제
                         </button>
                       </div>
                     </div>

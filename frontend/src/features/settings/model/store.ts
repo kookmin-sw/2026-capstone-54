@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import {
   fetchSettingsApi,
+  uploadAvatarApi,
   updateProfileApi,
   changePasswordApi,
   updateNotificationsApi,
@@ -48,6 +49,7 @@ interface SettingsState {
   loadJobsByCategory: (jobCategoryId: number) => Promise<void>;
   setProfileDraftField: <K extends keyof ProfileDraft>(field: K, value: ProfileDraft[K]) => void;
   toggleJobId: (jobId: number) => void;
+  uploadAvatar: (file: File) => Promise<void>;
   saveProfile: () => Promise<void>;
   resetProfileDraft: () => void;
 
@@ -159,6 +161,23 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
       const next = ids.includes(jobId) ? ids.filter((id) => id !== jobId) : [...ids, jobId];
       return { profileDraft: { ...s.profileDraft, jobIds: next } };
     });
+  },
+
+  uploadAvatar: async (file) => {
+    set({ saving: true, error: null, saveMessage: null });
+    const res = await uploadAvatarApi(file);
+    if (res.success) {
+      set((s) => ({
+        saving: false,
+        saveMessage: res.message,
+        data: s.data ? {
+          ...s.data,
+          profile: { ...s.data.profile, avatarUrl: res.avatarUrl ?? null },
+        } : s.data,
+      }));
+    } else {
+      set({ saving: false, error: res.message });
+    }
   },
 
   saveProfile: async () => {

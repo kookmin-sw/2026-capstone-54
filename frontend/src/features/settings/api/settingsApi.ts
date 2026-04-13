@@ -11,7 +11,7 @@ export interface SettingsProfile {
   name: string;
   email: string;
   avatarInitial: string;
-  // 프로필 API 연동 필드
+  avatarUrl: string | null;
   jobCategoryId: number | null;
   jobCategory: JobCategory | null;
   jobIds: number[];
@@ -80,20 +80,23 @@ const MOCK_SUBSCRIPTION: SettingsSubscription = {
 */
 export async function fetchSettingsApi(): Promise<{ success: boolean; data?: SettingsData; error?: string }> {
   try {
-    const [me, userProfile, myConsents] = await Promise.allSettled([
+    const [me, userProfile, myConsents, avatar] = await Promise.allSettled([
       getMeApi(),
       profileApi.getMyProfile(),
       getMyConsentsApi(),
+      profileApi.getAvatar(),
     ]);
 
     const meData = me.status === "fulfilled" ? me.value : null;
     const profileData = userProfile.status === "fulfilled" ? userProfile.value : null;
     const consentsData = myConsents.status === "fulfilled" ? myConsents.value : [];
+    const avatarData = avatar.status === "fulfilled" ? avatar.value : null;
 
     const profile: SettingsProfile = {
       name: meData?.name ?? "",
       email: meData?.email ?? "",
       avatarInitial: meData?.name ? meData.name[0] : "?",
+      avatarUrl: avatarData?.avatarUrl ?? null,
       jobCategoryId: profileData?.jobCategory?.id ?? null,
       jobCategory: profileData?.jobCategory ?? null,
       jobIds: profileData?.jobs?.map((j) => j.id) ?? [],
@@ -132,6 +135,16 @@ export async function fetchSettingsApi(): Promise<{ success: boolean; data?: Set
     };
   } catch {
     return { success: false, error: "설정을 불러오지 못했습니다." };
+  }
+}
+
+/* ── Upload Avatar ── */
+export async function uploadAvatarApi(file: File): Promise<{ success: boolean; avatarUrl?: string; message: string }> {
+  try {
+    const res = await profileApi.uploadAvatar(file);
+    return { success: true, avatarUrl: res.avatarUrl ?? undefined, message: "프로필 사진이 변경되었습니다." };
+  } catch {
+    return { success: false, message: "사진 업로드에 실패했습니다." };
   }
 }
 

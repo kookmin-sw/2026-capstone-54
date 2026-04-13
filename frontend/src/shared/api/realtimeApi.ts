@@ -37,6 +37,8 @@ export class RealtimeClient {
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private handlers: WsEventHandlers;
   private stopped = false;
+  private retryCount = 0;
+  private readonly MAX_RETRIES = 3;
 
   constructor(handlers: WsEventHandlers) {
     this.handlers = handlers;
@@ -50,6 +52,10 @@ export class RealtimeClient {
     const url = buildWsUrl(ticket);
     this.ws = new WebSocket(url);
 
+    this.ws.onopen = () => {
+      this.retryCount = 0; // 연결 성공 시 재시도 카운트 초기화
+    };
+
     this.ws.onmessage = (e) => {
       try {
         const data = JSON.parse(e.data) as WsNotificationMessage;
@@ -61,9 +67,10 @@ export class RealtimeClient {
 
     this.ws.onclose = () => {
       this.handlers.onClose?.();
-      // 연결 끊기면 5초 후 재연결 (stopped가 아닐 때만)
-      if (!this.stopped) {
-        this.reconnectTimer = setTimeout(() => this.connect(), 5000);
+      if (!this.stopped && this.retryCount < this.MAX_RETRIES) {
+        this.retryCount++;
+        const delay = Math.min(5000 * this.retryCount, 30000); // 5s, 10s, 15s
+        this.reconnectTimer = setTimeout(() => this.connect(), delay);
       }
     };
 

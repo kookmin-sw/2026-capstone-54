@@ -65,10 +65,13 @@ async function _request<T>(
   options: RequestInit & { auth?: boolean },
   isRetry: boolean
 ): Promise<T> {
-  const { auth = false, ...fetchOptions } = options;
+  const { auth = false, ...fetchOptions } = options as RequestInit & { auth?: boolean; noRetry?: boolean };
+  delete (fetchOptions as Record<string, unknown>).noRetry;
 
+  // FormData일 때는 Content-Type을 브라우저에 맡김 (multipart/form-data + boundary 자동 설정)
+  const isFormData = fetchOptions.body instanceof FormData;
   const headers: Record<string, string> = {
-    "Content-Type": "application/json",
+    ...(isFormData ? {} : { "Content-Type": "application/json" }),
     ...(fetchOptions.headers as Record<string, string>),
   };
 
