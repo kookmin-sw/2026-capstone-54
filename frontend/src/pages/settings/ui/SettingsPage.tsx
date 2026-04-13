@@ -411,7 +411,13 @@ export function SettingsPage() {
                           <span className="text-[10px] text-[#EF4444] font-bold">(필수)</span>
                         </div>
                         <p className="text-[12px] text-[#6B7280] leading-[1.55]">서비스 이용에 관한 권리·의무 및 규칙에 동의합니다</p>
-                        <div className="inline-flex items-center gap-1 text-[10px] font-bold text-[#0991B2] bg-[#E6F7FA] px-2 py-0.5 rounded-full mt-[5px]">v2025-01 · {data.consents.termsAgreedAt} 동의</div>
+                        {data.consents.termsAgreedAt ? (
+                          <div className="inline-flex items-center gap-1 text-[10px] font-bold text-[#0991B2] bg-[#E6F7FA] px-2 py-0.5 rounded-full mt-[5px]">
+                            {data.consents.myConsents.find((c) => c.title?.includes("이용약관") || c.title?.toLowerCase().includes("terms"))?.version ?? "v2025-01"} · {data.consents.termsAgreedAt} 동의
+                          </div>
+                        ) : (
+                          <div className="inline-flex items-center gap-1 text-[10px] font-bold text-[#9CA3AF] bg-[#F3F4F6] px-2 py-0.5 rounded-full mt-[5px]">동의 정보 없음</div>
+                        )}
                       </div>
                     </div>
 
@@ -423,7 +429,13 @@ export function SettingsPage() {
                           <span className="text-[10px] text-[#EF4444] font-bold">(필수)</span>
                         </div>
                         <p className="text-[12px] text-[#6B7280] leading-[1.55]">수집되는 개인정보의 항목, 목적, 보존 기간에 동의합니다</p>
-                        <div className="inline-flex items-center gap-1 text-[10px] font-bold text-[#0991B2] bg-[#E6F7FA] px-2 py-0.5 rounded-full mt-[5px]">v2025-01 · {data.consents.privacyAgreedAt} 동의</div>
+                        {data.consents.privacyAgreedAt ? (
+                          <div className="inline-flex items-center gap-1 text-[10px] font-bold text-[#0991B2] bg-[#E6F7FA] px-2 py-0.5 rounded-full mt-[5px]">
+                            {data.consents.myConsents.find((c) => c.title?.includes("개인정보") || c.title?.toLowerCase().includes("privacy"))?.version ?? "v2025-01"} · {data.consents.privacyAgreedAt} 동의
+                          </div>
+                        ) : (
+                          <div className="inline-flex items-center gap-1 text-[10px] font-bold text-[#9CA3AF] bg-[#F3F4F6] px-2 py-0.5 rounded-full mt-[5px]">동의 정보 없음</div>
+                        )}
                       </div>
                     </div>
 

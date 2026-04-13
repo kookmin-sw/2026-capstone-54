@@ -32,9 +32,9 @@ export { isApiError };
 /* ── Core fetch wrapper ── */
 export async function apiRequest<T>(
   path: string,
-  options: RequestInit & { auth?: boolean } = {}
+  options: RequestInit & { auth?: boolean; noRetry?: boolean } = {}
 ): Promise<T> {
-  return _request<T>(path, options, false);
+  return _request<T>(path, options, options.noRetry ?? false);
 }
 
 /* ── Path validation ── */
@@ -118,6 +118,12 @@ async function _request<T>(
 
 /* ── Token refresh helper ── */
 
+// refresh 실패 시 호출할 콜백 (순환 의존 방지를 위해 런타임에 등록)
+let _onRefreshFailed: (() => void) | null = null;
+export function setOnRefreshFailed(cb: () => void) {
+  _onRefreshFailed = cb;
+}
+
 // 동시에 여러 요청이 401을 받아도 refresh는 한 번만 실행되도록 뮤텍스
 let _refreshPromise: Promise<boolean> | null = null;
 
@@ -140,6 +146,7 @@ async function _doRefresh(): Promise<boolean> {
     });
     if (!res.ok) {
       clearTokens();
+      _onRefreshFailed?.();
       return false;
     }
     const data = await res.json() as { access: string; refresh?: string };
@@ -147,6 +154,7 @@ async function _doRefresh(): Promise<boolean> {
     return true;
   } catch {
     clearTokens();
+    _onRefreshFailed?.();
     return false;
   }
 }

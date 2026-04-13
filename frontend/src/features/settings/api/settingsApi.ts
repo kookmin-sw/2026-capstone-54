@@ -1,6 +1,7 @@
 import { apiRequest } from "@/shared/api/client";
 import { profileApi } from "@/shared/api/profileApi";
 import { getMeApi } from "@/features/auth/api/authApi";
+import { getMyConsentsApi } from "@/features/auth/api/termsApi";
 import type { JobCategory, Job } from "@/shared/api/profileApi";
 
 export type { JobCategory, Job };
@@ -37,6 +38,8 @@ export interface SettingsConsents {
   termsAgreedAt: string;
   privacyAgreedAt: string;
   aiDataAgreed: boolean;
+  // my-consents API 원본 데이터
+  myConsents: { termsDocumentId: number; title: string; version: string; agreedAt: string }[];
 }
 
 export interface SettingsData {
@@ -68,11 +71,7 @@ const MOCK_SUBSCRIPTION: SettingsSubscription = {
   nextBillingDate: null,
 };
 
-const MOCK_CONSENTS: SettingsConsents = {
-  termsAgreedAt: "2025.01.15",
-  privacyAgreedAt: "2025.01.15",
-  aiDataAgreed: false,
-};
+
 
 /* ── Fetch Settings ──
    - 사용자 기본정보: GET /api/v1/users/me/
@@ -81,13 +80,15 @@ const MOCK_CONSENTS: SettingsConsents = {
 */
 export async function fetchSettingsApi(): Promise<{ success: boolean; data?: SettingsData; error?: string }> {
   try {
-    const [me, userProfile] = await Promise.allSettled([
+    const [me, userProfile, myConsents] = await Promise.allSettled([
       getMeApi(),
       profileApi.getMyProfile(),
+      getMyConsentsApi(),
     ]);
 
     const meData = me.status === "fulfilled" ? me.value : null;
     const profileData = userProfile.status === "fulfilled" ? userProfile.value : null;
+    const consentsData = myConsents.status === "fulfilled" ? myConsents.value : [];
 
     const profile: SettingsProfile = {
       name: meData?.name ?? "",
@@ -99,13 +100,34 @@ export async function fetchSettingsApi(): Promise<{ success: boolean; data?: Set
       jobs: profileData?.jobs ?? [],
     };
 
+    // my-consents에서 이용약관/개인정보처리방침 동의일 추출
+    const formatDate = (iso: string) => {
+      if (!iso) return "";
+      const d = new Date(iso);
+      return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
+    };
+
+    const termsConsent = consentsData.find((c) =>
+      c.title?.includes("이용약관") || c.title?.toLowerCase().includes("terms")
+    );
+    const privacyConsent = consentsData.find((c) =>
+      c.title?.includes("개인정보") || c.title?.toLowerCase().includes("privacy")
+    );
+
+    const consents: SettingsConsents = {
+      termsAgreedAt: termsConsent ? formatDate(termsConsent.agreedAt) : "",
+      privacyAgreedAt: privacyConsent ? formatDate(privacyConsent.agreedAt) : "",
+      aiDataAgreed: false,
+      myConsents: consentsData,
+    };
+
     return {
       success: true,
       data: {
         profile,
         notifications: MOCK_NOTIFICATIONS,
         subscription: MOCK_SUBSCRIPTION,
-        consents: MOCK_CONSENTS,
+        consents,
       },
     };
   } catch {

@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "sonner";
 import { useAuthStore } from "@/features/auth";
+import { setOnRefreshFailed } from "@/shared/api/client";
 import { ProtectedRoute } from "./ProtectedRoute";
 
 import { LandingPage } from "@/pages/landing";
@@ -26,9 +27,11 @@ import { SubscriptionPage } from "@/pages/subscription";
 import { NotificationsPage } from "@/pages/notifications";
 
 function App() {
-  const { initAuth } = useAuthStore();
+  const { initAuth, logout } = useAuthStore();
 
   useEffect(() => {
+    // refresh 토큰 만료 시 자동 로그아웃
+    setOnRefreshFailed(() => logout());
     initAuth();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 

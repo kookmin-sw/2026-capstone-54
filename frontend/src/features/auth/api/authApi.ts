@@ -1,4 +1,5 @@
 import { apiRequest, setTokens, clearTokens, getRefreshToken } from "@/shared/api/client";
+import { getTermsDocumentsApi, postTermsConsentsApi } from "./termsApi";
 
 function parseApiError(err: unknown, fallback: string): string {
   const e = err as { message?: string; fieldErrors?: Record<string, string[]> };
@@ -35,6 +36,10 @@ export interface SignUpResult {
 
 export async function signUpApi(payload: SignUpPayload): Promise<SignUpResult> {
   try {
+    // 1. 약관 목록 조회
+    const terms = await getTermsDocumentsApi();
+
+    // 2. 회원가입
     const res = await apiRequest<AuthResponse>("/api/v1/users/sign-up/", {
       method: "POST",
       body: JSON.stringify({
@@ -45,6 +50,14 @@ export async function signUpApi(payload: SignUpPayload): Promise<SignUpResult> {
       }),
     });
     setTokens(res.access, res.refresh);
+
+    // 3. 약관 일괄 동의 (토큰 세팅 후 auth 요청)
+    if (terms.length > 0) {
+      await postTermsConsentsApi(
+        terms.map((t) => ({ termsDocumentId: t.id, agreed: true }))
+      );
+    }
+
     return {
       success: true,
       message: "회원가입이 완료되었습니다.",
@@ -144,9 +157,9 @@ export async function resendVerifyEmailApi(): Promise<ResendVerifyResult> {
 }
 
 /* ── Get Current User ── */
-export async function getMeApi(): Promise<UserMe | null> {
+export async function getMeApi(options?: { noRetry?: boolean }): Promise<UserMe | null> {
   try {
-    return await apiRequest<UserMe>("/api/v1/users/me/", { auth: true });
+    return await apiRequest<UserMe>("/api/v1/users/me/", { auth: true, noRetry: options?.noRetry });
   } catch {
     return null;
   }
