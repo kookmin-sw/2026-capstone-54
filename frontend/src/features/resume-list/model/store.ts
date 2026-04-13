@@ -54,7 +54,7 @@ export const useResumeListStore = create<ResumeListState>()((set, get) => ({
         ctxMenu: DEFAULT_CTX,
       }));
     } catch {
-      set({ ctxMenu: DEFAULT_CTX });
+      set({ error: "이력서 삭제에 실패했습니다.", ctxMenu: DEFAULT_CTX });
     }
   },
 
