@@ -56,3 +56,22 @@ export async function saveResumeApi(
     };
   }
 }
+
+export interface ResumeDetail {
+  uuid: string;
+  type: "text" | "file" | "structured";
+  title: string;
+  isActive: boolean;
+  analysisStatus: string;
+  analysisStep: string;
+  analyzedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  content?: string;
+  originalFilename?: string;
+  fileSizeBytes?: number;
+}
+
+export async function fetchResumeDetailApi(uuid: string): Promise<ResumeDetail> {
+  return apiRequest<ResumeDetail>(`/api/v1/resumes/${uuid}/`, { auth: true });
+}
