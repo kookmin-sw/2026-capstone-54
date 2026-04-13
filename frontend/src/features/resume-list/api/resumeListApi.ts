@@ -77,18 +77,19 @@ function transformResume(item: ResumeApiItem): ResumeItem {
 }
 
 function buildSummary(items: ResumeApiItem[]): ResumeSummary {
-  const transformed = items.map(transformResume);
-  return {
-    total: items.length,
-    active: transformed.filter((r) => r.status === "active").length,
-    parsing: transformed.filter((r) => r.status === "parsing").length,
-    inactive: transformed.filter((r) => r.status === "inactive").length,
-    fileCount: items.filter((r) => r.type === "file").length,
-    textCount: items.filter((r) => r.type === "text").length,
-    interviewCount: 0,
-    avgScore: 0,
-    recentQuestions: [],
-  };
+  return items.reduce<ResumeSummary>(
+    (acc, item) => {
+      const status = toResumeStatus(item);
+      acc.total++;
+      if (status === "active") acc.active++;
+      else if (status === "parsing") acc.parsing++;
+      else if (status === "inactive") acc.inactive++;
+      if (item.type === "file") acc.fileCount++;
+      else if (item.type === "text") acc.textCount++;
+      return acc;
+    },
+    { total: 0, active: 0, parsing: 0, inactive: 0, fileCount: 0, textCount: 0, interviewCount: 0, avgScore: 0, recentQuestions: [] }
+  );
 }
 
 export async function fetchResumesApi(): Promise<{
