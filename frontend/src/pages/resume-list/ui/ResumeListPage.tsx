@@ -134,8 +134,7 @@ export function ResumeListPage() {
 
   useEffect(() => {
     fetchResumes();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [fetchResumes]);
 
   /* close ctx on outside click */
   useEffect(() => {
