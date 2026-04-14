@@ -14,22 +14,10 @@ load_dotenv()
 BASE_DIR = Path(__file__).parent.parent
 
 # ── Celery ──────────────────────────────────────
+# analysis-resume 은 DB 를 직접 쓰지 않으며, 모든 결과는 Celery payload 로 backend 에
+# 전달된다. broker 와 result backend 만 설정하면 된다.
 CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/0")
 CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND", "redis://localhost:6379/1")
-
-# ── Database (backend/ DB에 직접 접근) ────────────
-DB_HOST = os.getenv("POSTGRES_HOST", "localhost")
-DB_PORT = int(os.getenv("POSTGRES_PORT", "5432"))
-DB_NAME = os.getenv("DATABASE_NAME", "mefit")
-DB_USER = os.getenv("POSTGRES_USER", "postgres")
-DB_PASSWORD = os.getenv("POSTGRES_PASSWORD", "")
-
-# SQLAlchemy용 DATABASE_URL
-# 운영: AWS RDS → 환경변수로 주입 (sslmode 등 필요 시 DATABASE_URL에 포함)
-DATABASE_URL: str = os.getenv(
-    "DATABASE_URL",
-    f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}",
-)
 
 # ── OpenAI ───────────────────────────────────────
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")

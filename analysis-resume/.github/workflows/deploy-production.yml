@@ -38,26 +38,23 @@ jobs:
               -n "${NS}" \
               --dry-run=client -o yaml | kubectl apply -f -
 
-            # store-resume Secret 주입
-            # S3 인증은 EC2 인스턴스 프로파일(IAM Role)을 사용하므로 AWS 키 불필요
-            kubectl create secret generic mefit-production-store-resume-secret \
-              --from-literal=OPENAI_API_KEY="${{ secrets.STORE_RESUME_OPENAI_API_KEY }}" \
-              --from-literal=DATABASE_NAME="${{ secrets.DATABASE_NAME }}" \
-              --from-literal=POSTGRES_USER="${{ secrets.POSTGRES_USER }}" \
-              --from-literal=POSTGRES_PASSWORD="${{ secrets.POSTGRES_PASSWORD }}" \
-              --from-literal=POSTGRES_HOST="${{ secrets.POSTGRES_HOST }}" \
-              --from-literal=POSTGRES_PORT="${{ secrets.POSTGRES_PORT }}" \
+            # analysis-resume Secret 주입
+            # analysis-resume 은 Django DB 에 직접 접근하지 않고 Celery payload 로
+            # backend 에 결과를 전달하므로 DATABASE_* / POSTGRES_* 키는 필요 없다.
+            # S3 인증은 EC2 인스턴스 프로파일(IAM Role)을 사용하므로 AWS 키도 불필요.
+            kubectl create secret generic mefit-production-analysis-resume-secret \
+              --from-literal=OPENAI_API_KEY="${{ secrets.ANALYSIS_RESUME_OPENAI_API_KEY }}" \
               --from-literal=AWS_STORAGE_BUCKET_NAME="${{ secrets.AWS_STORAGE_BUCKET_NAME }}" \
               --from-literal=AWS_S3_REGION_NAME="${{ secrets.AWS_S3_REGION_NAME }}" \
               -n "${NS}" \
               --dry-run=client -o yaml | kubectl apply -f -
 
             # 배포 실행
-            chmod +x ~/infra/scripts/deploy-store-resume.sh
-            ~/infra/scripts/deploy-store-resume.sh "${{ inputs.image_tag }}"
+            chmod +x ~/infra/scripts/deploy-analysis-resume.sh
+            ~/infra/scripts/deploy-analysis-resume.sh "${{ inputs.image_tag }}"
 
       - name: 배포 결과 요약
         if: always()
         run: |
           echo "### 🚀 배포 결과" >> "$GITHUB_STEP_SUMMARY"
-          echo "- **이미지:** teammefit/mefit-store-resume:${{ inputs.image_tag }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **이미지:** teammefit/mefit-analysis-resume:${{ inputs.image_tag }}" >> "$GITHUB_STEP_SUMMARY"

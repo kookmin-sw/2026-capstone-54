@@ -1,11 +1,15 @@
-"""PDF 텍스트 추출 Celery task."""
+"""PDF 텍스트 추출 Celery task.
+
+DB 쓰기 없음. 추출된 텍스트는 payload 의 `text` 와 `file_text_content` 필드로 함께
+전달되어 downstream(embed/analyze) 이 사용하고, finalize 에서 backend 로 전송된다.
+"""
 
 import io
 
 import boto3
 from pypdf import PdfReader
 
-from app import config, db
+from app import config
 from app.celery_app import app
 from app.utils.logger import get_logger
 
@@ -43,25 +47,39 @@ def extract_text_from_pdf(pdf_bytes: bytes) -> str:
   return "\n".join(pages).strip()
 
 
-@app.task(bind=True, name="store_resume.tasks.extract_text", max_retries=2, default_retry_delay=30)
+@app.task(bind=True, name="analysis_resume.tasks.extract_text", max_retries=2, default_retry_delay=30)
 def extract_text_task(self, resume_uuid: str, user_id: int, storage_path: str) -> dict:
-  """PDF에서 텍스트를 추출하여 resume_file_contents.content에 저장합니다."""
+  """PDF 에서 텍스트를 추출해 payload 로 다음 단계에 전달한다."""
   logger.info("PDF 텍스트 추출 시작", resume_uuid=resume_uuid)
 
+  app.send_task(
+    "resumes.tasks.update_resume_step",
+    queue="celery",
+    kwargs={"resume_uuid": resume_uuid, "step": "extracting_text"},
+  )
+
   try:
-    db.update_resume_step(resume_uuid=resume_uuid, step="extracting_text")
     pdf_bytes = _read_pdf_bytes(storage_path)
     text = extract_text_from_pdf(pdf_bytes)
 
     if not text:
-      raise ValueError("PDF에서 텍스트를 추출할 수 없습니다.")
+      raise ValueError("PDF 에서 텍스트를 추출할 수 없습니다.")
 
-    db.update_file_content_text(resume_uuid=resume_uuid, extracted_text=text)
     logger.info("PDF 텍스트 추출 완료", resume_uuid=resume_uuid, text_len=len(text))
 
-    return {"resume_uuid": resume_uuid, "user_id": user_id, "text": text}
+    return {
+      "resume_uuid": resume_uuid,
+      "user_id": user_id,
+      "text": text,
+      # backend 가 ResumeFileContent.content 에 저장할 텍스트
+      "file_text_content": text,
+    }
 
   except Exception as exc:
     logger.error("PDF 텍스트 추출 실패", resume_uuid=resume_uuid, error=str(exc), exc_info=True)
-    db.update_resume_status(resume_uuid=resume_uuid, status="failed")
+    app.send_task(
+      "resumes.tasks.mark_resume_failed",
+      queue="celery",
+      kwargs={"resume_uuid": resume_uuid, "error": str(exc)},
+    )
     raise self.retry(exc=exc)

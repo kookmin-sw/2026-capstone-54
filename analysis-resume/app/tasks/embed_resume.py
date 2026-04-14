@@ -1,6 +1,10 @@
-"""이력서 텍스트 chunking + 임베딩 + pgvector 저장 task."""
+"""이력서 텍스트 chunking + 임베딩 task.
 
-from app import config, db
+DB 쓰기는 하지 않으며, 생성된 임베딩을 chord 하위 task 결과로 반환한다.
+backend 의 apply_analysis_result 태스크가 최종적으로 bulk_create 해서 저장한다.
+"""
+
+from app import config
 from app.celery_app import app
 from app.common import chunk_text, embed_texts
 from app.utils.logger import get_logger
@@ -8,17 +12,22 @@ from app.utils.logger import get_logger
 logger = get_logger(__name__)
 
 
-@app.task(bind=True, name="store_resume.tasks.embed_resume", max_retries=2, default_retry_delay=60)
+@app.task(bind=True, name="analysis_resume.tasks.embed_resume", max_retries=2, default_retry_delay=60)
 def embed_resume_task(self, payload: dict) -> dict:
-  """이력서 텍스트를 청킹·임베딩하여 resume_embeddings 테이블에 저장합니다."""
+  """이력서 텍스트를 청킹·임베딩하고 벡터 목록을 payload 로 반환한다."""
   resume_uuid: str = payload["resume_uuid"]
   user_id: int = payload["user_id"]
   text: str = payload["text"]
 
   logger.info("임베딩 시작", resume_uuid=resume_uuid, text_len=len(text))
 
+  app.send_task(
+    "resumes.tasks.update_resume_step",
+    queue="celery",
+    kwargs={"resume_uuid": resume_uuid, "step": "embedding"},
+  )
+
   try:
-    db.update_resume_step(resume_uuid=resume_uuid, step="embedding")
     chunks = chunk_text(text)
     if not chunks:
       raise ValueError("유효한 청크가 없습니다.")
@@ -32,31 +41,36 @@ def embed_resume_task(self, payload: dict) -> dict:
       all_embeddings.extend(batch_embeddings)
       total_embed_tokens += batch_tokens
 
-    chunk_records = [
-      {"context": chunk, "embedding": embedding, "chunk_type": "text", "chunk_index": idx}
+    embedding_records = [
+      {
+        "context": chunk,
+        "vector": embedding,
+        "chunk_type": "text",
+        "chunk_index": idx,
+      }
       for idx, (chunk, embedding) in enumerate(zip(chunks, all_embeddings))
     ]
 
-    db.upsert_embeddings(resume_uuid=resume_uuid, user_id=user_id, chunks=chunk_records)
-    db.record_token_usage(
-      user_id=user_id,
-      resume_uuid=resume_uuid,
-      operation_type="embed",
-      model_name=config.OPENAI_EMBEDDING_MODEL,
-      prompt_tokens=total_embed_tokens,
-      total_tokens=total_embed_tokens,
-    )
-    logger.info("임베딩 저장 완료", resume_uuid=resume_uuid, chunk_count=len(chunks))
+    logger.info("임베딩 완료", resume_uuid=resume_uuid, chunk_count=len(chunks))
 
     return {
       "type": "embed",
       "resume_uuid": resume_uuid,
-      "chunk_count": len(chunks),
-      "prompt_tokens": total_embed_tokens,
-      "total_tokens": total_embed_tokens,
+      "user_id": user_id,
+      "embeddings": embedding_records,
+      "token_usage": {
+        "operation_type": "embed",
+        "model_name": config.OPENAI_EMBEDDING_MODEL,
+        "prompt_tokens": total_embed_tokens,
+        "total_tokens": total_embed_tokens,
+      },
     }
 
   except Exception as exc:
     logger.error("임베딩 실패", resume_uuid=resume_uuid, error=str(exc), exc_info=True)
-    db.update_resume_status(resume_uuid=resume_uuid, status="failed")
+    app.send_task(
+      "resumes.tasks.mark_resume_failed",
+      queue="celery",
+      kwargs={"resume_uuid": resume_uuid, "error": str(exc)},
+    )
     raise self.retry(exc=exc)

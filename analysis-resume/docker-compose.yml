@@ -1,5 +1,5 @@
 services:
-  store-resume-worker:
+  analysis-resume-worker:
     build:
       context: .
       dockerfile: Dockerfile
@@ -8,7 +8,7 @@ services:
     environment:
       - CELERY_BROKER_URL=redis://mefit-redis:6379/0
       - CELERY_RESULT_BACKEND=redis://mefit-redis:6379/1
-      - STORE_RESUME_CONCURRENCY=2
+      - ANALYSIS_RESUME_CONCURRENCY=2
       # S3 — 개발: S3Mock용 dummy 키 / 운영: 미설정 → EC2 인스턴스 프로파일
       - AWS_STORAGE_BUCKET_NAME=${AWS_STORAGE_BUCKET_NAME:-mefit-files}
       - AWS_S3_REGION_NAME=${AWS_S3_REGION_NAME:-us-east-1}

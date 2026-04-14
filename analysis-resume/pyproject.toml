@@ -1,7 +1,7 @@
 [project]
-name = "store-resume"
+name = "analysis-resume"
 version = "0.1.0"
-description = "Add your description here"
+description = "Resume analysis worker (LLM + embeddings). DB 접근 없음 — 결과는 Celery payload 로 backend 에 전송한다."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -10,11 +10,8 @@ dependencies = [
     "langchain-openai>=1.1.0",
     "langchain-text-splitters>=0.3.0",
     "openai>=2.30.0",
-    "pgvector>=0.4.2",
-    "psycopg2-binary>=2.9.0",
     "pypdf>=6.9.2",
     "python-dotenv>=1.2.2",
     "redis>=7.4.0",
-    "sqlalchemy>=2.0.0",
     "structlog>=25.5.0",
 ]

@@ -34,5 +34,5 @@ WORKDIR /app
 COPY . /app/
 
 # 진입점: app 패키지 기준 Celery Worker
-# STORE_RESUME_CONCURRENCY 환경변수로 동시 처리 수 제어 (기본값 2)
-CMD ["sh", "-c", "celery -A app.celery_app worker -Q store-resume -l INFO -E --concurrency ${STORE_RESUME_CONCURRENCY:-2}"]
+# ANALYSIS_RESUME_CONCURRENCY 환경변수로 동시 처리 수 제어 (기본값 2)
+CMD ["sh", "-c", "celery -A app.celery_app worker -Q analysis-resume -l INFO -E --concurrency ${ANALYSIS_RESUME_CONCURRENCY:-2}"]

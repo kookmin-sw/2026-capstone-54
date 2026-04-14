@@ -36,7 +36,7 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: |
-            teammefit/mefit-store-resume:production
-            teammefit/mefit-store-resume:${{ github.sha }}
+            teammefit/mefit-analysis-resume:production
+            teammefit/mefit-analysis-resume:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
