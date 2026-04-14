@@ -1,6 +1,7 @@
 import { apiRequest, BASE_URL, getAccessToken } from "@/shared/api/client";
 import type {
   PaginatedResponse,
+  ParsedData,
   ResumeDetail,
   ResumeListItem,
 } from "./types";
@@ -18,6 +19,21 @@ export const resumeApi = {
     apiRequest<ResumeListItem>(`${BASE}/`, {
       method: "POST",
       body: JSON.stringify({ type: "text", title, content }),
+      auth: true,
+    }),
+
+  /** 구조화 폼으로 직접 작성한 이력서 생성. parsed_data 전체를 한 번에 전송. */
+  createStructured: (title: string, parsedData: Partial<ParsedData>) =>
+    apiRequest<ResumeListItem>(`${BASE}/`, {
+      method: "POST",
+      body: JSON.stringify({ type: "structured", title, parsed_data: parsedData }),
+      auth: true,
+    }),
+
+  /** 사용자가 '최종 저장' 을 누르면 호출. 재임베딩 트리거 + is_dirty 해제. */
+  finalize: (uuid: string) =>
+    apiRequest<ResumeDetail>(`${BASE}/${uuid}/finalize/`, {
+      method: "POST",
       auth: true,
     }),
 

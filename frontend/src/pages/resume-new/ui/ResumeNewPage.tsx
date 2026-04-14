@@ -1,71 +1,70 @@
+/** 이력서 생성 페이지 — 파일 / 텍스트 / 구조화 3가지 모드 탭. */
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FileText, PencilLine } from "lucide-react";
-import { resumeApi } from "@/features/resume";
-import { ResumeTextForm } from "./ResumeTextForm";
-import { ResumeFileForm } from "./ResumeFileForm";
+import { ArrowLeft, FileUp, FileText, Sparkles } from "lucide-react";
+import { FileUploadTab } from "./mode-tabs/FileUploadTab";
+import { TextUploadTab } from "./mode-tabs/TextUploadTab";
+import { StructuredFormTab } from "./mode-tabs/StructuredFormTab";
 
-type Mode = "text" | "file";
+type Mode = "file" | "text" | "structured";
+
+const TABS: { key: Mode; label: string; icon: React.ComponentType<{ size?: number }>; description: string }[] = [
+  { key: "file", label: "파일 업로드", icon: FileUp, description: "PDF 이력서를 올려 자동 분석" },
+  { key: "text", label: "텍스트 입력", icon: FileText, description: "자유 텍스트로 입력 후 자동 분석" },
+  { key: "structured", label: "새로운 이력서 작성", icon: Sparkles, description: "이력서의 구조에 맞게 작성할 수 있습니다." },
+];
 
 export function ResumeNewPage() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<Mode>("text");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const handleSubmitText = async (title: string, content: string) => {
-    setIsSubmitting(true); setError(null);
-    try {
-      await resumeApi.createText(title, content);
-      navigate("/resume");
-    } catch { setError("저장에 실패했어요. 다시 시도해주세요."); }
-    finally { setIsSubmitting(false); }
-  };
-
-  const handleSubmitFile = async (title: string, file: File, onProgress: (p: number) => void) => {
-    setIsSubmitting(true); setError(null);
-    try {
-      await resumeApi.createFile(title, file, onProgress);
-      navigate("/resume");
-    } catch { setError("업로드에 실패했어요. 다시 시도해주세요."); }
-    finally { setIsSubmitting(false); }
-  };
+  const [mode, setMode] = useState<Mode>("file");
 
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-container-md mx-auto px-8 pt-[28px] pb-[60px] max-sm:px-4 max-sm:pt-5">
-        <div className="mb-6">
-          <h1 className="text-[clamp(24px,3vw,32px)] font-black tracking-[-0.5px] text-[#0A0A0A]">이력서 추가하기</h1>
-          <p className="text-sm text-[#6B7280] mt-1.5">직접 입력하거나 파일을 업로드할 수 있어요.</p>
+        <button
+          onClick={() => navigate("/resume")}
+          className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#6B7280] hover:text-[#0A0A0A] mb-5 transition-colors"
+        >
+          <ArrowLeft size={14} /> 목록으로
+        </button>
+
+        <h1 className="text-[clamp(22px,3vw,32px)] font-black tracking-[-0.5px] text-[#0A0A0A] leading-[1.2] mb-2">
+          새 이력서
+        </h1>
+        <p className="text-[13px] text-[#6B7280] mb-6">
+          작성 방식을 선택하세요. 어떤 방식이든 결과는 동일한 정규화 형식으로 저장됩니다.
+        </p>
+
+        <div className="grid grid-cols-3 gap-3 mb-6 max-sm:grid-cols-1">
+          {TABS.map(({ key, label, icon: Icon, description }) => {
+            const isActive = mode === key;
+            return (
+              <button
+                key={key}
+                onClick={() => setMode(key)}
+                className={`text-left rounded-lg p-4 border transition-colors ${
+                  isActive
+                    ? "border-[#0991B2] bg-[#E6F7FA]"
+                    : "border-[#E5E7EB] hover:border-[#9CA3AF]"
+                }`}
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <Icon size={16} />
+                  <span className="text-[13px] font-extrabold text-[#0A0A0A]">{label}</span>
+                </div>
+                <p className="text-[11px] text-[#6B7280] leading-[1.5]">{description}</p>
+              </button>
+            );
+          })}
         </div>
 
-        {/* Mode 탭 */}
-        <div className="flex gap-2 mb-6 bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-1">
-          <ModeTab icon={<PencilLine size={14} />} label="직접 입력" active={mode === "text"} onClick={() => setMode("text")} />
-          <ModeTab icon={<FileText size={14} />} label="파일 업로드" active={mode === "file"} onClick={() => setMode("file")} />
+        <div className="bg-white border border-[#E5E7EB] rounded-lg p-6">
+          {mode === "file" && <FileUploadTab />}
+          {mode === "text" && <TextUploadTab />}
+          {mode === "structured" && <StructuredFormTab />}
         </div>
-
-        {error && (
-          <div className="mb-4 bg-[#FEF2F2] border border-[#FECACA] text-[#DC2626] rounded-lg p-3 text-sm">{error}</div>
-        )}
-
-        {mode === "text" && <ResumeTextForm onSubmit={handleSubmitText} isSubmitting={isSubmitting} />}
-        {mode === "file" && <ResumeFileForm onSubmit={handleSubmitFile} isSubmitting={isSubmitting} />}
       </div>
     </div>
-  );
-}
-
-interface ModeTabProps { icon: React.ReactNode; label: string; active: boolean; onClick: () => void; }
-function ModeTab({ icon, label, active, onClick }: ModeTabProps) {
-  return (
-    <button
-      onClick={onClick}
-      className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-md font-bold text-[13px] transition-all ${
-        active ? "bg-white text-[#0A0A0A] shadow-sm" : "text-[#6B7280] hover:text-[#0A0A0A]"
-      }`}
-    >
-      {icon} {label}
-    </button>
   );
 }

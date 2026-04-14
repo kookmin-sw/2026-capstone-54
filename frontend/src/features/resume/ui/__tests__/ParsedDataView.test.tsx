@@ -9,9 +9,11 @@ const emptyParsed: ParsedData = {
   experiences: [],
   educations: [],
   certifications: [],
+  awards: [],
   projects: [],
   languagesSpoken: [],
   totalExperienceYears: null,
+  totalExperienceMonths: null,
   industryDomains: [],
   keywords: [],
   jobCategory: null,
@@ -42,17 +44,18 @@ describe("ParsedDataView", () => {
     expect(screen.getByText("Docker")).toBeInTheDocument();
   });
 
-  it("총 경력 연차와 직군이 메타카드로 표시된다", () => {
+  it("총 경력(연·월) 과 직군이 메타카드로 표시된다", () => {
     render(
       <ParsedDataView
         data={{
           ...emptyParsed,
           totalExperienceYears: 5,
+          totalExperienceMonths: 6,
           jobCategory: "IT/개발",
         }}
       />,
     );
-    expect(screen.getByText("5년")).toBeInTheDocument();
+    expect(screen.getByText("5년 6개월")).toBeInTheDocument();
     expect(screen.getByText("IT/개발")).toBeInTheDocument();
   });
 

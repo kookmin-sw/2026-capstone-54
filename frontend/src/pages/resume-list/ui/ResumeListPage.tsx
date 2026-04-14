@@ -8,7 +8,6 @@ import {
   resumeStatsApi,
   type ResumeCountStats,
   type ResumeListItem,
-  type ResumeTypeStats,
 } from "@/features/resume";
 import { ResumeCard } from "./ResumeCard";
 import { ResumeListHeader } from "./ResumeListHeader";
@@ -21,11 +20,9 @@ export function ResumeListPage() {
   });
 
   const [countStats, setCountStats] = useState<ResumeCountStats | null>(null);
-  const [typeStats, setTypeStats] = useState<ResumeTypeStats | null>(null);
 
   useEffect(() => {
     resumeStatsApi.count().then(setCountStats).catch(() => {});
-    resumeStatsApi.type().then(setTypeStats).catch(() => {});
   }, []);
 
   // 진행 중(pending/processing) 이력서에 대해 SSE 스트림을 구독해 상태 변화를 즉시 반영한다.
@@ -75,7 +72,6 @@ export function ResumeListPage() {
               .catch(() => {});
             // 통계 갱신
             resumeStatsApi.count().then(setCountStats).catch(() => {});
-            resumeStatsApi.type().then(setTypeStats).catch(() => {});
           }
         },
       );
@@ -97,7 +93,6 @@ export function ResumeListPage() {
   const refreshAll = () => {
     reset();
     resumeStatsApi.count().then(setCountStats).catch(() => {});
-    resumeStatsApi.type().then(setTypeStats).catch(() => {});
   };
 
   const handleDelete = async (uuid: string) => {
@@ -124,7 +119,7 @@ export function ResumeListPage() {
         </div>
 
         {/* 통계 스트립 */}
-        {countStats && typeStats && <ResumeStatsStrip count={countStats} type={typeStats} />}
+        {countStats && <ResumeStatsStrip count={countStats} />}
 
         {/* 리스트 헤더: "전체 이력서 X개" + 추가 버튼 */}
         <ResumeListHeader
@@ -139,7 +134,7 @@ export function ResumeListPage() {
               key={item.uuid}
               resume={item}
               onDetail={() => navigate(`/resume/${item.uuid}`)}
-              onEdit={() => navigate(`/resume/edit/${item.uuid}`)}
+              onEdit={() => navigate(`/resume/${item.uuid}`)}
               onDelete={() => handleDelete(item.uuid)}
               onToggleActive={() => handleToggleActive(item)}
             />

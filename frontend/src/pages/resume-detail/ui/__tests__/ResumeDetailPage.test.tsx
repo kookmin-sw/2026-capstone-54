@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { ResumeDetailPage } from "../ResumeDetailPage";
 import type { ResumeDetail } from "@/features/resume";
 
@@ -14,6 +14,7 @@ jest.mock("@/features/resume/api/resumeApi", () => ({
     activate: jest.fn(),
     deactivate: jest.fn(),
     remove: jest.fn(),
+    finalize: jest.fn(),
   },
 }));
 
@@ -27,9 +28,12 @@ import { resumeApi } from "@/features/resume/api/resumeApi";
 const fakeResume: ResumeDetail = {
   uuid: "test-uuid-1234",
   type: "text",
+  sourceMode: "text",
   title: "백엔드 개발자 이력서",
   isActive: true,
   isParsed: true,
+  isDirty: false,
+  lastFinalizedAt: null,
   analysisStatus: "completed",
   analysisStep: "done",
   analyzedAt: "2024-03-10T10:00:00Z",
@@ -49,9 +53,11 @@ const fakeResume: ResumeDetail = {
     experiences: [],
     educations: [],
     certifications: [],
+    awards: [],
     projects: [],
     languagesSpoken: [],
     totalExperienceYears: 5,
+    totalExperienceMonths: 6,
     industryDomains: [],
     keywords: [],
     jobCategory: "IT/개발",
@@ -69,20 +75,22 @@ describe("ResumeDetailPage", () => {
     expect(await screen.findByText("백엔드 개발자 이력서")).toBeInTheDocument();
   });
 
-  it("텍스트 이력서 본문이 표시된다", async () => {
-    render(<ResumeDetailPage />);
-    expect(
-      await screen.findByText("안녕하세요. 저는 5년 경력의 백엔드 개발자입니다."),
-    ).toBeInTheDocument();
-  });
-
-  it("parsedData 요약이 표시된다", async () => {
+  it("parsedData 요약이 SummarySection 에 표시된다", async () => {
     render(<ResumeDetailPage />);
     expect(await screen.findByText("백엔드 개발 전문가입니다.")).toBeInTheDocument();
   });
 
-  it("parsedData 총 경력 연차가 표시된다", async () => {
+  it("CareerMetaSection 에 총 경력 연·월이 표시된다", async () => {
     render(<ResumeDetailPage />);
-    expect(await screen.findByText("5년")).toBeInTheDocument();
+    expect(await screen.findByText("5년 6개월")).toBeInTheDocument();
+  });
+
+  it("RawSourceDrawer 를 열면 텍스트 원본이 표시된다", async () => {
+    render(<ResumeDetailPage />);
+    const trigger = await screen.findByText(/원본 보기/);
+    fireEvent.click(trigger);
+    expect(
+      await screen.findByText("안녕하세요. 저는 5년 경력의 백엔드 개발자입니다."),
+    ).toBeInTheDocument();
   });
 });

@@ -1,5 +1,6 @@
 // ── Enums ──
 export type ResumeType = "file" | "text" | "structured";
+export type ResumeSourceMode = "file" | "text" | "structured";
 export type AnalysisStatus = "pending" | "processing" | "completed" | "failed";
 export type AnalysisStep =
   | "queued"
@@ -16,7 +17,7 @@ export interface ResumeJobCategory {
   emoji: string;
 }
 
-// ── Parsed Data ──
+// ── Parsed Data (정규화 sub-model 의 camelCase 응답) ──
 export interface ParsedBasicInfo {
   name?: string | null;
   email?: string | null;
@@ -32,6 +33,7 @@ export interface ParsedSkillGroup {
 }
 
 export interface ParsedExperience {
+  uuid?: string;
   company: string;
   role: string;
   period: string;
@@ -40,6 +42,7 @@ export interface ParsedExperience {
 }
 
 export interface ParsedEducation {
+  uuid?: string;
   school: string;
   degree: string;
   major: string;
@@ -47,12 +50,22 @@ export interface ParsedEducation {
 }
 
 export interface ParsedCertification {
+  uuid?: string;
   name: string;
   issuer: string;
   date: string;
 }
 
+export interface ParsedAward {
+  uuid?: string;
+  name: string;
+  year: string;
+  organization: string;
+  description: string;
+}
+
 export interface ParsedProject {
+  uuid?: string;
   name: string;
   role: string;
   period: string;
@@ -61,6 +74,7 @@ export interface ParsedProject {
 }
 
 export interface ParsedLanguage {
+  uuid?: string;
   language: string;
   level: string;
 }
@@ -72,9 +86,11 @@ export interface ParsedData {
   experiences: ParsedExperience[];
   educations: ParsedEducation[];
   certifications: ParsedCertification[];
+  awards: ParsedAward[];
   projects: ParsedProject[];
   languagesSpoken: ParsedLanguage[];
   totalExperienceYears: number | null;
+  totalExperienceMonths: number | null;
   industryDomains: string[];
   keywords: string[];
   jobCategory: string | null;
@@ -84,9 +100,12 @@ export interface ParsedData {
 export interface ResumeListItem {
   uuid: string;
   type: ResumeType;
+  sourceMode: ResumeSourceMode;
   title: string;
   isActive: boolean;
   isParsed: boolean;
+  isDirty: boolean;
+  lastFinalizedAt: string | null;
   analysisStatus: AnalysisStatus;
   analysisStep: AnalysisStep;
   analyzedAt: string | null;
@@ -97,7 +116,7 @@ export interface ResumeListItem {
 
 export interface ResumeDetail extends ResumeListItem {
   parsedData: ParsedData | null;
-  content: string | null;           // 텍스트 이력서 본문
+  content: string | null;           // 텍스트 이력서 본문 (raw)
   originalFilename: string | null;
   fileSizeBytes: number | null;
   mimeType: string | null;
@@ -161,6 +180,75 @@ export interface ResumeTemplateDetail {
   displayOrder: number;
   job: ResumeTemplateJob;
   content: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ── Section CRUD payloads / responses ──
+
+export interface ResumeBasicInfoRow {
+  uuid: string;
+  name: string;
+  email: string;
+  phone: string;
+  location: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ResumeSummaryRow {
+  uuid: string;
+  text: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ResumeCareerMetaRow {
+  uuid: string;
+  totalExperienceYears: number | null;
+  totalExperienceMonths: number | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ResumeExperienceRow extends ParsedExperience {
+  uuid: string;
+  displayOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ResumeEducationRow extends ParsedEducation {
+  uuid: string;
+  displayOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ResumeCertificationRow extends ParsedCertification {
+  uuid: string;
+  displayOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ResumeAwardRow extends ParsedAward {
+  uuid: string;
+  displayOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ResumeProjectRow extends ParsedProject {
+  uuid: string;
+  displayOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ResumeLanguageSpokenRow extends ParsedLanguage {
+  uuid: string;
+  displayOrder: number;
   createdAt: string;
   updatedAt: string;
 }

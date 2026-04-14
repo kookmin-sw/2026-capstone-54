@@ -18,7 +18,6 @@ import { JdDetailPage } from "@/pages/jd-detail";
 import { JdEditPage } from "@/pages/jd-edit";
 import { JdListPage } from "@/pages/jd-list";
 import { ResumeNewPage } from "@/pages/resume-new";
-import { ResumeEditPage } from "@/pages/resume-edit";
 import { ResumeListPage } from "@/pages/resume-list";
 import { ResumeDetailPage } from "@/pages/resume-detail";
 import { InterviewSetupPage } from "@/pages/interview-setup";
@@ -72,7 +71,6 @@ function App() {
         <Route path="/resume" element={<ProtectedRoute><ResumeListPage /></ProtectedRoute>} />
         <Route path="/resume/new" element={<ProtectedRoute><ResumeNewPage /></ProtectedRoute>} />
         <Route path="/resume/:uuid" element={<ProtectedRoute><ResumeDetailPage /></ProtectedRoute>} />
-        <Route path="/resume/edit/:uuid" element={<ProtectedRoute><ResumeEditPage /></ProtectedRoute>} />
         <Route path="/interview/setup" element={<ProtectedRoute><InterviewSetupPage /></ProtectedRoute>} />
         <Route path="/interview/precheck/:interviewSessionUuid" element={<ProtectedRoute><InterviewPreCheckPage /></ProtectedRoute>} />
         <Route path="/interview/session/:interviewSessionUuid" element={<ProtectedRoute><InterviewSessionPage /></ProtectedRoute>} />

@@ -27,11 +27,16 @@ export function ParsedDataView({ data }: ParsedDataViewProps) {
       )}
 
       {/* 메타 정보 */}
-      {(data.totalExperienceYears != null || data.jobCategory) && (
+      {(data.totalExperienceYears != null
+        || data.totalExperienceMonths != null
+        || data.jobCategory) && (
         <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
           {data.jobCategory && <MetaCard label="직군" value={data.jobCategory} />}
-          {data.totalExperienceYears != null && (
-            <MetaCard label="총 경력" value={`${data.totalExperienceYears}년`} />
+          {(data.totalExperienceYears != null || data.totalExperienceMonths != null) && (
+            <MetaCard
+              label="총 경력"
+              value={`${data.totalExperienceYears ?? 0}년 ${data.totalExperienceMonths ?? 0}개월`}
+            />
           )}
         </div>
       )}

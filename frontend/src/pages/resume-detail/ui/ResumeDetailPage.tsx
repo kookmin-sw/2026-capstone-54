@@ -1,33 +1,59 @@
+/** 이력서 상세 페이지 — 정규화 sub-model 인라인 편집 + dirty/finalize 흐름. */
+
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Loader2, ArrowLeft } from "lucide-react";
+import { Loader2, ArrowLeft, Trash2, Power, PowerOff } from "lucide-react";
 import {
   resumeApi,
   AnalysisProgress,
+  ResumeStatusBadge,
   useResumeAnalysisSse,
+  type ParsedData,
   type ResumeDetail,
 } from "@/features/resume";
-import { ResumeDetailHeader } from "./ResumeDetailHeader";
-import { ResumeTextContentSection } from "./ResumeTextContentSection";
-import { ResumeFileSection } from "./ResumeFileSection";
-import { ResumeParsedSection } from "./ResumeParsedSection";
+import { formatDateTime } from "@/shared/lib/format/date";
+import { DirtyBanner } from "./DirtyBanner";
+import { RawSourceDrawer } from "./RawSourceDrawer";
+import { BasicInfoSection } from "./sections/BasicInfoSection";
+import { SummarySection } from "./sections/SummarySection";
+import { CareerMetaSection } from "./sections/CareerMetaSection";
+import { JobCategorySection } from "./sections/JobCategorySection";
+import { ExperiencesSection } from "./sections/ExperiencesSection";
+import { EducationsSection } from "./sections/EducationsSection";
+import { CertificationsSection } from "./sections/CertificationsSection";
+import { AwardsSection } from "./sections/AwardsSection";
+import { ProjectsSection } from "./sections/ProjectsSection";
+import { LanguagesSpokenSection } from "./sections/LanguagesSpokenSection";
+import { SkillsSection } from "./sections/SkillsSection";
+import { IndustryDomainsSection } from "./sections/IndustryDomainsSection";
+import { KeywordsSection } from "./sections/KeywordsSection";
 
-/**
- * 이력서 상세 조회 페이지 (읽기 전용).
- *
- * 역할:
- * - 상세 데이터 fetch / 새로고침
- * - 분석 진행 중 SSE 구독 → 상태 실시간 반영, 완료 시 전체 재조회
- * - 활성/비활성 토글 / 삭제 등 메타 액션
- * - 레이아웃만 조립 — 각 섹션은 하위 컴포넌트가 담당한다.
- */
+const EMPTY_PARSED: ParsedData = {
+  basicInfo: {},
+  summary: "",
+  skills: { technical: [], soft: [], tools: [], languages: [] },
+  experiences: [],
+  educations: [],
+  certifications: [],
+  awards: [],
+  projects: [],
+  languagesSpoken: [],
+  totalExperienceYears: null,
+  totalExperienceMonths: null,
+  industryDomains: [],
+  keywords: [],
+  jobCategory: null,
+};
+
 export function ResumeDetailPage() {
   const { uuid } = useParams<{ uuid: string }>();
   const navigate = useNavigate();
   const [resume, setResume] = useState<ResumeDetail | null>(null);
+  const [parsed, setParsed] = useState<ParsedData>(EMPTY_PARSED);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [isFinalizing, setIsFinalizing] = useState(false);
   const [isToggling, setIsToggling] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!uuid) return;
@@ -35,15 +61,12 @@ export function ResumeDetailPage() {
       .retrieve(uuid)
       .then((data) => {
         setResume(data);
+        setParsed({ ...EMPTY_PARSED, ...(data.parsedData ?? {}) } as ParsedData);
         setIsLoading(false);
       })
-      .catch(() => {
-        setError("이력서를 불러올 수 없어요.");
-        setIsLoading(false);
-      });
+      .catch(() => { setError("이력서를 불러올 수 없어요."); setIsLoading(false); });
   }, [uuid]);
 
-  // 분석 진행 중에만 SSE 구독 → 상태 실시간 반영, 완료/실패 이벤트 시 전체 상세 재조회.
   const sseEnabled =
     !!resume && (resume.analysisStatus === "pending" || resume.analysisStatus === "processing");
   useResumeAnalysisSse({
@@ -51,15 +74,31 @@ export function ResumeDetailPage() {
     enabled: sseEnabled,
     onStatus: (evt) =>
       setResume((prev) =>
-        prev
-          ? { ...prev, analysisStatus: evt.analysis_status, analysisStep: evt.analysis_step }
-          : prev,
+        prev ? { ...prev, analysisStatus: evt.analysis_status, analysisStep: evt.analysis_step } : prev,
       ),
     onTerminal: () => {
       if (!uuid) return;
-      resumeApi.retrieve(uuid).then(setResume).catch(() => {});
+      resumeApi
+        .retrieve(uuid)
+        .then((data) => {
+          setResume(data);
+          setParsed({ ...EMPTY_PARSED, ...(data.parsedData ?? {}) } as ParsedData);
+        })
+        .catch(() => {});
     },
   });
+
+  const handleFinalize = async () => {
+    if (!resume || isFinalizing) return;
+    setIsFinalizing(true);
+    try {
+      const updated = await resumeApi.finalize(resume.uuid);
+      setResume(updated);
+      setParsed({ ...EMPTY_PARSED, ...(updated.parsedData ?? {}) } as ParsedData);
+    } finally {
+      setIsFinalizing(false);
+    }
+  };
 
   const handleToggleActive = async () => {
     if (!resume || isToggling) return;
@@ -81,6 +120,13 @@ export function ResumeDetailPage() {
     navigate("/resume");
   };
 
+  // 섹션 변경 시 로컬 캐시 + dirty 플래그 갱신
+  const markDirty = () => setResume((prev) => (prev ? { ...prev, isDirty: true } : prev));
+  const updateParsed = (patch: Partial<ParsedData>) => {
+    setParsed((p) => ({ ...p, ...patch }));
+    markDirty();
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
@@ -88,7 +134,6 @@ export function ResumeDetailPage() {
       </div>
     );
   }
-
   if (error || !resume) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
@@ -101,7 +146,7 @@ export function ResumeDetailPage() {
     resume.analysisStatus === "processing" || resume.analysisStatus === "pending";
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#F9FAFB]">
       <div className="max-w-container-lg mx-auto px-8 pt-[28px] pb-[60px] max-sm:px-4 max-sm:pt-5">
         <button
           onClick={() => navigate("/resume")}
@@ -110,31 +155,132 @@ export function ResumeDetailPage() {
           <ArrowLeft size={14} /> 목록으로
         </button>
 
-        <ResumeDetailHeader
-          resume={resume}
-          isToggling={isToggling}
-          onToggleActive={handleToggleActive}
-          onEdit={() => navigate(`/resume/edit/${resume.uuid}`)}
-          onDelete={handleDelete}
-        />
+        <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap mb-2">
+              <h1 className="text-[clamp(22px,3vw,32px)] font-black tracking-[-0.5px] text-[#0A0A0A] leading-[1.2]">
+                {resume.title}
+              </h1>
+              <ResumeStatusBadge status={resume.analysisStatus} isActive={resume.isActive} />
+              <span className="text-[10px] font-bold text-[#6B7280] bg-[#F3F4F6] rounded-full px-2 py-0.5">
+                {resume.sourceMode}
+              </span>
+            </div>
+            <div className="text-[12px] text-[#6B7280] flex items-center gap-3 flex-wrap">
+              <span>생성일: {formatDateTime(resume.createdAt)}</span>
+              {resume.lastFinalizedAt && (
+                <span>최종 저장: {formatDateTime(resume.lastFinalizedAt)}</span>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={handleToggleActive}
+              disabled={isToggling}
+              className="inline-flex items-center gap-1.5 text-[12px] font-bold border border-[#E5E7EB] rounded-lg px-3 py-2 hover:bg-[#F9FAFB] transition-colors text-[#374151] disabled:opacity-50"
+            >
+              {resume.isActive ? <PowerOff size={13} /> : <Power size={13} />}
+              {resume.isActive ? "비활성화" : "활성화"}
+            </button>
+            <button
+              onClick={handleDelete}
+              className="inline-flex items-center gap-1.5 text-[12px] font-bold border border-[#FECACA] text-[#DC2626] rounded-lg px-3 py-2 hover:bg-[#FEF2F2] transition-colors"
+            >
+              <Trash2 size={13} /> 삭제
+            </button>
+          </div>
+        </div>
 
         {isProcessing && (
-          <div className="mb-6 bg-[#F0F9FF] border border-[#BAE6FD] rounded-lg p-4">
+          <div className="mb-4 bg-[#F0F9FF] border border-[#BAE6FD] rounded-lg p-4">
             <AnalysisProgress status={resume.analysisStatus} step={resume.analysisStep} />
           </div>
         )}
 
-        <div className="flex flex-col gap-6">
-          {resume.type === "text" && resume.content && (
-            <ResumeTextContentSection content={resume.content} />
-          )}
+        {resume.isDirty && (
+          <DirtyBanner isFinalizing={isFinalizing} onFinalize={handleFinalize} />
+        )}
 
-          {resume.type === "file" && <ResumeFileSection resume={resume} />}
-
-          <ResumeParsedSection
-            data={resume.isParsed ? resume.parsedData : null}
-            isProcessing={isProcessing}
+        <div className="flex flex-col gap-4">
+          <BasicInfoSection
+            resumeUuid={resume.uuid}
+            value={parsed.basicInfo}
+            onChange={(v) => updateParsed({ basicInfo: v })}
           />
+          <SummarySection
+            resumeUuid={resume.uuid}
+            value={parsed.summary}
+            onChange={(v) => updateParsed({ summary: v })}
+          />
+          <div className="grid grid-cols-2 gap-4 max-sm:grid-cols-1">
+            <CareerMetaSection
+              resumeUuid={resume.uuid}
+              years={parsed.totalExperienceYears}
+              months={parsed.totalExperienceMonths}
+              onChange={(years, months) =>
+                updateParsed({
+                  totalExperienceYears: years,
+                  totalExperienceMonths: months,
+                })
+              }
+            />
+            <JobCategorySection
+              resumeUuid={resume.uuid}
+              value={resume.resumeJobCategory}
+              onChange={(c) => {
+                setResume((prev) => (prev ? { ...prev, resumeJobCategory: c } : prev));
+                markDirty();
+              }}
+            />
+          </div>
+          <ExperiencesSection
+            resumeUuid={resume.uuid}
+            items={parsed.experiences}
+            onChange={(v) => updateParsed({ experiences: v })}
+          />
+          <EducationsSection
+            resumeUuid={resume.uuid}
+            items={parsed.educations}
+            onChange={(v) => updateParsed({ educations: v })}
+          />
+          <CertificationsSection
+            resumeUuid={resume.uuid}
+            items={parsed.certifications}
+            onChange={(v) => updateParsed({ certifications: v })}
+          />
+          <AwardsSection
+            resumeUuid={resume.uuid}
+            items={parsed.awards}
+            onChange={(v) => updateParsed({ awards: v })}
+          />
+          <ProjectsSection
+            resumeUuid={resume.uuid}
+            items={parsed.projects}
+            onChange={(v) => updateParsed({ projects: v })}
+          />
+          <LanguagesSpokenSection
+            resumeUuid={resume.uuid}
+            items={parsed.languagesSpoken}
+            onChange={(v) => updateParsed({ languagesSpoken: v })}
+          />
+          <SkillsSection
+            resumeUuid={resume.uuid}
+            value={parsed.skills}
+            onChange={(v) => updateParsed({ skills: v })}
+          />
+          <IndustryDomainsSection
+            resumeUuid={resume.uuid}
+            value={parsed.industryDomains}
+            onChange={(v) => updateParsed({ industryDomains: v })}
+          />
+          <KeywordsSection
+            resumeUuid={resume.uuid}
+            value={parsed.keywords}
+            onChange={(v) => updateParsed({ keywords: v })}
+          />
+
+          <RawSourceDrawer resume={resume} />
         </div>
       </div>
     </div>
