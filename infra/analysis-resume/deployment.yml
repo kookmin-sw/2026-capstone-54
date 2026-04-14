@@ -1,10 +1,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mefit-production-store-resume-worker
+  name: mefit-production-analysis-resume-worker
   namespace: mefit-backend-production
   labels:
-    app: mefit-production-store-resume-worker
+    app: mefit-production-analysis-resume-worker
 spec:
   replicas: 1
   strategy:
@@ -14,23 +14,23 @@ spec:
       maxUnavailable: 0
   selector:
     matchLabels:
-      app: mefit-production-store-resume-worker
+      app: mefit-production-analysis-resume-worker
   template:
     metadata:
       labels:
-        app: mefit-production-store-resume-worker
+        app: mefit-production-analysis-resume-worker
     spec:
       imagePullSecrets:
         - name: mefit-production-dockerhub
       containers:
-        - name: store-resume-worker
-          image: teammefit/mefit-store-resume:production
+        - name: analysis-resume-worker
+          image: teammefit/mefit-analysis-resume:production
           imagePullPolicy: Always
           envFrom:
             - configMapRef:
-                name: mefit-production-store-resume-env
+                name: mefit-production-analysis-resume-env
             - secretRef:
-                name: mefit-production-store-resume-secret
+                name: mefit-production-analysis-resume-secret
           resources:
             requests:
               cpu: "150m"
