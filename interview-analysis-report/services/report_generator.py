@@ -32,19 +32,20 @@ class ReportGeneratorService:
     def __init__(self) -> None:
         self._analyzer = LLMAnalyzer()
 
-    def generate(self, report_id: int) -> None:
+    def generate(self, report_id: int, bundle_url: str = "") -> None:
         """리포트를 생성하고 DB에 저장한다.
 
         Args:
             report_id: AnalysisReport 레코드의 PK.
+            bundle_url: backend 가 업로드한 이력서 정규화 bundle JSON 의 URL.
         """
         try:
-            self._do_generate(report_id)
+            self._do_generate(report_id, bundle_url=bundle_url)
         except Exception as e:
             logger.exception("리포트 생성 실패 (report_id=%d): %s", report_id, e)
             self._mark_failed(report_id, str(e))
 
-    def _do_generate(self, report_id: int) -> None:
+    def _do_generate(self, report_id: int, bundle_url: str = "") -> None:
         """실제 생성 로직. 예외는 호출자가 처리한다."""
         with get_session() as session:
             # 1) AnalysisReport 조회 → interview_session_id 획득
@@ -70,8 +71,9 @@ class ReportGeneratorService:
                 .all()
             )
 
-            # 4) 이력서 / 채용공고 콘텐츠 DB 조회 (UUID 기반)
-            resume_content = get_resume_content(session, interview.resume_id or "")
+            # 4) 이력서 콘텐츠는 bundle URL 에서 fetch (정규화된 JSON)
+            #    채용공고는 여전히 DB 직접 조회
+            resume_content = get_resume_content(bundle_url)
             job_posting_content = get_job_description_content(
                 session, interview.user_job_description_id or ""
             )
