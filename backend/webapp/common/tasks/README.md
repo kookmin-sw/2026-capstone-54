@@ -23,8 +23,8 @@ Celery는 `autodiscover_tasks()`로 각 앱의 `tasks` 패키지를 로드한다
 # myapp/tasks/__init__.py
 from .base_task import BaseTask
 from .base_scheduled_task import BaseScheduledTask
-from . import my_task        # noqa: F401
-from . import another_task   # noqa: F401
+from . import my_task
+from . import another_task
 ```
 
 ---

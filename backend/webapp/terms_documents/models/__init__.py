@@ -1,2 +1,7 @@
-from .terms_document import TermsDocument  # noqa
-from .user_consent import UserConsent  # noqa
+from .terms_document import TermsDocument
+from .user_consent import UserConsent
+
+__all__ = [
+  "TermsDocument",
+  "UserConsent",
+]
