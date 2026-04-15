@@ -36,8 +36,9 @@ class ResumeViewSetTests(TestCase):
     """GET /api/v1/resumes/ → 200, 내 이력서 목록 반환."""
     response = self.client.get(self.list_url)
     self.assertEqual(response.status_code, status.HTTP_200_OK)
-    self.assertEqual(len(response.data), 1)
-    self.assertEqual(response.data[0]["uuid"], str(self.resume.pk))
+    self.assertEqual(response.data["count"], 1)
+    self.assertEqual(len(response.data["results"]), 1)
+    self.assertEqual(response.data["results"][0]["uuid"], str(self.resume.pk))
 
   # ── create ──
 

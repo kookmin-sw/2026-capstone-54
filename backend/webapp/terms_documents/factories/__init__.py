@@ -1,4 +1,4 @@
-from .terms_document_factory import TermsDocumentFactory  # noqa
-from .user_consent_factory import UserConsentFactory  # noqa
+from .terms_document_factory import TermsDocumentFactory
+from .user_consent_factory import UserConsentFactory
 
 __all__ = ["TermsDocumentFactory", "UserConsentFactory"]

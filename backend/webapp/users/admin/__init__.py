@@ -1,2 +1,7 @@
-from .email_verification_code_admin import *  # noqa: F401, F403
-from .user_admin import *  # noqa: F401, F403
+from .email_verification_code_admin import EmailVerificationCodeAdmin
+from .user_admin import UserAdmin
+
+__all__ = [
+  "EmailVerificationCodeAdmin",
+  "UserAdmin",
+]

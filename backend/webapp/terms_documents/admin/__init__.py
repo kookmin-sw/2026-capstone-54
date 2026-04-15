@@ -1,2 +1,7 @@
-from .terms_admin import TermsDocumentAdmin  # noqa
-from .user_consent_admin import UserConsentAdmin  # noqa
+from .terms_admin import TermsDocumentAdmin
+from .user_consent_admin import UserConsentAdmin
+
+__all__ = [
+  "TermsDocumentAdmin",
+  "UserConsentAdmin",
+]
