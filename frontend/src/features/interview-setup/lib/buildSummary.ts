@@ -1,13 +1,9 @@
-import type { SetupSummary, JdTab, InterviewMode, PracticeMode } from "../model/types";
+import type { SetupSummary, InterviewMode, PracticeMode } from "../model/types";
 import type { InterviewDifficultyLevel } from "@/features/interview-session";
 
 interface SummaryInput {
-  jdTab: JdTab;
   jdList: { uuid: string; company: string; role: string; stage: string }[];
   selectedJdId: string | null;
-  directCompany: string;
-  directRole: string;
-  directStage: string;
   interviewMode: InterviewMode;
   practiceMode: PracticeMode;
   interviewDifficultyLevel: InterviewDifficultyLevel;
@@ -24,16 +20,11 @@ export function buildSummary(s: SummaryInput): SetupSummary {
   let role = "—";
   let stage = "—";
 
-  if (s.jdTab === "saved") {
-    const jd = s.selectedJdId ? s.jdList.find((j) => j.uuid === s.selectedJdId) : null;
-    if (jd) { company = jd.company; role = jd.role; stage = jd.stage; }
-  } else if (s.jdTab === "direct") {
-    company = s.directCompany || "—";
-    role = s.directRole || "—";
-    stage = s.directStage;
-  } else {
-    company = "프로필 기반";
-    role = "프로필 기반";
+  const jd = s.selectedJdId ? s.jdList.find((j) => j.uuid === s.selectedJdId) : null;
+  if (jd) {
+    company = jd.company;
+    role = jd.role;
+    stage = jd.stage;
   }
 
   return {

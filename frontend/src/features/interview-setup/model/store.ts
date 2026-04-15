@@ -5,21 +5,15 @@ import { interviewSetupApi } from "../api/interviewSetupApi";
 import type { ResumeOption, CreatedInterviewSession } from "../api/interviewSetupApi";
 import type { InterviewDifficultyLevel, InterviewSessionType } from "@/features/interview-session";
 import { isApiError } from "@/shared/api/client";
-import type { JdTab, InterviewMode, PracticeMode } from "./types";
+import type { InterviewMode, PracticeMode } from "./types";
 import { buildSummary } from "../lib/buildSummary";
 
 interface InterviewSetupState {
   jdList: SetupJdItem[];
   jdListLoading: boolean;
 
-  jdTab: JdTab;
   /** 선택된 UserJobDescription.uuid. 없으면 null. */
   selectedJdId: string | null;
-
-  directCompany: string;
-  directRole: string;
-  directStage: string;
-  directUrl: string;
 
   interviewMode: InterviewMode;
   practiceMode: PracticeMode;
@@ -41,9 +35,7 @@ interface InterviewSetupState {
   createdSessionUuid: string | null;
 
   loadJdList: () => Promise<void>;
-  setJdTab: (tab: JdTab) => void;
   selectJd: (uuid: string | null) => void;
-  setDirectField: (field: "directCompany" | "directRole" | "directStage" | "directUrl", value: string) => void;
   setInterviewMode: (mode: InterviewMode) => void;
   setPracticeMode: (mode: PracticeMode) => void;
   setInterviewDifficultyLevel: (level: InterviewDifficultyLevel) => void;
@@ -70,13 +62,7 @@ export const useInterviewSetupStore = create<InterviewSetupState>()((set, get) =
   jdList: [],
   jdListLoading: false,
 
-  jdTab: "saved",
   selectedJdId: null,
-
-  directCompany: "",
-  directRole: "",
-  directStage: "1차 면접",
-  directUrl: "",
 
   interviewMode: "tail",
   practiceMode: "practice",
@@ -115,9 +101,7 @@ export const useInterviewSetupStore = create<InterviewSetupState>()((set, get) =
     }
   },
 
-  setJdTab: (tab) => set({ jdTab: tab }),
   selectJd: (id) => set({ selectedJdId: id }),
-  setDirectField: (field, value) => set({ [field]: value } as Partial<InterviewSetupState>),
   setInterviewMode: (mode) => set({ interviewMode: mode }),
   setPracticeMode: (mode) => set({ practiceMode: mode }),
   setInterviewDifficultyLevel: (level) => set({ interviewDifficultyLevel: level }),
