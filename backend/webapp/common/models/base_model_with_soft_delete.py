@@ -52,14 +52,19 @@ def _soft_cascade_delete(instances, using=None, keep_parents=False):
 
 
 def _apply_cascade(model, pks, now):
-  """모델 타입에 따라 soft(UPDATE deleted_at) 또는 hard(DELETE) 를 수행한다."""
+  """모델 타입에 따라 soft(UPDATE deleted_at) 를 수행한다.
+
+  - SoftDelete 상속 자식: `deleted_at` 을 bulk UPDATE.
+  - 일반 자식(감사/히스토리 성격 모델 등): **건드리지 않는다.** soft-delete 의 의미는
+    "부모를 지운 흔적만 남기고 과거 데이터는 보존" 이므로, 일반 자식을 하드 delete 해버리면
+    historical 데이터가 유실된다. 이런 자식들은 `hard_delete()` 경로에서만 Django 기본
+    CASCADE 로 실제 삭제된다.
+  """
   if issubclass(model, BaseModelWithSoftDelete):
     model.all_objects.filter(pk__in=pks, deleted_at__isnull=True).update(
       deleted_at=now,
       updated_at=now,
     )
-  else:
-    model._base_manager.filter(pk__in=pks).delete()
 
 
 class SoftDeleteQuerySet(BaseModelQuerySet):

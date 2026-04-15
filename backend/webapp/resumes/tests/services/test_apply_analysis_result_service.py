@@ -104,9 +104,14 @@ class ApplyAnalysisResultServiceTests(TestCase):
 
     self.assertEqual(ResumeEmbedding.objects.filter(resume=self.resume).count(), 2)
 
-  def test_missing_required_kwargs_raises(self):
-    """parsed_data 가 None 이면 검증 단계에서 예외가 발생한다."""
-    from django.core.exceptions import ValidationError
+  def test_parsed_data_none_takes_reembed_path(self):
+    """parsed_data 가 None 이면 sub-model 을 갱신하지 않고 재임베딩 경로(mark_finalized)를 탄다."""
+    ApplyAnalysisResultService(
+      resume=self.resume,
+      parsed_data=None,
+      embeddings=[],
+    ).perform()
 
-    with self.assertRaises(ValidationError):
-      ApplyAnalysisResultService(resume=self.resume, parsed_data=None).perform()
+    self.resume.refresh_from_db()
+    self.assertFalse(self.resume.is_dirty)
+    self.assertIsNotNone(self.resume.last_finalized_at)
