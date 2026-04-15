@@ -98,7 +98,7 @@ export function OnboardingPage() {
           <div className="inline-block text-[12px] font-bold text-[#0991B2] bg-[#E6F7FA] rounded px-[14px] py-[5px] mb-[14px] tracking-[0.5px] self-center md:self-start md:text-[13px] md:px-[18px] md:py-[6px] md:mb-[18px]">
             ● STEP 3 OF 3
           </div>
-          <h1 className="font-inter text-[clamp(32px,8vw,48px)] font-black leading-[1.1] text-[#0A0A0A] mb-3 tracking-[-2px] text-center md:text-left md:text-[clamp(36px,3.5vw,48px)]">
+          <h1 className="font-plex-sans-kr text-[clamp(32px,8vw,48px)] font-black leading-[1.1] text-[#0A0A0A] mb-3 tracking-[-2px] text-center md:text-left md:text-[clamp(36px,3.5vw,48px)]">
             이제 <span className="gradient-text">핏</span>을
             <br />
             맞춰볼
@@ -154,7 +154,7 @@ export function OnboardingPage() {
         {/* ── Right: Profile Card ── */}
         <section className="flex justify-center w-full md:flex-1">
           <div className="w-full max-w-[560px] bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg px-5 py-10 shadow-[var(--sc)] sm:px-7 sm:py-12">
-            <h2 className="font-inter text-[22px] font-extrabold text-[#0A0A0A] mb-1.5">나를 알려주세요 👋</h2>
+            <h2 className="font-plex-sans-kr text-[22px] font-extrabold text-[#0A0A0A] mb-1.5">나를 알려주세요 👋</h2>
             <p className="text-[14px] text-[#6B7280] leading-[1.6] mb-6">
               면접 질문 맞춤화를 위해 딱 2가지만 입력하면 돼요.
             </p>
@@ -181,7 +181,7 @@ export function OnboardingPage() {
                   <button
                     key={cat.id}
                     type="button"
-                    className={`inline-flex items-center gap-[6px] px-4 py-[9px] font-inter text-[13px] font-semibold rounded-lg cursor-pointer transition-all duration-200 whitespace-nowrap border ${
+                    className={`inline-flex items-center gap-[6px] px-4 py-[9px] font-plex-sans-kr text-[13px] font-semibold rounded-lg cursor-pointer transition-all duration-200 whitespace-nowrap border ${
                       selectedJobCategoryId === cat.id
                         ? "bg-[#E6F7FA] border-[#0991B2] text-[#0991B2]"
                         : "bg-white border-[#E5E7EB] text-[#374151] hover:border-[#0991B2] hover:text-[#0991B2]"
@@ -225,7 +225,7 @@ export function OnboardingPage() {
               <input
                 ref={inputRef}
                 type="text"
-                className="w-full py-[14px] px-4 font-inter text-[15px] text-[#0A0A0A] bg-white border border-[#E5E7EB] rounded-lg outline-none transition-[border-color] duration-200 placeholder-[#D1D5DB] focus:border-[#0991B2] disabled:bg-[#F3F4F6] disabled:cursor-not-allowed"
+                className="w-full py-[14px] px-4 font-plex-sans-kr text-[15px] text-[#0A0A0A] bg-white border border-[#E5E7EB] rounded-lg outline-none transition-[border-color] duration-200 placeholder-[#D1D5DB] focus:border-[#0991B2] disabled:bg-[#F3F4F6] disabled:cursor-not-allowed"
                 placeholder={
                   selectedJobCategoryId === null
                     ? "먼저 희망 직군을 선택해주세요"
@@ -268,7 +268,7 @@ export function OnboardingPage() {
             <label className="block text-[14px] font-bold text-[#0A0A0A] mb-2">현재 직업 상태</label>
             <div className="relative mb-6">
               <select
-                className="w-full py-[14px] pl-4 pr-10 font-inter text-[15px] text-[#0A0A0A] bg-white border border-[#E5E7EB] rounded-lg outline-none appearance-none cursor-pointer transition-[border-color] duration-200 focus:border-[#0991B2]"
+                className="w-full py-[14px] pl-4 pr-10 font-plex-sans-kr text-[15px] text-[#0A0A0A] bg-white border border-[#E5E7EB] rounded-lg outline-none appearance-none cursor-pointer transition-[border-color] duration-200 focus:border-[#0991B2]"
                 value={jobStatus}
                 onChange={(e) => setJobStatus(e.target.value)}
                 aria-label="현재 직업 상태"
@@ -291,7 +291,7 @@ export function OnboardingPage() {
             {/* Submit */}
             <button
               type="button"
-              className="w-full py-4 bg-[#0A0A0A] text-white font-inter text-[16px] font-bold border-none rounded-lg cursor-pointer transition-opacity duration-200 tracking-[-0.3px] hover:enabled:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-4 bg-[#0A0A0A] text-white font-plex-sans-kr text-[16px] font-bold border-none rounded-lg cursor-pointer transition-opacity duration-200 tracking-[-0.3px] hover:enabled:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={handleSubmit}
               disabled={isLoading}
             >

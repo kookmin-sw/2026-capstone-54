@@ -18,7 +18,7 @@ export function ResumeStatsStrip({ count }: ResumeStatsStripProps) {
   const badges = [
     { dot: "#10B981", text: `분석 완료 ${count.completed}개` },
     { dot: "#0EA5E9", text: `분석 중 ${analyzing}개` },
-    { dot: "#F59E0B", text: `⭐ 활성 이력서 ${count.active}개` },
+    { dot: "#F59E0B", text: `활성 이력서 ${count.active}개` },
   ];
 
   return (
@@ -26,7 +26,7 @@ export function ResumeStatsStrip({ count }: ResumeStatsStripProps) {
       {statItems.map((item, i) => (
         <Fragment key={item.label}>
           <div className="flex flex-col gap-[2px] relative">
-            <span className="font-inter text-[clamp(28px,4vw,46px)] font-black text-white leading-none">
+            <span className="font-plex-sans-kr text-[clamp(28px,4vw,46px)] font-black text-white leading-none">
               {item.value}
             </span>
             <span className="text-[12px] font-semibold text-white/65">{item.label}</span>

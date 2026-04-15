@@ -17,7 +17,7 @@ export function HeroSection() {
               <span className="w-[7px] h-[7px] rounded-full bg-[#059669] inline-block shrink-0" />
               수천 명이 meFit으로 면접 준비 중
           </div>
-          <h1 className="font-inter text-[clamp(44px,13vw,80px)] font-black leading-[1.05] text-[#0A0A0A] mb-4 tracking-[-2px]">
+          <h1 className="font-plex-sans-kr text-[clamp(44px,13vw,80px)] font-black leading-[1.05] text-[#0A0A0A] mb-4 tracking-[-2px]">
             아직 핏이<br />
             <span className="gradient-text">맞지 않아도</span><br />
             괜찮아.
@@ -28,13 +28,13 @@ export function HeroSection() {
           <div className="flex flex-col gap-[10px] w-full max-w-button-group md:flex-row md:max-w-none md:w-auto md:gap-3">
             <a 
               href="/sign-up" 
-              className="font-inter text-[15px] font-bold text-white bg-[#0A0A0A] no-underline !py-[15px] !px-0 rounded-md block text-center transition-opacity duration-200 hover:opacity-85 md:inline-block md:!px-8"
+              className="font-plex-sans-kr text-[15px] font-bold text-white bg-[#0A0A0A] no-underline !py-[15px] !px-0 rounded-md block text-center transition-opacity duration-200 hover:opacity-85 md:inline-block md:!px-8"
             >
               무료 면접 시작하기 →
             </a>
             <a 
               href="#features" 
-              className="font-inter text-[15px] font-semibold text-[#0A0A0A] bg-white no-underline !py-[15px] !px-0 rounded-md border-[1.5px] border-[#0A0A0A] block text-center transition-[background] duration-200 hover:bg-[#F9FAFB] md:inline-block md:!px-8"
+              className="font-plex-sans-kr text-[15px] font-semibold text-[#0A0A0A] bg-white no-underline !py-[15px] !px-0 rounded-md border-[1.5px] border-[#0A0A0A] block text-center transition-[background] duration-200 hover:bg-[#F9FAFB] md:inline-block md:!px-8"
             >
               데모 보기
             </a>
@@ -47,7 +47,7 @@ export function HeroSection() {
               key={s.label}
               className="bg-[#F9FAFB] rounded-lg px-4 py-5 text-center border border-[#E5E7EB] md:bg-transparent md:border-none md:rounded-none md:p-0"
             >
-              <div className="font-inter text-[36px] font-black text-[#0A0A0A] leading-none mb-1 md:text-[38px] md:mb-1.5">{s.value}</div>
+              <div className="font-plex-sans-kr text-[36px] font-black text-[#0A0A0A] leading-none mb-1 md:text-[38px] md:mb-1.5">{s.value}</div>
               <div className="text-[12px] text-[#6B7280] font-medium md:text-[13px]">{s.label}</div>
             </div>
           ))}

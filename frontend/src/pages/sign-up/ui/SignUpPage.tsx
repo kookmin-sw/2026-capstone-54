@@ -66,7 +66,7 @@ export function SignUpPage() {
   };
 
   const inputClass =
-    "w-full py-[13px] px-4 pr-11 bg-white border border-[#E5E7EB] rounded-lg text-[14px] text-[#0A0A0A] font-inter outline-none transition-[border-color] duration-200 placeholder-[#9CA3AF] focus:border-[#0991B2] md:py-[14px]";
+    "w-full py-[13px] px-4 pr-11 bg-white border border-[#E5E7EB] rounded-lg text-[14px] text-[#0A0A0A] font-plex-sans-kr outline-none transition-[border-color] duration-200 placeholder-[#9CA3AF] focus:border-[#0991B2] md:py-[14px]";
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
@@ -90,7 +90,7 @@ export function SignUpPage() {
           <div className="inline-block text-[12px] font-bold text-[#0991B2] bg-[#E6F7FA] rounded px-[14px] py-[5px] mb-[14px] tracking-[0.5px] md:text-[13px] md:px-[18px] md:py-[6px] md:mb-[18px]">
             ● STEP 1 OF 3
           </div>
-          <h1 className="font-inter text-[clamp(32px,8vw,48px)] font-black leading-[1.1] text-[#0A0A0A] mb-3 tracking-[-2px] text-center md:text-left md:text-[clamp(36px,3.5vw,48px)]">
+          <h1 className="font-plex-sans-kr text-[clamp(32px,8vw,48px)] font-black leading-[1.1] text-[#0A0A0A] mb-3 tracking-[-2px] text-center md:text-left md:text-[clamp(36px,3.5vw,48px)]">
             핏이 맞는 나를
             <br />
             <span className="gradient-text">완성해가는</span>
@@ -129,7 +129,7 @@ export function SignUpPage() {
         {/* Right: Form Card */}
         <section className="flex justify-center w-full md:flex-1">
           <div className="w-full max-w-[520px] bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg px-5 py-7 shadow-[var(--sc)] sm:px-7 sm:py-9">
-            <h2 className="font-inter text-[22px] font-extrabold text-[#0A0A0A] mb-1.5">계정 만들기</h2>
+            <h2 className="font-plex-sans-kr text-[22px] font-extrabold text-[#0A0A0A] mb-1.5">계정 만들기</h2>
             <p className="text-[14px] text-[#6B7280] mb-7">아직 핏이 맞지 않아도 괜찮아요 — 지금 시작해요.</p>
 
             <form onSubmit={handleSubmit} noValidate>
@@ -191,7 +191,7 @@ export function SignUpPage() {
 
               <button
                 type="submit"
-                className="w-full py-[15px] bg-[#0A0A0A] text-white font-inter text-[15px] font-bold border-none rounded-lg cursor-pointer transition-opacity duration-200 hover:enabled:opacity-85 disabled:opacity-50 disabled:cursor-not-allowed md:py-4 md:text-[16px]"
+                className="w-full py-[15px] bg-[#0A0A0A] text-white font-plex-sans-kr text-[15px] font-bold border-none rounded-lg cursor-pointer transition-opacity duration-200 hover:enabled:opacity-85 disabled:opacity-50 disabled:cursor-not-allowed md:py-4 md:text-[16px]"
                 disabled={isLoading}
               >
                 {isLoading ? "처리 중..." : "가입하기 →"}

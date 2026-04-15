@@ -11,7 +11,7 @@ interface ChipProps {
 }
 
 export function Chip({ children, selected, onClick, onRemove, icon, className = "" }: ChipProps) {
-  const baseStyles = "inline-flex items-center gap-[6px] px-4 py-[9px] font-inter text-[13px] font-semibold rounded-lg transition-all duration-200 whitespace-nowrap border";
+  const baseStyles = "inline-flex items-center gap-[6px] px-4 py-[9px] font-plex-sans-kr text-[13px] font-semibold rounded-lg transition-all duration-200 whitespace-nowrap border";
   
   const variantStyles = selected
     ? "bg-[#E6F7FA] border-[#0991B2] text-[#0991B2]"

@@ -23,7 +23,7 @@ export function WhySection() {
           <div className="inline-block text-[12px] font-bold text-[#0991B2] bg-[#E6F7FA] rounded px-[14px] py-[5px] mb-3 md:text-[13px] md:px-[18px] md:py-[6px] md:mb-[18px]">
             왜 MEFIT
           </div>
-          <h2 className="font-inter text-[clamp(28px,8vw,40px)] font-extrabold text-[#0A0A0A] md:text-[clamp(32px,4vw,52px)]">
+          <h2 className="font-plex-sans-kr text-[clamp(28px,8vw,40px)] font-extrabold text-[#0A0A0A] md:text-[clamp(32px,4vw,52px)]">
             선택해야 할 이유.
           </h2>
         </div>
@@ -34,7 +34,7 @@ export function WhySection() {
             <div className="w-11 h-11 rounded-lg bg-white/10 flex items-center justify-center text-[22px] mb-4 md:w-[52px] md:h-[52px] md:rounded-lg md:text-[26px] md:mb-5">
               {featured.emoji}
             </div>
-            <h3 className="font-inter text-[18px] font-extrabold text-white mb-[10px] md:text-[22px] md:mb-3">
+            <h3 className="font-plex-sans-kr text-[18px] font-extrabold text-white mb-[10px] md:text-[22px] md:mb-3">
               {featured.title}
             </h3>
             <p className="text-[13px] text-white/65 leading-[1.7] md:text-[14px]">{featured.desc}</p>
@@ -50,7 +50,7 @@ export function WhySection() {
               className="bg-[#F9FAFB] rounded-lg px-5 py-6 border border-[#E5E7EB] transition-transform duration-200 hover:-translate-y-0.5 md:rounded-lg md:px-7 md:py-8"
             >
               <div className="text-[22px] mb-3 md:text-[26px] md:mb-3.5">{r.emoji}</div>
-              <h3 className="font-inter text-[14px] font-bold text-[#0A0A0A] mb-1.5 md:text-[16px] md:mb-2">{r.title}</h3>
+              <h3 className="font-plex-sans-kr text-[14px] font-bold text-[#0A0A0A] mb-1.5 md:text-[16px] md:mb-2">{r.title}</h3>
               <p className="text-[13px] text-[#6B7280] leading-[1.65] md:leading-[1.7]">{r.desc}</p>
             </div>
           ))}

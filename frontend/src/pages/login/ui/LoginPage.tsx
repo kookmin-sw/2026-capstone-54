@@ -60,7 +60,7 @@ export function LoginPage() {
           <div className="inline-block text-[12px] font-bold text-[#0991B2] bg-[#E6F7FA] rounded px-[14px] py-[5px] mb-[14px] md:text-[13px] md:px-[18px] md:py-[6px] md:mb-[18px]">
             로그인
           </div>
-          <h1 className="font-inter text-[clamp(32px,9vw,48px)] font-black leading-[1.08] text-[#0A0A0A] mb-3 tracking-[-2px] md:text-[clamp(36px,5vw,52px)] md:mb-4">
+          <h1 className="font-plex-sans-kr text-[clamp(32px,9vw,48px)] font-black leading-[1.08] text-[#0A0A0A] mb-3 tracking-[-2px] md:text-[clamp(36px,5vw,52px)] md:mb-4">
             다시 만나서
             <br />
             <span className="gradient-text">반가워요</span>
@@ -77,7 +77,7 @@ export function LoginPage() {
                 <div className="relative">
                   <input
                     id="li-email"
-                    className="w-full py-[13px] px-4 pr-11 bg-white border border-[#E5E7EB] rounded-lg text-[14px] text-[#0A0A0A] font-inter outline-none transition-[border-color] duration-200 placeholder-[#9CA3AF] focus:border-[#0991B2] md:py-[14px]"
+                    className="w-full py-[13px] px-4 pr-11 bg-white border border-[#E5E7EB] rounded-lg text-[14px] text-[#0A0A0A] font-plex-sans-kr outline-none transition-[border-color] duration-200 placeholder-[#9CA3AF] focus:border-[#0991B2] md:py-[14px]"
                     type="email"
                     placeholder="hello@mefit.kr"
                     value={email}
@@ -94,7 +94,7 @@ export function LoginPage() {
                 <div className="relative">
                   <input
                     id="li-pw"
-                    className="w-full py-[13px] px-4 pr-11 bg-white border border-[#E5E7EB] rounded-lg text-[14px] text-[#0A0A0A] font-inter outline-none transition-[border-color] duration-200 placeholder-[#9CA3AF] focus:border-[#0991B2] md:py-[14px]"
+                    className="w-full py-[13px] px-4 pr-11 bg-white border border-[#E5E7EB] rounded-lg text-[14px] text-[#0A0A0A] font-plex-sans-kr outline-none transition-[border-color] duration-200 placeholder-[#9CA3AF] focus:border-[#0991B2] md:py-[14px]"
                     type={showPw ? "text" : "password"}
                     placeholder="비밀번호를 입력하세요"
                     value={password}
@@ -123,7 +123,7 @@ export function LoginPage() {
 
               <button
                 type="submit"
-                className="w-full py-[15px] bg-[#0A0A0A] text-white font-inter text-[15px] font-bold border-none rounded-lg cursor-pointer transition-opacity duration-200 hover:enabled:opacity-85 disabled:opacity-50 disabled:cursor-not-allowed md:py-4 md:text-[16px]"
+                className="w-full py-[15px] bg-[#0A0A0A] text-white font-plex-sans-kr text-[15px] font-bold border-none rounded-lg cursor-pointer transition-opacity duration-200 hover:enabled:opacity-85 disabled:opacity-50 disabled:cursor-not-allowed md:py-4 md:text-[16px]"
                 disabled={isLoading}
               >
                 {isLoading ? "처리 중..." : "로그인 →"}

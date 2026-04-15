@@ -78,8 +78,8 @@ export function SettingsPage() {
     setDeleteConfirm(null);
   };
 
-  const inputClass = "font-inter text-[14px] text-[#0A0A0A] bg-white border-[1.5px] border-[#E5E7EB] rounded-lg px-[14px] py-[10px] outline-none transition-[border-color,box-shadow] duration-[180ms] w-full placeholder-[#9CA3AF] focus:border-[#0991B2] focus:shadow-[0_0_0_3px_rgba(9,145,178,0.1)] read-only:opacity-50 read-only:cursor-not-allowed read-only:bg-[#F9FAFB]";
-  const selectClass = "font-inter text-[14px] text-[#0A0A0A] bg-white border-[1.5px] border-[#E5E7EB] rounded-lg px-[14px] py-[10px] outline-none appearance-none cursor-pointer w-full transition-[border-color] duration-[180ms] focus:border-[#0991B2] focus:shadow-[0_0_0_3px_rgba(9,145,178,0.1)]";
+  const inputClass = "font-plex-sans-kr text-[14px] text-[#0A0A0A] bg-white border-[1.5px] border-[#E5E7EB] rounded-lg px-[14px] py-[10px] outline-none transition-[border-color,box-shadow] duration-[180ms] w-full placeholder-[#9CA3AF] focus:border-[#0991B2] focus:shadow-[0_0_0_3px_rgba(9,145,178,0.1)] read-only:opacity-50 read-only:cursor-not-allowed read-only:bg-[#F9FAFB]";
+  const selectClass = "font-plex-sans-kr text-[14px] text-[#0A0A0A] bg-white border-[1.5px] border-[#E5E7EB] rounded-lg px-[14px] py-[10px] outline-none appearance-none cursor-pointer w-full transition-[border-color] duration-[180ms] focus:border-[#0991B2] focus:shadow-[0_0_0_3px_rgba(9,145,178,0.1)]";
 
   return (
     <>
@@ -96,26 +96,26 @@ export function SettingsPage() {
               </div>
             ) : data ? (
               <>
-                {/* ─── PROFILE PANEL ─── */}
-                <div className={`${activePanel === "profile" ? "block animate-[spFadeUp_0.3s_ease_both]" : "hidden"}`}>
+                {/* ─── ACCOUNT PANEL (계정 정보 수정 + 비밀번호 변경) ─── */}
+                <div className={`${activePanel === "account" ? "block animate-[spFadeUp_0.3s_ease_both]" : "hidden"}`}>
                   <div className="mb-7">
-                    <h1 className="font-inter text-[26px] font-black tracking-[-0.5px] text-[#0A0A0A] mb-[5px]">프로필 수정</h1>
-                    <p className="text-[14px] text-[#6B7280] leading-[1.55]">서비스에서 표시되는 이름, 직군 등 개인정보를 변경합니다</p>
+                    <h1 className="font-plex-sans-kr text-[26px] font-black tracking-[-0.5px] text-[#0A0A0A] mb-[5px]">계정 정보 수정</h1>
+                    <p className="text-[14px] text-[#6B7280] leading-[1.55]">프로필 사진, 이름, 직군 및 비밀번호를 변경합니다</p>
                   </div>
 
                   <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl px-7 py-7 shadow-[var(--sc)] mb-4 max-[640px]:px-[18px]">
-                    <div className="font-inter text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">👤 프로필 사진</div>
+                    <div className="font-plex-sans-kr text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">👤 프로필 사진</div>
                     <div className="flex items-center gap-4 mb-5">
                       {data.profile.avatarUrl ? (
                         <img src={data.profile.avatarUrl} alt="프로필" className="w-16 h-16 rounded-full object-cover shadow-[0_2px_8px_rgba(9,145,178,0.3)] shrink-0" />
                       ) : (
-                        <div className="w-16 h-16 rounded-full bg-[#0991B2] flex items-center justify-center font-inter text-[24px] font-black text-white shadow-[0_2px_8px_rgba(9,145,178,0.3)] shrink-0">
+                        <div className="w-16 h-16 rounded-full bg-[#0991B2] flex items-center justify-center font-plex-sans-kr text-[24px] font-black text-white shadow-[0_2px_8px_rgba(9,145,178,0.3)] shrink-0">
                           {data.profile.avatarInitial}
                         </div>
                       )}
                       <div className="flex flex-col gap-[6px]">
                         <input ref={avatarInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadAvatar(f); e.target.value = ""; }} />
-                        <button className="font-inter text-[13px] font-bold text-[#0991B2] bg-[rgba(9,145,178,0.08)] border-[1.5px] border-[rgba(9,145,178,0.25)] rounded-lg px-4 py-[7px] cursor-pointer transition-all duration-150 hover:bg-[rgba(9,145,178,0.14)]" onClick={() => avatarInputRef.current?.click()} disabled={saving}>
+                        <button className="font-plex-sans-kr text-[13px] font-bold text-[#0991B2] bg-[rgba(9,145,178,0.08)] border-[1.5px] border-[rgba(9,145,178,0.25)] rounded-lg px-4 py-[7px] cursor-pointer transition-all duration-150 hover:bg-[rgba(9,145,178,0.14)]" onClick={() => avatarInputRef.current?.click()} disabled={saving}>
                           사진 변경
                         </button>
                       </div>
@@ -124,10 +124,10 @@ export function SettingsPage() {
                   </div>
 
                   <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl px-7 py-7 shadow-[var(--sc)] mb-4 max-[640px]:px-[18px]">
-                    <div className="font-inter text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">📝 기본 정보</div>
+                    <div className="font-plex-sans-kr text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">📝 기본 정보</div>
                     <div className="flex flex-col gap-4">
                       <div className="flex flex-col gap-[5px]">
-                        <label className="font-inter text-[12px] font-bold text-[#0A0A0A] tracking-[0.1px] flex items-center gap-1">
+                        <label className="font-plex-sans-kr text-[12px] font-bold text-[#0A0A0A] tracking-[0.1px] flex items-center gap-1">
                           이름 <span className="text-[#EF4444] text-[10px]">*</span>
                         </label>
                         <input
@@ -141,14 +141,14 @@ export function SettingsPage() {
                         />
                       </div>
                       <div className="flex flex-col gap-[5px]">
-                        <label className="font-inter text-[12px] font-bold text-[#0A0A0A] tracking-[0.1px]">이메일 주소</label>
+                        <label className="font-plex-sans-kr text-[12px] font-bold text-[#0A0A0A] tracking-[0.1px]">이메일 주소</label>
                         <input id="settings-email" name="email" type="email" className={inputClass} value={data.profile.email} readOnly />
                         <p className="text-[11px] text-[#6B7280] leading-[1.45]">이메일 주소는 변경할 수 없습니다. 고객센터로 문의해주세요.</p>
                       </div>
                       <div className="flex flex-col gap-4">
                         {/* 직군 선택 */}
                         <div className="flex flex-col gap-[5px]">
-                          <label className="font-inter text-[12px] font-bold text-[#0A0A0A] tracking-[0.1px] flex items-center gap-1">
+                          <label className="font-plex-sans-kr text-[12px] font-bold text-[#0A0A0A] tracking-[0.1px] flex items-center gap-1">
                             희망 직군 <span className="text-[#EF4444] text-[10px]">*</span>
                           </label>
                           {jobCategoriesLoading ? (
@@ -176,7 +176,7 @@ export function SettingsPage() {
                         {/* 직업 다중 선택 */}
                         {profileDraft.jobCategoryId && (
                           <div className="flex flex-col gap-[5px]">
-                            <label className="font-inter text-[12px] font-bold text-[#0A0A0A] tracking-[0.1px]">
+                            <label className="font-plex-sans-kr text-[12px] font-bold text-[#0A0A0A] tracking-[0.1px]">
                               직업 선택 <span className="text-[11px] font-normal text-[#6B7280]">(복수 선택 가능)</span>
                             </label>
                             {availableJobsLoading ? (
@@ -209,32 +209,30 @@ export function SettingsPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-end gap-[10px] pt-5 border-t border-[#E5E7EB] mt-1 max-[640px]:flex-col-reverse max-[640px]:items-stretch">
-                    {saveMessage && activePanel === "profile" && <span className="text-[12px] font-bold text-[#059669] mr-auto animate-[spFadeUp_0.3s_ease]">✓ {saveMessage}</span>}
-                    {error && activePanel === "profile" && <span className="text-[12px] font-bold text-[#EF4444] mr-auto animate-[spFadeUp_0.3s_ease]">✕ {error}</span>}
-                    <button className="font-inter text-[14px] font-semibold text-[#6B7280] bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg px-5 py-[10px] cursor-pointer transition-all duration-150 hover:bg-[#F3F4F6] hover:text-[#0A0A0A]" onClick={resetProfileDraft}>취소</button>
-                    <button className="font-inter text-[14px] font-bold text-white bg-[#0A0A0A] border-none rounded-lg px-6 py-[10px] cursor-pointer transition-all duration-150 flex items-center gap-[7px] hover:opacity-85 hover:-translate-y-px disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0 max-[640px]:justify-center" onClick={saveProfile} disabled={saving}>
+                  <div className="flex items-center justify-end gap-[10px] pt-5 border-t border-[#E5E7EB] mt-1 mb-10 max-[640px]:flex-col-reverse max-[640px]:items-stretch">
+                    {saveMessage && activePanel === "account" && <span className="text-[12px] font-bold text-[#059669] mr-auto animate-[spFadeUp_0.3s_ease]">✓ {saveMessage}</span>}
+                    {error && activePanel === "account" && <span className="text-[12px] font-bold text-[#EF4444] mr-auto animate-[spFadeUp_0.3s_ease]">✕ {error}</span>}
+                    <button className="font-plex-sans-kr text-[14px] font-semibold text-[#6B7280] bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg px-5 py-[10px] cursor-pointer transition-all duration-150 hover:bg-[#F3F4F6] hover:text-[#0A0A0A]" onClick={resetProfileDraft}>취소</button>
+                    <button className="font-plex-sans-kr text-[14px] font-bold text-white bg-[#0A0A0A] border-none rounded-lg px-6 py-[10px] cursor-pointer transition-all duration-150 flex items-center gap-[7px] hover:opacity-85 hover:-translate-y-px disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0 max-[640px]:justify-center" onClick={saveProfile} disabled={saving}>
                       {saving ? <span className="w-[14px] h-[14px] border-2 border-white/40 border-t-white rounded-full animate-[spSpin_0.6s_linear_infinite]" /> : <span>저장하기</span>}
                     </button>
                   </div>
-                </div>
 
-                {/* ─── PASSWORD PANEL ─── */}
-                <div className={`${activePanel === "password" ? "block animate-[spFadeUp_0.3s_ease_both]" : "hidden"}`}>
+                  {/* ── 비밀번호 변경 ── */}
                   <div className="mb-7">
-                    <h1 className="font-inter text-[26px] font-black tracking-[-0.5px] text-[#0A0A0A] mb-[5px]">비밀번호 변경</h1>
+                    <h2 className="font-plex-sans-kr text-[20px] font-black tracking-[-0.4px] text-[#0A0A0A] mb-[5px]">비밀번호 변경</h2>
                     <p className="text-[14px] text-[#6B7280] leading-[1.55]">주기적으로 비밀번호를 변경하면 계정을 더 안전하게 지킬 수 있어요</p>
                   </div>
 
                   <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl px-7 py-7 shadow-[var(--sc)] mb-4 max-[640px]:px-[18px]">
-                    <div className="font-inter text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">🔑 비밀번호 변경</div>
+                    <div className="font-plex-sans-kr text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">🔑 비밀번호 변경</div>
                     <div className="flex flex-col gap-4">
                       <div className="flex flex-col gap-[5px]">
-                        <label className="font-inter text-[12px] font-bold text-[#0A0A0A] tracking-[0.1px] flex items-center gap-1">현재 비밀번호 <span className="text-[#EF4444] text-[10px]">*</span></label>
+                        <label className="font-plex-sans-kr text-[12px] font-bold text-[#0A0A0A] tracking-[0.1px] flex items-center gap-1">현재 비밀번호 <span className="text-[#EF4444] text-[10px]">*</span></label>
                         <input id="settings-current-password" name="currentPassword" type="password" className={inputClass} value={passwordDraft.currentPassword} onChange={(e) => setPasswordDraft("currentPassword", e.target.value)} placeholder="현재 비밀번호를 입력하세요" />
                       </div>
                       <div className="flex flex-col gap-[5px]">
-                        <label className="font-inter text-[12px] font-bold text-[#0A0A0A] tracking-[0.1px] flex items-center gap-1">새 비밀번호 <span className="text-[#EF4444] text-[10px]">*</span></label>
+                        <label className="font-plex-sans-kr text-[12px] font-bold text-[#0A0A0A] tracking-[0.1px] flex items-center gap-1">새 비밀번호 <span className="text-[#EF4444] text-[10px]">*</span></label>
                         <input id="settings-new-password" name="newPassword" type="password" className={inputClass} value={passwordDraft.newPassword} onChange={(e) => setPasswordDraft("newPassword", e.target.value)} placeholder="새 비밀번호를 입력하세요" />
                         <div className="h-1 bg-[#E5E7EB] rounded-full mt-2 overflow-hidden">
                           <div className="h-full rounded-full transition-[width_0.4s_ease,background_0.3s]" style={{ width: pwdStrength.width, background: pwdStrength.color }} />
@@ -242,7 +240,7 @@ export function SettingsPage() {
                         <p className="text-[11px] font-semibold mt-1 transition-[color] duration-300" style={{ color: pwdStrength.color }}>{pwdStrength.label}</p>
                       </div>
                       <div className="flex flex-col gap-[5px]">
-                        <label className="font-inter text-[12px] font-bold text-[#0A0A0A] tracking-[0.1px] flex items-center gap-1">새 비밀번호 확인 <span className="text-[#EF4444] text-[10px]">*</span></label>
+                        <label className="font-plex-sans-kr text-[12px] font-bold text-[#0A0A0A] tracking-[0.1px] flex items-center gap-1">새 비밀번호 확인 <span className="text-[#EF4444] text-[10px]">*</span></label>
                         <input id="settings-confirm-password" name="confirmPassword" type="password" className={inputClass} value={passwordDraft.confirmPassword} onChange={(e) => setPasswordDraft("confirmPassword", e.target.value)} placeholder="새 비밀번호를 다시 입력하세요" />
                         {passwordDraft.confirmPassword && (
                           <p className="text-[11px] leading-[1.45]" style={{ color: pwdMatch ? "#059669" : "#EF4444" }}>
@@ -261,11 +259,11 @@ export function SettingsPage() {
                   </div>
 
                   <div className="flex items-center justify-end gap-[10px] pt-5 border-t border-[#E5E7EB] mt-1 max-[640px]:flex-col-reverse max-[640px]:items-stretch">
-                    {saveMessage && activePanel === "password" && <span className="text-[12px] font-bold text-[#059669] mr-auto animate-[spFadeUp_0.3s_ease]">✓ {saveMessage}</span>}
-                    {error && activePanel === "password" && <span className="text-[12px] font-bold text-[#EF4444] mr-auto animate-[spFadeUp_0.3s_ease]">✕ {error}</span>}
-                    <button className="font-inter text-[14px] font-semibold text-[#6B7280] bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg px-5 py-[10px] cursor-pointer transition-all duration-150 hover:bg-[#F3F4F6] hover:text-[#0A0A0A]" onClick={resetPasswordDraft}>취소</button>
+                    {saveMessage && activePanel === "account" && <span className="text-[12px] font-bold text-[#059669] mr-auto animate-[spFadeUp_0.3s_ease]">✓ {saveMessage}</span>}
+                    {error && activePanel === "account" && <span className="text-[12px] font-bold text-[#EF4444] mr-auto animate-[spFadeUp_0.3s_ease]">✕ {error}</span>}
+                    <button className="font-plex-sans-kr text-[14px] font-semibold text-[#6B7280] bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg px-5 py-[10px] cursor-pointer transition-all duration-150 hover:bg-[#F3F4F6] hover:text-[#0A0A0A]" onClick={resetPasswordDraft}>취소</button>
                     <button
-                      className="font-inter text-[14px] font-bold text-white bg-[#0A0A0A] border-none rounded-lg px-6 py-[10px] cursor-pointer transition-all duration-150 flex items-center gap-[7px] hover:opacity-85 hover:-translate-y-px disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0 max-[640px]:justify-center"
+                      className="font-plex-sans-kr text-[14px] font-bold text-white bg-[#0A0A0A] border-none rounded-lg px-6 py-[10px] cursor-pointer transition-all duration-150 flex items-center gap-[7px] hover:opacity-85 hover:-translate-y-px disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0 max-[640px]:justify-center"
                       onClick={savePassword}
                       disabled={saving || !passwordDraft.currentPassword || !passwordDraft.newPassword || pwdMatch === false}
                     >
@@ -277,12 +275,12 @@ export function SettingsPage() {
                 {/* ─── NOTIFICATIONS PANEL ─── */}
                 <div className={`${activePanel === "notifications" ? "block animate-[spFadeUp_0.3s_ease_both]" : "hidden"}`}>
                   <div className="mb-7">
-                    <h1 className="font-inter text-[26px] font-black tracking-[-0.5px] text-[#0A0A0A] mb-[5px]">알림 설정</h1>
+                    <h1 className="font-plex-sans-kr text-[26px] font-black tracking-[-0.5px] text-[#0A0A0A] mb-[5px]">알림 설정</h1>
                     <p className="text-[14px] text-[#6B7280] leading-[1.55]">원하는 알림만 골라서 받아보세요</p>
                   </div>
 
                   <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl px-7 py-7 shadow-[var(--sc)] mb-4 max-[640px]:px-[18px]">
-                    <div className="font-inter text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">🔥 스트릭 &amp; 면접</div>
+                    <div className="font-plex-sans-kr text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">🔥 스트릭 &amp; 면접</div>
                     {([
                       { key: "streakReminder" as const, title: "스트릭 리마인더", desc: "오늘 면접 연습을 아직 하지 않았을 때 저녁 8시에 알림" },
                       { key: "streakExpire" as const, title: "스트릭 만료 경고", desc: "자정 1시간 전, 오늘 스트릭이 만료될 예정일 때 알림" },
@@ -291,7 +289,7 @@ export function SettingsPage() {
                     ] as const).map((item) => (
                       <div key={item.key} className="flex items-center justify-between px-4 py-[13px] bg-white border border-[#E5E7EB] rounded-[10px] mb-2 last:mb-0 transition-all duration-150 cursor-default hover:shadow-[0_2px_8px_rgba(0,0,0,0.1),0_8px_24px_rgba(0,0,0,0.08)] hover:-translate-y-px">
                         <div>
-                          <div className="font-inter text-[13px] font-bold mb-0.5 text-[#0A0A0A]">{item.title}</div>
+                          <div className="font-plex-sans-kr text-[13px] font-bold mb-0.5 text-[#0A0A0A]">{item.title}</div>
                           <div className="text-[11px] text-[#6B7280] leading-[1.45]">{item.desc}</div>
                         </div>
                         <button
@@ -304,14 +302,14 @@ export function SettingsPage() {
                   </div>
 
                   <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl px-7 py-7 shadow-[var(--sc)] mb-4 max-[640px]:px-[18px]">
-                    <div className="font-inter text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">📢 서비스 &amp; 마케팅</div>
+                    <div className="font-plex-sans-kr text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">📢 서비스 &amp; 마케팅</div>
                     {([
                       { key: "serviceNotice" as const, title: "서비스 공지 및 업데이트", desc: "새 기능, 점검, 약관 변경 등 중요 서비스 소식" },
                       { key: "marketing" as const, title: "마케팅 정보 수신", desc: "할인, 프로모션, 이벤트 등 혜택 정보 이메일 발송" },
                     ] as const).map((item) => (
                       <div key={item.key} className="flex items-center justify-between px-4 py-[13px] bg-white border border-[#E5E7EB] rounded-[10px] mb-2 last:mb-0 transition-all duration-150 cursor-default hover:shadow-[0_2px_8px_rgba(0,0,0,0.1),0_8px_24px_rgba(0,0,0,0.08)] hover:-translate-y-px">
                         <div>
-                          <div className="font-inter text-[13px] font-bold mb-0.5 text-[#0A0A0A]">{item.title}</div>
+                          <div className="font-plex-sans-kr text-[13px] font-bold mb-0.5 text-[#0A0A0A]">{item.title}</div>
                           <div className="text-[11px] text-[#6B7280] leading-[1.45]">{item.desc}</div>
                         </div>
                         <button
@@ -326,8 +324,8 @@ export function SettingsPage() {
                   <div className="flex items-center justify-end gap-[10px] pt-5 border-t border-[#E5E7EB] mt-1 max-[640px]:flex-col-reverse max-[640px]:items-stretch">
                     {saveMessage && activePanel === "notifications" && <span className="text-[12px] font-bold text-[#059669] mr-auto animate-[spFadeUp_0.3s_ease]">✓ {saveMessage}</span>}
                     {error && activePanel === "notifications" && <span className="text-[12px] font-bold text-[#EF4444] mr-auto animate-[spFadeUp_0.3s_ease]">✕ {error}</span>}
-                    <button className="font-inter text-[14px] font-semibold text-[#6B7280] bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg px-5 py-[10px] cursor-pointer transition-all duration-150 hover:bg-[#F3F4F6] hover:text-[#0A0A0A]" onClick={resetNotificationsDraft}>취소</button>
-                    <button className="font-inter text-[14px] font-bold text-white bg-[#0A0A0A] border-none rounded-lg px-6 py-[10px] cursor-pointer transition-all duration-150 flex items-center gap-[7px] hover:opacity-85 hover:-translate-y-px disabled:opacity-60 disabled:cursor-not-allowed max-[640px]:justify-center" onClick={saveNotifications} disabled={saving}>
+                    <button className="font-plex-sans-kr text-[14px] font-semibold text-[#6B7280] bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg px-5 py-[10px] cursor-pointer transition-all duration-150 hover:bg-[#F3F4F6] hover:text-[#0A0A0A]" onClick={resetNotificationsDraft}>취소</button>
+                    <button className="font-plex-sans-kr text-[14px] font-bold text-white bg-[#0A0A0A] border-none rounded-lg px-6 py-[10px] cursor-pointer transition-all duration-150 flex items-center gap-[7px] hover:opacity-85 hover:-translate-y-px disabled:opacity-60 disabled:cursor-not-allowed max-[640px]:justify-center" onClick={saveNotifications} disabled={saving}>
                       {saving ? <span className="w-[14px] h-[14px] border-2 border-white/40 border-t-white rounded-full animate-[spSpin_0.6s_linear_infinite]" /> : <span>저장하기</span>}
                     </button>
                   </div>
@@ -336,23 +334,23 @@ export function SettingsPage() {
                 {/* ─── SUBSCRIPTION PANEL ─── */}
                 <div className={`${activePanel === "subscription" ? "block animate-[spFadeUp_0.3s_ease_both]" : "hidden"}`}>
                   <div className="mb-7">
-                    <h1 className="font-inter text-[26px] font-black tracking-[-0.5px] text-[#0A0A0A] mb-[5px]">요금제 관리</h1>
+                    <h1 className="font-plex-sans-kr text-[26px] font-black tracking-[-0.5px] text-[#0A0A0A] mb-[5px]">요금제 관리</h1>
                     <p className="text-[14px] text-[#6B7280] leading-[1.55]">현재 이용 중인 요금제를 확인하고 변경하세요</p>
                   </div>
 
                   <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl px-7 py-7 shadow-[var(--sc)] mb-4 max-[640px]:px-[18px]">
-                    <div className="font-inter text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">⭐ 현재 플랜</div>
+                    <div className="font-plex-sans-kr text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">⭐ 현재 플랜</div>
                     <div className="bg-[#0A0A0A] rounded-[10px] px-[22px] py-5 relative overflow-hidden">
                       <div className="flex items-center justify-between gap-3 max-[640px]:flex-col max-[640px]:items-start">
                         <div>
-                          <div className="font-inter text-[20px] font-black text-white">{data.subscription.plan === "free" ? "Free 플랜" : "Pro 플랜"}</div>
+                          <div className="font-plex-sans-kr text-[20px] font-black text-white">{data.subscription.plan === "free" ? "Free 플랜" : "Pro 플랜"}</div>
                           <div className="text-[12px] text-white/45 mt-0.5">
                             {data.subscription.plan === "free"
                               ? "기본 기능 무료 이용 중 · 결제 정보 없음"
                               : `다음 결제일: ${data.subscription.nextBillingDate}`}
                           </div>
                         </div>
-                        <a href="#" className="font-inter text-[13px] font-bold text-[#0A0A0A] bg-white border-none rounded-lg px-[18px] py-[9px] cursor-pointer whitespace-nowrap no-underline inline-block transition-all duration-150 hover:bg-[#F3F4F6] hover:-translate-y-px">요금제 변경 →</a>
+                        <a href="#" className="font-plex-sans-kr text-[13px] font-bold text-[#0A0A0A] bg-white border-none rounded-lg px-[18px] py-[9px] cursor-pointer whitespace-nowrap no-underline inline-block transition-all duration-150 hover:bg-[#F3F4F6] hover:-translate-y-px">요금제 변경 →</a>
                       </div>
                       <div className="mt-[14px]">
                         <div className="flex justify-between text-[11px] text-white/45 mb-[5px]">
@@ -370,7 +368,7 @@ export function SettingsPage() {
                   </div>
 
                   <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl px-7 py-7 shadow-[var(--sc)] mb-4 max-[640px]:px-[18px]">
-                    <div className="font-inter text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">💎 Pro 플랜 혜택</div>
+                    <div className="font-plex-sans-kr text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">💎 Pro 플랜 혜택</div>
                     <div className="grid grid-cols-2 gap-[10px] max-[640px]:grid-cols-1">
                       {[
                         { icon: "👁️", name: "시선 추적 분석", desc: "면접 중 시선 이탈 횟수 측정" },
@@ -380,14 +378,14 @@ export function SettingsPage() {
                       ].map((item) => (
                         <div key={item.name} className="bg-white border border-[#E5E7EB] rounded-[10px] px-4 py-[14px] transition-all duration-150 hover:border-[rgba(9,145,178,0.3)] hover:shadow-[0_2px_8px_rgba(0,0,0,0.1),0_8px_24px_rgba(0,0,0,0.08)]">
                           <div className="text-[20px] mb-[6px]">{item.icon}</div>
-                          <div className="font-inter text-[13px] font-bold text-[#0A0A0A] mb-0.5">{item.name}</div>
+                          <div className="font-plex-sans-kr text-[13px] font-bold text-[#0A0A0A] mb-0.5">{item.name}</div>
                           <div className="text-[11px] text-[#6B7280]">{item.desc}</div>
                         </div>
                       ))}
                     </div>
                     <div style={{ marginTop: 16 }}>
                       <button
-                        className="font-inter text-[14px] font-bold text-white bg-[#0A0A0A] border-none rounded-lg py-[10px] cursor-pointer transition-all duration-150 flex items-center gap-[7px] hover:opacity-85 hover:-translate-y-px justify-center w-full"
+                        className="font-plex-sans-kr text-[14px] font-bold text-white bg-[#0A0A0A] border-none rounded-lg py-[10px] cursor-pointer transition-all duration-150 flex items-center gap-[7px] hover:opacity-85 hover:-translate-y-px justify-center w-full"
                         style={{ borderRadius: 8 }}
                       >
                         💎 Pro 업그레이드 — 첫 7일 무료
@@ -399,18 +397,18 @@ export function SettingsPage() {
                 {/* ─── CONSENT PANEL ─── */}
                 <div className={`${activePanel === "consent" ? "block animate-[spFadeUp_0.3s_ease_both]" : "hidden"}`}>
                   <div className="mb-7">
-                    <h1 className="font-inter text-[26px] font-black tracking-[-0.5px] text-[#0A0A0A] mb-[5px]">동의 관리</h1>
+                    <h1 className="font-plex-sans-kr text-[26px] font-black tracking-[-0.5px] text-[#0A0A0A] mb-[5px]">동의 관리</h1>
                     <p className="text-[14px] text-[#6B7280] leading-[1.55]">수집된 데이터의 활용 범위를 직접 관리하세요</p>
                   </div>
 
                   <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl px-7 py-7 shadow-[var(--sc)] mb-4 max-[640px]:px-[18px]">
-                    <div className="font-inter text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">📋 약관 및 개인정보 동의</div>
+                    <div className="font-plex-sans-kr text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">📋 약관 및 개인정보 동의</div>
 
                     <div className="flex gap-3 px-4 py-[14px] bg-white border border-[#E5E7EB] rounded-[10px] mb-2 transition-all duration-150">
                       <button className="w-[22px] h-[22px] rounded-[6px] shrink-0 flex items-center justify-center text-[10px] font-extrabold cursor-not-allowed opacity-70 border-none bg-[#0991B2] text-white shadow-[0_2px_8px_rgba(9,145,178,0.3)] mt-0.5" disabled>✓</button>
                       <div style={{ flex: 1 }}>
                         <div className="flex items-center gap-[6px] mb-[3px] flex-wrap">
-                          <span className="font-inter text-[13px] font-bold text-[#0A0A0A]">이용약관 동의</span>
+                          <span className="font-plex-sans-kr text-[13px] font-bold text-[#0A0A0A]">이용약관 동의</span>
                           <span className="text-[10px] text-[#EF4444] font-bold">(필수)</span>
                         </div>
                         <p className="text-[12px] text-[#6B7280] leading-[1.55]">서비스 이용에 관한 권리·의무 및 규칙에 동의합니다</p>
@@ -428,7 +426,7 @@ export function SettingsPage() {
                       <button className="w-[22px] h-[22px] rounded-[6px] shrink-0 flex items-center justify-center text-[10px] font-extrabold cursor-not-allowed opacity-70 border-none bg-[#0991B2] text-white shadow-[0_2px_8px_rgba(9,145,178,0.3)] mt-0.5" disabled>✓</button>
                       <div style={{ flex: 1 }}>
                         <div className="flex items-center gap-[6px] mb-[3px] flex-wrap">
-                          <span className="font-inter text-[13px] font-bold text-[#0A0A0A]">개인정보처리방침 동의</span>
+                          <span className="font-plex-sans-kr text-[13px] font-bold text-[#0A0A0A]">개인정보처리방침 동의</span>
                           <span className="text-[10px] text-[#EF4444] font-bold">(필수)</span>
                         </div>
                         <p className="text-[12px] text-[#6B7280] leading-[1.55]">수집되는 개인정보의 항목, 목적, 보존 기간에 동의합니다</p>
@@ -451,7 +449,7 @@ export function SettingsPage() {
                       </button>
                       <div style={{ flex: 1 }}>
                         <div className="flex items-center gap-[6px] mb-[3px] flex-wrap">
-                          <span className="font-inter text-[13px] font-bold text-[#0A0A0A]">AI 학습 데이터 활용 동의</span>
+                          <span className="font-plex-sans-kr text-[13px] font-bold text-[#0A0A0A]">AI 학습 데이터 활용 동의</span>
                           <span className="text-[10px] text-[#0991B2] font-bold">(선택)</span>
                         </div>
                         <p className="text-[12px] text-[#6B7280] leading-[1.55]">
@@ -463,21 +461,21 @@ export function SettingsPage() {
                   </div>
 
                   <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl px-7 py-7 shadow-[var(--sc)] mb-4 max-[640px]:px-[18px]">
-                    <div className="font-inter text-[14px] font-extrabold tracking-[-0.1px] mb-3 flex items-center gap-[7px] text-[#EF4444]">⚠ 위험 구역</div>
+                    <div className="font-plex-sans-kr text-[14px] font-extrabold tracking-[-0.1px] mb-3 flex items-center gap-[7px] text-[#EF4444]">⚠ 위험 구역</div>
                     <div className="bg-[rgba(239,68,68,0.03)] border border-[rgba(239,68,68,0.15)] rounded-[10px] px-5 py-[18px]">
                       <div className="flex items-center justify-between gap-3 flex-wrap py-[10px] border-b border-[rgba(239,68,68,0.08)] first:pt-0 last:border-b-0 last:pb-0">
                         <div>
-                          <div className="font-inter text-[13px] font-bold text-[#0A0A0A] mb-0.5">모든 면접 데이터 삭제</div>
+                          <div className="font-plex-sans-kr text-[13px] font-bold text-[#0A0A0A] mb-0.5">모든 면접 데이터 삭제</div>
                           <div className="text-[11px] text-[#6B7280]">저장된 면접 세션, 리포트, 답변 내역이 영구 삭제됩니다</div>
                         </div>
-                        <button className="font-inter text-[13px] font-bold text-[#EF4444] bg-[rgba(239,68,68,0.08)] border border-[rgba(239,68,68,0.2)] rounded-lg px-4 py-2 cursor-pointer whitespace-nowrap transition-all duration-150 hover:bg-[rgba(239,68,68,0.14)]" onClick={() => setDeleteConfirm("data")}>데이터 삭제</button>
+                        <button className="font-plex-sans-kr text-[13px] font-bold text-[#EF4444] bg-[rgba(239,68,68,0.08)] border border-[rgba(239,68,68,0.2)] rounded-lg px-4 py-2 cursor-pointer whitespace-nowrap transition-all duration-150 hover:bg-[rgba(239,68,68,0.14)]" onClick={() => setDeleteConfirm("data")}>데이터 삭제</button>
                       </div>
                       <div className="flex items-center justify-between gap-3 flex-wrap py-[10px]">
                         <div>
-                          <div className="font-inter text-[13px] font-bold text-[#0A0A0A] mb-0.5">계정 탈퇴</div>
+                          <div className="font-plex-sans-kr text-[13px] font-bold text-[#0A0A0A] mb-0.5">계정 탈퇴</div>
                           <div className="text-[11px] text-[#6B7280]">계정과 모든 데이터가 영구 삭제됩니다. 이 작업은 되돌릴 수 없습니다</div>
                         </div>
-                        <button className="font-inter text-[13px] font-bold text-[#DC2626] bg-[rgba(220,38,38,0.08)] border border-[rgba(220,38,38,0.25)] rounded-lg px-4 py-2 cursor-pointer whitespace-nowrap transition-all duration-150 hover:bg-[rgba(239,68,68,0.14)]" onClick={() => setDeleteConfirm("account")}>계정 탈퇴</button>
+                        <button className="font-plex-sans-kr text-[13px] font-bold text-[#DC2626] bg-[rgba(220,38,38,0.08)] border border-[rgba(220,38,38,0.25)] rounded-lg px-4 py-2 cursor-pointer whitespace-nowrap transition-all duration-150 hover:bg-[rgba(239,68,68,0.14)]" onClick={() => setDeleteConfirm("account")}>계정 탈퇴</button>
                       </div>
                     </div>
                   </div>
@@ -485,8 +483,8 @@ export function SettingsPage() {
                   <div className="flex items-center justify-end gap-[10px] pt-5 border-t border-[#E5E7EB] mt-1 max-[640px]:flex-col-reverse max-[640px]:items-stretch">
                     {saveMessage && activePanel === "consent" && <span className="text-[12px] font-bold text-[#059669] mr-auto animate-[spFadeUp_0.3s_ease]">✓ {saveMessage}</span>}
                     {error && activePanel === "consent" && <span className="text-[12px] font-bold text-[#EF4444] mr-auto animate-[spFadeUp_0.3s_ease]">✕ {error}</span>}
-                    <button className="font-inter text-[14px] font-semibold text-[#6B7280] bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg px-5 py-[10px] cursor-pointer transition-all duration-150 hover:bg-[#F3F4F6] hover:text-[#0A0A0A]" onClick={() => setAiDataDraft(data.consents.aiDataAgreed)}>취소</button>
-                    <button className="font-inter text-[14px] font-bold text-white bg-[#0A0A0A] border-none rounded-lg px-6 py-[10px] cursor-pointer transition-all duration-150 flex items-center gap-[7px] hover:opacity-85 hover:-translate-y-px disabled:opacity-60 disabled:cursor-not-allowed max-[640px]:justify-center" onClick={saveConsents} disabled={saving}>
+                    <button className="font-plex-sans-kr text-[14px] font-semibold text-[#6B7280] bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg px-5 py-[10px] cursor-pointer transition-all duration-150 hover:bg-[#F3F4F6] hover:text-[#0A0A0A]" onClick={() => setAiDataDraft(data.consents.aiDataAgreed)}>취소</button>
+                    <button className="font-plex-sans-kr text-[14px] font-bold text-white bg-[#0A0A0A] border-none rounded-lg px-6 py-[10px] cursor-pointer transition-all duration-150 flex items-center gap-[7px] hover:opacity-85 hover:-translate-y-px disabled:opacity-60 disabled:cursor-not-allowed max-[640px]:justify-center" onClick={saveConsents} disabled={saving}>
                       {saving ? <span className="w-[14px] h-[14px] border-2 border-white/40 border-t-white rounded-full animate-[spSpin_0.6s_linear_infinite]" /> : <span>저장하기</span>}
                     </button>
                   </div>
@@ -501,7 +499,7 @@ export function SettingsPage() {
       {deleteConfirm && (
         <div className="fixed inset-0 z-[300] bg-black/50 flex items-center justify-center p-5" onClick={() => setDeleteConfirm(null)}>
           <div className="bg-white rounded-xl px-7 py-7 max-w-[400px] w-full shadow-[0_4px_24px_rgba(0,0,0,0.15)]" onClick={(e) => e.stopPropagation()}>
-            <div className="font-inter text-[16px] font-extrabold text-[#0A0A0A] mb-2">
+            <div className="font-plex-sans-kr text-[16px] font-extrabold text-[#0A0A0A] mb-2">
               {deleteConfirm === "data" ? "면접 데이터를 삭제하시겠습니까?" : "정말로 계정을 탈퇴하시겠습니까?"}
             </div>
             <p className="text-[13px] text-[#6B7280] leading-[1.6] mb-5">
@@ -510,8 +508,8 @@ export function SettingsPage() {
                 : "계정과 연결된 모든 데이터가 즉시 삭제됩니다. 탈퇴 후에는 복구가 불가능합니다."}
             </p>
             <div className="flex gap-[10px] justify-end">
-              <button className="font-inter text-[14px] font-semibold text-[#6B7280] bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg px-[18px] py-[9px] cursor-pointer" onClick={() => setDeleteConfirm(null)}>취소</button>
-              <button className="font-inter text-[14px] font-bold text-white bg-[#EF4444] border-none rounded-lg px-[18px] py-[9px] cursor-pointer" onClick={handleDeleteConfirm} disabled={saving}>
+              <button className="font-plex-sans-kr text-[14px] font-semibold text-[#6B7280] bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg px-[18px] py-[9px] cursor-pointer" onClick={() => setDeleteConfirm(null)}>취소</button>
+              <button className="font-plex-sans-kr text-[14px] font-bold text-white bg-[#EF4444] border-none rounded-lg px-[18px] py-[9px] cursor-pointer" onClick={handleDeleteConfirm} disabled={saving}>
                 {saving ? "처리 중..." : deleteConfirm === "data" ? "삭제하기" : "탈퇴하기"}
               </button>
             </div>

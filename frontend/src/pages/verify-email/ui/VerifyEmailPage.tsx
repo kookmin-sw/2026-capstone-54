@@ -68,7 +68,7 @@ export function VerifyEmailPage() {
         </Link>
         <button
           type="button"
-          className="text-[13px] font-medium text-[#6B7280] px-4 py-2 bg-none border border-[#E5E7EB] rounded-lg cursor-pointer font-inter transition-[color,background] duration-200 hover:text-[#0A0A0A] hover:bg-[#F9FAFB]"
+          className="text-[13px] font-medium text-[#6B7280] px-4 py-2 bg-none border border-[#E5E7EB] rounded-lg cursor-pointer font-plex-sans-kr transition-[color,background] duration-200 hover:text-[#0A0A0A] hover:bg-[#F9FAFB]"
           onClick={handleLogout}
         >
           🚪 로그아웃
@@ -82,7 +82,7 @@ export function VerifyEmailPage() {
           <div className="inline-block text-[12px] font-bold text-[#0991B2] bg-[#E6F7FA] rounded px-[14px] py-[5px] mb-[14px] self-center md:self-start md:text-[13px] md:px-[18px] md:py-[6px] md:mb-[18px]">
             ● STEP 2 OF 3
           </div>
-          <h1 className="font-inter text-[clamp(32px,8vw,48px)] font-black leading-[1.1] text-[#0A0A0A] mb-3 tracking-[-2px] text-center md:text-left md:text-[clamp(36px,3.5vw,48px)]">
+          <h1 className="font-plex-sans-kr text-[clamp(32px,8vw,48px)] font-black leading-[1.1] text-[#0A0A0A] mb-3 tracking-[-2px] text-center md:text-left md:text-[clamp(36px,3.5vw,48px)]">
             인증 메일을
             <br />
             <span className="gradient-text">확인</span>해주세요
@@ -145,7 +145,7 @@ export function VerifyEmailPage() {
               </div>
             </div>
 
-            <h2 className="font-inter text-[22px] font-extrabold text-[#0A0A0A] mb-2">이메일 인증이 필요해요</h2>
+            <h2 className="font-plex-sans-kr text-[22px] font-extrabold text-[#0A0A0A] mb-2">이메일 인증이 필요해요</h2>
             <p className="text-[14px] text-[#6B7280] leading-[1.7] mb-6">
               회원가입 시 입력한 이메일로 인증 코드를 보냈어요.
               <br />
@@ -155,7 +155,7 @@ export function VerifyEmailPage() {
             {/* Email display */}
             <div className="flex items-center justify-center gap-[10px] bg-white border border-[#E5E7EB] rounded-lg px-5 py-[14px] mb-5 overflow-hidden">
               <span className="w-2 h-2 rounded-full bg-[#F59E0B] shrink-0" />
-              <span className="font-inter text-[15px] font-bold text-[#0A0A0A] truncate" title={email}>{email}</span>
+              <span className="font-plex-sans-kr text-[15px] font-bold text-[#0A0A0A] truncate" title={email}>{email}</span>
             </div>
 
             {/* Code input */}
@@ -167,7 +167,7 @@ export function VerifyEmailPage() {
                   type="text"
                   inputMode="text"
                   maxLength={1}
-                  className="w-12 h-14 text-center font-inter text-[22px] font-extrabold text-[#0A0A0A] bg-white border border-[#E5E7EB] rounded-lg outline-none transition-[border-color] duration-200 placeholder-[#D1D5DB] focus:border-[#0991B2]"
+                  className="w-12 h-14 text-center font-plex-sans-kr text-[22px] font-extrabold text-[#0A0A0A] bg-white border border-[#E5E7EB] rounded-lg outline-none transition-[border-color] duration-200 placeholder-[#D1D5DB] focus:border-[#0991B2]"
                   value={digit}
                   onChange={(e) => handleCodeChange(i, e.target.value)}
                   onKeyDown={(e) => handleKeyDown(i, e)}
@@ -185,7 +185,7 @@ export function VerifyEmailPage() {
             {/* Verify button */}
             <button
               type="button"
-              className="w-full py-[15px] bg-[#0991B2] text-white font-inter text-[15px] font-bold border-none rounded-lg cursor-pointer transition-opacity duration-200 mb-5 hover:enabled:opacity-85 disabled:opacity-50 disabled:cursor-not-allowed md:py-4 md:text-[16px]"
+              className="w-full py-[15px] bg-[#0991B2] text-white font-plex-sans-kr text-[15px] font-bold border-none rounded-lg cursor-pointer transition-opacity duration-200 mb-5 hover:enabled:opacity-85 disabled:opacity-50 disabled:cursor-not-allowed md:py-4 md:text-[16px]"
               onClick={handleVerify}
               disabled={isVerifying || fullCode.length < 6}
             >
@@ -198,7 +198,7 @@ export function VerifyEmailPage() {
             {/* Resend button */}
             <button
               type="button"
-              className="w-full py-[15px] bg-[#0A0A0A] text-white font-inter text-[15px] font-bold border-none rounded-lg cursor-pointer transition-opacity duration-200 flex items-center justify-center gap-[10px] mb-3 hover:enabled:opacity-85 disabled:opacity-50 disabled:cursor-not-allowed md:py-4 md:text-[16px]"
+              className="w-full py-[15px] bg-[#0A0A0A] text-white font-plex-sans-kr text-[15px] font-bold border-none rounded-lg cursor-pointer transition-opacity duration-200 flex items-center justify-center gap-[10px] mb-3 hover:enabled:opacity-85 disabled:opacity-50 disabled:cursor-not-allowed md:py-4 md:text-[16px]"
               onClick={handleResend}
               disabled={isResending}
             >
@@ -220,7 +220,7 @@ export function VerifyEmailPage() {
             {/* Action buttons */}
             <button
               type="button"
-              className="w-full py-[14px] bg-white text-[#374151] font-inter text-[14px] font-semibold border border-[#E5E7EB] rounded-lg cursor-pointer transition-[color,background] duration-200 mb-2 hover:text-[#0A0A0A] hover:bg-[#F3F4F6]"
+              className="w-full py-[14px] bg-white text-[#374151] font-plex-sans-kr text-[14px] font-semibold border border-[#E5E7EB] rounded-lg cursor-pointer transition-[color,background] duration-200 mb-2 hover:text-[#0A0A0A] hover:bg-[#F3F4F6]"
               onClick={handleLogout}
             >
               🚪 다른 계정으로 로그인

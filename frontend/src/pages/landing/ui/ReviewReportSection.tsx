@@ -25,7 +25,7 @@ export function ReviewReportSection() {
           <div className="inline-block text-[12px] font-bold text-[#0991B2] bg-[#E6F7FA] rounded px-[14px] py-[5px] mb-[14px] md:text-[13px] md:px-[18px] md:py-[6px] md:mb-[18px]">
             AI 리뷰 리포트
           </div>
-          <h2 className="font-inter text-[clamp(24px,7vw,36px)] font-extrabold text-[#0A0A0A] md:text-[clamp(32px,4vw,52px)]">
+          <h2 className="font-plex-sans-kr text-[clamp(24px,7vw,36px)] font-extrabold text-[#0A0A0A] md:text-[clamp(32px,4vw,52px)]">
             면접 후, 더 정확한 피드백.
           </h2>
         </div>
@@ -43,7 +43,7 @@ export function ReviewReportSection() {
                   </span>
                 )}
               </div>
-              <h3 className="font-inter text-[16px] font-bold text-[#0A0A0A] mb-2 md:text-[18px] md:mb-3">{r.title}</h3>
+              <h3 className="font-plex-sans-kr text-[16px] font-bold text-[#0A0A0A] mb-2 md:text-[18px] md:mb-3">{r.title}</h3>
               <p className="text-[13px] text-[#6B7280] leading-[1.7] md:text-[14px]">{r.desc}</p>
             </div>
           ))}

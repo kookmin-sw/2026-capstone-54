@@ -26,7 +26,7 @@ export function PricingSection() {
           <div className="inline-block text-[12px] font-bold text-[#0991B2] bg-[#E6F7FA] rounded px-[14px] py-[5px] mb-[14px] md:text-[14px] md:px-5 md:py-2 md:mb-5">
             요금제
           </div>
-          <h2 className="font-inter text-[clamp(24px,7vw,36px)] font-extrabold text-[#0A0A0A] mb-3 md:text-[clamp(32px,4vw,48px)] md:mb-[18px]">
+          <h2 className="font-plex-sans-kr text-[clamp(24px,7vw,36px)] font-extrabold text-[#0A0A0A] mb-3 md:text-[clamp(32px,4vw,48px)] md:mb-[18px]">
             나에게 맞는 플랜을 선택하세요.
           </h2>
           <p className="text-[14px] text-[#6B7280] md:text-[17px]">
@@ -37,8 +37,8 @@ export function PricingSection() {
         <div className="flex flex-col gap-4 md:flex-row md:gap-5 md:max-w-[760px] md:mx-auto">
           {/* Free */}
           <div className="flex-1 rounded-lg px-7 py-9 bg-[#F9FAFB] border border-[#E5E7EB] md:px-10 md:py-11">
-            <div className="font-inter text-[18px] font-extrabold text-[#0A0A0A] mb-2 md:text-[20px] md:mb-2.5">Free</div>
-            <div className="font-inter text-[44px] font-black text-[#0A0A0A] mb-1 md:text-[48px] md:mb-1.5">₩0</div>
+            <div className="font-plex-sans-kr text-[18px] font-extrabold text-[#0A0A0A] mb-2 md:text-[20px] md:mb-2.5">Free</div>
+            <div className="font-plex-sans-kr text-[44px] font-black text-[#0A0A0A] mb-1 md:text-[48px] md:mb-1.5">₩0</div>
             <div className="text-[13px] text-[#6B7280] mb-6 md:text-[14px] md:mb-8">월 요금 없음</div>
             <ul className="list-none p-0 m-0 mb-7 flex flex-col gap-3 md:gap-3.5 md:mb-9">
               {FREE_ITEMS.map((item) => (
@@ -53,7 +53,7 @@ export function PricingSection() {
                 </li>
               ))}
             </ul>
-            <button className="w-full py-[14px] rounded-lg border-none font-inter text-[15px] font-bold cursor-pointer transition-opacity duration-200 hover:opacity-85 bg-[#0A0A0A] text-white md:py-4 md:rounded-lg md:text-[16px]">
+            <button className="w-full py-[14px] rounded-lg border-none font-plex-sans-kr text-[15px] font-bold cursor-pointer transition-opacity duration-200 hover:opacity-85 bg-[#0A0A0A] text-white md:py-4 md:rounded-lg md:text-[16px]">
               현재 플랜
             </button>
             <div className="text-center text-[12px] text-[#6B7280] mt-2.5 md:text-[13px] md:mt-3">기본 기능 무료 사용</div>
@@ -64,8 +64,8 @@ export function PricingSection() {
             <span className="absolute top-5 right-5 text-[11px] font-bold text-[#0A0A0A] bg-white rounded px-3 py-1 md:top-6 md:right-6 md:text-[12px] md:px-3.5 md:py-[5px]">
               추천
             </span>
-            <div className="font-inter text-[18px] font-extrabold text-white mb-2 md:text-[20px] md:mb-2.5">Pro</div>
-            <div className="font-inter text-[44px] font-black text-white mb-1 md:text-[48px] md:mb-1.5">
+            <div className="font-plex-sans-kr text-[18px] font-extrabold text-white mb-2 md:text-[20px] md:mb-2.5">Pro</div>
+            <div className="font-plex-sans-kr text-[44px] font-black text-white mb-1 md:text-[48px] md:mb-1.5">
               ₩19,900<span className="text-[18px] md:text-[20px]">/월</span>
             </div>
             <div className="text-[13px] text-white/55 mb-6 md:text-[14px] md:mb-8">월 구독</div>
@@ -79,7 +79,7 @@ export function PricingSection() {
             </ul>
             <Link 
               to="/subscription" 
-              className="w-full py-[14px] rounded-lg border-none font-inter text-[15px] font-bold cursor-pointer transition-opacity duration-200 hover:opacity-85 bg-white text-[#0A0A0A] md:py-4 md:rounded-lg md:text-[16px] flex items-center justify-center no-underline"
+              className="w-full py-[14px] rounded-lg border-none font-plex-sans-kr text-[15px] font-bold cursor-pointer transition-opacity duration-200 hover:opacity-85 bg-white text-[#0A0A0A] md:py-4 md:rounded-lg md:text-[16px] flex items-center justify-center no-underline"
             >
               Pro 업그레이드
             </Link>
