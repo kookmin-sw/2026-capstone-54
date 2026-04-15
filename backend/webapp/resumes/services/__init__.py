@@ -12,7 +12,6 @@ from .finalize_resume_service import FinalizeResumeService
 from .replace_resume_industry_domains_service import ReplaceResumeIndustryDomainsService
 from .replace_resume_keywords_service import ReplaceResumeKeywordsService
 from .replace_resume_skills_service import ReplaceResumeSkillsService
-from .resume_activation_service import ActivateResumeService, DeactivateResumeService
 from .resume_parsed_data_bundle_service import ResumeParsedDataBundleService
 from .resume_parsed_data_reader import ResumeParsedDataReader
 from .resume_parsed_data_writer import ResumeParsedDataWriter
@@ -39,11 +38,9 @@ from .upsert_resume_language_spoken_service import UpsertResumeLanguageSpokenSer
 from .upsert_resume_project_service import UpsertResumeProjectService
 
 __all__ = [
-  "ActivateResumeService",
   "ApplyAnalysisResultService",
   "CreateFileResumeService",
   "CreateTextResumeService",
-  "DeactivateResumeService",
   "DeleteResumeAwardService",
   "DeleteResumeCertificationService",
   "DeleteResumeEducationService",
