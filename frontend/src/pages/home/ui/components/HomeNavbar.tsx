@@ -125,8 +125,12 @@ export function HomeNavbar({ menuOpen, onMenuToggle }: HomeNavbarProps) {
           className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-[#F3F4F6] transition-colors"
           aria-label="프로필 메뉴"
         >
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#0991B2] to-[#06B6D4] flex items-center justify-center text-white text-sm font-bold">
-            {user?.name?.[0]?.toUpperCase() || "U"}
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#0991B2] to-[#06B6D4] flex items-center justify-center text-white text-sm font-bold overflow-hidden">
+            {user?.avatarUrl ? (
+              <img src={user.avatarUrl} alt="프로필" className="w-full h-full object-cover" />
+            ) : (
+              user?.name?.[0]?.toUpperCase() || "U"
+            )}
           </div>
           <span className="text-sm font-semibold text-[#0A0A0A] hidden md:block">
             {user?.name || "사용자"}
