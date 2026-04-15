@@ -1,4 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useSettingsStore } from "@/features/settings";
 
 interface HomeSidebarProps {
   menuOpen: boolean;
@@ -11,11 +13,14 @@ interface HomeSidebarProps {
 
 export function HomeSidebar({ menuOpen, currentStreak, jdCount = 0, floating = false, activeItem }: HomeSidebarProps) {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { setActivePanel } = useSettingsStore();
   const path = location.pathname;
 
   const isActive = (prefix: string) => {
     if (activeItem === "results" && prefix === "/interview/results") return true;
-    if (activeItem === "home" && prefix === "/home") return true;
+    if (activeItem === "home" && prefix === "/") return true;
+    if (prefix === "/") return path === "/";
     return path === prefix || path.startsWith(prefix + "/");
   };
 
@@ -23,7 +28,7 @@ export function HomeSidebar({ menuOpen, currentStreak, jdCount = 0, floating = f
   return (
     <aside className={cls}>
       <div className="hp-sb-sep">메인</div>
-      <Link to="/home" className={`hp-sb-item${isActive("/home") ? " active" : ""}`}>
+      <Link to="/" className={`hp-sb-item${isActive("/") ? " active" : ""}`}>
         <span className="hp-sb-icon">🏠</span>홈
       </Link>
       <Link to="/interview/setup" className={`hp-sb-item${isActive("/interview/setup") ? " active" : ""}`}>
@@ -50,6 +55,16 @@ export function HomeSidebar({ menuOpen, currentStreak, jdCount = 0, floating = f
       </Link>
       <Link to="/settings" className={`hp-sb-item${isActive("/settings") ? " active" : ""}`}>
         <span className="hp-sb-icon">⚙️</span>계정 설정
+      </Link>
+      <div className="hp-sb-sep">알림</div>
+      <button
+        className="hp-sb-item w-full text-left border-none bg-transparent"
+        onClick={() => { setActivePanel("notifications"); navigate("/settings"); }}
+      >
+        <span className="hp-sb-icon">🔔</span>알림 설정
+      </button>
+      <Link to="/notifications" className={`hp-sb-item${isActive("/notifications") ? " active" : ""}`}>
+        <span className="hp-sb-icon">📬</span>알림 내역
       </Link>
       <div className="hp-sb-streak-card">
         <div className="hp-ssc-label">스트릭</div>

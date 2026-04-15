@@ -75,7 +75,7 @@ export function OnboardingPage() {
     const ok = await submitProfile();
     if (ok) {
       await useAuthStore.getState().fetchMe();
-      navigate("/home");
+      navigate("/");
     }
   };
 

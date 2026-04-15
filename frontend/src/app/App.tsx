@@ -11,7 +11,6 @@ import { SignUpPage } from "@/pages/sign-up";
 import { LoginPage } from "@/pages/login";
 import { VerifyEmailPage } from "@/pages/verify-email";
 import { OnboardingPage } from "@/pages/onboarding";
-import { HomePage } from "@/pages/home";
 import { JdAddPage } from "@/pages/jd-add";
 import { JdDetailPage } from "@/pages/jd-detail";
 import { JdListPage } from "@/pages/jd-list";
@@ -60,7 +59,6 @@ function App() {
         <Route path="/onboarding" element={<OnboardingPage />} />
 
         {/* ── 보호 라우트 (로그인 필요) ── */}
-        <Route path="/home" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
         <Route path="/jd/add" element={<ProtectedRoute><JdAddPage /></ProtectedRoute>} />
         <Route path="/jd/:uuid" element={<ProtectedRoute><JdDetailPage /></ProtectedRoute>} />
         <Route path="/jd" element={<ProtectedRoute><JdListPage /></ProtectedRoute>} />
