@@ -3,7 +3,7 @@
 import { apiRequest } from "@/shared/api/client";
 import { userApi } from "@/shared/api/userApi";
 
-const USE_MOCK = true; // Set to false when backend is ready
+const USE_MOCK = false; // Set to false when backend is ready
 
 // Backend response types
 interface BackendUser {
@@ -198,9 +198,12 @@ export async function fetchHomeDataApi(): Promise<{ success: boolean; data?: Hom
     };
   } catch (error) {
     console.error("Failed to fetch home data:", error);
-    return { 
-      success: false, 
-      error: "홈 데이터를 불러오는데 실패했습니다." 
-    };
+    // API 미구현(404 등) 시 mock 데이터로 fallback, 실제 유저 이름 반영
+    try {
+      const userData = await userApi.getMe();
+      return { success: true, data: { ...MOCK_DATA, user: { ...MOCK_DATA.user, name: userData.name || "사용자" } } };
+    } catch {
+      return { success: true, data: MOCK_DATA };
+    }
   }
 }

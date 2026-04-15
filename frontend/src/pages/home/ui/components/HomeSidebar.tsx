@@ -59,7 +59,7 @@ export function HomeSidebar({ menuOpen, currentStreak, jdCount = 0, floating = f
       <div className="hp-sb-sep">알림</div>
       <button
         className="hp-sb-item w-full text-left border-none bg-transparent"
-        onClick={() => { setActivePanel("notifications"); navigate("/settings"); }}
+        onClick={() => { setActivePanel("notifications"); if (location.pathname !== "/settings") navigate("/settings"); }}
       >
         <span className="hp-sb-icon">🔔</span>알림 설정
       </button>
