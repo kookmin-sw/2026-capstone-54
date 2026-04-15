@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./tokens.css";
 
 /* ════════════════════════════════════════════
    meFit Design Tokens
