@@ -13,13 +13,15 @@ describe("ResumeStatsStrip", () => {
     inactive: 3,
   };
 
-  it("전체 / 분석 중 / 분석 완료 카드만 렌더한다", () => {
+  it("전체 이력서 / 활성 이력서 / 분석 완료 / 분석 중 항목을 렌더한다", () => {
     render(<ResumeStatsStrip count={count} />);
-    expect(screen.getByText("전체")).toBeInTheDocument();
+    expect(screen.getByText("전체 이력서")).toBeInTheDocument();
     expect(screen.getByText("10")).toBeInTheDocument();
-    expect(screen.getByText("분석 중")).toBeInTheDocument();
+    expect(screen.getByText("활성 이력서")).toBeInTheDocument();
+    expect(screen.getByText("7")).toBeInTheDocument();
     expect(screen.getByText("분석 완료")).toBeInTheDocument();
     expect(screen.getByText("5")).toBeInTheDocument();
+    expect(screen.getByText("분석 중")).toBeInTheDocument();
     expect(screen.queryByText("파일")).not.toBeInTheDocument();
     expect(screen.queryByText("텍스트")).not.toBeInTheDocument();
   });
