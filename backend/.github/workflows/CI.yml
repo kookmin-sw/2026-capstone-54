@@ -23,6 +23,7 @@ env:
   POSTGRES_USER: test_user
   POSTGRES_PASSWORD: ${{ secrets.CI_POSTGRES_PASSWORD }}
   POSTGRES_HOST: localhost
+  TEST_DATABASE_NAME: ci_test_db
 
 jobs:
   lint:

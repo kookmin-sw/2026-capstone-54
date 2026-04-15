@@ -35,8 +35,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      test_postgres:
-        condition: service_healthy
       redis:
         condition: service_healthy
       flower:
@@ -61,20 +59,6 @@ services:
     networks:
       - default
       - mefit-local
-
-  test_postgres:
-    <<: *postgres-base
-    ports:
-      - ${TEST_POSTGRES_PORT}:5432
-    volumes:
-      - test_postgres_data:/var/lib/postgresql
-      - ./environments/development/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
-    environment:
-      POSTGRES_DB: ${TEST_DATABASE_NAME}
-      POSTGRES_USER: ${TEST_POSTGRES_USER}
-      POSTGRES_PASSWORD: ${TEST_POSTGRES_PASSWORD}
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${TEST_POSTGRES_USER} -d ${TEST_DATABASE_NAME}"]
 
   redis:
     image: redis:8
@@ -148,7 +132,6 @@ services:
 
 volumes:
   postgres_data:
-  test_postgres_data:
   s3mock_data:
 
 networks:
