@@ -45,7 +45,6 @@ class Resume(BaseModelWithUUIDAndSoftDelete):
     db_column="type",
   )
   title = models.CharField(max_length=255)
-  is_active = models.BooleanField(default=True)
   is_parsed = models.BooleanField(default=False)
   parsed_data = models.JSONField(null=True, blank=True)
   analysis_status = models.CharField(

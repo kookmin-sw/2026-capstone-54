@@ -81,7 +81,6 @@ class ResumeAdmin(ModelAdmin):
     "title",
     "analysis_status",
     "analysis_step",
-    "is_active",
     "job_category_link",
     "created_at",
   )
@@ -89,7 +88,6 @@ class ResumeAdmin(ModelAdmin):
     "type",
     "analysis_status",
     "analysis_step",
-    "is_active",
     "resume_job_category",
   )
   list_select_related = ("user", "resume_job_category")
@@ -130,9 +128,6 @@ class ResumeAdmin(ModelAdmin):
         "analyzed_at",
         "resume_job_category",
       ),
-    }),
-    ("활성화", {
-      "fields": ("is_active", ),
     }),
     (
       "분석 결과 (정규화 sub-model)", {

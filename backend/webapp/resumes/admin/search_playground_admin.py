@@ -202,8 +202,8 @@ class SearchPlaygroundAdmin(ModelAdmin):
 
     return {
       "total_resumes": resumes.count(),
-      "active_completed": resumes.filter(is_active=True, analysis_status=AnalysisStatus.COMPLETED).count(),
-      "status_summary": list(resumes.values_list("uuid", "title", "analysis_status", "is_active")),
+      "completed": resumes.filter(analysis_status=AnalysisStatus.COMPLETED).count(),
+      "status_summary": list(resumes.values_list("uuid", "title", "analysis_status")),
       "total_embeddings": ResumeEmbedding.objects.filter(**emb_filter).count(),
       "embeddings_with_vector": ResumeEmbedding.objects.filter(**emb_filter, embedding_vector__isnull=False).count(),
       "vector_check": SearchPlaygroundAdmin._check_vector_type(user_id, resume_pk),
