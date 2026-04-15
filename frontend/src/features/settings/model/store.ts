@@ -13,7 +13,7 @@ import type { SettingsData, SettingsProfile, SettingsNotifications, JobCategory,
 import { profileApi } from "@/shared/api/profileApi";
 import { useAuthStore } from "@/features/auth";
 
-export type SettingsPanel = "profile" | "password" | "notifications" | "subscription" | "consent";
+export type SettingsPanel = "account" | "notifications" | "subscription" | "consent";
 
 interface ProfileDraft {
   name: string;
@@ -79,7 +79,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   saving: false,
   error: null,
   saveMessage: null,
-  activePanel: "profile",
+  activePanel: "account" as SettingsPanel,
   consentBadge: true,
 
   jobCategories: [],
@@ -176,8 +176,11 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
           profile: { ...s.data.profile, avatarUrl: res.avatarUrl ?? null },
         } : s.data,
       }));
-      // authStore의 user 정보도 최신화하여 Navbar 등 다른 컴포넌트에 반영
-      await useAuthStore.getState().fetchMe();
+      // /users/me/는 avatarUrl을 반환하지 않으므로 직접 authStore user를 패치
+      const authStore = useAuthStore.getState();
+      if (authStore.user) {
+        authStore.setUser({ ...authStore.user, avatarUrl: res.avatarUrl ?? null });
+      }
     } else {
       set({ saving: false, error: res.message });
     }
