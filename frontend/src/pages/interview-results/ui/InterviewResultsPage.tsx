@@ -40,6 +40,7 @@ export function InterviewResultsPage() {
       const watching = s.reportStatus === "generating" || s.reportStatus === "pending";
       if (!watching || sseStreamsRef.current.has(s.uuid)) return;
 
+      const terminalFlag = { done: false };
       const cancel = openSseStream(
         `/sse/interviews/${s.uuid}/report-status/`,
         (event, data) => {
@@ -47,9 +48,14 @@ export function InterviewResultsPage() {
           const newStatus = (data as { interview_analysis_report_status: string }).interview_analysis_report_status as InterviewAnalysisReportStatus;
           setSessions((prev) => prev.map((item) => item.uuid === s.uuid ? { ...item, reportStatus: newStatus } : item));
           if (newStatus === "completed" || newStatus === "failed") {
+            terminalFlag.done = true;
             sseStreamsRef.current.get(s.uuid)?.();
             sseStreamsRef.current.delete(s.uuid);
           }
+        },
+        {
+          shouldReconnect: () => !terminalFlag.done,
+          onError: () => { terminalFlag.done = true; },
         },
       );
       sseStreamsRef.current.set(s.uuid, cancel);
