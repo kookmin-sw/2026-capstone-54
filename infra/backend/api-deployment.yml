@@ -21,47 +21,47 @@ spec:
         app: mefit-production-api
     spec:
       imagePullSecrets:
-        - name: mefit-production-dockerhub
+      - name: mefit-production-dockerhub
       containers:
-        - name: django
-          image: teammefit/mefit-backend:production
-          imagePullPolicy: Always
-          ports:
-            - containerPort: 8000
-          envFrom:
-            - configMapRef:
-                name: mefit-production-env
-            - secretRef:
-                name: mefit-production-secret
-          command: ["uvicorn"]
-          args:
-            - "config.asgi:application"
-            - "--host"
-            - "0.0.0.0"
-            - "--port"
-            - "8000"
-            - "--workers"
-            - "2"
-          readinessProbe:
-            httpGet:
-              path: /api/v1/health-check/
-              port: 8000
-            initialDelaySeconds: 30
-            periodSeconds: 5
-            timeoutSeconds: 3
-            failureThreshold: 3
-          livenessProbe:
-            httpGet:
-              path: /api/v1/health-check/
-              port: 8000
-            initialDelaySeconds: 30
-            periodSeconds: 10
-            timeoutSeconds: 3
-            failureThreshold: 3
-          resources:
-            requests:
-              cpu: 250m
-              memory: 640Mi
-            limits:
-              cpu: "1.2"
-              memory: 1.2Gi
+      - name: django
+        image: teammefit/mefit-backend:production
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+        envFrom:
+        - configMapRef:
+            name: mefit-production-env
+        - secretRef:
+            name: mefit-production-secret
+        command: [ "uvicorn" ]
+        args:
+        - "config.asgi:application"
+        - "--host"
+        - "0.0.0.0"
+        - "--port"
+        - "8000"
+        - "--workers"
+        - "2"
+        readinessProbe:
+          httpGet:
+            path: /api/v1/health-check/
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        livenessProbe:
+          httpGet:
+            path: /api/v1/health-check/
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+        resources:
+          requests:
+            cpu: 150m
+            memory: 640Mi
+          limits:
+            cpu: "1.2"
+            memory: 1.2Gi
