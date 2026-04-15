@@ -1,6 +1,6 @@
 /** 템플릿 picker 상태 — 목록 fetch, 검색 debounce, 직군 그룹핑, 선택/덮어쓰기 분기. */
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { resumeTemplatesApi, type ResumeTemplateListItem } from "@/features/resume";
 
 interface UseTemplatePickerOptions {
@@ -20,6 +20,27 @@ export function useTemplatePicker({ currentContent, onApply }: UseTemplatePicker
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [pendingTemplate, setPendingTemplate] = useState<ResumeTemplateListItem | null>(null);
 
+  /** 마지막으로 발행된 fetch 요청만 반영하도록 보관하는 토큰 — 이전 fetch 결과가 늦게
+   *  돌아와 최신 상태를 덮어쓰는 race 를 방지한다. */
+  const fetchTokenRef = useRef(0);
+
+  /** 현재 debouncedSearch 로 목록을 새로 가져온다. effect 와 retryFetch 가 공유. */
+  const fetchTemplates = useCallback(async (query: string) => {
+    const token = ++fetchTokenRef.current;
+    setTemplatesLoading(true);
+    setTemplatesError(null);
+    try {
+      const items = await resumeTemplatesApi.list(query ? { search: query } : undefined);
+      if (token === fetchTokenRef.current) setTemplates(items);
+    } catch (e) {
+      if (token === fetchTokenRef.current) {
+        setTemplatesError(e instanceof Error ? e.message : "템플릿 목록 불러오기 실패");
+      }
+    } finally {
+      if (token === fetchTokenRef.current) setTemplatesLoading(false);
+    }
+  }, []);
+
   // 250ms debounce — picker 열려 있을 때만 동작
   useEffect(() => {
     if (!pickerOpen) return;
@@ -27,27 +48,11 @@ export function useTemplatePicker({ currentContent, onApply }: UseTemplatePicker
     return () => clearTimeout(t);
   }, [searchInput, pickerOpen]);
 
-  // debouncedSearch 가 바뀔 때마다 목록 fetch (picker 닫혀 있으면 skip)
+  // picker 가 열려 있거나 debouncedSearch 가 바뀌면 fetch 를 발행
   useEffect(() => {
     if (!pickerOpen) return;
-    let cancelled = false;
-    setTemplatesLoading(true);
-    setTemplatesError(null);
-    resumeTemplatesApi
-      .list(debouncedSearch ? { search: debouncedSearch } : undefined)
-      .then((items) => {
-        if (!cancelled) setTemplates(items);
-      })
-      .catch((e) => {
-        if (!cancelled) setTemplatesError(e instanceof Error ? e.message : "템플릿 목록 불러오기 실패");
-      })
-      .finally(() => {
-        if (!cancelled) setTemplatesLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [pickerOpen, debouncedSearch]);
+    void fetchTemplates(debouncedSearch);
+  }, [pickerOpen, debouncedSearch, fetchTemplates]);
 
   /** 직군(category) 기준 그룹핑된 목록. */
   const groupedTemplates = useMemo(() => {
@@ -90,12 +95,10 @@ export function useTemplatePicker({ currentContent, onApply }: UseTemplatePicker
     setPendingTemplate(null);
   };
 
-  /** 현재 debouncedSearch 로 재요청을 트리거 (error retry 용). */
-  const retryFetch = () => {
-    const cur = debouncedSearch;
-    setDebouncedSearch("");
-    setTimeout(() => setDebouncedSearch(cur), 0);
-  };
+  /** 현재 debouncedSearch 로 재요청 (error retry 용) — 상태를 흔들지 않고 직접 재호출. */
+  const retryFetch = useCallback(() => {
+    void fetchTemplates(debouncedSearch);
+  }, [debouncedSearch, fetchTemplates]);
 
   return {
     pickerOpen,

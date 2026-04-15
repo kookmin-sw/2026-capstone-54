@@ -77,6 +77,8 @@ export default {
       animation: {
         'fadeUp': 'fadeUp 0.4s ease both',
         'shimmer': 'shimmer 1.4s infinite',
+        'modal-fade-in': 'modal-fade-in 150ms ease-out',
+        'modal-pop': 'modal-pop 180ms ease-out',
       },
       keyframes: {
         fadeUp: {
@@ -86,6 +88,14 @@ export default {
         shimmer: {
           '0%': { backgroundPosition: '200% 0' },
           '100%': { backgroundPosition: '-200% 0' },
+        },
+        'modal-fade-in': {
+          'from': { opacity: '0' },
+          'to': { opacity: '1' },
+        },
+        'modal-pop': {
+          'from': { opacity: '0', transform: 'translateY(8px) scale(0.98)' },
+          'to': { opacity: '1', transform: 'translateY(0) scale(1)' },
         },
       },
     },
