@@ -22,11 +22,16 @@ export const resumeApi = {
       auth: true,
     }),
 
-  /** 구조화 폼으로 직접 작성한 이력서 생성. parsed_data 전체를 한 번에 전송. */
+  /** 구조화 폼으로 직접 작성한 이력서 생성.
+   *
+   * backend 는 drf-writable-nested 기반 nested payload 를 기대한다:
+   * `{type, title, basic_info, summary: {text}, career_meta, experiences, …}`.
+   * 프론트의 flat `ParsedData` 를 해당 구조로 직렬화한다.
+   */
   createStructured: (title: string, parsedData: Partial<ParsedData>) =>
     apiRequest<ResumeListItem>(`${BASE}/`, {
       method: "POST",
-      body: JSON.stringify({ type: "structured", title, parsed_data: parsedData }),
+      body: JSON.stringify(buildStructuredCreatePayload(title, parsedData)),
       auth: true,
     }),
 
@@ -122,3 +127,115 @@ export const resumeApi = {
   deactivate: (uuid: string) =>
     apiRequest<ResumeListItem>(`${BASE}/${uuid}/deactivate/`, { method: "POST", auth: true }),
 };
+
+
+/** 프론트 flat `ParsedData` 를 backend structured-nested payload 로 변환. */
+function buildStructuredCreatePayload(
+  title: string,
+  parsed: Partial<ParsedData>,
+): Record<string, unknown> {
+  const payload: Record<string, unknown> = { type: "structured", title };
+
+  if (parsed.basicInfo && Object.values(parsed.basicInfo).some(Boolean)) {
+    payload.basic_info = {
+      name: parsed.basicInfo.name ?? "",
+      email: parsed.basicInfo.email ?? "",
+      phone: parsed.basicInfo.phone ?? "",
+      location: parsed.basicInfo.location ?? "",
+    };
+  }
+
+  if (parsed.summary) {
+    payload.summary = { text: parsed.summary };
+  }
+
+  if (parsed.totalExperienceYears != null || parsed.totalExperienceMonths != null) {
+    payload.career_meta = {
+      total_experience_years: parsed.totalExperienceYears,
+      total_experience_months: parsed.totalExperienceMonths,
+    };
+  }
+
+  if (parsed.experiences?.length) {
+    payload.experiences = parsed.experiences.map((e, idx) => ({
+      company: e.company ?? "",
+      role: e.role ?? "",
+      period: e.period ?? "",
+      responsibilities: e.responsibilities ?? [],
+      highlights: e.highlights ?? [],
+      display_order: idx,
+    }));
+  }
+
+  if (parsed.educations?.length) {
+    payload.educations = parsed.educations.map((e, idx) => ({
+      school: e.school ?? "",
+      degree: e.degree ?? "",
+      major: e.major ?? "",
+      period: e.period ?? "",
+      display_order: idx,
+    }));
+  }
+
+  if (parsed.certifications?.length) {
+    payload.certifications = parsed.certifications.map((c, idx) => ({
+      name: c.name ?? "",
+      issuer: c.issuer ?? "",
+      date: c.date ?? "",
+      display_order: idx,
+    }));
+  }
+
+  if (parsed.awards?.length) {
+    payload.awards = parsed.awards.map((a, idx) => ({
+      name: a.name ?? "",
+      year: a.year ?? "",
+      organization: a.organization ?? "",
+      description: a.description ?? "",
+      display_order: idx,
+    }));
+  }
+
+  if (parsed.projects?.length) {
+    payload.projects = parsed.projects.map((p, idx) => ({
+      name: p.name ?? "",
+      role: p.role ?? "",
+      period: p.period ?? "",
+      description: p.description ?? "",
+      display_order: idx,
+      tech_stack: p.techStack ?? [],
+    }));
+  }
+
+  if (parsed.languagesSpoken?.length) {
+    payload.languages_spoken = parsed.languagesSpoken.map((l, idx) => ({
+      language: l.language ?? "",
+      level: l.level ?? "",
+      display_order: idx,
+    }));
+  }
+
+  if (parsed.skills) {
+    payload.skills = {
+      technical: parsed.skills.technical ?? [],
+      soft: parsed.skills.soft ?? [],
+      tools: parsed.skills.tools ?? [],
+      languages: parsed.skills.languages ?? [],
+    };
+  }
+
+  if (parsed.industryDomains?.length) {
+    payload.industry_domains = parsed.industryDomains;
+  }
+
+  if (parsed.keywords?.length) {
+    payload.keywords = parsed.keywords;
+  }
+
+  // 이름 기반 FK lookup-or-create (chip 선택 된 라벨)
+  if (parsed.jobCategory) {
+    payload.resume_job_category_name = parsed.jobCategory;
+  }
+
+  return payload;
+}
