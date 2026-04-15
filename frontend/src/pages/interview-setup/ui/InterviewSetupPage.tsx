@@ -15,10 +15,9 @@ const nextCls = `${navBtnCls} text-white bg-[#0A0A0A] border-none shadow-[0_4px_
 export function InterviewSetupPage() {
   const [step, setStep] = useState<SetupStep>(1);
   const {
-    jdList, jdListLoading, jdTab, selectedJdId,
-    directCompany, directRole, directStage, directUrl,
+    jdList, jdListLoading, selectedJdId,
     interviewMode, practiceMode, interviewDifficultyLevel,
-    loadJdList, setJdTab, selectJd, setDirectField,
+    loadJdList, selectJd,
     setInterviewMode, setPracticeMode, setInterviewDifficultyLevel,
     resumes, selectedResumeUuid, resumesLoading, resumesError,
     creatingSession, createError,
@@ -38,7 +37,7 @@ export function InterviewSetupPage() {
     }
   };
 
-  const canProceedStep1 = !!selectedResumeUuid;
+  const canProceedStep1 = !!selectedResumeUuid && !!selectedJdId;
 
   return (
     <div className="min-h-screen bg-white">
@@ -68,17 +67,10 @@ export function InterviewSetupPage() {
               </div>
               <div className="flex flex-col min-h-[400px] max-h-[520px]">
                 <JdSection
-                  jdTab={jdTab}
                   jdList={jdList}
                   jdListLoading={jdListLoading}
                   selectedJdId={selectedJdId}
-                  directCompany={directCompany}
-                  directRole={directRole}
-                  directStage={directStage}
-                  directUrl={directUrl}
-                  onTabChange={setJdTab}
                   onSelectJd={selectJd}
-                  onDirectField={setDirectField}
                 />
               </div>
             </div>
@@ -121,7 +113,7 @@ export function InterviewSetupPage() {
                 <div className="flex gap-3 mt-auto">
                   <button onClick={() => setStep(1)} className={prevCls}>← 이전</button>
                   <button
-                    disabled={creatingSession || !selectedResumeUuid}
+                    disabled={creatingSession || !selectedResumeUuid || !selectedJdId}
                     onClick={handleStartInterview}
                     className={nextCls}
                   >
