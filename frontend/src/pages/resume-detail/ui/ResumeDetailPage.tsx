@@ -55,18 +55,55 @@ export function ResumeDetailPage() {
   const [isToggling, setIsToggling] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  /** retrieve 재시도 — 네트워크 일시적 실패나 백엔드 커밋 race 를 완충. */
+  const retryRetrieve = async (resumeUuid: string, maxAttempts = 3): Promise<ResumeDetail> => {
+    let lastErr: unknown;
+    for (let i = 0; i < maxAttempts; i += 1) {
+      try {
+        return await resumeApi.retrieve(resumeUuid);
+      } catch (e) {
+        lastErr = e;
+        if (i < maxAttempts - 1) {
+          await new Promise((r) => setTimeout(r, 400 * (i + 1)));
+        }
+      }
+    }
+    throw lastErr;
+  };
+
   useEffect(() => {
     if (!uuid) return;
-    resumeApi
-      .retrieve(uuid)
-      .then((data) => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await resumeApi.retrieve(uuid);
+        if (cancelled) return;
         setResume(data);
         setParsed({ ...EMPTY_PARSED, ...(data.parsedData ?? {}) } as ParsedData);
         setIsLoading(false);
-      })
-      .catch(() => { setError("이력서를 불러올 수 없어요."); setIsLoading(false); });
+        // 초기 응답이 completed/failed 지만 parsedData 가 비어 있으면 백엔드 커밋 race 의심 →
+        // 한 번 더 재조회하여 stale snapshot 을 교정한다. SSE 는 terminal 이므로 구독하지 않는다.
+        const isTerminal = data.analysisStatus === "completed" || data.analysisStatus === "failed";
+        const parsedEmpty = !data.parsedData || Object.keys(data.parsedData).length === 0;
+        if (isTerminal && parsedEmpty) {
+          try {
+            const fresh = await retryRetrieve(uuid);
+            if (cancelled) return;
+            setResume(fresh);
+            setParsed({ ...EMPTY_PARSED, ...(fresh.parsedData ?? {}) } as ParsedData);
+          } catch { /* 유지 */ }
+        }
+      } catch {
+        if (!cancelled) {
+          setError("이력서를 불러올 수 없어요.");
+          setIsLoading(false);
+        }
+      }
+    })();
+    return () => { cancelled = true; };
   }, [uuid]);
 
+  // 이미 terminal 상태면 SSE 연결 자체를 일으키지 않는다.
   const sseEnabled =
     !!resume && (resume.analysisStatus === "pending" || resume.analysisStatus === "processing");
   useResumeAnalysisSse({
@@ -76,15 +113,19 @@ export function ResumeDetailPage() {
       setResume((prev) =>
         prev ? { ...prev, analysisStatus: evt.analysis_status, analysisStep: evt.analysis_step } : prev,
       ),
-    onTerminal: () => {
+    onTerminal: async () => {
       if (!uuid) return;
-      resumeApi
-        .retrieve(uuid)
-        .then((data) => {
-          setResume(data);
-          setParsed({ ...EMPTY_PARSED, ...(data.parsedData ?? {}) } as ParsedData);
-        })
-        .catch(() => {});
+      try {
+        const data = await retryRetrieve(uuid);
+        setResume(data);
+        setParsed({ ...EMPTY_PARSED, ...(data.parsedData ?? {}) } as ParsedData);
+      } catch {
+        setError("분석 결과를 불러오지 못했어요. 잠시 후 새로고침해 주세요.");
+      }
+    },
+    onError: (err) => {
+      // 재연결 한도 초과 또는 백엔드 error 이벤트 — 사용자에게 노출.
+      setError(err.message || "분석 상태 구독에 실패했어요.");
     },
   });
 

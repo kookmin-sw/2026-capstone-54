@@ -33,6 +33,7 @@ export function startReportPolling(set: Set, interviewSessionUuid: string) {
 }
 
 function subscribeToReportStream(set: Set, interviewSessionUuid: string) {
+  let terminalFired = false;
   const cancel = openSseStream(
     `/sse/interviews/${interviewSessionUuid}/report-status/`,
     (event, data) => {
@@ -47,6 +48,7 @@ function subscribeToReportStream(set: Set, interviewSessionUuid: string) {
       }));
 
       if (isDone(newStatus)) {
+        terminalFired = true;
         interviewApi.getInterviewAnalysisReport(interviewSessionUuid)
           .then((fresh) => set({ interviewAnalysisReport: fresh, isReportPolling: false }))
           .catch(() => set({ isReportPolling: false }));
@@ -54,7 +56,10 @@ function subscribeToReportStream(set: Set, interviewSessionUuid: string) {
         reportSseCancelRef.cancel = null;
       }
     },
-    () => set({ isReportPolling: false }),
+    {
+      shouldReconnect: () => !terminalFired,
+      onError: () => set({ isReportPolling: false }),
+    },
   );
   reportSseCancelRef.cancel = cancel;
 }

@@ -28,20 +28,25 @@ export function ResumeListPage() {
 
   // 진행 중(pending/processing) 이력서에 대해 SSE 스트림을 구독해 상태 변화를 즉시 반영한다.
   // 완료/실패 이벤트가 도착하면 해당 아이템만 재조회해 list 와 통계를 갱신한다.
+  // 이미 completed/failed 상태인 항목은 구독 자체를 만들지 않는다.
   const sseCancelsRef = useRef<Map<string, () => void>>(new Map());
+  const terminalFlagsRef = useRef<Map<string, { done: boolean }>>(new Map());
+
   useEffect(() => {
     const active = sseCancelsRef.current;
+    const terminals = terminalFlagsRef.current;
     const currentlyPending = new Set(
       items
         .filter((r) => r.analysisStatus === "pending" || r.analysisStatus === "processing")
         .map((r) => r.uuid),
     );
 
-    // 구독이 더 이상 필요 없는 uuid 는 정리
+    // 목록에서 사라졌거나 더 이상 pending 이 아닌 uuid 는 구독 해제
     for (const [uuid, cancel] of active.entries()) {
       if (!currentlyPending.has(uuid)) {
         cancel();
         active.delete(uuid);
+        terminals.delete(uuid);
       }
     }
 
@@ -49,31 +54,62 @@ export function ResumeListPage() {
     for (const uuid of currentlyPending) {
       if (active.has(uuid)) continue;
 
+      const terminalFlag = { done: false };
+      terminals.set(uuid, terminalFlag);
+
+      const retryRetrieveItem = async (attempts = 3): Promise<ResumeListItem | null> => {
+        for (let i = 0; i < attempts; i += 1) {
+          try {
+            return await resumeApi.retrieve(uuid);
+          } catch {
+            if (i < attempts - 1) await new Promise((r) => setTimeout(r, 400 * (i + 1)));
+          }
+        }
+        return null;
+      };
+
       const cancel = openSseStream(
         `/sse/resumes/${uuid}/analysis-status/`,
         (event, data) => {
-          if (event !== "status" || !data || typeof data !== "object") return;
-          const payload = data as { analysis_status: ResumeListItem["analysisStatus"]; analysis_step: ResumeListItem["analysisStep"] };
+          if (!data || typeof data !== "object") return;
 
-          setItems((prev) =>
-            prev.map((r) =>
-              r.uuid === uuid
-                ? { ...r, analysisStatus: payload.analysis_status, analysisStep: payload.analysis_step }
-                : r,
-            ),
-          );
+          if (event === "status") {
+            const payload = data as {
+              analysis_status: ResumeListItem["analysisStatus"];
+              analysis_step: ResumeListItem["analysisStep"];
+            };
 
-          if (payload.analysis_status === "completed" || payload.analysis_status === "failed") {
-            // 분석 완료 시 해당 항목을 다시 fetch 해서 parsed 관련 필드까지 최신화
-            resumeApi
-              .retrieve(uuid)
-              .then((fresh) =>
-                setItems((prev) => prev.map((r) => (r.uuid === uuid ? fresh : r))),
-              )
-              .catch(() => {});
-            // 통계 갱신
-            resumeStatsApi.count().then(setCountStats).catch(() => {});
+            setItems((prev) =>
+              prev.map((r) =>
+                r.uuid === uuid
+                  ? { ...r, analysisStatus: payload.analysis_status, analysisStep: payload.analysis_step }
+                  : r,
+              ),
+            );
+
+            if (payload.analysis_status === "completed" || payload.analysis_status === "failed") {
+              terminalFlag.done = true;
+              // 분석 완료 시 해당 항목을 retry 루프로 재조회해 parsed 필드까지 최신화
+              void retryRetrieveItem().then((fresh) => {
+                if (fresh) {
+                  setItems((prev) => prev.map((r) => (r.uuid === uuid ? fresh : r)));
+                }
+              });
+              resumeStatsApi.count().then(setCountStats).catch(() => {});
+            }
+            return;
           }
+
+          if (event === "error") {
+            // 백엔드가 권한/not-found 등으로 에러를 보낸 경우: 더 이상 재연결하지 않는다.
+            terminalFlag.done = true;
+          }
+        },
+        {
+          shouldReconnect: () => !terminalFlag.done,
+          onError: () => {
+            terminalFlag.done = true;
+          },
         },
       );
       active.set(uuid, cancel);
@@ -85,9 +121,11 @@ export function ResumeListPage() {
   // 언마운트 시 모든 SSE 구독 종료
   useEffect(() => {
     const active = sseCancelsRef.current;
+    const terminals = terminalFlagsRef.current;
     return () => {
       for (const cancel of active.values()) cancel();
       active.clear();
+      terminals.clear();
     };
   }, []);
 
