@@ -157,8 +157,13 @@ class ResumeParsedDataWriter:
     )
 
   def _write_projects(self) -> None:
-    # 기존 프로젝트 전부 삭제 → CASCADE 로 ResumeProjectTechStack 까지 삭제된다
+    """프로젝트 + 기술 스택 재작성.
+
+    최적화: 프로젝트당 junction rows 를 `bulk_create` 로 한 번에 삽입.
+    canonical TechStack 조회는 로컬 캐시(`tech_cache`) 로 같은 이름 재활용.
+    """
     ResumeProject.objects.filter(resume=self.resume).delete()
+    tech_cache: dict[str, TechStack] = {}
     for idx, p in enumerate(self.data.projects):
       project = ResumeProject.objects.create(
         resume=self.resume,
@@ -168,15 +173,24 @@ class ResumeParsedDataWriter:
         description=p.description or "",
         display_order=idx,
       )
+      junctions: list[ResumeProjectTechStack] = []
       for tech_idx, tech_name in enumerate(p.tech_stack or []):
-        tech = TechStack.get_or_create_normalized(tech_name)
-        if tech is None:
+        normalized = (tech_name or "").strip()
+        if not normalized:
           continue
-        ResumeProjectTechStack.objects.get_or_create(
+        tech = tech_cache.get(normalized)
+        if tech is None:
+          tech = TechStack.get_or_create_normalized(normalized)
+          if tech is None:
+            continue
+          tech_cache[normalized] = tech
+        junctions.append(ResumeProjectTechStack(
           resume_project=project,
           tech_stack=tech,
-          defaults={"display_order": tech_idx},
-        )
+          display_order=tech_idx,
+        ))
+      if junctions:
+        ResumeProjectTechStack.objects.bulk_create(junctions, ignore_conflicts=True)
 
   def _write_languages_spoken(self) -> None:
     ResumeLanguageSpoken.objects.filter(resume=self.resume).delete()
@@ -194,7 +208,9 @@ class ResumeParsedDataWriter:
   # ── N:M (공용 참조 테이블 upsert + 경유 테이블 재구성) ────────────────────────────────
 
   def _write_skills(self) -> None:
+    """스킬 junction 재작성. 모든 그룹을 모아 `bulk_create` 로 한 번에 삽입한다."""
     ResumeSkill.objects.filter(resume=self.resume).delete()
+    junctions: list[ResumeSkill] = []
     order = 0
     for group, skill_type in (
       (self.data.skills.technical, SkillType.TECHNICAL),
@@ -206,12 +222,10 @@ class ResumeParsedDataWriter:
         skill = Skill.get_or_create_normalized(name, skill_type)
         if skill is None:
           continue
-        ResumeSkill.objects.get_or_create(
-          resume=self.resume,
-          skill=skill,
-          defaults={"display_order": order},
-        )
+        junctions.append(ResumeSkill(resume=self.resume, skill=skill, display_order=order))
         order += 1
+    if junctions:
+      ResumeSkill.objects.bulk_create(junctions, ignore_conflicts=True)
 
   def _write_industry_domains(self) -> None:
     ResumeIndustryDomain.objects.filter(resume=self.resume).delete()

@@ -44,13 +44,16 @@ class ResumeProjectNestedSerializer(serializers.ModelSerializer):
   def create(self, validated_data):
     tech_names = validated_data.pop("tech_stack", []) or []
     instance = super().create(validated_data)
+    junctions: list[ResumeProjectTechStack] = []
     for idx, name in enumerate(tech_names):
       tech = TechStack.get_or_create_normalized(name)
       if tech is None:
         continue
-      ResumeProjectTechStack.objects.create(
+      junctions.append(ResumeProjectTechStack(
         resume_project=instance,
         tech_stack=tech,
         display_order=idx,
-      )
+      ))
+    if junctions:
+      ResumeProjectTechStack.objects.bulk_create(junctions, ignore_conflicts=True)
     return instance
