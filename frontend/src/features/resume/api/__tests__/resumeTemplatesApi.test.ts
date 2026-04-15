@@ -28,6 +28,13 @@ describe("resumeTemplatesApi", () => {
     expect(firstCall).toMatch(/^\/api\/v1\/resumes\/templates\/\?category=/);
   });
 
+  it("search 필터가 URL 쿼리에 포함된다", async () => {
+    await resumeTemplatesApi.list({ search: "백엔드" });
+    const firstCall = mockApiRequest.mock.calls[0][0] as string;
+    expect(firstCall).toMatch(/^\/api\/v1\/resumes\/templates\/\?search=/);
+    expect(decodeURIComponent(firstCall)).toContain("search=백엔드");
+  });
+
   it("retrieve 호출 시 detail URL", async () => {
     await resumeTemplatesApi.retrieve("tpl-uuid");
     expect(mockApiRequest).toHaveBeenCalledWith("/api/v1/resumes/templates/tpl-uuid/", { auth: true });

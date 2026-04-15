@@ -12,3 +12,7 @@ export { Spinner } from "./Spinner";
 export { StatusCard } from "./StatusCard";
 export { Textarea } from "./Textarea";
 export { Toggle } from "./Toggle";
+export { Modal } from "./Modal";
+export type { ModalSize, ModalHeightMode } from "./Modal";
+export { ConfirmModal } from "./ConfirmModal";
+export { SearchInput } from "./SearchInput";
