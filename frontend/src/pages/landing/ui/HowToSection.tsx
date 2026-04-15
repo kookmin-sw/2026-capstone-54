@@ -15,7 +15,7 @@ export function HowToSection() {
           <div className="inline-block text-[12px] font-bold text-[#0991B2] bg-[#E6F7FA] rounded px-[14px] py-[5px] mb-[14px] self-start md:text-[13px] md:px-[18px] md:py-[6px] md:mb-[18px]">
             이용 방법
           </div>
-          <h2 className="font-inter text-[clamp(28px,8vw,40px)] font-extrabold text-[#0A0A0A] mb-3 leading-[1.1] md:text-[clamp(32px,4vw,52px)] md:mb-4">
+          <h2 className="font-plex-sans-kr text-[clamp(28px,8vw,40px)] font-extrabold text-[#0A0A0A] mb-3 leading-[1.1] md:text-[clamp(32px,4vw,52px)] md:mb-4">
             3단계로 끝나는<br />AI 면접.
           </h2>
           <p className="text-[14px] text-[#6B7280] leading-[1.65] mb-6 md:text-[15px] md:mb-10">
@@ -31,7 +31,7 @@ export function HowToSection() {
                   {step.num}
                 </div>
                 <div className="flex-1">
-                  <div className="font-inter text-[14px] font-bold text-[#0A0A0A] mb-0.5 md:text-[15px] md:mb-[3px]">{step.title}</div>
+                  <div className="font-plex-sans-kr text-[14px] font-bold text-[#0A0A0A] mb-0.5 md:text-[15px] md:mb-[3px]">{step.title}</div>
                   <div className="text-[12px] text-[#6B7280] md:text-[13px]">{step.desc}</div>
                 </div>
                 <div className="text-[11px] font-semibold text-[#0991B2] bg-[#E6F7FA] rounded px-[10px] py-1 shrink-0 md:text-[12px] md:px-3">
@@ -45,7 +45,7 @@ export function HowToSection() {
         {/* 우측: 다크 카드 */}
         <div className="bg-[#0A0A0A] rounded-lg px-7 py-8 shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)] md:rounded-lg md:px-11 md:py-12">
           <div className="text-[32px] mb-4 md:text-[36px] md:mb-5">🎙️</div>
-          <h3 className="font-inter text-[22px] font-extrabold text-white mb-3 leading-[1.25] md:text-[26px] md:mb-4">
+          <h3 className="font-plex-sans-kr text-[22px] font-extrabold text-white mb-3 leading-[1.25] md:text-[26px] md:mb-4">
             연습 모드부터<br />실전 모드까지.
           </h3>
           <p className="text-[13px] text-white/65 leading-[1.7] mb-5 md:text-[14px] md:mb-7">

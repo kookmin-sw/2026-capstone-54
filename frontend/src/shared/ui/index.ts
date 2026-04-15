@@ -1,5 +1,3 @@
-export { MobileTabBar } from "./MobileTabBar";
-export { SettingsTabBar } from "./SettingsTabBar";
 export { Button } from "./Button";
 export { Alert } from "./Alert";
 export { Badge } from "./Badge";

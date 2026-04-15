@@ -11,6 +11,7 @@ import {
 } from "../api/settingsApi";
 import type { SettingsData, SettingsProfile, SettingsNotifications, JobCategory, Job } from "../api/settingsApi";
 import { profileApi } from "@/shared/api/profileApi";
+import { useAuthStore } from "@/features/auth";
 
 export type SettingsPanel = "profile" | "password" | "notifications" | "subscription" | "consent";
 
@@ -175,6 +176,8 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
           profile: { ...s.data.profile, avatarUrl: res.avatarUrl ?? null },
         } : s.data,
       }));
+      // authStore의 user 정보도 최신화하여 Navbar 등 다른 컴포넌트에 반영
+      await useAuthStore.getState().fetchMe();
     } else {
       set({ saving: false, error: res.message });
     }

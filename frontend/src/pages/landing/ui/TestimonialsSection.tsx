@@ -33,7 +33,7 @@ export function TestimonialsSection() {
           <div className="inline-block text-[12px] font-bold text-[#0991B2] bg-[#E6F7FA] rounded px-[14px] py-[5px] mb-[14px] md:text-[13px] md:px-[18px] md:py-[6px] md:mb-[18px]">
             면접 후기
           </div>
-          <h2 className="font-inter text-[clamp(24px,7vw,36px)] font-extrabold text-[#0A0A0A] md:text-[clamp(32px,4vw,52px)]">
+          <h2 className="font-plex-sans-kr text-[clamp(24px,7vw,36px)] font-extrabold text-[#0A0A0A] md:text-[clamp(32px,4vw,52px)]">
             실제 사용자들의 이야기.
           </h2>
         </div>
@@ -49,7 +49,7 @@ export function TestimonialsSection() {
                   {t.avatar}
                 </span>
                 <div>
-                  <div className="font-inter text-[13px] font-bold text-[#0A0A0A] md:text-[14px]">{t.name}</div>
+                  <div className="font-plex-sans-kr text-[13px] font-bold text-[#0A0A0A] md:text-[14px]">{t.name}</div>
                   <div className="text-[12px] text-[#6B7280] md:text-[13px]">{t.role}</div>
                 </div>
               </div>

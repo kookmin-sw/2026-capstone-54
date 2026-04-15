@@ -65,7 +65,7 @@ export default {
       },
       // 커스텀 폰트
       fontFamily: {
-        'inter': ['Inter', 'sans-serif'],
+        'plex-sans-kr': ['IBM Plex Sans KR', 'sans-serif'],
       },
       // 커스텀 박스 섀도우
       boxShadow: {

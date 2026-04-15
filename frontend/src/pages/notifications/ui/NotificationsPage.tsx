@@ -127,7 +127,7 @@ export function NotificationsPage() {
 
           {/* Page header */}
           <div className="mb-7 animate-[spFadeUp_0.3s_ease_both]">
-            <h1 className="font-inter text-[26px] font-black tracking-[-0.5px] text-[#0A0A0A] mb-[5px]">
+            <h1 className="font-plex-sans-kr text-[26px] font-black tracking-[-0.5px] text-[#0A0A0A] mb-[5px]">
               알림 내역
               {unreadCount > 0 && (
                 <span className="ml-2 text-[13px] font-bold text-white bg-[#0991B2] px-2 py-0.5 rounded-full align-middle">

@@ -19,6 +19,7 @@ export interface UserMe {
   email: string;
   isEmailConfirmed: boolean;
   isProfileCompleted: boolean;
+  avatarUrl?: string | null;
 }
 
 /* ── Sign Up ── */

@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useSettingsStore } from "@/features/settings";
 import { useAuthStore } from "@/features/auth";
 import type { SettingsPanel } from "@/features/settings";
@@ -9,14 +9,13 @@ interface SettingsSidebarProps {
 
 export function SettingsSidebar({ menuOpen }: SettingsSidebarProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { data, activePanel, consentBadge, setActivePanel } = useSettingsStore();
   const { user } = useAuthStore();
 
-  const navItems: { key: SettingsPanel; icon: string; label: string; badge?: boolean }[] = [
-    { key: "profile",       icon: "👤", label: "프로필"    },
-    { key: "password",      icon: "🔑", label: "비밀번호"  },
-    { key: "notifications", icon: "🔔", label: "알림 설정" },
-    { key: "subscription",  icon: "💎", label: "요금제"    },
+  const settingsItems: { key: SettingsPanel; icon: string; label: string; badge?: boolean }[] = [
+    { key: "account",       icon: "👤", label: "계정 정보 수정" },
+    { key: "subscription",  icon: "💎", label: "요금제"         },
     { key: "consent",       icon: "📋", label: "동의 관리", badge: consentBadge },
   ];
 
@@ -30,7 +29,7 @@ export function SettingsSidebar({ menuOpen }: SettingsSidebarProps) {
           {(data?.profile.avatarInitial ?? user?.name?.[0] ?? "U").toUpperCase()}
         </div>
         <div className="min-w-0">
-          <div className="font-inter text-[13px] font-extrabold text-white truncate">
+          <div className="font-plex-sans-kr text-[13px] font-extrabold text-white truncate">
             {data?.profile.name ?? user?.name ?? "사용자"}
           </div>
           <div className="text-[11px] text-white/45 mt-0.5 truncate max-w-[130px]">
@@ -41,10 +40,10 @@ export function SettingsSidebar({ menuOpen }: SettingsSidebarProps) {
 
       {/* 설정 메뉴 */}
       <div className="hp-sb-sep">설정</div>
-      {navItems.map((item) => (
+      {settingsItems.map((item) => (
         <button
           key={item.key}
-          className={`hp-sb-item w-full text-left border-none bg-transparent${activePanel === item.key ? " active" : ""}`}
+          className={`hp-sb-item w-full text-left border-none bg-transparent${location.pathname === "/settings" && activePanel === item.key ? " active" : ""}`}
           onClick={() => {
             setActivePanel(item.key);
             navigate("/settings");
@@ -60,8 +59,14 @@ export function SettingsSidebar({ menuOpen }: SettingsSidebarProps) {
 
       {/* 알림 */}
       <div className="hp-sb-sep">알림</div>
-      <Link to="/notifications" className="hp-sb-item">
-        <span className="hp-sb-icon">🔔</span>알림 내역
+      <button
+        className={`hp-sb-item w-full text-left border-none bg-transparent${location.pathname === "/settings" && activePanel === "notifications" ? " active" : ""}`}
+        onClick={() => { setActivePanel("notifications"); navigate("/settings"); }}
+      >
+        <span className="hp-sb-icon">🔔</span>알림 설정
+      </button>
+      <Link to="/notifications" className={`hp-sb-item${location.pathname.startsWith("/notifications") ? " active" : ""}`}>
+        <span className="hp-sb-icon">📬</span>알림 내역
       </Link>
     </aside>
   );

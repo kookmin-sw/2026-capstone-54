@@ -213,7 +213,7 @@ export function JdListPage() {
               {statItems.map((item, i) => (
                 <Fragment key={item.label}>
                   <div className="flex flex-col gap-[2px] relative">
-                    <span className="font-inter text-[clamp(28px,4vw,46px)] font-black text-white leading-none">{item.value}</span>
+                    <span className="font-plex-sans-kr text-[clamp(28px,4vw,46px)] font-black text-white leading-none">{item.value}</span>
                     <span className="text-[12px] font-semibold text-white/65">{item.label}</span>
                   </div>
                   {i < statItems.length - 1 && <div className="w-px h-10 bg-white/20 shrink-0" />}

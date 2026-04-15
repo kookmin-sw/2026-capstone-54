@@ -32,9 +32,9 @@
   background-clip: text;
 }
 
-/* Font Inter */
-.font-inter {
-  font-family: 'Inter', sans-serif;
+/* Font IBM Plex Sans KR */
+.font-plex-sans-kr {
+  font-family: 'IBM Plex Sans KR', sans-serif;
 }
 
 *,
@@ -56,7 +56,7 @@ html {
 }
 
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: 'IBM Plex Sans KR', sans-serif;
   background: #FFFFFF;
   color: var(--fg);
   min-height: 100vh;

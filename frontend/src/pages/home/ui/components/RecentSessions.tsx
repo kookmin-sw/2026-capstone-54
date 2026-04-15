@@ -11,7 +11,7 @@ export function RecentSessions({ sessions, revealed }: RecentSessionsProps) {
     <>
       <div className={`hp-sec-head hp-rv${revealed ? " hp-rv-in" : ""}`} style={{ transitionDelay: "275ms" }}>
         <div className="hp-sec-title">최근 면접 기록</div>
-        <Link to="/interview/history" className="hp-sec-link">전체 보기 →</Link>
+        <Link to="/interview/results" className="hp-sec-link">전체 보기 →</Link>
       </div>
       <div className="hp-session-list">
         {sessions.map((session, i) => (

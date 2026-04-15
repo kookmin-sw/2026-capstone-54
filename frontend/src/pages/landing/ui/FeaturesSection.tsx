@@ -16,7 +16,7 @@ export function FeaturesSection() {
           <div className="inline-block text-[12px] font-bold text-[#0991B2] bg-[#E6F7FA] rounded px-[14px] py-[5px] mb-[14px] md:text-[13px] md:px-[18px] md:py-[6px]">
             핵심 기능
           </div>
-          <h2 className="font-inter text-[28px] font-extrabold text-[#0A0A0A] mb-[10px] md:text-[clamp(32px,4vw,48px)]">
+          <h2 className="font-plex-sans-kr text-[28px] font-extrabold text-[#0A0A0A] mb-[10px] md:text-[clamp(32px,4vw,48px)]">
             면접 준비의 모든 것.
           </h2>
           <p className="text-[14px] text-[#6B7280] leading-[1.6] md:text-[15px]">
@@ -34,7 +34,7 @@ export function FeaturesSection() {
             <div className="w-10 h-10 rounded-lg flex items-center justify-center text-[20px] mb-[14px] bg-white/12">
               {featured.emoji}
             </div>
-            <h3 className="font-inter text-[16px] font-bold text-white mb-2 md:text-[22px]">{featured.title}</h3>
+            <h3 className="font-plex-sans-kr text-[16px] font-bold text-white mb-2 md:text-[22px]">{featured.title}</h3>
             <p className="text-[13px] text-white/72 leading-[1.65] md:text-[14px]">{featured.desc}</p>
           </div>
 
@@ -48,7 +48,7 @@ export function FeaturesSection() {
                 <div className="w-10 h-10 rounded-lg flex items-center justify-center text-[20px] mb-[14px] bg-white border border-[#E5E7EB]">
                   {f.emoji}
                 </div>
-                <h3 className="font-inter text-[16px] font-bold text-[#0A0A0A] mb-2 md:text-[18px]">{f.title}</h3>
+                <h3 className="font-plex-sans-kr text-[16px] font-bold text-[#0A0A0A] mb-2 md:text-[18px]">{f.title}</h3>
                 <p className="text-[13px] text-[#6B7280] leading-[1.65] md:text-[14px]">{f.desc}</p>
               </div>
             ))}

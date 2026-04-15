@@ -805,12 +805,6 @@
 }
 
 /* ── RESPONSIVE ── */
-@media (max-width: 767px) {
-  .hp-menu-btn {
-    display: none !important;
-  }
-}
-
 @media (max-width: 1024px) {
   .hp-shell {
     grid-template-columns: 1fr;
@@ -848,11 +842,8 @@
   .hp-nav {
     padding: 0 16px;
   }
-  .hp-menu-btn {
-    display: none;
-  }
   .hp-main {
-    padding: 20px 16px 120px;
+    padding: 20px 16px 32px;
   }
   .hp-stats-grid {
     grid-template-columns: 1fr 1fr;
