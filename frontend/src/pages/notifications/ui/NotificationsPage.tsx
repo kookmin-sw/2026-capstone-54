@@ -22,8 +22,8 @@ function NotificationItem({
   onDelete,
 }: {
   n: Notification;
-  onMarkRead: (id: string) => void;
-  onDelete: (id: string) => void;
+  onMarkRead: (id: number) => void;
+  onDelete: (id: number) => void;
 }) {
   return (
     <div
@@ -81,8 +81,8 @@ function NotificationList({
   onDelete,
 }: {
   notifications: Notification[];
-  onMarkRead: (id: string) => void;
-  onDelete: (id: string) => void;
+  onMarkRead: (id: number) => void;
+  onDelete: (id: number) => void;
 }) {
   if (notifications.length === 0) {
     return (
