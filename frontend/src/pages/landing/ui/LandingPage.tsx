@@ -29,8 +29,10 @@ export function LandingPage() {
     }
   }, [authReady, user, navigate]);
 
+  if (!authReady) return null;
+
   // 로그인 완료된 사용자: 홈 대시보드를 AppLayout 안에서 렌더
-  if (authReady && user?.isEmailConfirmed && user?.isProfileCompleted) {
+  if (user?.isEmailConfirmed && user?.isProfileCompleted) {
     return (
       <AppLayout>
         <HomeContent />
