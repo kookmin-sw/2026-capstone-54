@@ -12,6 +12,7 @@ from interviews.enums import (
 )
 from interviews.factories import InterviewSessionFactory
 from interviews.models import InterviewSession
+from job_descriptions.enums import CollectionStatus
 from job_descriptions.factories import UserJobDescriptionFactory
 from rest_framework import status
 from rest_framework.test import APIClient
@@ -80,7 +81,10 @@ class InterviewSessionCreateTests(_AuthenticatedTestCase):
   def setUp(self):
     super().setUp()
     self.resume = ResumeFactory(user=self.user)
-    self.ujd = UserJobDescriptionFactory(user=self.user)
+    self.ujd = UserJobDescriptionFactory(
+      user=self.user,
+      job_description__collection_status=CollectionStatus.DONE,
+    )
     self.url = reverse("interview-session-list")
 
   def _payload(self, **overrides):
@@ -148,6 +152,45 @@ class InterviewSessionCreateTests(_AuthenticatedTestCase):
     self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token.access_token}")
     response = self.client.post(self.url, data=self._payload(), format="json")
     self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+  def test_ujd_still_collecting_returns_400(self):
+    """수집 중(in_progress) 인 채용공고로는 면접을 시작할 수 없다."""
+    in_progress_ujd = UserJobDescriptionFactory(
+      user=self.user,
+      job_description__collection_status=CollectionStatus.IN_PROGRESS,
+    )
+    response = self.client.post(
+      self.url,
+      data=self._payload(user_job_description_uuid=str(in_progress_ujd.pk)),
+      format="json",
+    )
+    self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+  def test_ujd_pending_returns_400(self):
+    """수집 대기(pending) 상태도 면접 시작 불가."""
+    pending_ujd = UserJobDescriptionFactory(
+      user=self.user,
+      job_description__collection_status=CollectionStatus.PENDING,
+    )
+    response = self.client.post(
+      self.url,
+      data=self._payload(user_job_description_uuid=str(pending_ujd.pk)),
+      format="json",
+    )
+    self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+  def test_ujd_error_returns_400(self):
+    """수집 실패(error) 상태도 면접 시작 불가."""
+    error_ujd = UserJobDescriptionFactory(
+      user=self.user,
+      job_description__collection_status=CollectionStatus.ERROR,
+    )
+    response = self.client.post(
+      self.url,
+      data=self._payload(user_job_description_uuid=str(error_ujd.pk)),
+      format="json",
+    )
+    self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
 # ── RETRIEVE (GET /interview-sessions/:pk/) ─────────────────────────────

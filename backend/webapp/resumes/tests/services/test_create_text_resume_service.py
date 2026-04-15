@@ -39,9 +39,9 @@ class CreateTextResumeServiceTests(TestCase):
 
     mock_send_task.assert_called_once()
     call_kwargs = mock_send_task.call_args
-    self.assertEqual(call_kwargs.args[0], "store_resume.tasks.process_resume")
+    self.assertEqual(call_kwargs.args[0], "analysis_resume.tasks.process_resume")
     self.assertEqual(call_kwargs.kwargs["kwargs"]["resume_uuid"], str(resume.pk))
-    self.assertEqual(call_kwargs.kwargs["queue"], "store-resume")
+    self.assertEqual(call_kwargs.kwargs["queue"], "analysis-resume")
 
   @patch("resumes.services.mixins.resume_pipeline_mixin.current_app.send_task")
   def test_여러_이력서_생성_가능(self, mock_send_task):

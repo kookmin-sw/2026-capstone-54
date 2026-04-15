@@ -1,12 +1,13 @@
-"""PDF 파일 이력서 생성 + S3 업로드 + store-resume worker 태스크 발행."""
+"""PDF 파일 이력서 생성 + S3 업로드 + analysis-resume worker 태스크 발행."""
 
 from common.services import BaseService
+from resumes.enums import ResumeSourceMode
 from resumes.models import FileResume, ResumeFileContent
 from resumes.services.mixins import FileResumePipelineMixin
 
 
 class CreateFileResumeService(FileResumePipelineMixin, BaseService):
-  """PDF 파일 이력서를 S3에 업로드하고 store-resume 파이프라인을 시작한다."""
+  """PDF 파일 이력서를 S3에 업로드하고 analysis-resume 파이프라인을 시작한다."""
 
   required_value_kwargs = ["title", "file"]
 
@@ -14,7 +15,7 @@ class CreateFileResumeService(FileResumePipelineMixin, BaseService):
     title = self.kwargs["title"]
     uploaded_file = self.kwargs["file"]
 
-    resume = FileResume.objects.create(user=self.user, title=title)
+    resume = FileResume.objects.create(user=self.user, title=title, source_mode=ResumeSourceMode.FILE)
 
     saved_path = self._upload_file_to_storage(self.user.id, resume.pk, uploaded_file)
 

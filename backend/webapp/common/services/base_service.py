@@ -26,8 +26,10 @@ Usage::
 from abc import ABC, abstractmethod
 from collections import defaultdict
 
+from common.exceptions import NotFoundException
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
+from django.shortcuts import _get_queryset
 
 
 class BaseService(ABC):
@@ -74,6 +76,23 @@ class BaseService(ABC):
         field_errors[key].append(f"{key}은(는) 필수입니다.")
       elif self.kwargs[key] is None:
         field_errors[key].append(f"{key}은(는) None일 수 없습니다.")
+
+  def get_or_404(self, source, *, message: str | None = None, **filters):
+    """Model / Manager / QuerySet 으로부터 단건 조회 후 없으면 NotFoundException.
+
+    체이닝된 QuerySet 도 그대로 받아 `.get(**filters)` 를 얹는다.
+    에러 포맷은 프로젝트 공통 `NotFoundException` 을 유지한다.
+
+    사용:
+        self.get_or_404(ResumeAward, pk=uuid, resume=resume)
+        self.get_or_404(ResumeProject.objects.select_related("resume"), pk=uuid)
+        self.get_or_404(ResumeAward.all_objects, pk=uuid)
+    """
+    queryset = _get_queryset(source)
+    try:
+      return queryset.get(**filters)
+    except queryset.model.DoesNotExist:
+      raise NotFoundException(message or f"{queryset.model._meta.verbose_name} 을(를) 찾을 수 없습니다.")
 
   @abstractmethod
   def execute(self):

@@ -43,12 +43,5 @@ class UserJobDescriptionAPIView(BaseAPIView):
       url=serializer.validated_data["url"],
     ).perform()
 
-    response_data = UserJobDescriptionResponseSerializer(
-      {
-        "uuid": user_job_description.uuid,
-        "job_description_id": user_job_description.job_description_id,
-        "collection_status": user_job_description.job_description.collection_status,
-        "created_at": user_job_description.created_at,
-      }
-    ).data
-    return Response(response_data, status=status.HTTP_201_CREATED)
+    response = UserJobDescriptionResponseSerializer(user_job_description)
+    return Response(response.data, status=status.HTTP_201_CREATED)

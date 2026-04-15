@@ -7,6 +7,7 @@ from api.v1.interviews.serializers import (
 from api.v1.interviews.serializers.interview_session_list_serializer import (
   InterviewSessionListSerializer,
 )
+from common.exceptions import ValidationException
 from common.pagination import StandardPagination
 from common.permissions import IsEmailVerified
 from common.views import BaseGenericViewSet
@@ -15,6 +16,7 @@ from drf_spectacular.utils import extend_schema
 from interviews.enums import InterviewExchangeType
 from interviews.models import InterviewSession, InterviewTurn
 from interviews.services import create_interview_session, get_interview_session_for_user
+from job_descriptions.enums import CollectionStatus
 from job_descriptions.models import UserJobDescription
 from rest_framework import status
 from rest_framework.generics import get_object_or_404
@@ -70,10 +72,14 @@ class InterviewSessionViewSet(
 
     resume = get_object_or_404(Resume, pk=data["resume_uuid"], user=self.current_user)
     user_job_description = get_object_or_404(
-      UserJobDescription,
+      UserJobDescription.objects.select_related("job_description"),
       pk=data["user_job_description_uuid"],
       user=self.current_user,
     )
+
+    # 수집이 완료되지 않은 채용공고로는 면접을 시작할 수 없다.
+    if user_job_description.job_description.collection_status != CollectionStatus.DONE:
+      raise ValidationException("채용공고 수집이 완료된 후 면접을 시작할 수 있습니다.")
 
     session = create_interview_session(
       user=self.current_user,
