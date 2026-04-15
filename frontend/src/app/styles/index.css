@@ -1,30 +1,40 @@
 @import "tailwindcss";
+@import "./tokens.css";
 
+/* ════════════════════════════════════════════
+   meFit Design Tokens
+   ════════════════════════════════════════════ */
 :root {
-  /* meFit Design Tokens — minimal_mono */
-  --canvas: #FFFFFF;
-  --fg: #0A0A0A;
-  --muted: #6B7280;
-  --accent: #0991B2;
+  /* 색상 */
+  --canvas:    #FFFFFF;
+  --fg:        #0A0A0A;
+  --muted:     #6B7280;
+  --accent:    #0991B2;
+  --accent-mid:#06B6D4;
   --secondary: #374151;
-  --em: #059669;
-  --am: #D97706;
+  --em:        #059669;
+  --am:        #D97706;
 
-  /* Minimal Shadow System */
-  --sc:  0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+  /* 그림자 시스템 */
+  --sc:  0 1px 3px rgba(0,0,0,0.1),  0 1px 2px rgba(0,0,0,0.06);
   --sch: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
-  --sb:  0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+  --sb:  0 1px 3px rgba(0,0,0,0.1),  0 1px 2px rgba(0,0,0,0.06);
   --sbh: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
   --sw:  0 1px 3px rgba(0,0,0,0.08);
   --sp:  none;
 
+  /* 타이포그래피 렌더링 */
   font-synthesis: none;
   text-rendering: optimizeLegibility;
+
+  /* Windows ClearType 보정: 폰트가 두꺼워 보이는 현상 완화 */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Gradient Text */
+/* ════════════════════════════════════════════
+   전역 유틸리티
+   ════════════════════════════════════════════ */
 .gradient-text {
   background: linear-gradient(135deg, #0991B2, #06B6D4);
   -webkit-background-clip: text;
@@ -32,11 +42,9 @@
   background-clip: text;
 }
 
-/* Font IBM Plex Sans KR */
-.font-plex-sans-kr {
-  font-family: 'IBM Plex Sans KR', sans-serif;
-}
-
+/* ════════════════════════════════════════════
+   전역 리셋
+   ════════════════════════════════════════════ */
 *,
 *::before,
 *::after {
@@ -62,6 +70,9 @@ body {
   min-height: 100vh;
   min-width: 320px;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-smooth: always;
 }
 
 button {
@@ -78,266 +89,124 @@ button {
   }
 }
 
-/* ── Gradient text utility ── */
-.gradient-text {
-  background: linear-gradient(135deg, #0991B2, #06B6D4);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
+/* ════════════════════════════════════════════
+   전역 Keyframes
+   (tailwind.config.ts의 animation/keyframes와 동기화)
+   ════════════════════════════════════════════ */
 
-/* ── ResumeInputPage keyframes ── */
-@keyframes ri-fadeUp {
+/* ── 진입 ── */
+@keyframes fadeUp {
   from { opacity: 0; transform: translateY(16px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-@keyframes ri-pop {
+@keyframes fadeUpSm {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes pop {
   0%   { transform: scale(0.85); opacity: 0; }
   70%  { transform: scale(1.05); }
   100% { transform: scale(1);    opacity: 1; }
-}
-@keyframes ri-spin {
-  to { transform: rotate(360deg); }
-}
-@keyframes ri-pulse {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: .4; }
-}
-@keyframes ri-liveDot {
-  0%, 100% { transform: scale(1);   opacity: 1; }
-  50%       { transform: scale(1.5); opacity: .6; }
-}
-@keyframes ri-slideUp {
-  from { transform: translateY(100%); }
-  to   { transform: translateY(0); }
-}
-
-/* ── ResumeListPage keyframes ── */
-@keyframes rl-fadeUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes rl-pulse {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: .4; }
-}
-@keyframes rl-spin {
-  to { transform: rotate(360deg); }
-}
-@keyframes rl-slideUp {
-  from { transform: translateY(100%); }
-  to   { transform: translateY(0); }
-}
-
-/* ── ResumeUploadPage keyframes ── */
-@keyframes ru-fadeUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes ru-bounce {
-  0%, 100% { transform: translateY(0); }
-  50%       { transform: translateY(-6px); }
-}
-@keyframes ru-spin {
-  to { transform: rotate(360deg); }
-}
-@keyframes ru-pulse {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: .4; }
-}
-@keyframes ru-liveDot {
-  0%, 100% { transform: scale(1);   opacity: 1; }
-  50%       { transform: scale(1.5); opacity: .6; }
-}
-@keyframes ru-slideUp {
-  from { transform: translateY(100%); }
-  to   { transform: translateY(0); }
-}
-
-/* ── StreakPage keyframes ── */
-@keyframes skFadeUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes skFlicker {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: .7; }
-}
-@keyframes skBreathe {
-  0%, 100% { transform: scale(1);    opacity: 1; }
-  50%       { transform: scale(1.08); opacity: .85; }
-}
-@keyframes skFillBar {
-  from { width: 0; }
 }
 @keyframes skPop {
   0%   { transform: scale(0.7); opacity: 0; }
   70%  { transform: scale(1.1); }
   100% { transform: scale(1);   opacity: 1; }
 }
-@keyframes skShimmer {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
 
-/* ── SubscriptionPage keyframes ── */
-@keyframes subFadeUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes subSlideDown {
-  from { opacity: 0; transform: translateY(-8px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes subBreathe {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(9,145,178,0); }
-  50%       { box-shadow: 0 0 0 8px rgba(9,145,178,0.1); }
-}
-@keyframes subShimmer {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-@keyframes subSpin {
+/* ── 반복 ── */
+@keyframes spin {
   to { transform: rotate(360deg); }
 }
-
-/* ── InterviewPreCheckPage keyframes ── */
-@keyframes ipc-fadeUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
+@keyframes pulseSoft {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: .4; }
 }
-@keyframes ipc-blink {
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+@keyframes bounceY {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-6px); }
+}
+@keyframes blink {
   0%, 100% { opacity: 1; }
   50%       { opacity: 0; }
 }
-@keyframes ipc-spin {
-  to { transform: rotate(360deg); }
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: .7; }
 }
-@keyframes ipc-checkPulse {
+@keyframes breathe {
+  0%, 100% { transform: scale(1);    opacity: 1; }
+  50%       { transform: scale(1.08); opacity: .85; }
+}
+@keyframes liveDot {
+  0%, 100% { transform: scale(1);   opacity: 1; }
+  50%       { transform: scale(1.5); opacity: .6; }
+}
+@keyframes dotPulse {
+  0%, 100% { opacity: 1;   transform: scale(1); }
+  50%       { opacity: .5;  transform: scale(0.8); }
+}
+
+/* ── 상태 전환 ── */
+@keyframes fillBar {
+  from { width: 0; }
+}
+@keyframes analyzeBar {
+  0%   { width: 0; }
+  100% { width: 100%; }
+}
+@keyframes checkPulse {
   0%   { transform: scale(0.5); opacity: 0; }
   60%  { transform: scale(1.15); }
   100% { transform: scale(1);    opacity: 1; }
 }
-
-/* ── InterviewPreCheckPage reveal ── */
-.ipc-rv {
-  opacity: 0;
-  transform: translateY(18px);
-  transition: opacity 0.45s ease, transform 0.45s ease;
+@keyframes cardGlow {
+  0%, 100% { box-shadow: 0 1px 2px rgba(0,0,0,.03), 0 2px 8px rgba(0,0,0,.05); }
+  50%       { box-shadow: 0 0 0 3px rgba(9,145,178,.15), 0 1px 2px rgba(0,0,0,.04), 0 4px 12px rgba(0,0,0,.06); }
 }
-.ipc-rv.ipc-rv-in {
-  opacity: 1;
-  transform: translateY(0);
+@keyframes breatheRing {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(9,145,178,0); }
+  50%       { box-shadow: 0 0 0 8px rgba(9,145,178,0.1); }
 }
 
-/* ── InterviewSetupPage keyframes ── */
-@keyframes isetup-fadeUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-/* ── InterviewSetupPage reveal ── */
+/* ════════════════════════════════════════════
+   Reveal 유틸리티 (JS 클래스 토글 방식)
+   사용법: className={`reveal${revealed ? " reveal-in" : ""}`}
+   ════════════════════════════════════════════ */
+.reveal,
+.hp-rv,
+.sk-rv,
+.ipc-rv,
 .isetup-rv {
   opacity: 0;
   transform: translateY(18px);
   transition: opacity 0.45s ease, transform 0.45s ease;
 }
-.isetup-rv.isetup-rv-in {
+
+.reveal-in,
+.hp-rv-in,
+.sk-rv-in,
+.ipc-rv-in,
+.isetup-rv-in {
   opacity: 1;
   transform: translateY(0);
 }
 
-/* ── JdAnalyzingPage keyframes ── */
-@keyframes jan-spin {
-  to { transform: rotate(360deg); }
-}
-@keyframes jan-pulse {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: .4; }
-}
-@keyframes jan-shimmer {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-@keyframes jan-fadeUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-/* ── JdDetailPage keyframes ── */
-@keyframes jdd-fadeUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-/* ── JdEditPage keyframes ── */
-@keyframes jde-fadeUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-/* ── JdListPage keyframes ── */
-@keyframes jdl-fadeUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes jdl-spin {
-  to { transform: rotate(360deg); }
-}
-@keyframes jdl-dotPulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50%       { opacity: .5; transform: scale(0.8); }
-}
-@keyframes jdl-analyzeBar {
-  0%   { width: 0; }
-  100% { width: 100%; }
-}
-
-/* ── SettingsPage keyframes ── */
-@keyframes spFadeUp {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes spSpin {
-  to { transform: rotate(360deg); }
-}
-@keyframes spShimmer {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-
-/* ── Shared skeleton shimmer utility ── */
-.skeleton-shimmer {
-  background: linear-gradient(90deg, rgba(9,145,178,0.05) 25%, rgba(9,145,178,0.12) 50%, rgba(9,145,178,0.05) 75%);
-  background-size: 200% 100%;
-  animation: jan-shimmer 1.8s infinite;
-}
-
-/* ── Shared gray skeleton utility ── */
-.skeleton-gray {
-  background: linear-gradient(90deg, #F3F4F6 25%, #E9EAEC 50%, #F3F4F6 75%);
-  background-size: 200% 100%;
-  animation: jan-shimmer 1.4s infinite;
-}
-
-/* ── StreakPage reveal ── */
-.sk-rv {
-  opacity: 0;
-  transform: translateY(14px);
-  transition: opacity 0.45s ease, transform 0.45s ease;
-}
-.sk-rv.sk-rv-in {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* ── InterviewPreCheckPage card-glow keyframe ── */
-@keyframes ipc-cardGlow {
-  0%, 100% { box-shadow: 0 1px 2px rgba(0,0,0,.03), 0 2px 8px rgba(0,0,0,.05); }
-  50%       { box-shadow: 0 0 0 3px rgba(9,145,178,.15), 0 1px 2px rgba(0,0,0,.04), 0 4px 12px rgba(0,0,0,.06); }
-}
-
-/* ── Shared Nav (hp-nav) ── */
+/* ════════════════════════════════════════════
+   공유 Nav (hp-nav)
+   ════════════════════════════════════════════ */
 .hp-nav {
   position: sticky;
   top: 0;
@@ -419,7 +288,7 @@ button {
   }
 }
 
-/* Navigation 공유 컴포넌트 - 햄버거 버튼 md 기준으로 표시 */
+/* 햄버거 버튼 md 기준으로 표시 */
 .hp-nav.nav-shared .hp-menu-btn {
   display: none;
 }
@@ -430,8 +299,7 @@ button {
   }
 }
 
-
-/* Navigation 컴포넌트 사이드바 - 항상 오버레이로 동작 */
+/* 사이드바 — 항상 오버레이로 동작 */
 .hp-sidebar.nav-sidebar {
   position: fixed;
   left: 0;
