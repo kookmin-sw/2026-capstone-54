@@ -20,24 +20,27 @@ export function useTemplatePicker({ currentContent, onApply }: UseTemplatePicker
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [pendingTemplate, setPendingTemplate] = useState<ResumeTemplateListItem | null>(null);
 
-  /** 마지막으로 발행된 fetch 요청만 반영하도록 보관하는 토큰 — 이전 fetch 결과가 늦게
-   *  돌아와 최신 상태를 덮어쓰는 race 를 방지한다. */
-  const fetchTokenRef = useRef(0);
+  /** 현재 활성화된 fetch 요청의 취소 티켓. 새 요청이 발행되면 기존 티켓을 cancelled 로
+   *  마크하여 늦게 돌아온 응답이 최신 상태를 덮어쓰지 못하게 한다. */
+  const activeFetchRef = useRef<{ cancelled: boolean } | null>(null);
 
   /** 현재 debouncedSearch 로 목록을 새로 가져온다. effect 와 retryFetch 가 공유. */
   const fetchTemplates = useCallback(async (query: string) => {
-    const token = ++fetchTokenRef.current;
+    if (activeFetchRef.current) activeFetchRef.current.cancelled = true;
+    const ticket = { cancelled: false };
+    activeFetchRef.current = ticket;
+
     setTemplatesLoading(true);
     setTemplatesError(null);
     try {
       const items = await resumeTemplatesApi.list(query ? { search: query } : undefined);
-      if (token === fetchTokenRef.current) setTemplates(items);
+      if (!ticket.cancelled) setTemplates(items);
     } catch (e) {
-      if (token === fetchTokenRef.current) {
+      if (!ticket.cancelled) {
         setTemplatesError(e instanceof Error ? e.message : "템플릿 목록 불러오기 실패");
       }
     } finally {
-      if (token === fetchTokenRef.current) setTemplatesLoading(false);
+      if (!ticket.cancelled) setTemplatesLoading(false);
     }
   }, []);
 

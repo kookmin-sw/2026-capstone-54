@@ -15,16 +15,17 @@ interface TemplatePickerListProps {
   onRetry: () => void;
 }
 
-export function TemplatePickerList({
-  loading,
-  error,
-  templates,
-  groupedTemplates,
-  debouncedSearch,
-  pickerLoadingUuid,
-  onPick,
-  onRetry,
-}: TemplatePickerListProps) {
+export function TemplatePickerList(props: TemplatePickerListProps) {
+  const {
+    loading,
+    error,
+    templates,
+    groupedTemplates,
+    debouncedSearch,
+    pickerLoadingUuid,
+    onPick,
+    onRetry,
+  } = props;
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-[13px] text-[#6B7280] gap-2">

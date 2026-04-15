@@ -38,19 +38,20 @@ interface ConfirmModalProps {
   onError?: (error: unknown) => void;
 }
 
-export function ConfirmModal({
-  open,
-  title,
-  description,
-  children,
-  confirmLabel = "확인",
-  cancelLabel = "취소",
-  destructive = false,
-  size = "sm",
-  onConfirm,
-  onCancel,
-  onError,
-}: ConfirmModalProps) {
+export function ConfirmModal(props: ConfirmModalProps) {
+  const {
+    open,
+    title,
+    description,
+    children,
+    confirmLabel = "확인",
+    cancelLabel = "취소",
+    destructive = false,
+    size = "sm",
+    onConfirm,
+    onCancel,
+    onError,
+  } = props;
   const [isConfirming, setIsConfirming] = useState(false);
 
   const handleConfirm = async () => {

@@ -74,21 +74,22 @@ function releaseBodyScrollLock() {
   }
 }
 
-export function Modal({
-  open,
-  onClose,
-  title,
-  description,
-  children,
-  footer,
-  stickyTop,
-  size = "md",
-  heightMode = "flexible",
-  dismissOnBackdrop = true,
-  dismissOnEsc = true,
-  showCloseButton = true,
-  onOpened,
-}: ModalProps) {
+export function Modal(props: ModalProps) {
+  const {
+    open,
+    onClose,
+    title,
+    description,
+    children,
+    footer,
+    stickyTop,
+    size = "md",
+    heightMode = "flexible",
+    dismissOnBackdrop = true,
+    dismissOnEsc = true,
+    showCloseButton = true,
+    onOpened,
+  } = props;
   // 최신 콜백/옵션을 ref 로 보관 — effect 의존성 배열에 포함시키지 않고도
   // ESC 핸들러가 언제나 최신 값을 참조하도록 한다. 렌더 중 ref 변경은 금지이므로
   // 커밋 단계의 useEffect 에서 동기화한다.
