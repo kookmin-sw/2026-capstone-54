@@ -108,7 +108,7 @@ class SseConsumer(AsyncHttpConsumer):
       origin = _resolve_cors_origin(self.scope)
       headers = _build_cors_headers(origin) + [
         (b"Access-Control-Allow-Methods", b"GET, OPTIONS"),
-        (b"Access-Control-Allow-Headers", b"authorization, content-type, accept, cache-control"),
+        (b"Access-Control-Allow-Headers", b"authorization, content-type, accept, cache-control, x-requested-with, x-csrftoken"),
         (b"Access-Control-Max-Age", b"86400"),
         (b"Content-Length", b"0"),
       ]
