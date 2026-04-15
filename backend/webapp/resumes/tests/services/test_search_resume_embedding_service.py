@@ -18,7 +18,6 @@ class SearchResumeEmbeddingServiceTests(TestCase):
     self.resume = ResumeFactory(
       user=self.user,
       analysis_status=AnalysisStatus.COMPLETED,
-      is_active=True,
     )
     # 임베딩 레코드 생성 (벡터 포함)
     self.embedding = ResumeEmbeddingFactory(

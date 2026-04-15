@@ -22,11 +22,11 @@ class ResumeCountStatsServiceTests(TestCase):
 
   @patch("resumes.services.mixins.resume_pipeline_mixin.current_app.send_task")
   def test_aggregates_counts_scoped_to_user(self, mock_send_task):
-    """전체/상태별/활성별 개수를 현재 사용자 기준으로 집계한다."""
-    TextResumeFactory(user=self.user, is_active=True, analysis_status=AnalysisStatus.COMPLETED)
-    TextResumeFactory(user=self.user, is_active=True, analysis_status=AnalysisStatus.PROCESSING)
-    TextResumeFactory(user=self.user, is_active=False, analysis_status=AnalysisStatus.FAILED)
-    TextResumeFactory(user=self.other_user, is_active=True, analysis_status=AnalysisStatus.COMPLETED)
+    """전체/상태별 개수를 현재 사용자 기준으로 집계한다."""
+    TextResumeFactory(user=self.user, analysis_status=AnalysisStatus.COMPLETED)
+    TextResumeFactory(user=self.user, analysis_status=AnalysisStatus.PROCESSING)
+    TextResumeFactory(user=self.user, analysis_status=AnalysisStatus.FAILED)
+    TextResumeFactory(user=self.other_user, analysis_status=AnalysisStatus.COMPLETED)
 
     stats = ResumeCountStatsService(user=self.user).perform()
 
@@ -34,14 +34,12 @@ class ResumeCountStatsServiceTests(TestCase):
     self.assertEqual(stats["completed"], 1)
     self.assertEqual(stats["processing"], 1)
     self.assertEqual(stats["failed"], 1)
-    self.assertEqual(stats["active"], 2)
-    self.assertEqual(stats["inactive"], 1)
 
   def test_returns_zero_when_no_resumes(self):
     """이력서가 하나도 없으면 모든 카운트가 0 이다."""
     stats = ResumeCountStatsService(user=self.user).perform()
     self.assertEqual(stats["total"], 0)
-    self.assertEqual(stats["active"], 0)
+    self.assertEqual(stats["completed"], 0)
 
 
 class ResumeTypeStatsServiceTests(TestCase):
