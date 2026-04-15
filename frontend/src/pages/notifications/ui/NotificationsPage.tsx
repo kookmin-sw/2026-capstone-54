@@ -1,8 +1,18 @@
 import { useState } from "react";
-import { useNotificationStore } from "@/features/notifications";
+import { useNotificationStore, type Notification } from "@/features/notifications";
 
-const CATEGORY_ICON = { interview: "🎥", resume: "📄", jd: "🏢", system: "🔔" } as const;
-const CATEGORY_LABEL = { interview: "면접", resume: "이력서", jd: "채용공고", system: "시스템" } as const;
+const CATEGORY_ICON: Record<Notification["category"], string> = {
+  interview: "🎥",
+  resume: "📄",
+  jd: "🏢",
+  system: "🔔",
+};
+const CATEGORY_LABEL: Record<Notification["category"], string> = {
+  interview: "면접",
+  resume: "이력서",
+  jd: "채용공고",
+  system: "시스템",
+};
 
 const TABS = [
   { key: "all",       label: "전체"     },
@@ -13,8 +23,6 @@ const TABS = [
 ] as const;
 
 type TabKey = (typeof TABS)[number]["key"];
-
-type Notification = ReturnType<typeof useNotificationStore>["notifications"][number];
 
 function NotificationItem({
   n,

@@ -42,7 +42,7 @@ interface NotificationState {
 
 let _client: RealtimeClient | null = null;
 
-export const useNotificationStore = create<NotificationState>((set) => ({
+export const useNotificationStore = create<NotificationState>()((set) => ({
   notifications: [],
   connected: false,
 
