@@ -31,10 +31,10 @@ DATABASES = {
     },
     "TEST": {
       "NAME": env.str("TEST_DATABASE_NAME", default=""),
-      "USER": env.str("TEST_POSTGRES_USER", default=""),
-      "PASSWORD": env.str("TEST_POSTGRES_PASSWORD", default=""),
-      "HOST": env.str("TEST_POSTGRES_HOST", default=""),
-      "PORT": env.str("TEST_POSTGRES_PORT", default=""),
+      "USER": POSTGRES_USER,
+      "PASSWORD": POSTGRES_PASSWORD,
+      "HOST": POSTGRES_HOST,
+      "PORT": POSTGRES_PORT,
     },
   }
 }
