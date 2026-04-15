@@ -27,14 +27,14 @@ export function NavPill() {
         position: "fixed",
         top: 0, left: 0, right: 0,
         zIndex: 200,
-        padding: scrolled ? "0 40px" : "14px 40px",
+        padding: scrolled ? "4px 40px" : "14px 40px",
         display: "flex",
         justifyContent: "center",
         background: scrolled ? "rgba(255,255,255,0.95)" : "transparent",
         backdropFilter: scrolled ? "blur(12px)" : "none",
         WebkitBackdropFilter: scrolled ? "blur(12px)" : "none",
-        borderBottom: scrolled ? "1px solid #E5E7EB" : "none",
-        transition: "all 0.3s",
+        borderBottom: scrolled ? "1px solid #E5E7EB" : "1px solid transparent",
+        transition: "padding 0.3s, background 0.3s, border-bottom 0.3s, backdrop-filter 0.3s",
       }}
     >
       <div
@@ -48,8 +48,8 @@ export function NavPill() {
           backdropFilter: scrolled ? "none" : "blur(12px)",
           WebkitBackdropFilter: scrolled ? "none" : "blur(12px)",
           borderRadius: scrolled ? 0 : 8,
-          border: scrolled ? "none" : "1px solid #E5E7EB",
-          padding: scrolled ? "12px 0" : "10px 10px 10px 24px",
+          border: scrolled ? "1px solid transparent" : "1px solid #E5E7EB",
+          padding: scrolled ? "8px 0" : "10px 10px 10px 24px",
           boxShadow: scrolled ? "none" : "0 1px 3px rgba(0,0,0,0.08)",
           transition: "all 0.3s",
         }}
