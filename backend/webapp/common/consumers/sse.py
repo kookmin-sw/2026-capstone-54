@@ -43,7 +43,9 @@ from __future__ import annotations
 import json
 
 import structlog
+from channels.exceptions import StopConsumer
 from channels.generic.http import AsyncHttpConsumer
+from django.conf import settings
 
 logger = structlog.get_logger(__name__)
 
@@ -52,6 +54,39 @@ _SSE_HEADERS = [
   (b"Cache-Control", b"no-cache"),
   (b"X-Accel-Buffering", b"no"),  # nginx 버퍼링 비활성화
 ]
+
+
+def _resolve_cors_origin(scope: dict) -> bytes | None:
+  """요청의 Origin 헤더를 settings.CORS_ALLOWED_ORIGINS 와 매칭해 허용 가능한 origin 을 반환.
+
+    Channels HTTP consumer 는 Django middleware 스택을 거치지 않으므로 django-cors-headers 가
+    적용되지 않는다. 이 헬퍼는 SseConsumer 가 직접 CORS 헤더를 셋업할 때 사용된다.
+    """
+  headers = dict(scope.get("headers", []))
+  origin = headers.get(b"origin")
+  if not origin:
+    return None
+  allow_all = getattr(settings, "CORS_ALLOW_ALL_ORIGINS", False)
+  if allow_all:
+    return origin
+  allowed = getattr(settings, "CORS_ALLOWED_ORIGINS", []) or []
+  origin_str = origin.decode("ascii", errors="ignore")
+  if origin_str in allowed:
+    return origin
+  return None
+
+
+def _build_cors_headers(origin: bytes | None) -> list[tuple[bytes, bytes]]:
+  """CORS 응답 헤더 목록. origin 이 None 이면 빈 리스트를 반환."""
+  if origin is None:
+    return []
+  headers: list[tuple[bytes, bytes]] = [
+    (b"Access-Control-Allow-Origin", origin),
+    (b"Vary", b"Origin"),
+  ]
+  if getattr(settings, "CORS_ALLOW_CREDENTIALS", False):
+    headers.append((b"Access-Control-Allow-Credentials", b"true"))
+  return headers
 
 
 class SseConsumer(AsyncHttpConsumer):
@@ -63,8 +98,30 @@ class SseConsumer(AsyncHttpConsumer):
 
   disconnected: bool = False
 
+  async def http_request(self, message: dict) -> None:
+    """OPTIONS preflight 는 인증 없이 즉시 CORS 응답을 반환한다.
+
+        Channels HTTP consumer 는 Django middleware (django-cors-headers 포함) 를 거치지 않으므로,
+        SSE 라우트는 직접 preflight 를 처리해야 한다. GET 등 그 외 메서드는 부모 구현으로 위임한다.
+        """
+    if self.scope.get("method") == "OPTIONS":
+      origin = _resolve_cors_origin(self.scope)
+      headers = _build_cors_headers(origin) + [
+        (b"Access-Control-Allow-Methods", b"GET, OPTIONS"),
+        (
+          b"Access-Control-Allow-Headers",
+          b"authorization, content-type, accept, cache-control, x-requested-with, x-csrftoken"
+        ),
+        (b"Access-Control-Max-Age", b"86400"),
+        (b"Content-Length", b"0"),
+      ]
+      await self.send_response(204, b"", headers=headers)
+      raise StopConsumer()
+    await super().http_request(message)
+
   async def handle(self, body: bytes) -> None:
-    await self.send_headers(headers=_SSE_HEADERS)
+    cors = _build_cors_headers(_resolve_cors_origin(self.scope))
+    await self.send_headers(headers=_SSE_HEADERS + cors)
     logger.info("sse_connected", channel=self.channel_name)
     try:
       await self.stream()
@@ -119,9 +176,11 @@ class UserSseConsumer(SseConsumer):
   _user_group: str = ""
 
   async def handle(self, body: bytes) -> None:
+    cors = _build_cors_headers(_resolve_cors_origin(self.scope))
+
     user = await self._authenticate()
     if user is None:
-      await self.send_response(401, b"Unauthorized")
+      await self.send_response(401, b"Unauthorized", headers=cors)
       return
 
     self.user = user
@@ -130,7 +189,7 @@ class UserSseConsumer(SseConsumer):
     await self.channel_layer.group_add(self._user_group, self.channel_name)
     logger.info("sse_user_connected", channel=self.channel_name, user_id=user.pk)
 
-    await self.send_headers(headers=_SSE_HEADERS)
+    await self.send_headers(headers=_SSE_HEADERS + cors)
     try:
       await self.stream()
     finally:
