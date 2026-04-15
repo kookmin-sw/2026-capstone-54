@@ -16,7 +16,7 @@ export function InterviewModeSection({
 }: InterviewModeSectionProps) {
   return (
     <>
-      <SetupSection eyebrow="면접 방식" title="면접 유형" className="mb-3">
+      <SetupSection eyebrow="면접 방식" title="면접 유형" className="flex-1">
         <div className="grid grid-cols-2 gap-2 max-sm:grid-cols-1">
           <OptionCard
             selected={interviewMode === "tail"}
@@ -49,7 +49,7 @@ export function InterviewModeSection({
         </div>
       </SetupSection>
 
-      <SetupSection eyebrow="진행 모드" title="연습 방식">
+      <SetupSection eyebrow="진행 모드" title="연습 방식" className="flex-1">
         <div className="grid grid-cols-2 gap-2 max-sm:grid-cols-1">
           <OptionCard
             selected={practiceMode === "practice"}

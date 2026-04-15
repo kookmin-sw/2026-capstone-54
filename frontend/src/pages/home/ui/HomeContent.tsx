@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { useHomeStore } from "@/features/home";
+import { useStreakStore } from "@/features/streak";
+import { StreakCalendar } from "@/pages/streak/ui/components/StreakCalendar";
 import {
   HomeHeader,
   QuickStartHero,
   StatsGrid,
   RecentSessions,
-  StreakCalendar,
   JobStatus,
   LoadingSkeleton,
 } from "./components";
@@ -13,11 +14,18 @@ import "./HomePage.css";
 
 export function HomeContent() {
   const { data, loading, fetchHome } = useHomeStore();
+  const { data: streakData, fetchStreak } = useStreakStore();
   const [revealed, setRevealed] = useState(false);
+
+  const now = new Date();
+  const todayY = now.getFullYear();
+  const todayM = now.getMonth() + 1;
+  const todayD = now.getDate();
 
   useEffect(() => {
     fetchHome();
-  }, [fetchHome]);
+    fetchStreak();
+  }, [fetchHome, fetchStreak]);
 
   useEffect(() => {
     if (!data) return;
@@ -43,8 +51,17 @@ export function HomeContent() {
 
           <RecentSessions sessions={data.recentSessions} revealed={revealed} />
 
-          <div className="hp-bottom">
-            <StreakCalendar streakData={data.streakData} revealed={revealed} />
+          {streakData && (
+            <StreakCalendar
+              calendarDoneMap={streakData.calendarDoneMap}
+              revealed={revealed}
+              todayYear={todayY}
+              todayMonth={todayM}
+              todayDay={todayD}
+            />
+          )}
+
+          <div className="hp-bottom" style={{ gridTemplateColumns: "1fr" }}>
             <JobStatus jobs={data.jobs} revealed={revealed} />
           </div>
         </>

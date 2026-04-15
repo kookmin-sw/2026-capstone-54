@@ -22,7 +22,7 @@ export function StepLayout({ stepLabel, title, description, left, right }: StepL
       </div>
 
       {/* Two-column body */}
-      <div className="grid grid-cols-2 gap-8 max-md:grid-cols-1">
+      <div className="grid grid-cols-2 gap-8 max-md:grid-cols-1 items-stretch">
         <div className="flex flex-col gap-4">{left}</div>
         <div className="flex flex-col gap-4">{right}</div>
       </div>

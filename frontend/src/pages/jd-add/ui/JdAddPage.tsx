@@ -67,9 +67,8 @@ export function JdAddPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-
-      <div className="relative max-w-container-lg mx-auto px-8 pt-[28px] pb-[60px] max-sm:px-4 max-sm:pt-5">
+    <div>
+      <div className="relative w-full px-8 pt-[28px] pb-[60px] max-sm:px-4 max-sm:pt-5">
         <PageHeader
           badge="+ 채용공고 추가"
           title="새 채용공고 등록"

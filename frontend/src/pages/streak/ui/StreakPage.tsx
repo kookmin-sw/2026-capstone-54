@@ -1,12 +1,10 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { useStreakStore } from "@/features/streak";
 import { StreakHero } from "./components/StreakHero";
-import { StreakStats } from "./components/StreakStats";
 import { StreakCalendar } from "./components/StreakCalendar";
-import { RewardHistory } from "./components/RewardHistory";
 import { NextReward } from "./components/NextReward";
 import { Milestones } from "./components/Milestones";
+import { RewardHistory } from "./components/RewardHistory";
 
 export function StreakPage() {
   const { data, loading, fetchStreak } = useStreakStore();
@@ -29,87 +27,51 @@ export function StreakPage() {
   }, [data]);
 
   return (
-    <>
-      <div className="bg-white min-h-[calc(100vh-60px)] p-8 max-w-container mx-auto max-sm:p-[20px_16px]">
-        {loading && !data ? (
-          <div className="flex flex-col gap-4">
-            <div className="skeleton-gray rounded-lg" style={{ height: 180 }} />
-            <div className="grid grid-cols-3 gap-3.5">
-              {[0, 1, 2].map((i) => (
-                <div key={i} className="skeleton-gray rounded-lg" style={{ height: 110 }} />
-              ))}
-            </div>
-            <div className="grid grid-cols-[1fr_340px] gap-5">
-              <div className="skeleton-gray rounded-lg" style={{ height: 360 }} />
-              <div className="skeleton-gray rounded-lg" style={{ height: 360 }} />
-            </div>
+    <div className="bg-[#F9FAFB] min-h-[calc(100vh-60px)] p-7 w-full max-sm:p-4">
+      {loading && !data ? (
+        <div className="flex flex-col gap-4">
+          <div className="skeleton-gray rounded-xl" style={{ height: 160 }} />
+          <div className="skeleton-gray rounded-xl" style={{ height: 200 }} />
+          <div className="grid grid-cols-2 gap-4 max-sm:grid-cols-1">
+            <div className="skeleton-gray rounded-xl" style={{ height: 240 }} />
+            <div className="skeleton-gray rounded-xl" style={{ height: 240 }} />
           </div>
-        ) : data ? (
-          <>
-            <StreakHero
-              currentStreak={data.currentStreak}
-              bestStreak={data.bestStreak}
-              totalDays={data.totalDays}
-              rewardsCount={data.rewardsCount}
-              todayCompleted={data.todayCompleted}
-            />
+        </div>
+      ) : data ? (
+        <div>
+          {/* Hero: streak count + stats + progress */}
+          <StreakHero
+            currentStreak={data.currentStreak}
+            bestStreak={data.bestStreak}
+            totalDays={data.totalDays}
+            rewardsCount={data.rewardsCount}
+            todayCompleted={data.todayCompleted}
+            nextReward={data.nextReward}
+          />
 
-            <StreakStats
-              bestStreak={data.bestStreak}
-              totalDays={data.totalDays}
-              rewardsCount={data.rewardsCount}
+          {/* Calendar: full width */}
+          <StreakCalendar
+            calendarDoneMap={data.calendarDoneMap}
+            revealed={revealed}
+            todayYear={todayY}
+            todayMonth={todayM}
+            todayDay={todayD}
+          />
+
+          {/* Bottom grid: 3 columns on desktop, 1 on mobile */}
+          <div className="grid grid-cols-3 gap-4 mt-4 max-lg:grid-cols-2 max-sm:grid-cols-1">
+            <NextReward
+              nextReward={data.nextReward}
+              currentStreak={data.currentStreak}
               revealed={revealed}
             />
 
-            <div className="grid grid-cols-[1fr_340px] gap-5 items-start max-[960px]:grid-cols-1">
-              <div className="flex flex-col gap-4">
-                <StreakCalendar
-                  calendarDoneMap={data.calendarDoneMap}
-                  revealed={revealed}
-                  todayYear={todayY}
-                  todayMonth={todayM}
-                  todayDay={todayD}
-                />
+            <Milestones milestones={data.milestones} revealed={revealed} />
 
-                <RewardHistory rewardHistory={data.rewardHistory} revealed={revealed} />
-              </div>
-
-              <div className="flex flex-col gap-4">
-                <NextReward
-                  nextReward={data.nextReward}
-                  currentStreak={data.currentStreak}
-                  revealed={revealed}
-                />
-
-                <Milestones milestones={data.milestones} revealed={revealed} />
-
-                <div
-                  className={`bg-[#0A0A0A] rounded-xl p-[24px_26px] flex items-center justify-between gap-4 shadow-[0_4px_20px_rgba(0,0,0,.14)] relative overflow-hidden max-sm:flex-col max-sm:items-start sk-rv${
-                    revealed ? " sk-rv-in" : ""
-                  }`}
-                  style={{ transitionDelay: "200ms" }}
-                >
-                  <div className="absolute w-[160px] h-[160px] bg-[rgba(9,145,178,.1)] blur-[50px] rounded-full -top-[50px] right-20 pointer-events-none" />
-                  <div className="relative z-[1]">
-                    <div className="text-base font-black text-white mb-1">오늘의 면접 시작하기</div>
-                    <div className="text-[12px] text-white/45 leading-[1.55]">
-                      {data.nextReward.daysRemaining}일만 더 하면 보상이 기다려요.
-                      <br />
-                      지금 바로 이어가세요 🔥
-                    </div>
-                  </div>
-                  <Link
-                    to="/interview/setup"
-                    className="relative z-[1] text-[13px] font-bold text-[#0A0A0A] bg-white border-none rounded-lg py-[11px] px-5 cursor-pointer whitespace-nowrap no-underline transition-all hover:bg-[#F3F4F6] hover:-translate-y-0.5 inline-block max-sm:w-full max-sm:text-center"
-                  >
-                    면접 시작 →
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </>
-        ) : null}
-      </div>
-    </>
+            <RewardHistory rewardHistory={data.rewardHistory} revealed={revealed} />
+          </div>
+        </div>
+      ) : null}
+    </div>
   );
 }

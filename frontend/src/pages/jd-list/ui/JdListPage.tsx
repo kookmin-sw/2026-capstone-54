@@ -176,9 +176,8 @@ export function JdListPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-white">
-
-      <div className="max-w-container-lg mx-auto px-8 pt-[28px] pb-[60px] max-sm:px-4 max-sm:pt-5">
+    <div>
+      <div className="w-full px-8 pt-[28px] pb-[60px] max-sm:px-4 max-sm:pt-5">
 
         {/* PAGE HEADER */}
         <div className="flex items-start justify-between mb-8 gap-4">

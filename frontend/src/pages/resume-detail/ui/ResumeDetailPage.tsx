@@ -156,14 +156,14 @@ export function ResumeDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="flex items-center justify-center py-20">
         <Loader2 className="w-8 h-8 animate-spin text-[#0991B2]" />
       </div>
     );
   }
   if (error || !resume) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="flex items-center justify-center py-20">
         <p className="text-[#DC2626] font-bold">{error ?? "이력서를 찾을 수 없어요."}</p>
       </div>
     );
@@ -173,8 +173,8 @@ export function ResumeDetailPage() {
     resume.analysisStatus === "processing" || resume.analysisStatus === "pending";
 
   return (
-    <div className="min-h-screen bg-[#F9FAFB]">
-      <div className="max-w-container-lg mx-auto px-8 pt-[28px] pb-[60px] max-sm:px-4 max-sm:pt-5">
+    <div className="bg-[#F9FAFB]">
+      <div className="w-full px-8 pt-[28px] pb-[60px] max-sm:px-4 max-sm:pt-5">
         <button
           onClick={() => navigate("/resume")}
           className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#6B7280] hover:text-[#0A0A0A] mb-5 transition-colors"

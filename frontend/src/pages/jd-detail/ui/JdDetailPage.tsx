@@ -36,8 +36,8 @@ export function JdDetailPage() {
   /* ── Loading ── */
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white">
-        <div className="max-w-container-lg mx-auto px-8 pt-[28px] pb-[60px] max-sm:px-4 max-sm:pt-5">
+      <div>
+        <div className="w-full px-8 pt-[28px] pb-[60px] max-sm:px-4 max-sm:pt-5">
           <div className="text-center py-20 text-[15px] text-[#6B7280]">불러오는 중...</div>
         </div>
       </div>
@@ -47,8 +47,8 @@ export function JdDetailPage() {
   /* ── Error / Not Found ── */
   if (error || !jd) {
     return (
-      <div className="min-h-screen bg-white">
-        <div className="max-w-container-lg mx-auto px-8 pt-[28px] pb-[60px] max-sm:px-4 max-sm:pt-5">
+      <div>
+        <div className="w-full px-8 pt-[28px] pb-[60px] max-sm:px-4 max-sm:pt-5">
           <div className="text-center py-[60px] flex flex-col items-center text-[15px] text-[#DC2626]">
             <p>{error ?? "채용공고를 찾을 수 없습니다."}</p>
             <Link to="/jd" className="inline-flex items-center gap-2 text-[13px] font-bold text-white bg-[#0A0A0A] border-none cursor-pointer py-3 px-5 rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.1)] transition-opacity hover:opacity-85 no-underline mt-4">
@@ -61,9 +61,9 @@ export function JdDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div>
 
-      <div className="max-w-container-lg mx-auto px-8 pt-[28px] pb-[60px] max-sm:px-4 max-sm:pt-5">
+      <div className="w-full px-8 pt-[28px] pb-[60px] max-sm:px-4 max-sm:pt-5">
         {/* BREADCRUMB */}
         <div className="flex items-center gap-2 text-[13px] text-[#6B7280] mb-6">
           <Link to="/jd" className="text-[#6B7280] no-underline transition-colors hover:text-[#0991B2]">채용공고</Link>

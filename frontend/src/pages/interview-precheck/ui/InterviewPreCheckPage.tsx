@@ -51,7 +51,7 @@ export function InterviewPreCheckPage() {
 
   return (
     <div className="min-h-screen bg-[#080f1a] text-white">
-      <div className="max-w-container-lg mx-auto px-8 pt-[40px] pb-[60px] max-sm:px-4 max-sm:pt-5">
+      <div className="w-full px-8 pt-[40px] pb-[60px] max-sm:px-4 max-sm:pt-5">
         <div className="mb-6">
           <h1 className="text-[clamp(22px,2.5vw,30px)] font-black tracking-[-0.5px] mb-1.5">환경을 점검해요</h1>
           <p className="text-sm text-[#9CA3AF]">카메라, 마이크, 네트워크, 음성을 자동으로 점검합니다.</p>

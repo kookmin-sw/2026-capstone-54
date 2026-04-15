@@ -20,8 +20,8 @@ export function ResumeNewPage() {
   const [mode, setMode] = useState<Mode>("file");
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="max-w-container-md mx-auto px-8 pt-[28px] pb-[60px] max-sm:px-4 max-sm:pt-5">
+    <div>
+      <div className="w-full px-8 pt-[28px] pb-[60px] max-sm:px-4 max-sm:pt-5">
         <button
           onClick={() => navigate("/resume")}
           className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#6B7280] hover:text-[#0A0A0A] mb-5 transition-colors"
@@ -29,7 +29,7 @@ export function ResumeNewPage() {
           <ArrowLeft size={14} /> 목록으로
         </button>
 
-        <h1 className="text-[clamp(22px,3vw,32px)] font-black tracking-[-0.5px] text-[#0A0A0A] leading-[1.2] mb-2">
+        <h1 className="text-[clamp(20px,2.2vw,28px)] font-black tracking-[-0.8px] text-[#0A0A0A] leading-[1.1] mb-2">
           새 이력서
         </h1>
         <p className="text-[13px] text-[#6B7280] mb-6">
