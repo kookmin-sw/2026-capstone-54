@@ -1,3 +1,4 @@
+/** 페이지 상단에 뱃지, 제목, 부제목, 액션 버튼을 배치하는 헤더. */
 import type { ReactNode } from "react";
 
 interface PageHeaderProps {

@@ -1,3 +1,4 @@
+/** 흰색 배경에 테두리와 그림자가 적용된 컨테이너 카드. */
 import type { ReactNode } from "react";
 
 interface CardProps {

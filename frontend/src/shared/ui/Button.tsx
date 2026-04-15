@@ -1,3 +1,4 @@
+/** 공통 버튼. variant로 스타일, size로 크기를 제어한다. */
 import type { ReactNode, ButtonHTMLAttributes } from "react";
 
 interface ButtonStyleProps {

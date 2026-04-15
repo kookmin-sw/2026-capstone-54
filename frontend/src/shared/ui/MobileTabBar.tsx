@@ -1,3 +1,4 @@
+/** 모바일 화면 하단에 고정되는 탭 네비게이션 바. */
 import { useNavigate } from "react-router-dom";
 
 interface TabItem {

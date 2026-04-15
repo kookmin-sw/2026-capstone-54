@@ -1,3 +1,4 @@
+/** 상태별 색상이 적용되는 알림 배너. info, success, warning, error 변형을 지원한다. */
 import type { ReactNode } from "react";
 
 interface AlertProps {

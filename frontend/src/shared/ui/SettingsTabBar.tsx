@@ -1,3 +1,4 @@
+/** 설정 화면 전용 모바일 하단 탭 바. 설정 패널 간 이동에 사용한다. */
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSettingsStore } from "@/features/settings";
 import type { SettingsPanel } from "@/features/settings";

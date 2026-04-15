@@ -1,3 +1,4 @@
+/** 선택 가능한 필터 칩. selected 상태에 따라 강조 스타일이 적용된다. */
 import type { ReactNode } from "react";
 
 interface ChipProps {

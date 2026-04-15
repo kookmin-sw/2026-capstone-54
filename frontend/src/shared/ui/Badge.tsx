@@ -1,3 +1,4 @@
+/** 인라인 상태 라벨. 작은 크기로 텍스트 옆에 붙여 상태를 표시한다. */
 import type { ReactNode } from "react";
 
 interface BadgeProps {

@@ -50,8 +50,8 @@ export function JdAddPage() {
 
   const handleSubmit = async () => {
     clearError();
-    const jdId = await submit();
-    if (jdId) navigate("/jd/analyzing");
+    const jdUuid = await submit();
+    if (jdUuid) navigate(`/jd/${jdUuid}`);
   };
 
   const handleSaveDraft = async () => {

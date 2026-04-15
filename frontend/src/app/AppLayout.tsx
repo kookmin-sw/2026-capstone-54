@@ -21,6 +21,9 @@ interface AppLayoutProps {
   children: React.ReactNode;
 }
 
+/** Pages that use their own full-screen layout (no nav/sidebar) */
+const FULL_SCREEN_PREFIXES = ["/interview/session/", "/interview/precheck/"];
+
 export function AppLayout({ children }: AppLayoutProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
@@ -28,6 +31,11 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   const activeTab = getActiveTab(location.pathname);
   const isSettingsArea = location.pathname.startsWith("/settings") || location.pathname.startsWith("/notifications");
+
+  // Full-screen pages bypass the shared layout entirely
+  if (FULL_SCREEN_PREFIXES.some((p) => location.pathname.startsWith(p))) {
+    return <>{children}</>;
+  }
 
   return (
     <>

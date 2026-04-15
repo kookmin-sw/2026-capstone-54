@@ -17,15 +17,15 @@ const STATUS_LABEL: Record<JdStatus, string> = {
 const cardCls = "bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)] transition-shadow hover:shadow-[0_4px_6px_rgba(0,0,0,0.07),0_2px_4px_rgba(0,0,0,0.06)]";
 
 export function JdDetailPage() {
-  const { id } = useParams<{ id: string }>();
+  const { uuid } = useParams<{ uuid: string }>();
   const navigate = useNavigate();
   const { jd, isLoading, isUpdating, error, fetchJd, updateStatus, deleteJd, clearError } =
     useJdDetailStore();
 
   useEffect(() => {
-    if (id) fetchJd(id);
+    if (uuid) fetchJd(uuid);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+  }, [uuid]);
 
   const handleDelete = async () => {
     if (!confirm("채용공고를 삭제하시겠어요?")) return;
@@ -108,7 +108,6 @@ export function JdDetailPage() {
                   </svg>
                   면접 시작하기
                 </Link>
-                <Link to={`/jd/edit/${jd.id}`} className="inline-flex items-center gap-2 text-[13px] font-bold text-[#0991B2] bg-[#E6F7FA] border border-[#0991B2] cursor-pointer py-3 px-5 rounded-lg transition-[background] hover:bg-[#cceef6] no-underline whitespace-nowrap">✏️ 수정</Link>
                 <a href={jd.originalUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#6B7280] bg-transparent border-none cursor-pointer py-[10px] px-4 rounded-lg transition-all hover:text-[#0A0A0A] hover:bg-[#F3F4F6] no-underline">
                   🔗 원문 보기
                 </a>
@@ -220,14 +219,6 @@ export function JdDetailPage() {
                   <div className="flex-1">
                     <div className="text-[13px] font-extrabold">전체 프로세스</div>
                     <div className="text-[11px] text-[#6B7280] mt-px">처음부터 끝까지 연습</div>
-                  </div>
-                  <span className="text-[#9CA3AF] text-base">›</span>
-                </Link>
-                <Link to={`/jd/edit/${jd.id}`} className="flex items-center gap-2.5 p-[12px_14px] rounded-lg border border-[#E5E7EB] bg-white cursor-pointer text-[13px] font-semibold text-[#0A0A0A] transition-all no-underline hover:bg-[#F9FAFB] hover:-translate-y-px hover:shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)]">
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center text-[15px] shrink-0" style={{ background: "linear-gradient(135deg,#60A5FA,#2563EB)" }}>✏️</div>
-                  <div className="flex-1">
-                    <div className="text-[13px] font-extrabold">공고 정보 수정</div>
-                    <div className="text-[11px] text-[#6B7280] mt-px">제목·상태 변경</div>
                   </div>
                   <span className="text-[#9CA3AF] text-base">›</span>
                 </Link>

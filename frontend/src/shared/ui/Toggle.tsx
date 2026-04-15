@@ -1,3 +1,4 @@
+/** on/off를 전환하는 스위치. label과 description을 함께 표시할 수 있다. */
 interface ToggleProps {
   checked: boolean;
   onChange: (checked: boolean) => void;

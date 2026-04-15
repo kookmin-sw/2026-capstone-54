@@ -55,15 +55,9 @@ function MoreMenu({ id, onClose }: { id: string; onClose: () => void }) {
     >
       <button
         className="flex items-center gap-2 w-full py-[10px] px-3.5 border-none bg-transparent text-[13px] font-semibold text-[#374151] cursor-pointer text-left transition-[background] hover:bg-[#F9FAFB] hover:text-[#0991B2]"
-        onClick={() => { navigate(`/jd/detail/${id}`); onClose(); }}
+        onClick={() => { navigate(`/jd/${id}`); onClose(); }}
       >
         📄 상세 보기
-      </button>
-      <button
-        className="flex items-center gap-2 w-full py-[10px] px-3.5 border-none bg-transparent text-[13px] font-semibold text-[#374151] cursor-pointer text-left transition-[background] hover:bg-[#F9FAFB] hover:text-[#0991B2]"
-        onClick={() => { navigate(`/jd/edit/${id}`); onClose(); }}
-      >
-        ✏️ 수정
       </button>
     </div>
   );
@@ -80,10 +74,10 @@ function JdCard({ item }: { item: JdListItem }) {
   return (
     <div
       className="p-7 relative bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)] animate-[jdl-fadeUp_.5s_ease_both] cursor-pointer transition-[transform,box-shadow] duration-300 ease hover:-translate-y-1 hover:shadow-[0_4px_6px_rgba(0,0,0,0.07),0_2px_4px_rgba(0,0,0,0.06)] outline-none focus-visible:outline-2 focus-visible:outline-[#0991B2] focus-visible:outline-offset-2"
-      onClick={() => { if (!isAnalyzing) navigate(`/jd/detail/${item.id}`); }}
+      onClick={() => { if (!isAnalyzing) navigate(`/jd/${item.uuid}`); }}
       role={isAnalyzing ? undefined : "button"}
       tabIndex={isAnalyzing ? undefined : 0}
-      onKeyDown={(e) => { if (!isAnalyzing && e.key === "Enter") navigate(`/jd/detail/${item.id}`); }}
+      onKeyDown={(e) => { if (!isAnalyzing && e.key === "Enter") navigate(`/jd/${item.uuid}`); }}
       aria-label={isAnalyzing ? undefined : `${item.company} ${item.title} 상세 보기`}
     >
       {/* Analyzing overlay */}
@@ -116,7 +110,7 @@ function JdCard({ item }: { item: JdListItem }) {
           >
             ⋯
           </button>
-          {menuOpen && <MoreMenu id={item.id} onClose={() => setMenuOpen(false)} />}
+          {menuOpen && <MoreMenu id={item.uuid} onClose={() => setMenuOpen(false)} />}
         </div>
       </div>
 
@@ -289,7 +283,7 @@ export function JdListPage() {
         ) : (
           <div className="grid gap-[18px]" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))" }}>
             {filtered.map((item) => (
-              <JdCard key={item.id} item={item} />
+              <JdCard key={item.uuid} item={item} />
             ))}
           </div>
         )}
