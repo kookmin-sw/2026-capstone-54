@@ -1,7 +1,60 @@
-import { create } from "zustand";
-import { fetchJdListApi, calcStats, type JdListItem, type JdListStats } from "../api/jdListApi";
+/** 채용공고 목록 store. 실제 backend `/api/v1/user-job-descriptions/` 를 사용한다.
+ *
+ * 사용자 상태(`status`: planned / applied / saved) 와 태그는 아직 backend 에 저장되지
+ * 않는다. UI 는 계속 유지하되, 기본값은 "planned" 로 둔다. 추후 backend 에 컬럼이
+ * 생기면 여기서 매핑만 바꾸면 된다.
+ *
+ * 수집이 진행 중(backend `collection_status === pending|processing`) 이면
+ * status 는 "analyzing" 으로 표시해 카드에 "분석 중" 오버레이가 뜨도록 한다.
+ */
 
-type FilterKey = "all" | "planned" | "applied" | "saved";
+import { create } from "zustand";
+import {
+  userJobDescriptionApi,
+  type JobDescriptionCollectionStatus,
+  type UserJobDescription,
+} from "@/features/user-job-description";
+import {
+  getCompanyColor,
+  getCompanyInitial,
+  getRelativeTime,
+  getTagColor,
+} from "../api/jdListHelpers";
+
+/** 사용자 상태 (프론트 placeholder — 추후 backend 에 저장). */
+export type JdStatus = "planned" | "applied" | "saved";
+
+/** 카드에 표시되는 통합 상태 — 수집 중이면 `analyzing`, 끝나면 사용자 상태. */
+export type JdListStatus = JdStatus | "analyzing";
+
+export interface JdTag {
+  label: string;
+  color: "default" | "green" | "blue" | "pink";
+}
+
+export interface JdListItem {
+  uuid: string; // UserJobDescription.uuid (route param 으로 사용)
+  company: string;
+  companyInitial: string;
+  companyColor: string;
+  title: string;
+  status: JdListStatus;
+  tags: JdTag[];
+  registeredAt: string;
+  analyzed: boolean;
+  /** backend 원본 수집 상태. failed 표시 등에 사용. */
+  collectionStatus: JobDescriptionCollectionStatus;
+  raw: UserJobDescription;
+}
+
+export interface JdListStats {
+  total: number;
+  planned: number;
+  applied: number;
+  saved: number;
+}
+
+export type FilterKey = "all" | "planned" | "applied" | "saved";
 
 interface JdListState {
   items: JdListItem[];
@@ -10,7 +63,6 @@ interface JdListState {
   activeFilter: FilterKey;
   isLoading: boolean;
   error: string | null;
-
   filtered: JdListItem[];
 
   fetchList: () => Promise<void>;
@@ -18,29 +70,58 @@ interface JdListState {
   setFilter: (f: FilterKey) => void;
 }
 
-function applyFilter(
-  items: JdListItem[],
-  query: string,
-  filter: FilterKey
-): JdListItem[] {
+function transform(item: UserJobDescription): JdListItem {
+  const jd = item.jobDescription;
+  const company = jd.company || "수집 중";
+  const title = jd.title || "채용공고";
+
+  // 수집 중이면 "분석 중" 으로 보여주고, 끝나면 기본 사용자 상태("planned") 로 둔다.
+  const isAnalyzing = jd.collectionStatus === "pending" || jd.collectionStatus === "in_progress";
+  const status: JdListStatus = isAnalyzing ? "analyzing" : "planned";
+
+  // 태그 자리 — backend 에 아직 없으니 platform / location 을 임시로 태그로 노출
+  const tags: JdTag[] = [];
+  if (jd.platform) tags.push({ label: jd.platform, color: getTagColor(jd.platform) });
+  if (jd.location) tags.push({ label: jd.location, color: getTagColor(jd.location) });
+
+  return {
+    uuid: item.uuid,
+    company,
+    companyInitial: getCompanyInitial(company),
+    companyColor: getCompanyColor(company),
+    title,
+    status,
+    tags,
+    registeredAt: getRelativeTime(item.createdAt),
+    analyzed: jd.collectionStatus === "done",
+    collectionStatus: jd.collectionStatus,
+    raw: item,
+  };
+}
+
+function calcStats(items: JdListItem[]): JdListStats {
+  return {
+    total: items.filter((i) => i.status !== "analyzing").length,
+    planned: items.filter((i) => i.status === "planned").length,
+    applied: items.filter((i) => i.status === "applied").length,
+    saved: items.filter((i) => i.status === "saved").length,
+  };
+}
+
+function applyFilter(items: JdListItem[], query: string, filter: FilterKey): JdListItem[] {
   let result = items;
 
   if (filter !== "all") {
-    result = result.filter((item) => {
-      if (filter === "planned") return item.status === "planned";
-      if (filter === "applied") return item.status === "applied";
-      if (filter === "saved") return item.status === "saved";
-      return true;
-    });
+    result = result.filter((i) => i.status === filter);
   }
 
   if (query.trim()) {
     const q = query.toLowerCase();
     result = result.filter(
-      (item) =>
-        item.company.toLowerCase().includes(q) ||
-        item.title.toLowerCase().includes(q) ||
-        item.tags.some((t) => t.label.toLowerCase().includes(q))
+      (i) =>
+        i.company.toLowerCase().includes(q) ||
+        i.title.toLowerCase().includes(q) ||
+        i.tags.some((t) => t.label.toLowerCase().includes(q)),
     );
   }
 
@@ -58,18 +139,22 @@ export const useJdListStore = create<JdListState>()((set, get) => ({
 
   fetchList: async () => {
     set({ isLoading: true, error: null });
-    const res = await fetchJdListApi();
-    if (!res.success) {
-      set({ isLoading: false, error: "목록을 불러오지 못했습니다." });
-      return;
+    try {
+      const raw = await userJobDescriptionApi.list();
+      const items = raw.map(transform);
+      const { searchQuery, activeFilter } = get();
+      set({
+        isLoading: false,
+        items,
+        stats: calcStats(items),
+        filtered: applyFilter(items, searchQuery, activeFilter),
+      });
+    } catch (e) {
+      set({
+        isLoading: false,
+        error: e instanceof Error ? e.message : "목록을 불러오지 못했습니다.",
+      });
     }
-    const { searchQuery, activeFilter } = get();
-    set({
-      isLoading: false,
-      items: res.data,
-      stats: calcStats(res.data),
-      filtered: applyFilter(res.data, searchQuery, activeFilter),
-    });
   },
 
   setSearch: (searchQuery) => {

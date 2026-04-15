@@ -13,9 +13,7 @@ import { VerifyEmailPage } from "@/pages/verify-email";
 import { OnboardingPage } from "@/pages/onboarding";
 import { HomePage } from "@/pages/home";
 import { JdAddPage } from "@/pages/jd-add";
-import { JdAnalyzingPage } from "@/pages/jd-analyzing";
 import { JdDetailPage } from "@/pages/jd-detail";
-import { JdEditPage } from "@/pages/jd-edit";
 import { JdListPage } from "@/pages/jd-list";
 import { ResumeNewPage } from "@/pages/resume-new";
 import { ResumeListPage } from "@/pages/resume-list";
@@ -64,9 +62,7 @@ function App() {
         {/* ── 보호 라우트 (로그인 필요) ── */}
         <Route path="/home" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
         <Route path="/jd/add" element={<ProtectedRoute><JdAddPage /></ProtectedRoute>} />
-        <Route path="/jd/analyzing" element={<ProtectedRoute><JdAnalyzingPage /></ProtectedRoute>} />
-        <Route path="/jd/detail/:id" element={<ProtectedRoute><JdDetailPage /></ProtectedRoute>} />
-        <Route path="/jd/edit/:id" element={<ProtectedRoute><JdEditPage /></ProtectedRoute>} />
+        <Route path="/jd/:uuid" element={<ProtectedRoute><JdDetailPage /></ProtectedRoute>} />
         <Route path="/jd" element={<ProtectedRoute><JdListPage /></ProtectedRoute>} />
         <Route path="/resume" element={<ProtectedRoute><ResumeListPage /></ProtectedRoute>} />
         <Route path="/resume/new" element={<ProtectedRoute><ResumeNewPage /></ProtectedRoute>} />
