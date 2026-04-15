@@ -270,7 +270,7 @@ export default {
         },
       })
 
-      // backdrop-blur 유틸리티에 webkit 접두사 병행 적용 (고정값 + 임의값)
+      // backdrop-blur 유틸리티에 webkit 접두사 병행 적용
       const blurValues: Record<string, string> = {
         'none': '0',
         'sm':   '4px',
@@ -280,10 +280,6 @@ export default {
         'xl':   '24px',
         '2xl':  '40px',
         '3xl':  '64px',
-        // 프로젝트에서 사용 중인 숫자 토큰
-        '4':    '4px',
-        '8':    '8px',
-        '20':   '20px',
       }
       const backdropUtilities: Record<string, Record<string, string>> = {}
       Object.entries(blurValues).forEach(([key, val]) => {
@@ -293,19 +289,7 @@ export default {
           '-webkit-backdrop-filter': `blur(${val})`,
         }
       })
-      // 임의값 클래스 (e.g. backdrop-blur-[4px]) 는 CSS에서 직접 커버
       addUtilities(backdropUtilities)
-
-      // gradient-text 유틸리티 (크로스브라우저)
-      addUtilities({
-        '.gradient-text': {
-          background: 'linear-gradient(135deg, #0991B2, #06B6D4)',
-          '-webkit-background-clip': 'text',
-          '-webkit-text-fill-color': 'transparent',
-          'background-clip': 'text',
-          'color': 'transparent', // Firefox fallback
-        },
-      })
 
       // reveal 애니메이션 유틸리티 (JS 클래스 토글 방식)
       addUtilities({

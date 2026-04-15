@@ -28,6 +28,16 @@
 }
 
 /* ════════════════════════════════════════════
+   전역 유틸리티
+   ════════════════════════════════════════════ */
+.gradient-text {
+  background: linear-gradient(135deg, #0991B2, #06B6D4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ════════════════════════════════════════════
    전역 리셋
    ════════════════════════════════════════════ */
 *,
