@@ -104,7 +104,7 @@ export function NavPill() {
         <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
           {isAuthenticated ? (
             <button
-              onClick={() => navigate("/home")}
+              onClick={() => navigate("/")}
               style={{
                 fontFamily: "'Inter', sans-serif",
                 fontSize: 14,

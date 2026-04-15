@@ -12,6 +12,8 @@ import { WhySection } from "./WhySection";
 import { CtaSection } from "./CtaSection";
 import { FooterSection } from "./FooterSection";
 import { useAuthStore } from "@/features/auth";
+import { AppLayout } from "@/app/AppLayout";
+import { HomeContent } from "@/pages/home/ui/HomeContent";
 
 export function LandingPage() {
   const navigate = useNavigate();
@@ -19,16 +21,24 @@ export function LandingPage() {
 
   useEffect(() => {
     if (!authReady || !user) return;
-    // 이미 로그인된 사용자를 적절한 화면으로 리다이렉트
+    // 이메일 미인증 또는 프로필 미완성 사용자는 해당 페이지로 이동
     if (!user.isEmailConfirmed) {
       navigate("/verify-email", { replace: true });
     } else if (!user.isProfileCompleted) {
       navigate("/onboarding", { replace: true });
-    } else {
-      navigate("/home", { replace: true });
     }
   }, [authReady, user, navigate]);
 
+  // 로그인 완료된 사용자: 홈 대시보드를 AppLayout 안에서 렌더
+  if (authReady && user?.isEmailConfirmed && user?.isProfileCompleted) {
+    return (
+      <AppLayout>
+        <HomeContent />
+      </AppLayout>
+    );
+  }
+
+  // 비로그인 사용자 또는 인증 대기 중: 랜딩 페이지
   return (
     <>
       <Navbar />

@@ -27,7 +27,7 @@ export function InterviewCompletePage() {
             면접 결과 보기 →
           </Link>
           <Link
-            to="/home"
+            to="/"
             className="w-full py-3.5 rounded-xl font-bold text-base text-[#374151] bg-white border border-[#E5E7EB] flex items-center justify-center no-underline hover:bg-[#F9FAFB] transition-colors"
           >
             홈으로 이동

@@ -34,7 +34,7 @@ export function LoginPage() {
       } else if (result.isProfileCompleted === false) {
         navigate("/onboarding");
       } else {
-        navigate("/home");
+        navigate("/");
       }
     }
   };
