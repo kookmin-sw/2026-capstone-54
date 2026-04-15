@@ -22,12 +22,12 @@ export function Input({
   return (
     <div className={fullWidth ? "w-full" : ""}>
       {label && (
-        <div className="flex items-center justify-between text-[13px] font-bold text-[#0A0A0A] mb-2">
+        <div className="flex items-center justify-between text-sm font-bold text-mefit-black mb-2">
           <span>
-            {label} {required && <span className="text-[#0991B2] ml-0.5">*</span>}
+            {label} {required && <span className="text-mefit-primary ml-0.5">*</span>}
           </span>
           {helperText && (
-            <span className="text-[11px] text-[#6B7280] font-normal">{helperText}</span>
+            <span className="text-2xs text-mefit-gray-500 font-normal">{helperText}</span>
           )}
         </div>
       )}
@@ -38,16 +38,20 @@ export function Input({
           </span>
         )}
         <input
-          className={`w-full bg-white border border-[#E5E7EB] rounded-lg py-[13px] px-4 ${
-            icon ? "pl-11" : ""
-          } text-sm font-medium text-[#0A0A0A] outline-none transition-[border-color] appearance-none focus:border-[#0991B2] focus:shadow-[0_0_0_3px_rgba(9,145,178,0.1)] placeholder:text-[#D1D5DB] disabled:bg-[#F3F4F6] disabled:cursor-not-allowed ${
-            error ? "border-[#DC2626]" : ""
-          }`}
+          className={[
+            "w-full bg-white border border-mefit-gray-200 rounded-lg py-[13px] px-4",
+            icon ? "pl-11" : "",
+            "text-lg font-medium text-mefit-black outline-none transition-[border-color] appearance-none",
+            "focus:border-mefit-primary focus:shadow-ring-primary",
+            "placeholder:text-mefit-gray-300",
+            "disabled:bg-mefit-gray-100 disabled:cursor-not-allowed",
+            error ? "border-mefit-danger" : "",
+          ].join(" ")}
           {...props}
         />
       </div>
       {error && (
-        <div className="flex items-center gap-1.5 text-[12px] font-semibold mt-1.5 text-[#DC2626]">
+        <div className="flex items-center gap-1.5 text-xs font-semibold mt-1.5 text-mefit-danger">
           ✗ {error}
         </div>
       )}

@@ -9,11 +9,11 @@ interface ToggleProps {
 
 export function Toggle({ checked, onChange, label, description, disabled }: ToggleProps) {
   return (
-    <div className="flex items-center justify-between py-[14px] px-4 bg-white border border-[#E5E7EB] rounded-lg">
+    <div className="flex items-center justify-between py-[14px] px-4 bg-white border border-mefit-gray-200 rounded-lg">
       {(label || description) && (
         <div className="flex-1">
-          {label && <div className="text-[13px] font-bold text-[#0A0A0A]">{label}</div>}
-          {description && <div className="text-[11px] text-[#6B7280] mt-0.5">{description}</div>}
+          {label && <div className="text-sm font-bold text-mefit-black">{label}</div>}
+          {description && <div className="text-2xs text-mefit-gray-500 mt-0.5">{description}</div>}
         </div>
       )}
       <label className="relative w-11 h-6 shrink-0 cursor-pointer" aria-label={label}>
@@ -24,14 +24,14 @@ export function Toggle({ checked, onChange, label, description, disabled }: Togg
           onChange={(e) => onChange(e.target.checked)}
           disabled={disabled}
         />
-        <div
-          className="absolute inset-0 rounded-full transition-[background] duration-[250ms]"
-          style={{ background: checked ? "#0991B2" : "#E5E7EB" }}
-        />
-        <div
-          className="absolute left-[3px] top-[3px] w-[18px] h-[18px] rounded-full bg-white shadow-[0_1px_3px_rgba(0,0,0,0.2)] transition-transform duration-[250ms] pointer-events-none"
-          style={{ transform: checked ? "translateX(20px)" : "translateX(0)" }}
-        />
+        {/* 트랙 */}
+        <div className={`absolute inset-0 rounded-full transition-colors duration-[250ms] ${
+          checked ? "bg-mefit-primary" : "bg-mefit-gray-200"
+        }`} />
+        {/* 썸 */}
+        <div className={`absolute top-[3px] left-[3px] w-[18px] h-[18px] rounded-full bg-white shadow-toggle transition-transform duration-[250ms] pointer-events-none ${
+          checked ? "translate-x-5" : "translate-x-0"
+        }`} />
       </label>
     </div>
   );

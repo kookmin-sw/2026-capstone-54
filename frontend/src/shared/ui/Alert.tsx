@@ -8,16 +8,16 @@ interface AlertProps {
 }
 
 const variantStyles = {
-  info: "bg-[#ECFDF5] border-[#A7F3D0] text-[#0A0A0A]",
-  success: "bg-[#ECFDF5] border-[#A7F3D0] text-[#0A0A0A]",
-  warning: "bg-[rgba(245,158,11,0.08)] border-[rgba(245,158,11,0.2)] text-[#D97706]",
-  error: "bg-[#FEF2F2] border-[#FECACA] text-[#DC2626]",
+  info:    "bg-mefit-success-light border-mefit-success-border text-mefit-black",
+  success: "bg-mefit-success-light border-mefit-success-border text-mefit-black",
+  warning: "bg-mefit-warning-light border-mefit-warning-border text-mefit-warning",
+  error:   "bg-mefit-danger-light border-mefit-danger-border text-mefit-danger",
 };
 
 export function Alert({ children, variant = "info", className = "" }: AlertProps) {
   return (
     <div
-      className={`text-[13px] font-semibold py-[10px] px-3.5 rounded-lg border ${variantStyles[variant]} ${className}`}
+      className={`text-sm font-semibold py-[10px] px-3.5 rounded-lg border ${variantStyles[variant]} ${className}`}
       role="alert"
     >
       {children}

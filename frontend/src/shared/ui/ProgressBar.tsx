@@ -27,13 +27,13 @@ export function ProgressBar({
     <div className={className}>
       {showLabel && (
         <div className="flex justify-between items-center mb-2">
-          <span className="text-[13px] text-[#6B7280]">{label || "진행률"}</span>
-          <span className="text-[13px] font-bold text-[#0A0A0A]">{Math.round(percentage)}%</span>
+          <span className="text-sm text-mefit-gray-500">{label || "진행률"}</span>
+          <span className="text-sm font-bold text-mefit-black">{Math.round(percentage)}%</span>
         </div>
       )}
-      <div className={`w-full bg-[#E5E7EB] rounded-full overflow-hidden ${heightStyles[height]}`}>
+      <div className={`w-full bg-mefit-gray-200 rounded-full overflow-hidden ${heightStyles[height]}`}>
         <div
-          className="h-full bg-gradient-to-r from-[#0991B2] to-[#06B6D4] rounded-full transition-[width] duration-[400ms] ease-in-out"
+          className="h-full bg-gradient-to-r from-mefit-primary to-mefit-primary-mid rounded-full transition-[width] duration-[400ms] ease-in-out"
           style={{ width: `${percentage}%` }}
         />
       </div>
