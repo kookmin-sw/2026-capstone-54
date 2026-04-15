@@ -44,11 +44,4 @@ describe("resumeApi", () => {
     await resumeApi.remove("uuid-del");
     expect(mockApiRequest).toHaveBeenCalledWith("/api/v1/resumes/uuid-del/", { method: "DELETE", auth: true });
   });
-
-  it("activate/deactivate 는 올바른 액션 URL로 POST", async () => {
-    await resumeApi.activate("u1");
-    await resumeApi.deactivate("u1");
-    expect(mockApiRequest).toHaveBeenCalledWith("/api/v1/resumes/u1/activate/", { method: "POST", auth: true });
-    expect(mockApiRequest).toHaveBeenCalledWith("/api/v1/resumes/u1/deactivate/", { method: "POST", auth: true });
-  });
 });

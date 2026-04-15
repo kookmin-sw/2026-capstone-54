@@ -11,8 +11,6 @@ jest.mock("@/shared/api/client", () => ({
 jest.mock("@/features/resume/api/resumeApi", () => ({
   resumeApi: {
     retrieve: jest.fn(),
-    activate: jest.fn(),
-    deactivate: jest.fn(),
     remove: jest.fn(),
     finalize: jest.fn(),
   },
@@ -30,7 +28,6 @@ const fakeResume: ResumeDetail = {
   type: "text",
   sourceMode: "text",
   title: "백엔드 개발자 이력서",
-  isActive: true,
   isParsed: true,
   isDirty: false,
   lastFinalizedAt: null,

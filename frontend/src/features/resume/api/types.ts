@@ -102,7 +102,6 @@ export interface ResumeListItem {
   type: ResumeType;
   sourceMode: ResumeSourceMode;
   title: string;
-  isActive: boolean;
   isParsed: boolean;
   isDirty: boolean;
   lastFinalizedAt: string | null;
@@ -140,8 +139,6 @@ export interface ResumeCountStats {
   pending: number;
   completed: number;
   failed: number;
-  active: number;
-  inactive: number;
 }
 
 export interface ResumeTypeStats {
