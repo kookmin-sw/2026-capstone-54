@@ -1,4 +1,4 @@
-"""이력서 CRUD ViewSet. 목록 / 상세 / 생성 / 수정 / 삭제 + 활성화·최종저장 액션."""
+"""이력서 CRUD ViewSet. 목록 / 상세 / 생성 / 수정 / 삭제 + 최종저장 액션."""
 
 from api.v1.resumes.filters import ResumeFilter
 from api.v1.resumes.serializers import (
@@ -20,10 +20,8 @@ from rest_framework.response import Response
 from resumes.enums import ResumeType
 from resumes.models import Resume
 from resumes.services import (
-  ActivateResumeService,
   CreateFileResumeService,
   CreateTextResumeService,
-  DeactivateResumeService,
   DeleteResumeService,
   FinalizeResumeService,
   UpdateFileResumeService,
@@ -166,20 +164,6 @@ class ResumeViewSet(BaseGenericViewSet):
       return UpdateFileResumeService(user=self.current_user, resume=resume, **validated_data).perform()
     # STRUCTURED 는 전체 재작성 API 를 제공하지 않고 섹션 편집으로만 수정한다
     return resume
-
-  @extend_schema(summary="이력서 활성화", responses={200: ResumeSerializer})
-  @action(detail=True, methods=["post"], url_path="activate")
-  def activate(self, request, uuid=None):
-    resume = self.get_object()
-    ActivateResumeService(resume=resume).perform()
-    return Response(ResumeSerializer(resume).data)
-
-  @extend_schema(summary="이력서 비활성화", responses={200: ResumeSerializer})
-  @action(detail=True, methods=["post"], url_path="deactivate")
-  def deactivate(self, request, uuid=None):
-    resume = self.get_object()
-    DeactivateResumeService(resume=resume).perform()
-    return Response(ResumeSerializer(resume).data)
 
   @extend_schema(
     summary="이력서 최종 저장 (재임베딩 트리거)",
