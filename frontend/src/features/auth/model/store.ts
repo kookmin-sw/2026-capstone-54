@@ -35,7 +35,7 @@ interface AuthState {
   initAuth: () => Promise<void>;
   setPendingEmail: (email: string) => void;
   clearError: () => void;
-  setUser: (user: UserMe) => void;
+  setUser: (user: UserMe | null) => void;
 }
 
 export const useAuthStore = create<AuthState>()((set) => ({
