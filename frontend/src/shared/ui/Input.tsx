@@ -41,7 +41,7 @@ export function Input({
           className={[
             "w-full bg-white border border-mefit-gray-200 rounded-lg py-[13px] px-4",
             icon ? "pl-11" : "",
-            "text-base font-medium text-mefit-black outline-none transition-[border-color] appearance-none",
+            "text-lg font-medium text-mefit-black outline-none transition-[border-color] appearance-none",
             "focus:border-mefit-primary focus:shadow-ring-primary",
             "placeholder:text-mefit-gray-300",
             "disabled:bg-mefit-gray-100 disabled:cursor-not-allowed",
