@@ -26,6 +26,10 @@
   /* 타이포그래피 렌더링 */
   font-synthesis: none;
   text-rendering: optimizeLegibility;
+
+  /* Windows ClearType 보정: 폰트가 두꺼워 보이는 현상 완화 */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* ════════════════════════════════════════════
@@ -66,6 +70,9 @@ body {
   min-height: 100vh;
   min-width: 320px;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-smooth: always;
 }
 
 button {
