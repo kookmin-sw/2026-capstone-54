@@ -8,6 +8,7 @@ from interviews.factories import InterviewSessionFactory, InterviewTurnFactory
 from rest_framework import status
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
+from tickets.factories import UserTicketFactory
 from users.factories import UserFactory
 
 
@@ -26,6 +27,7 @@ class StartInterviewViewTests(TestCase):
       total_questions=0,
     )
     self.url = reverse("interview-start", kwargs={"interview_session_uuid": str(self.session.pk)})
+    UserTicketFactory(user=self.user, daily_count=10, purchased_count=0)
 
   def _mock_turns(self, count=3):
     turns = [InterviewTurnFactory.build(interview_session=self.session, turn_number=i + 1) for i in range(count)]
@@ -77,6 +79,14 @@ class StartInterviewViewTests(TestCase):
   def test_nonexistent_session_uuid_returns_404(self):
     """존재하지 않는 세션 UUID이면 404를 반환한다."""
     import uuid
+
     url = reverse("interview-start", kwargs={"interview_session_uuid": str(uuid.uuid4())})
     response = self.client.post(url)
     self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+  def test_insufficient_tickets_returns_400(self):
+    """티켓이 부족하면 400을 반환한다."""
+    self.user.ticket.delete()
+    response = self.client.post(self.url)
+    self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+    self.assertIn("티켓이 부족합니다", str(response.data))
