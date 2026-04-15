@@ -18,8 +18,12 @@ export const useHomeStore = create<HomeState>()((set) => ({
     set({ loading: true, error: null });
     try {
       const res = await fetchHomeDataApi();
-      if (res.success && res.data) {
-        set({ data: res.data, loading: false });
+      if (res.data) {
+        set({
+          data: res.data,
+          error: res.success ? null : (res.error || "데이터를 불러오지 못했습니다."),
+          loading: false,
+        });
       } else {
         set({ error: res.error || "데이터를 불러오지 못했습니다.", loading: false });
       }
