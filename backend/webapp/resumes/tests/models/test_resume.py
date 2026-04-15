@@ -11,7 +11,6 @@ class ResumeModelTests(TestCase):
     self.assertEqual(resume.analysis_status, AnalysisStatus.PENDING)
     self.assertEqual(resume.analysis_step, AnalysisStep.QUEUED)
     self.assertFalse(resume.is_parsed)
-    self.assertTrue(resume.is_active)
     self.assertIsNotNone(resume.uuid)
 
   def test_uuid가_pk로_사용됨(self):

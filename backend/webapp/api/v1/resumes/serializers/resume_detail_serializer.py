@@ -31,7 +31,6 @@ class ResumeDetailSerializer(serializers.ModelSerializer):
       "type",
       "source_mode",
       "title",
-      "is_active",
       "is_parsed",
       "is_dirty",
       "last_finalized_at",

@@ -17,13 +17,11 @@ class FileResumeAdmin(ModelAdmin):
     "title",
     "analysis_status",
     "analysis_step",
-    "is_active",
     "created_at",
   )
   list_filter = (
     "analysis_status",
     "analysis_step",
-    "is_active",
   )
   list_select_related = ("user", )
   search_fields = (
@@ -49,9 +47,6 @@ class FileResumeAdmin(ModelAdmin):
         "parsed_data",
         "analyzed_at",
       ),
-    }),
-    ("활성화", {
-      "fields": ("is_active", ),
     }),
     ("날짜", {
       "fields": (

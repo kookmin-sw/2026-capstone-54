@@ -10,7 +10,7 @@ from resumes.models import Resume
 
 
 class ResumeCountStatsService:
-  """전체/분석 중/실패/활성/비활성 개수."""
+  """전체/분석 중/실패 개수."""
 
   def __init__(self, user):
     self.user = user
@@ -23,8 +23,6 @@ class ResumeCountStatsService:
       pending=Count("pk", filter=Q(analysis_status=AnalysisStatus.PENDING)),
       completed=Count("pk", filter=Q(analysis_status=AnalysisStatus.COMPLETED)),
       failed=Count("pk", filter=Q(analysis_status=AnalysisStatus.FAILED)),
-      active=Count("pk", filter=Q(is_active=True)),
-      inactive=Count("pk", filter=Q(is_active=False)),
     )
     return {
       "total": agg["total"],
@@ -32,8 +30,6 @@ class ResumeCountStatsService:
       "pending": agg["pending"],
       "completed": agg["completed"],
       "failed": agg["failed"],
-      "active": agg["active"],
-      "inactive": agg["inactive"],
     }
 
 

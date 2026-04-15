@@ -10,7 +10,6 @@ class ResumeFilter(filters.FilterSet):
     - type: text | file | structured
     - analysis_status: pending | processing | completed | failed
     - analysis_step: queued | extracting_text | embedding | analyzing | finalizing | done
-    - is_active: true | false
     - title: 제목 부분 검색 (contains)
   """
 
@@ -18,4 +17,4 @@ class ResumeFilter(filters.FilterSet):
 
   class Meta:
     model = Resume
-    fields = ["type", "analysis_status", "analysis_step", "is_active", "title"]
+    fields = ["type", "analysis_status", "analysis_step", "title"]

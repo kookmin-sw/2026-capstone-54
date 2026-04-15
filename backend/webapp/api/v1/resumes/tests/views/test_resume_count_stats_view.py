@@ -24,12 +24,11 @@ class ResumeCountStatsViewTests(TestCase):
     self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {str(RefreshToken.for_user(self.user).access_token)}")
     TextResumeFactory(
       user=self.user,
-      is_active=True,
       is_parsed=True,
       analysis_status=AnalysisStatus.COMPLETED,
       analyzed_at=timezone.now(),
     )
-    TextResumeFactory(user=self.user, is_active=False, analysis_status=AnalysisStatus.PROCESSING)
+    TextResumeFactory(user=self.user, analysis_status=AnalysisStatus.PROCESSING)
     FileResumeFactory(user=self.user, analysis_status=AnalysisStatus.FAILED)
     self.url = reverse("resume-stats-count")
 
@@ -41,8 +40,6 @@ class ResumeCountStatsViewTests(TestCase):
     self.assertEqual(body["completed"], 1)
     self.assertEqual(body["processing"], 1)
     self.assertEqual(body["failed"], 1)
-    self.assertEqual(body["active"], 2)
-    self.assertEqual(body["inactive"], 1)
 
   def test_excludes_other_users(self):
     other = UserFactory(email_confirmed_at=timezone.now())
