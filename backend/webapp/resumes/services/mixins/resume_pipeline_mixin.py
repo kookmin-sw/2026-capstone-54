@@ -4,14 +4,19 @@ from celery import current_app
 from resumes.enums import AnalysisStatus, AnalysisStep
 from resumes.models import ResumeEmbedding
 
-PROCESS_RESUME_TASK = "store_resume.tasks.process_resume"
+PROCESS_RESUME_TASK = "analysis_resume.tasks.process_resume"
+REEMBED_RESUME_TASK = "analysis_resume.tasks.reembed_resume"
+ANALYSIS_RESUME_QUEUE = "analysis-resume"
 
 
 class ResumePipelineMixin:
   """이력서 Create/Update 서비스가 공유하는 파이프라인 관련 유틸리티."""
 
   def _dispatch_pipeline(self, resume, **extra_kwargs):
-    """store-resume Celery 태스크를 발행한다."""
+    """analysis-resume Celery 태스크(process_resume)를 발행한다.
+
+    신규 text/file 이력서가 생성/갱신될 때 호출된다.
+    """
     current_app.send_task(
       PROCESS_RESUME_TASK,
       kwargs={
@@ -19,7 +24,22 @@ class ResumePipelineMixin:
         "user_id": resume.user_id,
         **extra_kwargs,
       },
-      queue="store-resume",
+      queue=ANALYSIS_RESUME_QUEUE,
+    )
+
+  def _dispatch_reembed_pipeline(self, resume, *, bundle_url: str):
+    """analysis-resume Celery 태스크(reembed_resume)를 발행한다.
+
+    섹션 편집 후 최종 저장 시 bundle URL 을 전달해 임베딩만 재생성한다.
+    """
+    current_app.send_task(
+      REEMBED_RESUME_TASK,
+      kwargs={
+        "resume_uuid": str(resume.pk),
+        "user_id": resume.user_id,
+        "bundle_url": bundle_url,
+      },
+      queue=ANALYSIS_RESUME_QUEUE,
     )
 
   def _cleanup_embeddings_and_reset(self, resume):

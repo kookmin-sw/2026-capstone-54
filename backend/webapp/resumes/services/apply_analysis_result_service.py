@@ -25,7 +25,7 @@ from resumes.services.resume_parsed_data_writer import ResumeParsedDataWriter
 class ApplyAnalysisResultService(BaseService):
   """analysis-resume 이 완료 payload 를 backend 로 넘길 때 호출되는 서비스."""
 
-  required_value_kwargs = ["resume", "parsed_data"]
+  required_value_kwargs = ["resume"]
 
   def execute(self):
     resume: Resume = self.kwargs["resume"]

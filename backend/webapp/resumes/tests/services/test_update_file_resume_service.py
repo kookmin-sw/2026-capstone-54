@@ -123,9 +123,9 @@ class UpdateFileResumeServiceTests(TestCase):
     # Celery 태스크 발행 확인
     mock_send_task.assert_called_once()
     call_kwargs = mock_send_task.call_args
-    self.assertEqual(call_kwargs.args[0], "store_resume.tasks.process_resume")
+    self.assertEqual(call_kwargs.args[0], "analysis_resume.tasks.process_resume")
     self.assertEqual(call_kwargs.kwargs["kwargs"]["resume_uuid"], str(self.resume.pk))
     self.assertEqual(call_kwargs.kwargs["kwargs"]["user_id"], self.user.id)
     self.assertEqual(call_kwargs.kwargs["kwargs"]["type"], "file")
     self.assertEqual(call_kwargs.kwargs["kwargs"]["storage_path"], "media/resumes/test/path.pdf")
-    self.assertEqual(call_kwargs.kwargs["queue"], "store-resume")
+    self.assertEqual(call_kwargs.kwargs["queue"], "analysis-resume")
