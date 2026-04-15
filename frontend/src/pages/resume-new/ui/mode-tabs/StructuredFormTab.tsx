@@ -31,6 +31,11 @@ const EMPTY_PARSED: ParsedData = {
   jobCategory: null,
 };
 
+const JOB_CATEGORY_OPTIONS = [
+  "IT/개발", "마케팅", "디자인", "영업", "재무/회계",
+  "인사", "기획", "CS", "디지털 마케팅", "기타",
+];
+
 const csvToList = (csv: string): string[] =>
   csv.split(",").map((s) => s.trim()).filter(Boolean);
 
@@ -168,12 +173,25 @@ export function StructuredFormTab() {
       </Section>
 
       <Section title="직군">
-        <input
-          value={data.jobCategory ?? ""}
-          onChange={(e) => patch({ jobCategory: e.target.value || null })}
-          placeholder="예: IT/개발, 마케팅, 디자인 …"
-          className={inputCls}
-        />
+        <div className="flex flex-wrap gap-2">
+          {JOB_CATEGORY_OPTIONS.map((label) => {
+            const active = data.jobCategory === label;
+            return (
+              <button
+                key={label}
+                type="button"
+                onClick={() => patch({ jobCategory: active ? null : label })}
+                className={`px-3 py-1.5 rounded-full border text-[12px] font-semibold transition-colors ${
+                  active
+                    ? "bg-[#E6F7FA] border-[#0991B2] text-[#0991B2]"
+                    : "bg-white border-[#E5E7EB] text-[#374151] hover:border-[#0991B2]"
+                }`}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
       </Section>
 
       <Section title="스킬 (콤마 구분)">
