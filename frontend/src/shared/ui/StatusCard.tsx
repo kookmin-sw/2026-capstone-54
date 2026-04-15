@@ -26,19 +26,19 @@ export function StatusCard<T extends string | number = string>({ options, select
         <button
           key={String(opt.value)}
           type="button"
-          className={`py-[14px] px-3 rounded-lg border cursor-pointer text-center transition-all shadow-[0_1px_3px_rgba(0,0,0,0.08)] hover:-translate-y-0.5 hover:shadow-[0_1px_3px_rgba(0,0,0,0.1)] hover:border-[#0991B2] ${
+          className={`py-[14px] px-3 rounded-lg border cursor-pointer text-center transition-all shadow-widget hover:-translate-y-0.5 hover:shadow-sm hover:border-mefit-primary ${
             selected === opt.value
-              ? "border-[#0991B2] bg-[#E6F7FA] shadow-[0_1px_3px_rgba(0,0,0,0.1)]"
-              : "border-[#E5E7EB] bg-white"
+              ? "border-mefit-primary bg-mefit-primary-light shadow-sm"
+              : "border-mefit-gray-200 bg-white"
           }`}
           onClick={() => onSelect(opt.value)}
           aria-pressed={selected === opt.value}
         >
           <span className="text-[22px] mb-1.5 block">{opt.icon}</span>
-          <div className={`text-[12px] font-extrabold ${selected === opt.value ? "text-[#0991B2]" : "text-[#0A0A0A]"}`}>
+          <div className={`text-xs font-extrabold ${selected === opt.value ? "text-mefit-primary" : "text-mefit-black"}`}>
             {opt.label}
           </div>
-          <div className="text-[10px] text-[#9CA3AF] mt-0.5">{opt.desc}</div>
+          <div className="text-[10px] text-mefit-gray-400 mt-0.5">{opt.desc}</div>
         </button>
       ))}
     </div>

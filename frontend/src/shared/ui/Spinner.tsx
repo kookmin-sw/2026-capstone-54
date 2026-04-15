@@ -13,7 +13,7 @@ const sizeStyles = {
 export function Spinner({ size = "md", className = "" }: SpinnerProps) {
   return (
     <div
-      className={`rounded-full border-[rgba(9,145,178,0.15)] border-t-[#0991B2] animate-[ri-spin_0.7s_linear_infinite] ${sizeStyles[size]} ${className}`}
+      className={`rounded-full border-mefit-primary-ring border-t-mefit-primary animate-spin-slow ${sizeStyles[size]} ${className}`}
     />
   );
 }

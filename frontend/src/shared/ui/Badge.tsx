@@ -10,17 +10,17 @@ interface BadgeProps {
 }
 
 const variantStyles = {
-  default: "bg-[#F3F4F6] text-[#9CA3AF]",
-  success: "bg-[#D1FAE5] text-[#047857]",
-  warning: "bg-[rgba(245,158,11,0.08)] text-[#D97706] border-[rgba(245,158,11,0.2)]",
-  error: "bg-[#FEF2F2] text-[#DC2626] border-[#FECACA]",
-  info: "bg-[#E6F7FA] text-[#0991B2]",
-  primary: "bg-[#E6F7FA] text-[#0991B2] border-[#0991B2]",
+  default: "bg-mefit-gray-100 text-mefit-gray-400",
+  success: "bg-mefit-success-light text-mefit-success",
+  warning: "bg-mefit-warning-light text-mefit-warning border-mefit-warning-border",
+  error:   "bg-mefit-danger-light text-mefit-danger border-mefit-danger-border",
+  info:    "bg-mefit-primary-light text-mefit-primary",
+  primary: "bg-mefit-primary-light text-mefit-primary border-mefit-primary",
 };
 
 const sizeStyles = {
-  sm: "text-[11px] px-2.5 py-[3px]",
-  md: "text-[11px] px-3 py-[5px]",
+  sm: "text-2xs px-2.5 py-[3px]",
+  md: "text-2xs px-3 py-[5px]",
 };
 
 export function Badge({ children, variant = "default", size = "md", className = "", style }: BadgeProps) {

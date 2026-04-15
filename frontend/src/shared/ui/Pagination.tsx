@@ -14,7 +14,7 @@ export function Pagination({ currentPage, totalPages, onPageChange, className = 
       <button
         disabled={currentPage === 1}
         onClick={() => onPageChange(currentPage - 1)}
-        className="px-3 py-1.5 text-[13px] font-semibold text-[#6B7280] border border-[#E5E7EB] rounded-lg hover:bg-[#F9FAFB] disabled:opacity-40 disabled:cursor-not-allowed"
+        className="px-3 py-1.5 text-sm font-semibold text-mefit-gray-500 border border-mefit-gray-200 rounded-lg hover:bg-mefit-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
       >
         ← 이전
       </button>
@@ -23,10 +23,10 @@ export function Pagination({ currentPage, totalPages, onPageChange, className = 
         <button
           key={p}
           onClick={() => onPageChange(p)}
-          className={`w-8 h-8 text-[13px] font-bold rounded-lg border transition-colors ${
+          className={`w-8 h-8 text-sm font-bold rounded-lg border transition-colors ${
             p === currentPage
-              ? "bg-[#0A0A0A] text-white border-[#0A0A0A]"
-              : "text-[#6B7280] border-[#E5E7EB] hover:bg-[#F9FAFB]"
+              ? "bg-mefit-black text-white border-mefit-black"
+              : "text-mefit-gray-500 border-mefit-gray-200 hover:bg-mefit-gray-50"
           }`}
         >
           {p}
@@ -36,7 +36,7 @@ export function Pagination({ currentPage, totalPages, onPageChange, className = 
       <button
         disabled={currentPage === totalPages}
         onClick={() => onPageChange(currentPage + 1)}
-        className="px-3 py-1.5 text-[13px] font-semibold text-[#6B7280] border border-[#E5E7EB] rounded-lg hover:bg-[#F9FAFB] disabled:opacity-40 disabled:cursor-not-allowed"
+        className="px-3 py-1.5 text-sm font-semibold text-mefit-gray-500 border border-mefit-gray-200 rounded-lg hover:bg-mefit-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
       >
         다음 →
       </button>

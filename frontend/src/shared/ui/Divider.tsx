@@ -11,5 +11,5 @@ const spacingStyles = {
 };
 
 export function Divider({ className = "", spacing = "md" }: DividerProps) {
-  return <div className={`h-px bg-[#E5E7EB] ${spacingStyles[spacing]} ${className}`} />;
+  return <div className={`h-px bg-mefit-gray-200 ${spacingStyles[spacing]} ${className}`} />;
 }

@@ -14,14 +14,14 @@ export function PageHeader({ badge, title, description, action, className = "" }
     <div className={`flex items-start justify-between mb-8 gap-4 ${className}`}>
       <div>
         {badge && (
-          <div className="inline-flex items-center gap-1.5 text-[11px] font-bold tracking-[1.4px] uppercase text-[#0991B2] bg-[#E6F7FA] py-1 px-3 rounded-full mb-2.5">
+          <div className="inline-flex items-center gap-1.5 text-2xs font-bold tracking-[1.4px] uppercase text-mefit-primary bg-mefit-primary-light py-1 px-3 rounded-full mb-2.5">
             {badge}
           </div>
         )}
-        <h1 className="text-[clamp(24px,3vw,36px)] font-black tracking-[-0.8px] text-[#0A0A0A] leading-[1.1]">
+        <h1 className="text-[clamp(24px,3vw,36px)] font-black tracking-[-0.8px] text-mefit-black leading-[1.1]">
           {title}
         </h1>
-        {description && <p className="text-sm text-[#6B7280] mt-1.5">{description}</p>}
+        {description && <p className="text-base text-mefit-gray-500 mt-1.5">{description}</p>}
       </div>
       {action && <div>{action}</div>}
     </div>
