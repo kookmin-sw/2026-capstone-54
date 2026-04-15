@@ -15,10 +15,10 @@ class SeedTicketPolicyServiceTests(TestCase):
     self.assertEqual(SubscriptionPlanTicketPolicy.objects.count(), 2)
 
     free = SubscriptionPlanTicketPolicy.objects.get(plan_type=PlanType.FREE)
-    self.assertEqual(free.daily_ticket_amount, 30)
+    self.assertEqual(free.daily_ticket_amount, 10)
 
     pro = SubscriptionPlanTicketPolicy.objects.get(plan_type=PlanType.PRO)
-    self.assertEqual(pro.daily_ticket_amount, 300)
+    self.assertEqual(pro.daily_ticket_amount, 30)
 
   def test_skips_existing_policies(self):
     """이미 존재하는 정책은 건너뛴다."""
@@ -30,6 +30,5 @@ class SeedTicketPolicyServiceTests(TestCase):
     result = SeedTicketPolicyService().perform()
 
     self.assertEqual(result["created_count"], 1)
-    # 기존 FREE 정책의 값은 변경되지 않는다
     free = SubscriptionPlanTicketPolicy.objects.get(plan_type=PlanType.FREE)
     self.assertEqual(free.daily_ticket_amount, 10)

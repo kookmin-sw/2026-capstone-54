@@ -1,14 +1,15 @@
+from config.settings.base import FREE_DAILY_TICKET_AMOUNT, PRO_DAILY_TICKET_AMOUNT
 from subscriptions.enums import PlanType
 from subscriptions.models import SubscriptionPlanTicketPolicy
 
 DEFAULT_POLICIES = [
   {
     "plan_type": PlanType.FREE,
-    "daily_ticket_amount": 30
+    "daily_ticket_amount": FREE_DAILY_TICKET_AMOUNT
   },
   {
     "plan_type": PlanType.PRO,
-    "daily_ticket_amount": 300
+    "daily_ticket_amount": PRO_DAILY_TICKET_AMOUNT
   },
 ]
 
@@ -16,8 +17,8 @@ DEFAULT_POLICIES = [
 class SeedTicketPolicyService:
   """구독 플랜별 기본 티켓 정책을 생성한다.
 
-  이미 존재하는 plan_type은 건너뛴다.
-  """
+    이미 존재하는 plan_type은 건너뛴다.
+    """
 
   def perform(self):
     created_count = 0
