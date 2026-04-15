@@ -1,20 +1,21 @@
 import { SelectableCard } from "@/shared/ui/SelectableCard";
 
 interface JdItem {
-  id: number;
+  uuid: string;
   company: string;
   role: string;
   stage: string;
   icon: string;
   badgeLabel: string;
   badgeType: string;
+  disabled: boolean;
 }
 
 interface JdSavedTabProps {
   jdList: JdItem[];
   jdListLoading: boolean;
-  selectedJdId: number | null;
-  onSelectJd: (id: number) => void;
+  selectedJdId: string | null;
+  onSelectJd: (uuid: string) => void;
 }
 
 export function JdSavedTab({ jdList, jdListLoading, selectedJdId, onSelectJd }: JdSavedTabProps) {
@@ -23,7 +24,12 @@ export function JdSavedTab({ jdList, jdListLoading, selectedJdId, onSelectJd }: 
   return (
     <div className="flex flex-col gap-[7px] flex-1 overflow-y-auto min-h-0">
       {jdList.map((jd) => (
-        <SelectableCard key={jd.id} selected={selectedJdId === jd.id} onClick={() => onSelectJd(jd.id)}>
+        <SelectableCard
+          key={jd.uuid}
+          selected={selectedJdId === jd.uuid}
+          disabled={jd.disabled}
+          onClick={() => { if (!jd.disabled) onSelectJd(jd.uuid); }}
+        >
           <div className="w-8 h-8 rounded-lg bg-white border border-[#E5E7EB] flex items-center justify-center text-sm shrink-0">{jd.icon}</div>
           <div className="flex-1 min-w-0">
             <div className="text-[12px] font-bold">{jd.company}</div>

@@ -3,8 +3,8 @@ import type { InterviewDifficultyLevel } from "@/features/interview-session";
 
 interface SummaryInput {
   jdTab: JdTab;
-  jdList: { id: string; company: string; role: string; stage: string }[];
-  selectedJdId: string;
+  jdList: { uuid: string; company: string; role: string; stage: string }[];
+  selectedJdId: string | null;
   directCompany: string;
   directRole: string;
   directStage: string;
@@ -25,7 +25,7 @@ export function buildSummary(s: SummaryInput): SetupSummary {
   let stage = "—";
 
   if (s.jdTab === "saved") {
-    const jd = s.jdList.find((j) => j.id === s.selectedJdId);
+    const jd = s.selectedJdId ? s.jdList.find((j) => j.uuid === s.selectedJdId) : null;
     if (jd) { company = jd.company; role = jd.role; stage = jd.stage; }
   } else if (s.jdTab === "direct") {
     company = s.directCompany || "—";

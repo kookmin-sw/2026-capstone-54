@@ -5,7 +5,7 @@ interface JdDirectTabProps {
   directRole: string;
   directStage: string;
   directUrl: string;
-  onDirectField: (field: string, value: string) => void;
+  onDirectField: (field: "directCompany" | "directRole" | "directStage" | "directUrl", value: string) => void;
 }
 
 export function JdDirectTab({ directCompany, directRole, directStage, directUrl, onDirectField }: JdDirectTabProps) {

@@ -1,12 +1,13 @@
 import { SetupSection } from "@/shared/ui/SetupSection";
 import { OptionCard } from "@/shared/ui/OptionCard";
 import { InfoTooltip } from "@/shared/ui/InfoTooltip";
+import type { InterviewMode, PracticeMode } from "@/features/interview-setup";
 
 interface InterviewModeSectionProps {
-  interviewMode: string;
-  practiceMode: string;
-  onModeChange: (mode: string) => void;
-  onPracticeModeChange: (mode: string) => void;
+  interviewMode: InterviewMode;
+  practiceMode: PracticeMode;
+  onModeChange: (mode: InterviewMode) => void;
+  onPracticeModeChange: (mode: PracticeMode) => void;
 }
 
 export function InterviewModeSection({

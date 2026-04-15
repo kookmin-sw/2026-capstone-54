@@ -21,7 +21,6 @@ export function InterviewSetupPage() {
     loadJdList, setJdTab, selectJd, setDirectField,
     setInterviewMode, setPracticeMode, setInterviewDifficultyLevel,
     resumes, selectedResumeUuid, resumesLoading, resumesError,
-    userJobDescriptionUuid,
     creatingSession, createError,
     fetchResumes, selectResume, createSession, resetSetup,
   } = useInterviewSetupStore();
@@ -64,7 +63,6 @@ export function InterviewSetupPage() {
                   selectedResumeUuid={selectedResumeUuid}
                   resumesLoading={resumesLoading}
                   resumesError={resumesError}
-                  userJobDescriptionUuid={userJobDescriptionUuid}
                   onSelectResume={selectResume}
                 />
               </div>

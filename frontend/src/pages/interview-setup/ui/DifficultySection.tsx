@@ -1,9 +1,10 @@
 import { SetupSection } from "@/shared/ui/SetupSection";
 import { OptionCard } from "@/shared/ui/OptionCard";
+import type { InterviewDifficultyLevel } from "@/features/interview-session";
 
 interface DifficultySectionProps {
-  interviewDifficultyLevel: string;
-  onDifficultyChange: (level: string) => void;
+  interviewDifficultyLevel: InterviewDifficultyLevel;
+  onDifficultyChange: (level: InterviewDifficultyLevel) => void;
 }
 
 const DIFFICULTIES = [

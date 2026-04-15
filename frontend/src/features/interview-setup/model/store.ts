@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { fetchSetupJdListApi } from "../api/setupApi";
 import type { SetupJdItem } from "../api/setupApi";
-import { interviewSetupApi, TEMP_USER_JOB_DESCRIPTION_UUID } from "../api/interviewSetupApi";
+import { interviewSetupApi } from "../api/interviewSetupApi";
 import type { ResumeOption, CreatedInterviewSession } from "../api/interviewSetupApi";
 import type { InterviewDifficultyLevel, InterviewSessionType } from "@/features/interview-session";
 import { isApiError } from "@/shared/api/client";
@@ -13,7 +13,8 @@ interface InterviewSetupState {
   jdListLoading: boolean;
 
   jdTab: JdTab;
-  selectedJdId: string;
+  /** 선택된 UserJobDescription.uuid. 없으면 null. */
+  selectedJdId: string | null;
 
   directCompany: string;
   directRole: string;
@@ -34,11 +35,6 @@ interface InterviewSetupState {
   resumesLoading: boolean;
   resumesError: string | null;
 
-  // ── JD selection: currently a single fixed UJD uuid ──
-  // TODO: Replace with `ujds`, `selectedUjdUuid`, `ujdsLoading` once the UJD list
-  // API is available (see interviewSetupApi.fetchUserJobDescriptions).
-  userJobDescriptionUuid: string;
-
   // ── Session creation ──
   creatingSession: boolean;
   createError: string | null;
@@ -46,7 +42,7 @@ interface InterviewSetupState {
 
   loadJdList: () => Promise<void>;
   setJdTab: (tab: JdTab) => void;
-  selectJd: (id: string) => void;
+  selectJd: (uuid: string | null) => void;
   setDirectField: (field: "directCompany" | "directRole" | "directStage" | "directUrl", value: string) => void;
   setInterviewMode: (mode: InterviewMode) => void;
   setPracticeMode: (mode: PracticeMode) => void;
@@ -75,7 +71,7 @@ export const useInterviewSetupStore = create<InterviewSetupState>()((set, get) =
   jdListLoading: false,
 
   jdTab: "saved",
-  selectedJdId: "j1",
+  selectedJdId: null,
 
   directCompany: "",
   directRole: "",
@@ -94,16 +90,29 @@ export const useInterviewSetupStore = create<InterviewSetupState>()((set, get) =
   resumesLoading: false,
   resumesError: null,
 
-  userJobDescriptionUuid: TEMP_USER_JOB_DESCRIPTION_UUID,
-
   creatingSession: false,
   createError: null,
   createdSessionUuid: null,
 
   loadJdList: async () => {
     set({ jdListLoading: true });
-    const list = await fetchSetupJdListApi();
-    set({ jdList: list, jdListLoading: false });
+    try {
+      const list = await fetchSetupJdListApi();
+      set((s) => {
+        // 기존 선택값이 여전히 선택 가능한 상태면 유지, 아니면 수집 완료된 첫 항목으로 변경.
+        const stillValid = list.some(
+          (jd) => jd.uuid === s.selectedJdId && !jd.disabled,
+        );
+        const firstEnabled = list.find((jd) => !jd.disabled)?.uuid ?? null;
+        return {
+          jdList: list,
+          jdListLoading: false,
+          selectedJdId: stillValid ? s.selectedJdId : firstEnabled,
+        };
+      });
+    } catch {
+      set({ jdListLoading: false });
+    }
   },
 
   setJdTab: (tab) => set({ jdTab: tab }),
@@ -142,11 +151,15 @@ export const useInterviewSetupStore = create<InterviewSetupState>()((set, get) =
       set({ createError: "이력서를 선택해 주세요." });
       return null;
     }
+    if (!s.selectedJdId) {
+      set({ createError: "채용공고를 선택해 주세요." });
+      return null;
+    }
     set({ creatingSession: true, createError: null });
     try {
       const session = await interviewSetupApi.createSession({
         resume_uuid: s.selectedResumeUuid,
-        user_job_description_uuid: s.userJobDescriptionUuid,
+        user_job_description_uuid: s.selectedJdId,
         interview_session_type: s.interviewMode === "tail" ? "followup" : "full_process",
         interview_difficulty_level: s.interviewDifficultyLevel,
         interview_practice_mode: s.practiceMode,
@@ -155,7 +168,7 @@ export const useInterviewSetupStore = create<InterviewSetupState>()((set, get) =
         creatingSession: false,
         createdSessionUuid: session.uuid,
         pendingResumeUuid: s.selectedResumeUuid,
-        pendingUserJobDescriptionUuid: s.userJobDescriptionUuid,
+        pendingUserJobDescriptionUuid: s.selectedJdId,
       });
       return session;
     } catch (e) {

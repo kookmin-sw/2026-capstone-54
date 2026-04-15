@@ -15,7 +15,6 @@ interface ResumeSectionProps {
   selectedResumeUuid: string | null;
   resumesLoading: boolean;
   resumesError: string | null;
-  userJobDescriptionUuid: string;
   onSelectResume: (uuid: string) => void;
 }
 
@@ -25,7 +24,7 @@ function isEligible(r: Resume) {
 
 export function ResumeSection({
   resumes, selectedResumeUuid, resumesLoading, resumesError,
-  userJobDescriptionUuid, onSelectResume,
+  onSelectResume,
 }: ResumeSectionProps) {
   return (
     <SetupSection eyebrow="이력서" title="사용할 이력서를 선택하세요" description="파싱이 완료된 이력서만 면접에 사용할 수 있어요." className="flex-1 min-h-0">
@@ -63,12 +62,6 @@ export function ResumeSection({
         </div>
       )}
 
-      <div className="mt-3 p-3 rounded-lg border border-[rgba(9,145,178,.2)] bg-[#E6F7FA]">
-        <div className="text-[11px] font-bold text-[#0991B2] mb-1">현재 고정 채용공고 사용 중</div>
-        <div className="text-[11px] text-[#6B7280] leading-[1.5] break-all">
-          UJD UUID: <span className="font-mono">{userJobDescriptionUuid}</span>
-        </div>
-      </div>
     </SetupSection>
   );
 }

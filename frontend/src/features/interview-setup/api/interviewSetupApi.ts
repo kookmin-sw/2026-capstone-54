@@ -53,12 +53,8 @@ export const interviewSetupApi = {
     apiRequest<PaginatedResponse<ResumeOption>>("/api/v1/resumes/?page=1", { auth: true })
       .then((res) => res.results),
 
-  // TODO: Fetch user job descriptions once the list API is available.
-  // Until then callers should use TEMP_USER_JOB_DESCRIPTION_UUID below.
-  // fetchUserJobDescriptions: (): Promise<UserJobDescriptionOption[]> =>
-  //   apiRequest<UserJobDescriptionOption[]>("/api/v1/job-descriptions/user/", { auth: true }),
-
-  // Create an interview session
+  // Create an interview session. user_job_description_uuid 는
+  // `/api/v1/user-job-descriptions/` 에서 선택된 항목의 uuid 를 그대로 전달한다.
   createSession: (params: CreateInterviewSessionParams): Promise<CreatedInterviewSession> =>
     apiRequest<CreatedInterviewSession>("/api/v1/interviews/interview-sessions/", {
       method: "POST",
@@ -66,8 +62,3 @@ export const interviewSetupApi = {
       auth: true,
     }),
 };
-
-// TEMPORARY: hard-coded user job description UUID until the UJD list API ships.
-// Replace with the value returned from fetchUserJobDescriptions() once integrated.
-// TODO
-export const TEMP_USER_JOB_DESCRIPTION_UUID = "00572934-3684-4d9b-a0fe-a14d7e632895";

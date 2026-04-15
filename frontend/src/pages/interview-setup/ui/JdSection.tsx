@@ -5,27 +5,28 @@ import { JdDirectTab } from "./JdDirectTab";
 import { JdSkipTab } from "./JdSkipTab";
 
 interface JdItem {
-  id: number;
+  uuid: string;
   company: string;
   role: string;
   stage: string;
   icon: string;
   badgeLabel: string;
   badgeType: string;
+  disabled: boolean;
 }
 
 interface JdSectionProps {
   jdTab: JdTab;
   jdList: JdItem[];
   jdListLoading: boolean;
-  selectedJdId: number | null;
+  selectedJdId: string | null;
   directCompany: string;
   directRole: string;
   directStage: string;
   directUrl: string;
   onTabChange: (tab: JdTab) => void;
-  onSelectJd: (id: number) => void;
-  onDirectField: (field: string, value: string) => void;
+  onSelectJd: (uuid: string) => void;
+  onDirectField: (field: "directCompany" | "directRole" | "directStage" | "directUrl", value: string) => void;
 }
 
 const TAB_LABELS: Record<JdTab, string> = {
