@@ -141,13 +141,6 @@ export function ResumeListPage() {
     refreshAll();
   };
 
-  const handleToggleActive = async (item: ResumeListItem) => {
-    const updated = item.isActive
-      ? await resumeApi.deactivate(item.uuid)
-      : await resumeApi.activate(item.uuid);
-    setItems((prev) => prev.map((r) => (r.uuid === item.uuid ? updated : r)));
-  };
-
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-container-lg mx-auto px-8 pt-[28px] pb-[60px] max-sm:px-4 max-sm:pt-5">
@@ -193,7 +186,6 @@ export function ResumeListPage() {
                 onDetail={() => navigate(`/resume/${item.uuid}`)}
                 onEdit={() => navigate(`/resume/${item.uuid}`)}
                 onDelete={() => handleDelete(item.uuid)}
-                onToggleActive={() => handleToggleActive(item)}
               />
             ))}
           {items.filter((item) =>

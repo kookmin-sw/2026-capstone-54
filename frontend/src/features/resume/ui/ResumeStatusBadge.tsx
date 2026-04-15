@@ -1,9 +1,8 @@
-/** 분석 상태와 활성 여부를 함께 표시하는 배지. */
+/** 분석 상태 배지. */
 import type { AnalysisStatus } from "../api/types";
 
 interface ResumeStatusBadgeProps {
   status: AnalysisStatus;
-  isActive?: boolean;
 }
 
 const STATUS_STYLE: Record<AnalysisStatus, { label: string; cls: string }> = {
@@ -13,18 +12,11 @@ const STATUS_STYLE: Record<AnalysisStatus, { label: string; cls: string }> = {
   failed:     { label: "분석 실패", cls: "text-[#DC2626] bg-[#FEF2F2] border-[#FECACA]" },
 };
 
-export function ResumeStatusBadge({ status, isActive }: ResumeStatusBadgeProps) {
+export function ResumeStatusBadge({ status }: ResumeStatusBadgeProps) {
   const s = STATUS_STYLE[status];
   return (
-    <div className="flex items-center gap-1.5">
-      <span className={`text-[10px] font-bold border rounded-full px-2 py-px ${s.cls}`}>
-        {s.label}
-      </span>
-      {isActive === false && (
-        <span className="text-[10px] font-bold border rounded-full px-2 py-px text-[#6B7280] bg-[#F9FAFB] border-[#E5E7EB]">
-          비활성
-        </span>
-      )}
-    </div>
+    <span className={`text-[10px] font-bold border rounded-full px-2 py-px ${s.cls}`}>
+      {s.label}
+    </span>
   );
 }

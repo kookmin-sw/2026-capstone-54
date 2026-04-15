@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { MoreVertical, Edit2, Trash2, Power, PowerOff } from "lucide-react";
+import { MoreVertical, Edit2, Trash2 } from "lucide-react";
 import {
   AnalysisProgress,
   ResumeStatusBadge,
@@ -13,10 +13,9 @@ interface ResumeCardProps {
   onDetail: () => void;
   onEdit: () => void;
   onDelete: () => void;
-  onToggleActive: () => void;
 }
 
-export function ResumeCard({ resume, onDetail, onEdit, onDelete, onToggleActive }: ResumeCardProps) {
+export function ResumeCard({ resume, onDetail, onEdit, onDelete }: ResumeCardProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -43,7 +42,7 @@ export function ResumeCard({ resume, onDetail, onEdit, onDelete, onToggleActive 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap mb-1">
             <h3 className="text-[14px] font-bold text-[#0A0A0A] truncate">{resume.title}</h3>
-            <ResumeStatusBadge status={resume.analysisStatus} isActive={resume.isActive} />
+            <ResumeStatusBadge status={resume.analysisStatus} />
           </div>
           <div className="text-[11px] text-[#6B7280]">
             {formatDateTime(resume.createdAt)}
@@ -63,11 +62,6 @@ export function ResumeCard({ resume, onDetail, onEdit, onDelete, onToggleActive 
           {menuOpen && (
             <div className="absolute right-0 top-[calc(100%+4px)] bg-white border border-[#E5E7EB] rounded-lg shadow-[0_8px_24px_rgba(0,0,0,0.1)] min-w-[150px] overflow-hidden z-10">
               <MenuItem icon={<Edit2 size={13} />} label="수정하기" onClick={() => { setMenuOpen(false); onEdit(); }} />
-              <MenuItem
-                icon={resume.isActive ? <PowerOff size={13} /> : <Power size={13} />}
-                label={resume.isActive ? "비활성화" : "활성화"}
-                onClick={() => { setMenuOpen(false); onToggleActive(); }}
-              />
               <MenuItem icon={<Trash2 size={13} />} label="삭제하기" danger onClick={() => { setMenuOpen(false); onDelete(); }} />
             </div>
           )}

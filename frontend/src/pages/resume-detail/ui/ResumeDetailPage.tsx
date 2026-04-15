@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Loader2, ArrowLeft, Trash2, Power, PowerOff } from "lucide-react";
+import { Loader2, ArrowLeft, Trash2 } from "lucide-react";
 import {
   resumeApi,
   AnalysisProgress,
@@ -52,7 +52,6 @@ export function ResumeDetailPage() {
   const [parsed, setParsed] = useState<ParsedData>(EMPTY_PARSED);
   const [isLoading, setIsLoading] = useState(true);
   const [isFinalizing, setIsFinalizing] = useState(false);
-  const [isToggling, setIsToggling] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   /** retrieve 재시도 — 네트워크 일시적 실패나 백엔드 커밋 race 를 완충. */
@@ -141,19 +140,6 @@ export function ResumeDetailPage() {
     }
   };
 
-  const handleToggleActive = async () => {
-    if (!resume || isToggling) return;
-    setIsToggling(true);
-    try {
-      const updated = resume.isActive
-        ? await resumeApi.deactivate(resume.uuid)
-        : await resumeApi.activate(resume.uuid);
-      setResume((prev) => (prev ? { ...prev, isActive: updated.isActive } : prev));
-    } finally {
-      setIsToggling(false);
-    }
-  };
-
   const handleDelete = async () => {
     if (!resume) return;
     if (!confirm("이력서를 삭제하시겠습니까?")) return;
@@ -202,7 +188,7 @@ export function ResumeDetailPage() {
               <h1 className="text-[clamp(22px,3vw,32px)] font-black tracking-[-0.5px] text-[#0A0A0A] leading-[1.2]">
                 {resume.title}
               </h1>
-              <ResumeStatusBadge status={resume.analysisStatus} isActive={resume.isActive} />
+              <ResumeStatusBadge status={resume.analysisStatus} />
               <span className="text-[10px] font-bold text-[#6B7280] bg-[#F3F4F6] rounded-full px-2 py-0.5">
                 {resume.sourceMode}
               </span>
@@ -216,14 +202,6 @@ export function ResumeDetailPage() {
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
-            <button
-              onClick={handleToggleActive}
-              disabled={isToggling}
-              className="inline-flex items-center gap-1.5 text-[12px] font-bold border border-[#E5E7EB] rounded-lg px-3 py-2 hover:bg-[#F9FAFB] transition-colors text-[#374151] disabled:opacity-50"
-            >
-              {resume.isActive ? <PowerOff size={13} /> : <Power size={13} />}
-              {resume.isActive ? "비활성화" : "활성화"}
-            </button>
             <button
               onClick={handleDelete}
               className="inline-flex items-center gap-1.5 text-[12px] font-bold border border-[#FECACA] text-[#DC2626] rounded-lg px-3 py-2 hover:bg-[#FEF2F2] transition-colors"

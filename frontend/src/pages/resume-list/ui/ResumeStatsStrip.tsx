@@ -10,15 +10,15 @@ export function ResumeStatsStrip({ count }: ResumeStatsStripProps) {
 
   const statItems = [
     { value: count.total,     label: "전체 이력서" },
-    { value: count.active,    label: "활성 이력서" },
     { value: count.completed, label: "분석 완료" },
     { value: analyzing,       label: "분석 중" },
+    { value: count.failed,    label: "분석 실패" },
   ];
 
   const badges = [
     { dot: "#10B981", text: `분석 완료 ${count.completed}개` },
     { dot: "#0EA5E9", text: `분석 중 ${analyzing}개` },
-    { dot: "#F59E0B", text: `활성 이력서 ${count.active}개` },
+    { dot: "#DC2626", text: `분석 실패 ${count.failed}개` },
   ];
 
   return (

@@ -120,12 +120,6 @@ export const resumeApi = {
 
   remove: (uuid: string) =>
     apiRequest<void>(`${BASE}/${uuid}/`, { method: "DELETE", auth: true }),
-
-  activate: (uuid: string) =>
-    apiRequest<ResumeListItem>(`${BASE}/${uuid}/activate/`, { method: "POST", auth: true }),
-
-  deactivate: (uuid: string) =>
-    apiRequest<ResumeListItem>(`${BASE}/${uuid}/deactivate/`, { method: "POST", auth: true }),
 };
 
 
