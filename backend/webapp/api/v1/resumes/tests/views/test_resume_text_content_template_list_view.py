@@ -47,6 +47,19 @@ class ResumeTextContentTemplateListViewTests(TestCase):
     self.assertIn("job", item)
     self.assertNotIn("content", item)
 
+  def test_list_filters_by_search_title_icontains(self):
+    """?search=<q> 는 title 에 대한 부분 일치(icontains) 매칭을 수행한다."""
+    response = self.client.get(self.url + "?search=프론트")
+    self.assertEqual(response.status_code, status.HTTP_200_OK)
+    self.assertEqual(len(response.data), 1)
+    self.assertEqual(response.data[0]["title"], "프론트엔드 기본")
+
+  def test_list_search_with_no_match_returns_empty(self):
+    """검색어와 일치하는 템플릿이 없으면 빈 리스트를 반환한다."""
+    response = self.client.get(self.url + "?search=존재하지않는템플릿")
+    self.assertEqual(response.status_code, status.HTTP_200_OK)
+    self.assertEqual(len(response.data), 0)
+
   def test_unauthenticated_request_returns_401(self):
     response = APIClient().get(self.url)
     self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
