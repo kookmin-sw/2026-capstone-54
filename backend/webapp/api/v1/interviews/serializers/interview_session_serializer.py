@@ -1,6 +1,7 @@
 """면접 세션 Serializer."""
 
 from interviews.constants import MAX_FOLLOWUP_PER_ANCHOR
+from interviews.enums import InterviewSessionType
 from interviews.models import InterviewSession
 from rest_framework import serializers
 
@@ -25,6 +26,6 @@ class InterviewSessionSerializer(serializers.ModelSerializer):
     read_only_fields = fields
 
   def get_estimated_total_questions(self, obj):
-    if obj.interview_session_type == "followup":
+    if obj.interview_session_type == InterviewSessionType.FOLLOWUP:
       return obj.total_questions * (1 + MAX_FOLLOWUP_PER_ANCHOR)
     return obj.total_questions

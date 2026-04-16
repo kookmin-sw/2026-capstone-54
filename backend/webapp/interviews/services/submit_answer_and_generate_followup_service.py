@@ -18,6 +18,7 @@ from common.services.base_service import BaseService
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import transaction
+from django.db.models.functions import Coalesce
 from interviews.constants import MAX_FOLLOWUP_PER_ANCHOR
 from interviews.enums import (
   InterviewExchangeType,
@@ -198,5 +199,7 @@ class SubmitAnswerAndGenerateFollowupService(BaseService):
     return list(
       InterviewTurn.objects.filter(interview_session=interview_session
                                    ).exclude(pk=current_turn.pk
-                                             ).order_by("turn_number", "followup_order").values("question", "answer")
+                                             ).annotate(sort_followup_order=Coalesce("followup_order", 0)
+                                                        ).order_by("turn_number",
+                                                                   "sort_followup_order").values("question", "answer")
     )

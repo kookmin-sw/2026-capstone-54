@@ -2,7 +2,7 @@
 
 from api.v1.interviews.serializers import InterviewTurnSerializer
 from common.views import BaseAPIView
-from django.db.models import Case, IntegerField, Value, When
+from django.db.models.functions import Coalesce
 from drf_spectacular.utils import extend_schema
 from interviews.models import InterviewTurn
 from interviews.services import get_interview_session_for_user
@@ -17,13 +17,9 @@ class InterviewTurnListView(BaseAPIView):
     interview_session = get_interview_session_for_user(interview_session_uuid, self.current_user)
 
     interview_turns = (
-      InterviewTurn.objects.filter(interview_session=interview_session).annotate(
-        sort_followup_order=Case(
-          When(followup_order__isnull=False, then="followup_order"),
-          default=Value(0),
-          output_field=IntegerField(),
-        ),
-      ).order_by("turn_number", "sort_followup_order")
+      InterviewTurn.objects.filter(interview_session=interview_session
+                                   ).annotate(sort_followup_order=Coalesce("followup_order", 0)
+                                              ).order_by("turn_number", "sort_followup_order")
     )
 
     return Response(InterviewTurnSerializer(interview_turns, many=True).data)

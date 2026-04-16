@@ -14,6 +14,7 @@ from common.exceptions import ValidationException
 from common.services.base_service import BaseService
 from django.conf import settings
 from django.db import transaction
+from django.db.models.functions import Coalesce
 from interviews.enums import (
   InterviewExchangeType,
   InterviewSessionStatus,
@@ -125,11 +126,11 @@ class GenerateInitialQuestionsService(BaseService):
     )
 
     all_turns = list(
-      InterviewTurn.objects.filter(interview_session=self.interview_session).order_by("turn_number", "followup_order")
+      InterviewTurn.objects.filter(interview_session=self.interview_session
+                                   ).annotate(sort_followup_order=Coalesce("followup_order", 0)
+                                              ).order_by("turn_number", "sort_followup_order")
     )
 
-    # FOLLOWUP: DB에 앵커 전체를 저장하되, 첫 번째 앵커만 반환한다.
-    # 나머지 앵커는 각 앵커 체인이 소진될 때 SubmitAnswerAndGenerateFollowupService가 순차 반환한다.
     if (self.interview_session.interview_session_type == InterviewSessionType.FOLLOWUP):
       return all_turns[:1]
 
