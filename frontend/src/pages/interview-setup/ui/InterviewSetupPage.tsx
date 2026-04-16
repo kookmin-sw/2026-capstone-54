@@ -51,32 +51,34 @@ export function InterviewSetupPage() {
         {/* ══════ STEP 1: 지원 컨텍스트 ══════ */}
         {step === 1 && (
           <>
-            <div className="mb-6">
-              <div className="text-[11px] font-bold tracking-[.1em] uppercase text-[#0991B2] mb-2">STEP 1</div>
-              <h2 className="text-[20px] font-black tracking-[-0.3px] mb-1">면접을 연습할 이력서와 채용공고를 선택해주세요.</h2>
-            </div>
+            <StepLayout
+              stepLabel="STEP 1"
+              title="면접을 연습할 이력서와 채용공고를 선택해주세요."
+              description=""
+              left={
+                <div className="flex flex-col min-h-[400px] max-h-[520px]">
+                  <ResumeSection
+                    resumes={resumes}
+                    selectedResumeUuid={selectedResumeUuid}
+                    resumesLoading={resumesLoading}
+                    resumesError={resumesError}
+                    onSelectResume={selectResume}
+                  />
+                </div>
+              }
+              right={
+                <div className="flex flex-col min-h-[400px] max-h-[520px]">
+                  <JdSection
+                    jdList={jdList}
+                    jdListLoading={jdListLoading}
+                    selectedJdId={selectedJdId}
+                    onSelectJd={selectJd}
+                  />
+                </div>
+              }
+            />
 
-            <div className="grid grid-cols-2 gap-8 max-md:grid-cols-1 mb-6" style={{ gridTemplateRows: "1fr" }}>
-              <div className="flex flex-col min-h-[400px] max-h-[520px]">
-                <ResumeSection
-                  resumes={resumes}
-                  selectedResumeUuid={selectedResumeUuid}
-                  resumesLoading={resumesLoading}
-                  resumesError={resumesError}
-                  onSelectResume={selectResume}
-                />
-              </div>
-              <div className="flex flex-col min-h-[400px] max-h-[520px]">
-                <JdSection
-                  jdList={jdList}
-                  jdListLoading={jdListLoading}
-                  selectedJdId={selectedJdId}
-                  onSelectJd={selectJd}
-                />
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-3">
+            <div className="flex justify-end gap-3 mt-6">
               <button disabled={!canProceedStep1} onClick={() => setStep(2)} className={`${nextCls} max-w-[200px]`}>
                 다음 →
               </button>

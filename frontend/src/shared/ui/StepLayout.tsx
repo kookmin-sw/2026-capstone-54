@@ -14,9 +14,9 @@ export function StepLayout({ stepLabel, title, description, left, right }: StepL
     <div>
       {/* Header — full width */}
       <div className="mb-6">
-        {stepLabel && <div className="text-[11px] font-bold tracking-[.1em] uppercase text-[#0991B2] mb-2">{stepLabel}</div>}
+        {stepLabel && <div className="text-[11px] font-bold tracking-[.1em] uppercase text-mefit-primary mb-2">{stepLabel}</div>}
         <h2 className="text-[20px] font-black tracking-[-0.3px] mb-1">{title}</h2>
-        <p className="text-sm text-[#6B7280]">{description}</p>
+        <p className="text-sm text-mefit-gray-500">{description}</p>
       </div>
 
       {/* Two-column body */}
