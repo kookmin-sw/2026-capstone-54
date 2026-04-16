@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useStreakStore } from "@/features/streak";
 import { StreakHero } from "./components/StreakHero";
 import { StreakCalendar } from "./components/StreakCalendar";
@@ -9,10 +9,14 @@ import { RewardHistory } from "./components/RewardHistory";
 export function StreakPage() {
   const { data, loading, fetchStreak } = useStreakStore();
 
-  const now = new Date();
-  const todayY = now.getFullYear();
-  const todayM = now.getMonth() + 1;
-  const todayD = now.getDate();
+  const { todayY, todayM, todayD } = useMemo(() => {
+    const now = new Date();
+    return {
+      todayY: now.getFullYear(),
+      todayM: now.getMonth() + 1,
+      todayD: now.getDate(),
+    };
+  }, []);
 
   const [revealed, setRevealed] = useState(false);
 
