@@ -1,3 +1,7 @@
+from config.settings.base import (
+  MAX_REWARDED_INTERVIEWS_PER_DAY,
+  TICKET_REWARD_PER_INTERVIEW_ORDER,
+)
 from django.contrib import admin
 from django.http import HttpRequest
 from django.shortcuts import redirect
@@ -25,38 +29,15 @@ class DailyInterviewRewardPolicyAdmin(ModelAdmin):
 
   @action(description="기본 정책 생성", url_path="seed-default-policies")
   def seed_default_policies(self, request: HttpRequest):
-    """기본 일일 인터뷰 보상 정책 생성 (1번째: 5개, 2~5번째: 3개)"""
-    default_policies = [
-      {
-        "interview_order": 1,
-        "ticket_reward": 5
-      },
-      {
-        "interview_order": 2,
-        "ticket_reward": 3
-      },
-      {
-        "interview_order": 3,
-        "ticket_reward": 3
-      },
-      {
-        "interview_order": 4,
-        "ticket_reward": 3
-      },
-      {
-        "interview_order": 5,
-        "ticket_reward": 3
-      },
-    ]
-
+    """기본 일일 인터뷰 보상 정책 생성"""
     created_count = 0
     updated_count = 0
 
-    for policy_data in default_policies:
+    for order in range(1, MAX_REWARDED_INTERVIEWS_PER_DAY + 1):
       policy, created = DailyInterviewRewardPolicy.objects.update_or_create(
-        interview_order=policy_data["interview_order"],
+        interview_order=order,
         defaults={
-          "ticket_reward": policy_data["ticket_reward"],
+          "ticket_reward": TICKET_REWARD_PER_INTERVIEW_ORDER[order],
           "is_active": True,
         },
       )

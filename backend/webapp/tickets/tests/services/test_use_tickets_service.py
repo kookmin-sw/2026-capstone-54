@@ -27,6 +27,15 @@ class UseTicketsServiceTests(TestCase):
     self.assertEqual(ticket.daily_count, 0)
     self.assertEqual(ticket.purchased_count, 3)
 
+  def test_use_auto_daily_zero_uses_purchased(self):
+    """daily가 0일 때 purchased에서 차감한다."""
+    UserTicketFactory(user=self.user, daily_count=0, purchased_count=30)
+    ticket = UseTicketsService(user=self.user, amount=5).perform()
+
+    self.assertEqual(ticket.daily_count, 0)
+    self.assertEqual(ticket.purchased_count, 25)
+    self.assertEqual(ticket.total_count, 25)
+
   def test_use_target_daily_only(self):
     """target=daily로 daily_count만 차감한다."""
     UserTicketFactory(user=self.user, daily_count=5, purchased_count=3)
