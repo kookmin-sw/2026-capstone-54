@@ -1,10 +1,8 @@
 import { Square } from "lucide-react";
-import { FOLLOWUP_TOTAL_QUESTIONS } from "@/features/interview-session";
-import type { InterviewSession, InterviewTurn } from "@/features/interview-session";
+import type { InterviewSession } from "@/features/interview-session";
 
 interface SessionHeaderProps {
   interviewSession: InterviewSession | null;
-  interviewTurns: InterviewTurn[];
   currentInterviewTurnIndex: number;
   hasStarted: boolean;
   isFinished: boolean;
@@ -14,7 +12,7 @@ interface SessionHeaderProps {
 }
 
 export function SessionHeader({
-  interviewSession, interviewTurns, currentInterviewTurnIndex,
+  interviewSession, currentInterviewTurnIndex,
   hasStarted, isFinished, difficultyLabel, practiceModeLabel, onFinish,
 }: SessionHeaderProps) {
   return (
@@ -30,10 +28,7 @@ export function SessionHeader({
       <div className="flex items-center gap-3">
         {interviewSession && hasStarted && (
           <span className="text-[11px] font-mono text-slate-500">
-            {currentInterviewTurnIndex + 1} /{" "}
-            {interviewSession.interviewSessionType === "followup"
-              ? FOLLOWUP_TOTAL_QUESTIONS
-              : (interviewTurns.length || "?")}
+            {currentInterviewTurnIndex + 1} / {interviewSession.estimatedTotalQuestions || "?"}
           </span>
         )}
         <button

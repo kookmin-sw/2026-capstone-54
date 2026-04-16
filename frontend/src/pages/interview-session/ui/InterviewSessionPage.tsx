@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
-import { useInterviewSessionStore, FOLLOWUP_TOTAL_QUESTIONS } from "@/features/interview-session";
+import { useInterviewSessionStore } from "@/features/interview-session";
 import { AvatarSection } from "@/features/interview-session/ui/AvatarSection";
 import { QuestionPanel } from "@/features/interview-session/ui/QuestionPanel";
 import { TranscriptPanel } from "@/features/interview-session/ui/TranscriptPanel";
@@ -26,7 +26,7 @@ export function InterviewSessionPage() {
   const navigate = useNavigate();
 
   const {
-    interviewSession, interviewTurns, currentInterviewTurn, currentInterviewTurnIndex,
+    interviewSession, currentInterviewTurn, currentInterviewTurnIndex,
     interviewPhase, interviewError,
     loadInterviewSession, startInterview, submitInterviewAnswer, resetInterviewSession,
   } = useInterviewSessionStore();
@@ -203,7 +203,6 @@ export function InterviewSessionPage() {
     <div className="w-full h-screen bg-[#080f1a] text-white flex flex-col overflow-hidden font-sans">
       <SessionHeader
         interviewSession={interviewSession}
-        interviewTurns={interviewTurns}
         currentInterviewTurnIndex={currentInterviewTurnIndex}
         hasStarted={hasStarted}
         isFinished={isFinished}
@@ -232,7 +231,7 @@ export function InterviewSessionPage() {
             <QuestionPanel
               currentInterviewTurn={currentInterviewTurn} interviewPhase={interviewPhase}
               currentTurnIndex={currentInterviewTurnIndex}
-              totalTurns={interviewSession?.interviewSessionType === "followup" ? FOLLOWUP_TOTAL_QUESTIONS : interviewTurns.length}
+              totalTurns={interviewSession?.estimatedTotalQuestions ?? 0}
               ttsPlaying={ttsPlaying} ttsMuted={ttsMuted} ttsVolume={ttsVolume}
               onMuteToggle={() => setTtsMuted(!ttsMuted)} onVolumeChange={setTtsVolume} onSkipTts={skipTts}
             />
