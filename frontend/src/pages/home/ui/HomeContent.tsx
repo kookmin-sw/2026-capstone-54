@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useHomeStore } from "@/features/home";
 import { useStreakStore } from "@/features/streak";
 import { StreakCalendar } from "@/pages/streak/ui/components/StreakCalendar";
@@ -17,10 +17,14 @@ export function HomeContent() {
   const { data: streakData, fetchStreak } = useStreakStore();
   const [revealed, setRevealed] = useState(false);
 
-  const now = new Date();
-  const todayY = now.getFullYear();
-  const todayM = now.getMonth() + 1;
-  const todayD = now.getDate();
+  const { todayY, todayM, todayD } = useMemo(() => {
+    const now = new Date();
+    return {
+      todayY: now.getFullYear(),
+      todayM: now.getMonth() + 1,
+      todayD: now.getDate(),
+    };
+  }, []);
 
   useEffect(() => {
     fetchHome();
