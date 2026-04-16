@@ -90,3 +90,30 @@ class StartInterviewViewTests(TestCase):
     response = self.client.post(self.url)
     self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
     self.assertIn("티켓이 부족합니다", str(response.data))
+
+  @patch("api.v1.interviews.views.start_interview_view.GenerateInitialQuestionsService")
+  def test_tickets_deducted_when_daily_zero_and_purchased_thirty(self, MockService):
+    """daily=0, purchased=30일 때 purchased에서 차감된다."""
+    self.user.ticket.delete()
+    UserTicketFactory(user=self.user, daily_count=0, purchased_count=30)
+    MockService.return_value.perform.return_value = []
+
+    response = self.client.post(self.url)
+
+    self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+    self.user.ticket.refresh_from_db()
+    self.assertEqual(self.user.ticket.daily_count, 0)
+    self.assertEqual(self.user.ticket.purchased_count, 25)
+    self.assertEqual(self.user.ticket.total_count, 25)
+
+  def test_already_started_interview_returns_400(self):
+    """이미 시작된 면접(total_questions > 0)은 400을 반환한다."""
+    self.user.ticket.delete()
+    UserTicketFactory(user=self.user, daily_count=0, purchased_count=30)
+    self.session.total_questions = 5
+    self.session.save()
+
+    response = self.client.post(self.url)
+
+    self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+    self.assertIn("이미 시작된 면접입니다", str(response.data))

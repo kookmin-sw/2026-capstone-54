@@ -14,10 +14,18 @@ from common.exceptions import ValidationException
 from common.services.base_service import BaseService
 from django.conf import settings
 from django.db import transaction
-from interviews.enums import InterviewExchangeType, InterviewSessionStatus, InterviewSessionType, QuestionSource
+from interviews.enums import (
+  InterviewExchangeType,
+  InterviewSessionStatus,
+  InterviewSessionType,
+  QuestionSource,
+)
 from interviews.models import InterviewSession, InterviewTurn
 from interviews.schemas import QuestionGeneratorInput, QuestionGeneratorOutput
-from interviews.services.content_service import get_job_description_content, get_resume_content
+from interviews.services.content_service import (
+  get_job_description_content,
+  get_resume_content,
+)
 from interviews.services.llm import (
   FollowupInterviewQuestionGenerator,
   FullProcessInterviewQuestionGenerator,
@@ -38,9 +46,9 @@ _SOURCE_MAP = {
 class GenerateInitialQuestionsService(BaseService):
   """초기 질문 생성 서비스.
 
-  LLM 호출을 트랜잭션 밖에서 수행하고,
-  결과를 DB에 저장하는 execute()만 트랜잭션 안에서 실행한다.
-  """
+    LLM 호출을 트랜잭션 밖에서 수행하고,
+    결과를 DB에 저장하는 execute()만 트랜잭션 안에서 실행한다.
+    """
 
   required_value_kwargs = ["interview_session"]
 
@@ -55,7 +63,7 @@ class GenerateInitialQuestionsService(BaseService):
       return self.execute()
 
   def validate(self):
-    if self.interview_session.interview_session_status != InterviewSessionStatus.IN_PROGRESS:
+    if (self.interview_session.interview_session_status != InterviewSessionStatus.IN_PROGRESS):
       raise ValidationException("진행 중인 세션에서만 질문을 생성할 수 있습니다.")
 
     if self.interview_session.total_questions > 0:
@@ -95,6 +103,7 @@ class GenerateInitialQuestionsService(BaseService):
         question_source=_SOURCE_MAP.get(q.source, QuestionSource.UNKNOWN),
         question=q.question,
         turn_number=i,
+        followup_order=None,
       ) for i, q in enumerate(output.questions, start=1)
     ]
     InterviewTurn.objects.bulk_create(turns)
@@ -115,11 +124,13 @@ class GenerateInitialQuestionsService(BaseService):
       cost_usd=calculate_cost(usage.input_tokens, usage.output_tokens, model_name),
     )
 
-    all_turns = list(InterviewTurn.objects.filter(interview_session=self.interview_session).order_by("turn_number"))
+    all_turns = list(
+      InterviewTurn.objects.filter(interview_session=self.interview_session).order_by("turn_number", "followup_order")
+    )
 
     # FOLLOWUP: DB에 앵커 전체를 저장하되, 첫 번째 앵커만 반환한다.
     # 나머지 앵커는 각 앵커 체인이 소진될 때 SubmitAnswerAndGenerateFollowupService가 순차 반환한다.
-    if self.interview_session.interview_session_type == InterviewSessionType.FOLLOWUP:
+    if (self.interview_session.interview_session_type == InterviewSessionType.FOLLOWUP):
       return all_turns[:1]
 
     return all_turns
