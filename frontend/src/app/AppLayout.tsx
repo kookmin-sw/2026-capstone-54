@@ -42,7 +42,6 @@ export function AppLayout({ children }: AppLayoutProps) {
           <HomeSidebar
             menuOpen={menuOpen}
             currentStreak={data?.currentStreak ?? 0}
-            jdCount={data?.jobs.length ?? 0}
           />
         )}
         <main className="hp-page-main">{children}</main>
