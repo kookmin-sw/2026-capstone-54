@@ -11,7 +11,7 @@ class UseTicketsService(BaseTicketService):
     if amount <= 0:
       raise ValueError("사용할 티켓 수량은 양수여야 합니다.")
 
-    ticket = self._get_ticket_with_lock()
+    ticket = self._get_or_create_ticket_with_lock()
     self._subtract(ticket, amount, target)
     self._save_and_log(ticket, TicketLog.ActionType.USE, -amount, reason, metadata)
 
