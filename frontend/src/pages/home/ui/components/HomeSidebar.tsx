@@ -3,13 +3,12 @@ import { Link, useLocation } from "react-router-dom";
 interface HomeSidebarProps {
   menuOpen: boolean;
   currentStreak: number;
-  jdCount?: number;
   /** grid 밖에서 렌더될 때 항상 fixed position으로 동작 */
   floating?: boolean;
   activeItem?: "home" | "results";
 }
 
-export function HomeSidebar({ menuOpen, currentStreak, jdCount = 0, floating = false, activeItem }: HomeSidebarProps) {
+export function HomeSidebar({ menuOpen, currentStreak, floating = false, activeItem }: HomeSidebarProps) {
   const location = useLocation();
   const path = location.pathname;
 
@@ -36,7 +35,6 @@ export function HomeSidebar({ menuOpen, currentStreak, jdCount = 0, floating = f
       </Link>
       <Link to="/jd" className={`hp-sb-item${isActive("/jd") ? " active" : ""}`}>
         <span className="hp-sb-icon">🏢</span>채용공고
-        {jdCount > 0 && <span className="hp-sb-badge">{jdCount}</span>}
       </Link>
       <div className="hp-sb-sep">분석</div>
       <Link to="/interview/results" className={`hp-sb-item${isActive("/interview/results") ? " active" : ""}`}>
