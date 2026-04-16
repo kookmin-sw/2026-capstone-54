@@ -4,7 +4,7 @@ from .views import SubscriptionMeView
 
 urlpatterns = [
   path(
-    "subscriptions/me/",
+    "me/",
     SubscriptionMeView.as_view(),
     name="subscription-me",
   ),
