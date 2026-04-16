@@ -9,16 +9,16 @@ from streaks.signals import streak_expired
 class ExpireStreaksService(BaseService):
   """매일 자정 실행. 전날 면접에 참여하지 않은 사용자의 current_streak을 0으로 초기화한다.
 
-  longest_streak은 영구 보존되어 초기화하지 않는다.
+    longest_streak은 영구 보존되어 초기화하지 않는다.
 
-  Celery Beat 설정 예시 (추후 등록):
-  CELERY_BEAT_SCHEDULE = {
-    "expire-streaks-daily": {
-      "task": "streaks.tasks.expire_streaks",
-      "schedule": crontab(hour=0, minute=5),
-    },
-  }
-  """
+    Celery Beat 설정 예시 (추후 등록):
+    CELERY_BEAT_SCHEDULE = {
+      "expire-streaks-daily": {
+        "task": "streaks.tasks.expire_streaks",
+        "schedule": crontab(hour=0, minute=5),
+      },
+    }
+    """
 
   def execute(self):
     from streaks.models import StreakStatistics
@@ -28,7 +28,7 @@ class ExpireStreaksService(BaseService):
       current_streak__gt=0,
       last_participated_date__lt=yesterday,
     )
-    expired_user_ids = list(expired_qs.values_list("user_id", flat=True))
+    expired_user_ids = list(expired_qs.values_list("user_id", flat=True).iterator(chunk_size=1000))
     expired_count = expired_qs.update(current_streak=0)
 
     if expired_user_ids:

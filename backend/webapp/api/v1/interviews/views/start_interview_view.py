@@ -14,7 +14,7 @@ from interviews.services import (
 from rest_framework import status
 from rest_framework.response import Response
 from subscriptions.enums import PlanType
-from tickets.services import GetOrCreateUserTicketService, UseTicketsService
+from tickets.services import UseTicketsService
 
 
 @extend_schema(tags=["면접"])
@@ -49,12 +49,11 @@ class StartInterviewView(BaseAPIView):
     if (interview_session.interview_session_type == InterviewSessionType.FULL_PROCESS):
       self._validate_pro_plan()
 
-    user_ticket = GetOrCreateUserTicketService(user=self.current_user).perform()
-    if user_ticket.total_count < ticket_cost:
-      raise ValidationException(f"티켓이 부족합니다. (보유: {user_ticket.total_count}, 필요: {ticket_cost})")
-
     reason = f"{interview_session.interview_session_type} 면접 시작"
-    UseTicketsService(user=self.current_user, amount=ticket_cost, reason=reason).perform()
+    try:
+      UseTicketsService(user=self.current_user, amount=ticket_cost, reason=reason).perform()
+    except ValueError as e:
+      raise ValidationException(str(e))
 
   def _validate_pro_plan(self):
     subscription = getattr(self.current_user, "subscription", None)

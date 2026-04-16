@@ -16,7 +16,7 @@ from interviews.models import InterviewAnalysisReport
 from interviews.services import get_interview_session_for_user
 from rest_framework import status
 from rest_framework.response import Response
-from tickets.services import GetOrCreateUserTicketService, UseTicketsService
+from tickets.services import UseTicketsService
 
 
 @extend_schema(tags=["면접"])
@@ -32,7 +32,6 @@ class GenerateAnalysisReportView(BaseAPIView):
 
     self._validate_and_use_tickets(interview_session)
 
-    # 이미 리포트가 있으면 오류 상태일 때만 재생성, 없으면 신규 생성
     report, created = InterviewAnalysisReport.objects.get_or_create(interview_session=interview_session, )
     if not created:
       from interviews.enums import InterviewAnalysisReportStatus
@@ -58,9 +57,8 @@ class GenerateAnalysisReportView(BaseAPIView):
 
   def _validate_and_use_tickets(self, interview_session):
     ticket_cost = TICKET_COST_ANALYSIS_REPORT
-    user_ticket = GetOrCreateUserTicketService(user=self.current_user).perform()
-    if user_ticket.total_count < ticket_cost:
-      raise ValidationException(f"티켓이 부족합니다. (보유: {user_ticket.total_count}, 필요: {ticket_cost})")
-
     reason = f"면접 분석 리포트 생성 (세션: {interview_session.pk})"
-    UseTicketsService(user=self.current_user, amount=ticket_cost, reason=reason).perform()
+    try:
+      UseTicketsService(user=self.current_user, amount=ticket_cost, reason=reason).perform()
+    except ValueError as e:
+      raise ValidationException(str(e))
