@@ -36,9 +36,9 @@ export function Button({
   };
 
   const sizeStyles = {
-    sm: "text-sm px-4 py-[10px]",
-    md: "text-base px-6 py-3.5",
-    lg: "text-md px-8 py-[15px]",
+    sm: "text-xs px-4 py-[10px]",
+    md: "text-sm px-6 py-3.5",
+    lg: "text-base px-8 py-[15px]",
   };
 
   const combined = `${base} ${variantStyles[variant]} ${sizeStyles[size]} ${fullWidth ? "w-full" : ""} ${className}`;

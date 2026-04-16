@@ -24,7 +24,7 @@ export function SettingsSidebar({ menuOpen }: SettingsSidebarProps) {
   return (
     <aside className={cls}>
       {/* 유저 프로필 카드 */}
-      <div className="bg-[#0A0A0A] rounded-lg px-4 py-[14px] mb-4 mx-3 flex items-center gap-[10px]">
+      <div className="bg-[#0A0A0A] rounded-lg px-4 py-[14px] mb-4 flex items-center gap-[10px]">
         <div className="w-9 h-9 rounded-full bg-[#0991B2] flex items-center justify-center font-black text-[14px] text-white shrink-0">
           {(data?.profile.avatarInitial ?? user?.name?.[0] ?? "U").toUpperCase()}
         </div>

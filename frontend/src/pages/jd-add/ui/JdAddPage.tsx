@@ -1,7 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useJdAddStore, type JdStatus } from "@/features/jd";
 import {
-  PageHeader,
   Card,
   Input,
   SectionHeader,
@@ -69,28 +68,29 @@ export function JdAddPage() {
   return (
     <div>
       <div className="relative w-full px-8 pt-[28px] pb-[60px] max-sm:px-4 max-sm:pt-5">
-        <PageHeader
-          badge="+ 채용공고 추가"
-          title="새 채용공고 등록"
-          description="URL만 붙여넣으면 AI가 나머지를 분석해 드려요"
-          action={
-            <Link
-              to="/jd"
-              className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#6B7280] bg-transparent border-none cursor-pointer py-[10px] px-4 rounded-lg transition-all hover:text-[#0A0A0A] hover:bg-[#F3F4F6] no-underline"
-            >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path
-                  d="M10 12L6 8l4-4"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              목록으로
-            </Link>
-          }
-        />
+        {/* PAGE HEADER */}
+        <div className="flex items-start justify-between mb-8 gap-4">
+          <div>
+            <div className="inline-flex items-center gap-1.5 text-[11px] font-bold tracking-[1.4px] uppercase text-[#0991B2] bg-[#E6F7FA] py-1 px-3 rounded-full mb-2.5">+ 채용공고 추가</div>
+            <h1 className="text-[clamp(24px,3vw,36px)] font-black tracking-[-0.8px] text-[#0A0A0A] leading-[1.1]">새 채용공고 등록</h1>
+            <p className="text-sm text-[#6B7280] mt-1.5">URL만 붙여넣으면 AI가 나머지를 분석해 드려요</p>
+          </div>
+          <Link
+            to="/jd"
+            className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#6B7280] bg-transparent border-none cursor-pointer py-[10px] px-4 rounded-lg transition-all hover:text-[#0A0A0A] hover:bg-[#F3F4F6] no-underline"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path
+                d="M10 12L6 8l4-4"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            목록으로
+          </Link>
+        </div>
 
         {/* FORM LAYOUT */}
         <div className="grid grid-cols-[1fr_380px] gap-6 items-start max-[900px]:grid-cols-1">

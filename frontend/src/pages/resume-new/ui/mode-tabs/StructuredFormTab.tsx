@@ -36,6 +36,21 @@ const JOB_CATEGORY_OPTIONS = [
   "인사", "기획", "CS", "디지털 마케팅", "기타",
 ];
 
+const SECTION_ICONS: Record<string, string> = {
+  "기본 정보": "👤",
+  "요약": "📝",
+  "총 경력": "⏱️",
+  "직군": "🏷️",
+  "스킬": "⚡",
+  "경력": "💼",
+  "학력": "🎓",
+  "자격증": "📜",
+  "수상 이력": "🏆",
+  "프로젝트": "🚀",
+  "구사 언어": "🌐",
+  "산업 도메인 / 키워드": "🔍",
+};
+
 const csvToList = (csv: string): string[] =>
   csv.split(",").map((s) => s.trim()).filter(Boolean);
 
@@ -97,48 +112,33 @@ export function StructuredFormTab() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-      <Field label="이력서 제목">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+
+      {/* 이력서 제목 */}
+      <div className="flex flex-col gap-1.5">
+        <label className="text-[12px] font-bold text-[#0A0A0A]">
+          이력서 제목 <span className="text-[#DC2626]">*</span>
+        </label>
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="예: 백엔드 시니어 이력서"
           className={inputCls}
         />
-      </Field>
+      </div>
 
-      <Section title="기본 정보">
+      {/* 기본 정보 */}
+      <Section icon={SECTION_ICONS["기본 정보"]} title="기본 정보">
         <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
-          <input
-            value={data.basicInfo.name ?? ""}
-            onChange={(e) => patch({ basicInfo: { ...data.basicInfo, name: e.target.value } })}
-            placeholder="이름"
-            className={inputCls}
-          />
-          <input
-            value={data.basicInfo.email ?? ""}
-            onChange={(e) => patch({ basicInfo: { ...data.basicInfo, email: e.target.value } })}
-            placeholder="이메일"
-            className={inputCls}
-          />
-          <input
-            value={data.basicInfo.phone ?? ""}
-            onChange={(e) => patch({ basicInfo: { ...data.basicInfo, phone: e.target.value } })}
-            placeholder="전화번호"
-            className={inputCls}
-          />
-          <input
-            value={data.basicInfo.location ?? ""}
-            onChange={(e) =>
-              patch({ basicInfo: { ...data.basicInfo, location: e.target.value } })
-            }
-            placeholder="거주지"
-            className={inputCls}
-          />
+          <LabeledInput label="이름" value={data.basicInfo.name ?? ""} onChange={(v) => patch({ basicInfo: { ...data.basicInfo, name: v } })} placeholder="홍길동" />
+          <LabeledInput label="이메일" value={data.basicInfo.email ?? ""} onChange={(v) => patch({ basicInfo: { ...data.basicInfo, email: v } })} placeholder="hong@example.com" />
+          <LabeledInput label="전화번호" value={data.basicInfo.phone ?? ""} onChange={(v) => patch({ basicInfo: { ...data.basicInfo, phone: v } })} placeholder="010-0000-0000" />
+          <LabeledInput label="거주지" value={data.basicInfo.location ?? ""} onChange={(v) => patch({ basicInfo: { ...data.basicInfo, location: v } })} placeholder="서울시 강남구" />
         </div>
       </Section>
 
-      <Section title="요약">
+      {/* 요약 */}
+      <Section icon={SECTION_ICONS["요약"]} title="요약">
         <textarea
           value={data.summary}
           onChange={(e) => patch({ summary: e.target.value })}
@@ -148,62 +148,53 @@ export function StructuredFormTab() {
         />
       </Section>
 
-      <Section title="총 경력">
-        <div className="flex items-center gap-2">
-          <input
-            type="number"
-            min={0}
-            value={yearsRaw}
-            onChange={(e) => setYearsRaw(e.target.value)}
-            placeholder="년"
-            className={`${inputCls} w-20`}
-          />
-          <span className="text-[12px] text-[#6B7280]">년</span>
-          <input
-            type="number"
-            min={0}
-            max={11}
-            value={monthsRaw}
-            onChange={(e) => setMonthsRaw(e.target.value)}
-            placeholder="개월"
-            className={`${inputCls} w-20`}
-          />
-          <span className="text-[12px] text-[#6B7280]">개월</span>
-        </div>
-      </Section>
+      {/* 총 경력 + 직군 */}
+      <div className="grid grid-cols-2 gap-4 max-sm:grid-cols-1">
+        <Section icon={SECTION_ICONS["총 경력"]} title="총 경력">
+          <div className="flex items-center gap-2">
+            <input type="number" min={0} value={yearsRaw} onChange={(e) => setYearsRaw(e.target.value)} placeholder="0" className={`${inputCls} w-20 text-center`} />
+            <span className="text-[12px] text-[#6B7280] shrink-0">년</span>
+            <input type="number" min={0} max={11} value={monthsRaw} onChange={(e) => setMonthsRaw(e.target.value)} placeholder="0" className={`${inputCls} w-20 text-center`} />
+            <span className="text-[12px] text-[#6B7280] shrink-0">개월</span>
+          </div>
+        </Section>
 
-      <Section title="직군">
-        <div className="flex flex-wrap gap-2">
-          {JOB_CATEGORY_OPTIONS.map((label) => {
-            const active = data.jobCategory === label;
-            return (
-              <button
-                key={label}
-                type="button"
-                onClick={() => patch({ jobCategory: active ? null : label })}
-                className={`px-3 py-1.5 rounded-full border text-[12px] font-semibold transition-colors ${
-                  active
-                    ? "bg-[#E6F7FA] border-[#0991B2] text-[#0991B2]"
-                    : "bg-white border-[#E5E7EB] text-[#374151] hover:border-[#0991B2]"
-                }`}
-              >
-                {label}
-              </button>
-            );
-          })}
-        </div>
-      </Section>
+        <Section icon={SECTION_ICONS["직군"]} title="직군">
+          <div className="flex flex-wrap gap-1.5">
+            {JOB_CATEGORY_OPTIONS.map((label) => {
+              const active = data.jobCategory === label;
+              return (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={() => patch({ jobCategory: active ? null : label })}
+                  className={`px-2.5 py-1 rounded-full border text-[11px] font-semibold transition-colors ${
+                    active
+                      ? "bg-[#E6F7FA] border-[#0991B2] text-[#0991B2]"
+                      : "bg-white border-[#E5E7EB] text-[#374151] hover:border-[#0991B2] hover:text-[#0991B2]"
+                  }`}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+        </Section>
+      </div>
 
-      <Section title="스킬 (콤마 구분)">
+      {/* 스킬 */}
+      <Section icon={SECTION_ICONS["스킬"]} title="스킬 (콤마로 구분)">
         <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
-          <LabeledInput label="기술" value={techCsv} onChange={setTechCsv} placeholder="Python, Django" />
-          <LabeledInput label="도구" value={toolCsv} onChange={setToolCsv} placeholder="Docker, Jira" />
-          <LabeledInput label="소프트" value={softCsv} onChange={setSoftCsv} placeholder="협업, 리더십" />
+          <LabeledInput label="기술 스택" value={techCsv} onChange={setTechCsv} placeholder="Python, Django, FastAPI" />
+          <LabeledInput label="도구" value={toolCsv} onChange={setToolCsv} placeholder="Docker, Jira, Figma" />
+          <LabeledInput label="소프트 스킬" value={softCsv} onChange={setSoftCsv} placeholder="협업, 리더십, 커뮤니케이션" />
           <LabeledInput label="외국어" value={skillLangCsv} onChange={setSkillLangCsv} placeholder="영어, 일본어" />
         </div>
       </Section>
 
+      {/* 경력 */}
       <RepeaterSection
+        icon={SECTION_ICONS["경력"]}
         title="경력"
         items={data.experiences}
         empty={{ company: "", role: "", period: "", responsibilities: [], highlights: [] }}
@@ -211,58 +202,52 @@ export function StructuredFormTab() {
         renderRow={(item, update) => (
           <div className="grid grid-cols-1 gap-2">
             <div className="grid grid-cols-3 gap-2 max-sm:grid-cols-1">
-              <input value={item.company} onChange={(e) => update({ ...item, company: e.target.value })} placeholder="회사명" className={inputCls} />
-              <input value={item.role} onChange={(e) => update({ ...item, role: e.target.value })} placeholder="직함" className={inputCls} />
-              <input value={item.period} onChange={(e) => update({ ...item, period: e.target.value })} placeholder="기간" className={inputCls} />
+              <LabeledInput label="회사명" value={item.company} onChange={(v) => update({ ...item, company: v })} placeholder="(주)회사명" />
+              <LabeledInput label="직함" value={item.role} onChange={(v) => update({ ...item, role: v })} placeholder="백엔드 개발자" />
+              <LabeledInput label="기간" value={item.period} onChange={(v) => update({ ...item, period: v })} placeholder="2022.03 ~ 2024.06" />
             </div>
-            <textarea
-              value={(item.responsibilities ?? []).join("\n")}
-              onChange={(e) => update({ ...item, responsibilities: e.target.value.split("\n").filter(Boolean) })}
-              rows={2}
-              placeholder="주요 업무 (한 줄에 하나)"
-              className={inputCls}
-            />
-            <textarea
-              value={(item.highlights ?? []).join("\n")}
-              onChange={(e) => update({ ...item, highlights: e.target.value.split("\n").filter(Boolean) })}
-              rows={2}
-              placeholder="주요 성과 (한 줄에 하나)"
-              className={inputCls}
-            />
+            <LabeledInput label="주요 업무 (한 줄에 하나)" value={(item.responsibilities ?? []).join("\n")} onChange={(v) => update({ ...item, responsibilities: v.split("\n").filter(Boolean) })} placeholder="API 설계 및 개발&#10;DB 쿼리 최적화" textarea rows={2} />
+            <LabeledInput label="주요 성과 (한 줄에 하나)" value={(item.highlights ?? []).join("\n")} onChange={(v) => update({ ...item, highlights: v.split("\n").filter(Boolean) })} placeholder="응답속도 40% 개선&#10;MAU 10만 달성" textarea rows={2} />
           </div>
         )}
       />
 
+      {/* 학력 */}
       <RepeaterSection
+        icon={SECTION_ICONS["학력"]}
         title="학력"
         items={data.educations}
         empty={{ school: "", degree: "", major: "", period: "" }}
         onChange={(v) => patch({ educations: v })}
         renderRow={(item, update) => (
           <div className="grid grid-cols-2 gap-2 max-sm:grid-cols-1">
-            <input value={item.school} onChange={(e) => update({ ...item, school: e.target.value })} placeholder="학교명" className={inputCls} />
-            <input value={item.degree} onChange={(e) => update({ ...item, degree: e.target.value })} placeholder="학위" className={inputCls} />
-            <input value={item.major} onChange={(e) => update({ ...item, major: e.target.value })} placeholder="전공" className={inputCls} />
-            <input value={item.period} onChange={(e) => update({ ...item, period: e.target.value })} placeholder="재학 기간" className={inputCls} />
+            <LabeledInput label="학교명" value={item.school} onChange={(v) => update({ ...item, school: v })} placeholder="한국대학교" />
+            <LabeledInput label="학위" value={item.degree} onChange={(v) => update({ ...item, degree: v })} placeholder="학사" />
+            <LabeledInput label="전공" value={item.major} onChange={(v) => update({ ...item, major: v })} placeholder="컴퓨터공학" />
+            <LabeledInput label="재학 기간" value={item.period} onChange={(v) => update({ ...item, period: v })} placeholder="2018.03 ~ 2022.02" />
           </div>
         )}
       />
 
+      {/* 자격증 */}
       <RepeaterSection
+        icon={SECTION_ICONS["자격증"]}
         title="자격증"
         items={data.certifications}
         empty={{ name: "", issuer: "", date: "" }}
         onChange={(v) => patch({ certifications: v })}
         renderRow={(item, update) => (
           <div className="grid grid-cols-3 gap-2 max-sm:grid-cols-1">
-            <input value={item.name} onChange={(e) => update({ ...item, name: e.target.value })} placeholder="자격증명" className={inputCls} />
-            <input value={item.issuer} onChange={(e) => update({ ...item, issuer: e.target.value })} placeholder="발급기관" className={inputCls} />
-            <input value={item.date} onChange={(e) => update({ ...item, date: e.target.value })} placeholder="취득일" className={inputCls} />
+            <LabeledInput label="자격증명" value={item.name} onChange={(v) => update({ ...item, name: v })} placeholder="정보처리기사" />
+            <LabeledInput label="발급기관" value={item.issuer} onChange={(v) => update({ ...item, issuer: v })} placeholder="한국산업인력공단" />
+            <LabeledInput label="취득일" value={item.date} onChange={(v) => update({ ...item, date: v })} placeholder="2022.05" />
           </div>
         )}
       />
 
+      {/* 수상 이력 */}
       <RepeaterSection
+        icon={SECTION_ICONS["수상 이력"]}
         title="수상 이력"
         items={data.awards}
         empty={{ name: "", year: "", organization: "", description: "" }}
@@ -270,16 +255,18 @@ export function StructuredFormTab() {
         renderRow={(item, update) => (
           <div className="grid grid-cols-1 gap-2">
             <div className="grid grid-cols-3 gap-2 max-sm:grid-cols-1">
-              <input value={item.name} onChange={(e) => update({ ...item, name: e.target.value })} placeholder="수상 이름" className={inputCls} />
-              <input value={item.organization} onChange={(e) => update({ ...item, organization: e.target.value })} placeholder="주최" className={inputCls} />
-              <input value={item.year} onChange={(e) => update({ ...item, year: e.target.value })} placeholder="연도" className={inputCls} />
+              <LabeledInput label="수상명" value={item.name} onChange={(v) => update({ ...item, name: v })} placeholder="우수상" />
+              <LabeledInput label="주최" value={item.organization} onChange={(v) => update({ ...item, organization: v })} placeholder="과학기술정보통신부" />
+              <LabeledInput label="연도" value={item.year} onChange={(v) => update({ ...item, year: v })} placeholder="2023" />
             </div>
-            <textarea value={item.description} onChange={(e) => update({ ...item, description: e.target.value })} rows={2} placeholder="상세 설명" className={inputCls} />
+            <LabeledInput label="상세 설명" value={item.description} onChange={(v) => update({ ...item, description: v })} placeholder="해커톤 최우수상 수상" textarea rows={2} />
           </div>
         )}
       />
 
+      {/* 프로젝트 */}
       <RepeaterSection
+        icon={SECTION_ICONS["프로젝트"]}
         title="프로젝트"
         items={data.projects}
         empty={{ name: "", role: "", period: "", description: "", techStack: [] }}
@@ -287,98 +274,124 @@ export function StructuredFormTab() {
         renderRow={(item, update) => (
           <div className="grid grid-cols-1 gap-2">
             <div className="grid grid-cols-3 gap-2 max-sm:grid-cols-1">
-              <input value={item.name} onChange={(e) => update({ ...item, name: e.target.value })} placeholder="프로젝트명" className={inputCls} />
-              <input value={item.role} onChange={(e) => update({ ...item, role: e.target.value })} placeholder="역할" className={inputCls} />
-              <input value={item.period} onChange={(e) => update({ ...item, period: e.target.value })} placeholder="기간" className={inputCls} />
+              <LabeledInput label="프로젝트명" value={item.name} onChange={(v) => update({ ...item, name: v })} placeholder="meFit 서비스" />
+              <LabeledInput label="역할" value={item.role} onChange={(v) => update({ ...item, role: v })} placeholder="백엔드 리드" />
+              <LabeledInput label="기간" value={item.period} onChange={(v) => update({ ...item, period: v })} placeholder="2023.01 ~ 2023.06" />
             </div>
-            <textarea value={item.description} onChange={(e) => update({ ...item, description: e.target.value })} rows={2} placeholder="개요/기여" className={inputCls} />
-            <input
-              value={(item.techStack ?? []).join(", ")}
-              onChange={(e) => update({ ...item, techStack: csvToList(e.target.value) })}
-              placeholder="기술 스택 (콤마 구분)"
-              className={inputCls}
-            />
+            <LabeledInput label="개요 / 기여" value={item.description} onChange={(v) => update({ ...item, description: v })} placeholder="AI 면접 서비스 백엔드 설계 및 개발" textarea rows={2} />
+            <LabeledInput label="기술 스택 (콤마 구분)" value={(item.techStack ?? []).join(", ")} onChange={(v) => update({ ...item, techStack: csvToList(v) })} placeholder="FastAPI, PostgreSQL, Redis" />
           </div>
         )}
       />
 
+      {/* 구사 언어 */}
       <RepeaterSection
+        icon={SECTION_ICONS["구사 언어"]}
         title="구사 언어"
         items={data.languagesSpoken}
         empty={{ language: "", level: "" }}
         onChange={(v) => patch({ languagesSpoken: v })}
         renderRow={(item, update) => (
           <div className="grid grid-cols-2 gap-2 max-sm:grid-cols-1">
-            <input value={item.language} onChange={(e) => update({ ...item, language: e.target.value })} placeholder="언어" className={inputCls} />
-            <input value={item.level} onChange={(e) => update({ ...item, level: e.target.value })} placeholder="수준" className={inputCls} />
+            <LabeledInput label="언어" value={item.language} onChange={(v) => update({ ...item, language: v })} placeholder="영어" />
+            <LabeledInput label="수준" value={item.level} onChange={(v) => update({ ...item, level: v })} placeholder="비즈니스 레벨" />
           </div>
         )}
       />
 
-      <Section title="산업 도메인 / 키워드 (콤마 구분)">
+      {/* 산업 도메인 / 키워드 */}
+      <Section icon={SECTION_ICONS["산업 도메인 / 키워드"]} title="산업 도메인 / 키워드 (콤마 구분)">
         <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
           <LabeledInput label="산업 도메인" value={domainsCsv} onChange={setDomainsCsv} placeholder="핀테크, 이커머스" />
           <LabeledInput label="키워드" value={keywordsCsv} onChange={setKeywordsCsv} placeholder="microservices, pgvector" />
         </div>
       </Section>
 
-      {error && <div className="text-[12px] text-[#DC2626]">{error}</div>}
+      {/* 에러 */}
+      {error && (
+        <div className="flex items-center gap-2 text-[12px] font-semibold text-[#DC2626] bg-[#FEF2F2] border border-[#FECACA] rounded-lg px-3.5 py-2.5">
+          ✗ {error}
+        </div>
+      )}
+
+      {/* 제출 버튼 */}
       <button
         type="submit"
         disabled={isSubmitting}
-        className="inline-flex items-center justify-center gap-2 text-[13px] font-bold text-white bg-[#0991B2] rounded-lg py-3 disabled:opacity-50"
+        className="inline-flex items-center justify-center gap-2 text-sm font-bold text-white bg-[#0A0A0A] rounded-lg py-3.5 shadow-[0_1px_3px_rgba(0,0,0,0.1)] transition-opacity hover:opacity-85 disabled:opacity-50"
       >
         {isSubmitting ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
-        이력서 생성
+        {isSubmitting ? "생성 중..." : "이력서 생성하기"}
       </button>
     </form>
   );
 }
 
-const inputCls = "border border-[#E5E7EB] rounded-lg px-3 py-2 text-[13px] focus:outline-none focus:border-[#0991B2] transition-colors";
+/* ── 공통 스타일 ── */
+const inputCls =
+  "w-full border border-[#E5E7EB] rounded-lg px-3.5 py-2.5 text-[13px] outline-none transition-[border-color,box-shadow] focus:border-[#0991B2] focus:shadow-[0_0_0_3px_rgba(9,145,178,0.1)] placeholder:text-[#9CA3AF] bg-white resize-none";
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+/* ── Section 카드 ── */
+function Section({
+  icon,
+  title,
+  children,
+}: {
+  icon?: string;
+  title: string;
+  children: React.ReactNode;
+}) {
   return (
-    <label className="flex flex-col gap-1.5">
-      <span className="text-[12px] font-bold text-[#0A0A0A]">{label}</span>
-      {children}
-    </label>
+    <div className="border border-[#E5E7EB] rounded-xl bg-[#FAFAFA] overflow-hidden">
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-[#E5E7EB] bg-white">
+        {icon && <span className="text-base">{icon}</span>}
+        <span className="text-[12px] font-extrabold text-[#0A0A0A]">{title}</span>
+      </div>
+      <div className="p-4 flex flex-col gap-3">{children}</div>
+    </div>
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <fieldset className="border border-[#E5E7EB] rounded-lg p-4 flex flex-col gap-3">
-      <legend className="text-[11px] font-bold text-[#6B7280] px-2">{title}</legend>
-      {children}
-    </fieldset>
-  );
-}
-
+/* ── LabeledInput ── */
 function LabeledInput({
   label,
   value,
   onChange,
   placeholder,
+  textarea,
+  rows,
 }: {
   label: string;
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
+  textarea?: boolean;
+  rows?: number;
 }) {
   return (
     <label className="flex flex-col gap-1">
-      <span className="text-[10px] font-bold text-[#6B7280]">{label}</span>
-      <input
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className={inputCls}
-      />
+      <span className="text-[11px] font-bold text-[#6B7280]">{label}</span>
+      {textarea ? (
+        <textarea
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          rows={rows ?? 2}
+          className={inputCls}
+        />
+      ) : (
+        <input
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          className={inputCls}
+        />
+      )}
     </label>
   );
 }
 
+/* ── RepeaterSection ── */
 type RepeatableItem =
   | ParsedExperience
   | ParsedEducation
@@ -388,12 +401,14 @@ type RepeatableItem =
   | ParsedLanguage;
 
 function RepeaterSection<T extends RepeatableItem>({
+  icon,
   title,
   items,
   empty,
   onChange,
   renderRow,
 }: {
+  icon?: string;
   title: string;
   items: T[];
   empty: T;
@@ -409,33 +424,49 @@ function RepeaterSection<T extends RepeatableItem>({
   const add = () => onChange([...items, { ...empty }]);
 
   return (
-    <fieldset className="border border-[#E5E7EB] rounded-lg p-4 flex flex-col gap-3">
-      <div className="flex items-center justify-between">
-        <legend className="text-[11px] font-bold text-[#6B7280] px-2">{title}</legend>
+    <div className="border border-[#E5E7EB] rounded-xl bg-[#FAFAFA] overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-[#E5E7EB] bg-white">
+        <div className="flex items-center gap-2">
+          {icon && <span className="text-base">{icon}</span>}
+          <span className="text-[12px] font-extrabold text-[#0A0A0A]">{title}</span>
+          {items.length > 0 && (
+            <span className="text-[10px] font-bold text-[#0991B2] bg-[#E6F7FA] px-2 py-0.5 rounded-full">
+              {items.length}
+            </span>
+          )}
+        </div>
         <button
           type="button"
           onClick={add}
-          className="inline-flex items-center gap-1 text-[11px] font-bold text-[#0991B2]"
+          className="inline-flex items-center gap-1 text-[11px] font-bold text-[#0991B2] bg-[#E6F7FA] hover:bg-[#cceef6] px-2.5 py-1 rounded-lg transition-colors"
         >
-          <Plus size={12} /> 추가
+          <Plus size={11} /> 추가
         </button>
       </div>
-      {items.length === 0 && (
-        <p className="text-[11px] text-[#9CA3AF]">아직 항목이 없어요. "추가" 를 눌러 시작하세요.</p>
-      )}
-      {items.map((item, i) => (
-        <div key={i} className="bg-[#F9FAFB] rounded p-3 relative">
-          {renderRow(item, (next) => update(i, next))}
-          <button
-            type="button"
-            onClick={() => remove(i)}
-            className="absolute top-2 right-2 text-[#DC2626]"
-            aria-label="삭제"
-          >
-            <Trash2 size={14} />
-          </button>
-        </div>
-      ))}
-    </fieldset>
+
+      <div className="p-4 flex flex-col gap-3">
+        {items.length === 0 ? (
+          <p className="text-[11px] text-[#9CA3AF] text-center py-3">
+            아직 항목이 없어요. "추가" 를 눌러 시작하세요.
+          </p>
+        ) : (
+          items.map((item, i) => (
+            <div key={i} className="relative bg-white border border-[#E5E7EB] rounded-lg p-3.5 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+              <button
+                type="button"
+                onClick={() => remove(i)}
+                className="absolute top-2.5 right-2.5 w-6 h-6 flex items-center justify-center rounded-md text-[#9CA3AF] hover:text-[#DC2626] hover:bg-[#FEF2F2] transition-colors"
+                aria-label="삭제"
+              >
+                <Trash2 size={13} />
+              </button>
+              <div className="pr-7">
+                {renderRow(item, (next) => update(i, next))}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
   );
 }
