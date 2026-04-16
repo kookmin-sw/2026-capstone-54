@@ -88,6 +88,7 @@ export function InterviewSetupPage() {
         {step === 2 && (
           <>
             <StepLayout
+              stepLabel="STEP 2"
               title="면접 방식을 선택하세요"
               description="면접 유형, 진행 모드, 난이도를 선택합니다."
               left={

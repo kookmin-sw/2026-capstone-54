@@ -2,18 +2,19 @@
 import type { ReactNode } from "react";
 
 interface StepLayoutProps {
+  stepLabel?: string;
   title: string;
   description: string;
   left: ReactNode;
   right: ReactNode;
 }
 
-export function StepLayout({ title, description, left, right }: StepLayoutProps) {
+export function StepLayout({ stepLabel, title, description, left, right }: StepLayoutProps) {
   return (
     <div>
       {/* Header — full width */}
       <div className="mb-6">
-        <div className="text-[11px] font-bold tracking-[.1em] uppercase text-[#0991B2] mb-2">STEP 2</div>
+        {stepLabel && <div className="text-[11px] font-bold tracking-[.1em] uppercase text-[#0991B2] mb-2">{stepLabel}</div>}
         <h2 className="text-[20px] font-black tracking-[-0.3px] mb-1">{title}</h2>
         <p className="text-sm text-[#6B7280]">{description}</p>
       </div>
