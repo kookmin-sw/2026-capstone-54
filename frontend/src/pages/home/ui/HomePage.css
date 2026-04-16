@@ -643,6 +643,10 @@
   gap: 16px;
 }
 
+.hp-bottom--single {
+  grid-template-columns: 1fr;
+}
+
 .hp-card-white {
   background: #fff;
   border: 1px solid #e5e7eb;

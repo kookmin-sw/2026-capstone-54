@@ -65,7 +65,7 @@ export function HomeContent() {
             />
           )}
 
-          <div className="hp-bottom" style={{ gridTemplateColumns: "1fr" }}>
+          <div className="hp-bottom hp-bottom--single">
             <JobStatus jobs={data.jobs} revealed={revealed} />
           </div>
         </>
