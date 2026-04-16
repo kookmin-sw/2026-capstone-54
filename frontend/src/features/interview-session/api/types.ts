@@ -15,6 +15,7 @@ export interface InterviewSession {
   interviewPracticeMode: InterviewPracticeMode;
   totalQuestions: number;
   totalFollowupQuestions: number;
+  estimatedTotalQuestions: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -26,6 +27,7 @@ export interface InterviewTurn {
   question: string;
   answer: string;
   turnNumber: number;
+  followupOrder: number | null;
   createdAt: string;
 }
 
