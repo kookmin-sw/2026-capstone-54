@@ -46,8 +46,5 @@ class UserJobDescriptionDetailAPIView(BaseAPIView):
       **serializer.validated_data,
     ).perform()
 
-    user_job_description = (
-      UserJobDescription.objects.select_related("job_description").get(pk=user_job_description.pk)
-    )
     response = UserJobDescriptionListSerializer(user_job_description)
     return Response(response.data)

@@ -12,7 +12,7 @@ class UpdateUserJobDescriptionService(BaseService):
     uuid = self.kwargs["uuid"]
 
     try:
-      user_job_description = UserJobDescription.objects.get(
+      user_job_description = UserJobDescription.objects.select_related("job_description").get(
         uuid=uuid,
         user=self.user,
       )
