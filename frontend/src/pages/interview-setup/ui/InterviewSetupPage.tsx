@@ -77,7 +77,7 @@ export function InterviewSetupPage() {
             </div>
 
             <div className="flex justify-end gap-3">
-              <button disabled={!canProceedStep1} onClick={() => setStep(2)} className={nextCls} style={{ maxWidth: 200 }}>
+              <button disabled={!canProceedStep1} onClick={() => setStep(2)} className={`${nextCls} max-w-[200px]`}>
                 다음 →
               </button>
             </div>
@@ -112,12 +112,11 @@ export function InterviewSetupPage() {
               }
             />
             <div className="flex justify-between gap-3 mt-6">
-              <button onClick={() => setStep(1)} className={prevCls} style={{ maxWidth: 200 }}>← 이전</button>
+              <button onClick={() => setStep(1)} className={`${prevCls} max-w-[200px]`}>← 이전</button>
               <button
                 disabled={creatingSession || !selectedResumeUuid || !selectedJdId}
                 onClick={handleStartInterview}
-                className={nextCls}
-                style={{ maxWidth: 200 }}
+                className={`${nextCls} max-w-[200px]`}
               >
                 {creatingSession ? "생성 중..." : "면접 시작"}
               </button>
