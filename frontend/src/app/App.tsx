@@ -26,6 +26,8 @@ import { SettingsPage } from "@/pages/settings";
 import { StreakPage } from "@/pages/streak";
 import { SubscriptionPage } from "@/pages/subscription";
 import { NotificationsPage } from "@/pages/notifications";
+import { NotFoundPage } from "@/pages/not-found";
+import { ServerErrorPage } from "@/pages/server-error";
 
 function App() {
   const { initAuth, logout, user } = useAuthStore();
@@ -74,6 +76,10 @@ function App() {
         <Route path="/streak" element={<ProtectedRoute><StreakPage /></ProtectedRoute>} />
         <Route path="/subscription" element={<ProtectedRoute><SubscriptionPage /></ProtectedRoute>} />
         <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
+
+        {/* ── 에러 페이지 ── */}
+        <Route path="/500" element={<ServerErrorPage />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
   );
