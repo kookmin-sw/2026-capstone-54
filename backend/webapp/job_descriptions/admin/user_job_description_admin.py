@@ -8,15 +8,21 @@ class UserJobDescriptionAdmin(ModelAdmin):
   list_display = (
     "uuid",
     "user",
+    "title",
     "job_description",
+    "application_status",
     "created_at",
   )
-  list_filter = ("created_at", )
+  list_filter = (
+    "application_status",
+    "created_at",
+  )
   list_select_related = (
     "user",
     "job_description",
   )
   search_fields = (
+    "title",
     "user__email",
     "job_description__title",
     "job_description__company",
@@ -36,6 +42,8 @@ class UserJobDescriptionAdmin(ModelAdmin):
       "fields": (
         "user",
         "job_description",
+        "title",
+        "application_status",
       ),
     }),
     ("날짜", {
