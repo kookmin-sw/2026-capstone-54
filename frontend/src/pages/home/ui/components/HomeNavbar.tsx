@@ -2,6 +2,9 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 import { useAuthStore } from "@/features/auth";
 import { useNotificationStore } from "@/features/notifications";
+import { useTicketCount } from "@/shared/hooks/useTicketCount";
+import { useTicketPolicy } from "@/shared/hooks/useTicketPolicy";
+import { TicketIcon } from "@/shared/ui";
 
 interface HomeNavbarProps {
   menuOpen: boolean;
@@ -13,6 +16,8 @@ export function HomeNavbar({ menuOpen, onMenuToggle }: HomeNavbarProps) {
   const { user, logout } = useAuthStore();
   const { notifications, markAllRead } = useNotificationStore();
   const unreadCount = notifications.filter((n) => !n.read).length;
+  const { tickets } = useTicketCount();
+  const { policy } = useTicketPolicy();
   const [profileOpen, setProfileOpen] = useState(false);
   const [notiOpen, setNotiOpen] = useState(false);
 
@@ -59,6 +64,23 @@ export function HomeNavbar({ menuOpen, onMenuToggle }: HomeNavbarProps) {
       <Link to="/" className="hp-nav-logo flex items-center">
         <img src="/logo-korean.png" alt="미핏" className="h-[36px] w-auto" />
       </Link>
+
+
+      {/* Ticket counts */}
+      <div className="flex items-center gap-2">
+        {tickets && (
+          <>
+            <TicketIcon
+              count={tickets.dailyCount}
+              type="daily"
+              dailyAmount={policy?.freeDailyTicketAmount}
+            />
+            {tickets.purchasedCount > 0 && (
+              <TicketIcon count={tickets.purchasedCount} type="bonus" />
+            )}
+          </>
+        )}
+      </div>
 
       {/* Notification bell */}
       <div className="relative" ref={notiRef}>
