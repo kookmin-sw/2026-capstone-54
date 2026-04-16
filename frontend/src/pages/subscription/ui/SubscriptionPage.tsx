@@ -139,6 +139,7 @@ export function SubscriptionPage() {
           ) : (
             <>
               <PlanCards
+                ref={proCardRef}
                 isPro={isPro}
                 isYearly={isYearly}
                 monthlyPrice={monthlyPrice}
@@ -147,6 +148,7 @@ export function SubscriptionPage() {
                 proNote={proNote}
                 proBtnText={proBtnText}
                 processing={processing}
+                nextBillingDate={status?.nextBillingDate ?? undefined}
                 onCheckout={checkout}
                 onCancel={cancelSubscription}
               />

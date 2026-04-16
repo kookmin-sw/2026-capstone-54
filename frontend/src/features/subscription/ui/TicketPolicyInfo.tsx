@@ -1,19 +1,11 @@
-import { useEffect, useState } from "react";
-import { fetchTicketPolicyApi } from "@/shared/api";
-import type { TicketPolicy } from "@/shared/api";
+import { useTicketPolicy } from "@/shared/hooks/useTicketPolicy";
 
 interface TicketPolicyInfoProps {
   currentPlan: "free" | "pro";
 }
 
 export function TicketPolicyInfo({ currentPlan }: TicketPolicyInfoProps) {
-  const [policy, setPolicy] = useState<TicketPolicy | null>(null);
-
-  useEffect(() => {
-    fetchTicketPolicyApi().then((res) => {
-      if (res.success && res.data) setPolicy(res.data);
-    });
-  }, []);
+  const { policy } = useTicketPolicy();
 
   const dailyAmount = currentPlan === "pro"
     ? policy?.proDailyTicketAmount
