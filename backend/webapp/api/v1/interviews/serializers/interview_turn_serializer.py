@@ -16,6 +16,7 @@ class InterviewTurnSerializer(serializers.ModelSerializer):
       "question",
       "answer",
       "turn_number",
+      "followup_order",
       "created_at",
     )
     read_only_fields = fields

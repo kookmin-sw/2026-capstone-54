@@ -25,6 +25,9 @@ class StartInterviewView(BaseAPIView):
   def post(self, request, interview_session_uuid):
     interview_session = get_interview_session_for_user(interview_session_uuid, self.current_user)
 
+    if interview_session.total_questions > 0:
+      raise ValidationException(detail="이미 시작된 면접입니다. 이어서 진행하세요.")
+
     ticket_cost = self._get_ticket_cost(interview_session)
     self._validate_and_use_tickets(interview_session, ticket_cost)
 
