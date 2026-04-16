@@ -5,7 +5,7 @@ const LEGAL_LINKS = ["개인정보처리방침", "이용약관", "쿠키 정책"
 export function FooterSection() {
   return (
     <footer className="bg-[#0A0A0A] pt-12 pb-6 px-5 flex justify-center md:pt-16 md:pb-8 md:px-10">
-      <div className="max-w-content w-full md:max-w-[900px]">
+      <div className="max-w-content w-full md:max-w-[1080px]">
         <div className="flex flex-col gap-8 mb-9 md:grid md:grid-cols-[2fr_1fr_1fr_1fr] md:gap-10 md:mb-12">
           {/* 브랜드 */}
           <div>

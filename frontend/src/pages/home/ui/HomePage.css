@@ -275,7 +275,8 @@
 /* 다른 페이지용: 각 페이지가 자체 padding 관리 */
 .hp-page-main {
   min-width: 0;
-  overflow: hidden;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 /* ── BADGE ── */
@@ -640,6 +641,10 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
+}
+
+.hp-bottom--single {
+  grid-template-columns: 1fr;
 }
 
 .hp-card-white {

@@ -11,7 +11,7 @@ const [featured, ...rest] = FEATURES;
 export function FeaturesSection() {
   return (
     <section id="features" className="py-14 px-5 flex justify-center bg-white md:py-20 md:px-10">
-      <div className="max-w-content w-full md:max-w-[900px]">
+      <div className="max-w-content w-full md:max-w-[1080px]">
         <div className="text-center mb-8 md:mb-12">
           <div className="inline-block text-[12px] font-bold text-[#0991B2] bg-[#E6F7FA] rounded px-[14px] py-[5px] mb-[14px] md:text-[13px] md:px-[18px] md:py-[6px]">
             핵심 기능

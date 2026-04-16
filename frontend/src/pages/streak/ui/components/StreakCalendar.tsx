@@ -1,52 +1,19 @@
-import { useState, useMemo } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
 
-const MONTH_KO = ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"];
+const MONTH_SHORT = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const CELL_GAP    = 3;
+const MAX_WEEKS   = 52;
+const MOBILE_WEEKS = 28;
+const MOBILE_BP   = 500;
+const NUM_DAYS    = 7;
 
-interface CalendarCell {
-  day: number | null;
-  done: boolean;
-  today: boolean;
-}
-
-function buildCalendarCells(
-  year: number,
-  month: number,
-  doneSet: Set<number>,
-  todayYear: number,
-  todayMonth: number,
-  todayDay: number
-): CalendarCell[] {
-  const firstDow = new Date(year, month - 1, 1).getDay();
-  const totalDays = new Date(year, month, 0).getDate();
-  const cells: CalendarCell[] = [];
-
-  for (let i = 0; i < firstDow; i++) {
-    cells.push({ day: null, done: false, today: false });
-  }
-
-  for (let d = 1; d <= totalDays; d++) {
-    cells.push({
-      day: d,
-      done: doneSet.has(d),
-      today: year === todayYear && month === todayMonth && d === todayDay,
-    });
-  }
-
-  return cells;
-}
-
-function getCalendarCellClass(cell: CalendarCell): string {
-  const base =
-    "aspect-square rounded-lg flex items-center justify-center text-[12px] font-semibold text-[#6B7280] cursor-default transition-all select-none relative";
-
-  if (!cell.day) return `${base} opacity-0 pointer-events-none`;
-  if (cell.done && cell.today)
-    return `${base} bg-[#0991B2] text-white font-bold shadow-[0_0_0_2px_#0991B2,0_2px_8px_rgba(9,145,178,.4)] animate-[skPop_.25s_ease]`;
-  if (cell.done)
-    return `${base} bg-[#0991B2] text-white font-bold shadow-[0_2px_8px_rgba(9,145,178,.35)] animate-[skPop_.25s_ease]`;
-  if (cell.today) return `${base} bg-[#E6F7FA] text-[#0991B2] font-extrabold`;
-  return `${base} hover:bg-[#E6F7FA] hover:text-[#0991B2]`;
-}
+const CELL_COLORS = [
+  "#E5E7EB",
+  "#BAE6F0",
+  "#67C8DC",
+  "#0991B2",
+  "#065F79",
+];
 
 interface StreakCalendarProps {
   calendarDoneMap: Record<string, number[]>;
@@ -56,6 +23,67 @@ interface StreakCalendarProps {
   todayDay: number;
 }
 
+interface DayCell {
+  date: Date | null;
+  done: boolean;
+  today: boolean;
+  label?: string;
+}
+
+function buildYearGrid(
+  calendarDoneMap: Record<string, number[]>,
+  todayYear: number,
+  todayMonth: number,
+  todayDay: number
+): { weeks: DayCell[][]; monthPositions: { label: string; col: number }[] } {
+  const today = new Date(todayYear, todayMonth - 1, todayDay);
+  const startDate = new Date(today);
+  startDate.setDate(today.getDate() - (MAX_WEEKS - 1) * 7 - today.getDay());
+
+  const doneSet = new Set<string>();
+  for (const [key, days] of Object.entries(calendarDoneMap)) {
+    const [y, m] = key.split("-").map(Number);
+    for (const d of days) doneSet.add(`${y}-${m}-${d}`);
+  }
+
+  const weeks: DayCell[][] = [];
+  const monthPositions: { label: string; col: number }[] = [];
+  let lastMonth = -1;
+
+  for (let w = 0; w < MAX_WEEKS; w++) {
+    const week: DayCell[] = [];
+    for (let d = 0; d < NUM_DAYS; d++) {
+      const cur = new Date(startDate);
+      cur.setDate(startDate.getDate() + w * NUM_DAYS + d);
+
+      if (cur > today) {
+        week.push({ date: null, done: false, today: false });
+        continue;
+      }
+
+      const y   = cur.getFullYear();
+      const mo  = cur.getMonth() + 1;
+      const day = cur.getDate();
+      const key = `${y}-${mo}-${day}`;
+
+      week.push({
+        date: cur,
+        done: doneSet.has(key),
+        today: y === todayYear && mo === todayMonth && day === todayDay,
+        label: `${y}년 ${mo}월 ${day}일${doneSet.has(key) ? " — 면접 참여 ✓" : ""}`,
+      });
+
+      if (d === 0 && mo !== lastMonth) {
+        monthPositions.push({ label: MONTH_SHORT[mo - 1], col: w });
+        lastMonth = mo;
+      }
+    }
+    weeks.push(week);
+  }
+
+  return { weeks, monthPositions };
+}
+
 export function StreakCalendar({
   calendarDoneMap,
   revealed,
@@ -63,103 +91,145 @@ export function StreakCalendar({
   todayMonth,
   todayDay,
 }: StreakCalendarProps) {
-  const [viewY, setViewY] = useState(todayYear);
-  const [viewM, setViewM] = useState(todayMonth);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [cellSize, setCellSize] = useState(13);
+  const [visibleWeeks, setVisibleWeeks] = useState(MAX_WEEKS);
 
-  const prevMonth = () => {
-    if (viewM === 1) {
-      setViewY((y) => y - 1);
-      setViewM(12);
-    } else {
-      setViewM((m) => m - 1);
-    }
-  };
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
 
-  const nextMonth = () => {
-    if (viewM === 12) {
-      setViewY((y) => y + 1);
-      setViewM(1);
-    } else {
-      setViewM((m) => m + 1);
-    }
-  };
+    const calc = (contentWidth: number) => {
+      const numWeeks = contentWidth < MOBILE_BP ? MOBILE_WEEKS : MAX_WEEKS;
+      setVisibleWeeks(numWeeks);
+      // All width goes to cells — no label column, minus padding for outline breathing room
+      const size = (contentWidth - 6 - (numWeeks - 1) * CELL_GAP) / numWeeks;
+      setCellSize(Math.max(6, size));
+    };
 
-  const calCells = useMemo(() => {
-    const doneSet = new Set(calendarDoneMap[`${viewY}-${viewM}`] ?? []);
-    return buildCalendarCells(viewY, viewM, doneSet, todayYear, todayMonth, todayDay);
-  }, [viewY, viewM, calendarDoneMap, todayYear, todayMonth, todayDay]);
+    const style = getComputedStyle(el);
+    const padX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
+    calc(el.offsetWidth - padX);
+
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) calc(entry.contentRect.width);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const { weeks: allWeeks, monthPositions: allMonthPositions } = useMemo(
+    () => buildYearGrid(calendarDoneMap, todayYear, todayMonth, todayDay),
+    [calendarDoneMap, todayYear, todayMonth, todayDay]
+  );
+
+  const offset = MAX_WEEKS - visibleWeeks;
+  const weeks = allWeeks.slice(offset);
+  const monthPositions = allMonthPositions
+    .filter((m) => m.col >= offset)
+    .map((m) => ({ ...m, col: m.col - offset }));
+
+  const totalDone = useMemo(() => {
+    let n = 0;
+    for (const days of Object.values(calendarDoneMap)) n += days.length;
+    return n;
+  }, [calendarDoneMap]);
 
   return (
     <div
-      className={`bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl p-7 shadow-[0_1px_3px_rgba(0,0,0,0.08),0_4px_16px_rgba(0,0,0,0.06)] transition-[box-shadow,transform] hover:shadow-[0_2px_8px_rgba(0,0,0,0.1),0_8px_24px_rgba(0,0,0,0.08)] sk-rv${
+      ref={containerRef}
+      className={`bg-white border border-[#E5E7EB] rounded-xl p-6 max-sm:p-4 shadow-[0_1px_3px_rgba(0,0,0,0.06)] transition-all hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)] sk-rv${
         revealed ? " sk-rv-in" : ""
       }`}
       style={{ transitionDelay: "80ms" }}
     >
-      <span className="text-[10px] font-bold tracking-[1px] uppercase text-[#0991B2] bg-[#E6F7FA] py-[3px] px-2.5 rounded-full inline-block mb-2.5">
-        참여 달력
-      </span>
-      <h2 className="text-[18px] font-black tracking-[-0.3px] mb-1 text-[#0A0A0A]">면접 참여 기록</h2>
-      <p className="text-[13px] text-[#6B7280] mb-[22px] leading-[1.55]">
-        🔥 표시된 날은 면접에 참여한 날입니다
-      </p>
-
-      <div className="flex items-center justify-between mb-4">
-        <span className="text-[15px] font-black text-[#0A0A0A]">
-          {viewY}년 {MONTH_KO[viewM - 1]}
+      <div className="flex items-center gap-2 mb-4">
+        <span className="w-7 h-7 rounded-lg bg-[#E6F7FA] flex items-center justify-center text-sm">📅</span>
+        <h3 className="text-[14px] font-bold text-[#0A0A0A]">참여 기록</h3>
+        <span className="text-[11px] text-[#9CA3AF] font-medium ml-auto">
+          {visibleWeeks < MAX_WEEKS ? `최근 ${visibleWeeks}주` : "최근 52주"} ·{" "}
+          <strong className="text-[#0991B2]">{totalDone}일</strong> 참여
         </span>
-        <div className="flex gap-1.5">
-          <button
-            className="w-8 h-8 rounded-lg bg-white border border-[#E5E7EB] cursor-pointer text-sm flex items-center justify-center text-[#0A0A0A] transition-all hover:bg-[#F3F4F6] hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
-            onClick={prevMonth}
-            aria-label="이전 달"
-          >
-            ‹
-          </button>
-          <button
-            className="w-8 h-8 rounded-lg bg-white border border-[#E5E7EB] cursor-pointer text-sm flex items-center justify-center text-[#0A0A0A] transition-all hover:bg-[#F3F4F6] hover:shadow-[0_1px_3px_rgba(0,0,0,0.08)]"
-            onClick={nextMonth}
-            aria-label="다음 달"
-          >
-            ›
-          </button>
-        </div>
       </div>
 
-      <div className="grid grid-cols-7 gap-[3px] mb-1">
-        {["일", "월", "화", "수", "목", "금", "토"].map((d) => (
-          <div key={d} className="text-[10px] font-bold text-[#9CA3AF] text-center py-1">
-            {d}
+      {/* Graph — edge to edge */}
+      <div style={{ width: "100%", overflow: "hidden", padding: 3 }}>
+        {/* Month labels */}
+        <div style={{ display: "flex", marginBottom: 4 }}>
+          {weeks.map((_, col) => {
+            const mp = monthPositions.find((m) => m.col === col);
+            return (
+              <div
+                key={col}
+                style={{
+                  width: cellSize,
+                  flexShrink: 0,
+                  marginRight: col < visibleWeeks - 1 ? CELL_GAP : 0,
+                  fontSize: 9,
+                  color: "#9CA3AF",
+                  fontFamily: "monospace",
+                  lineHeight: 1,
+                  overflow: "visible",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {mp ? mp.label : ""}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Day rows */}
+        {Array.from({ length: NUM_DAYS }, (_, row) => (
+          <div key={row} style={{ display: "flex", marginBottom: row < NUM_DAYS - 1 ? CELL_GAP : 0 }}>
+            {weeks.map((week, col) => {
+              const cell = week[row];
+              const isEmpty = !cell?.date;
+              const isDone  = cell?.done  ?? false;
+              const isToday = cell?.today ?? false;
+              return (
+                <div
+                  key={col}
+                  title={cell?.label}
+                  style={{
+                    width: cellSize,
+                    height: cellSize,
+                    flexShrink: 0,
+                    borderRadius: Math.max(2, Math.floor(cellSize / 4)),
+                    marginRight: col < visibleWeeks - 1 ? CELL_GAP : 0,
+                    background: isEmpty ? "transparent" : isDone ? CELL_COLORS[3] : CELL_COLORS[0],
+                    outline: "none",
+                    outlineOffset: 0,
+                    boxShadow: isToday
+                      ? isDone
+                        ? "0 0 0 2px #0991B2, 0 0 6px rgba(9,145,178,0.5)"
+                        : "0 0 0 2px #0991B2"
+                      : undefined,
+                  }}
+                />
+              );
+            })}
           </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-7 gap-[3px]">
-        {calCells.map((cell, i) => (
+      {/* Legend */}
+      <div className="flex items-center justify-end gap-1 mt-3">
+        <span className="text-[10px] text-[#9CA3AF] mr-0.5">Less</span>
+        {CELL_COLORS.map((bg, i) => (
           <div
             key={i}
-            className={getCalendarCellClass(cell)}
-            title={cell.done && cell.day ? `${viewM}월 ${cell.day}일 — 면접 참여 ✓` : undefined}
-          >
-            {cell.day}
-            {cell.done && <span className="absolute top-0.5 right-0.5 text-[6px] leading-none">🔥</span>}
-          </div>
+            style={{
+              width: 10,
+              height: 10,
+              flexShrink: 0,
+              borderRadius: 2,
+              background: bg,
+              border: "1px solid rgba(0,0,0,0.04)",
+            }}
+          />
         ))}
-      </div>
-
-      <div className="flex items-center gap-3.5 mt-4 flex-wrap">
-        <div className="flex items-center gap-[5px] text-[11px] text-[#6B7280] font-semibold">
-          <div className="w-3 h-3 rounded-[4px] shrink-0 bg-[#0991B2]" />
-          면접 참여일
-        </div>
-        <div className="flex items-center gap-[5px] text-[11px] text-[#6B7280] font-semibold">
-          <div className="w-3 h-3 rounded-[4px] shrink-0 bg-[#E6F7FA] border-[1.5px] border-[#0991B2]" />
-          오늘
-        </div>
-        <div className="flex items-center gap-[5px] text-[11px] text-[#6B7280] font-semibold">
-          <div className="w-3 h-3 rounded-[4px] shrink-0 bg-[#E5E7EB]" />
-          미참여
-        </div>
+        <span className="text-[10px] text-[#9CA3AF] ml-0.5">More</span>
       </div>
     </div>
   );

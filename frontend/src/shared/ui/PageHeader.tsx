@@ -18,7 +18,7 @@ export function PageHeader({ badge, title, description, action, className = "" }
             {badge}
           </div>
         )}
-        <h1 className="text-[clamp(24px,3vw,36px)] font-black tracking-[-0.8px] text-mefit-black leading-[1.1]">
+        <h1 className="text-[clamp(20px,2.2vw,28px)] font-black tracking-[-0.8px] text-mefit-black leading-[1.1]">
           {title}
         </h1>
         {description && <p className="text-base text-mefit-gray-500 mt-1.5">{description}</p>}

@@ -15,41 +15,42 @@ interface NextRewardProps {
 export function NextReward({ nextReward, currentStreak, revealed }: NextRewardProps) {
   return (
     <div
-      className={`bg-[#0A0A0A] rounded-xl p-[26px] relative overflow-hidden shadow-[0_4px_24px_rgba(0,0,0,.16),0_12px_40px_rgba(0,0,0,.1)] sk-rv${
+      className={`bg-white border border-[#E5E7EB] rounded-xl p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)] transition-all hover:shadow-[0_2px_8px_rgba(0,0,0,0.08)] sk-rv${
         revealed ? " sk-rv-in" : ""
       }`}
       style={{ transitionDelay: "100ms" }}
     >
-      <div className="absolute w-[200px] h-[200px] bg-[rgba(9,145,178,.12)] blur-[60px] rounded-full -top-[60px] -right-[40px] pointer-events-none" />
-      <div className="relative z-[1]">
-        <div className="text-[10px] font-bold tracking-[1px] uppercase text-white/35 mb-3.5">
-          다음 보상까지
-        </div>
-        <div className="flex items-baseline justify-between mb-1">
-          <div className="text-[34px] font-black text-white tracking-[-1px] leading-none">
-            {nextReward.targetDays}
-            <span className="text-sm font-bold text-white/40 ml-[3px]">일 달성 목표</span>
-          </div>
-          <div className="text-[12px] font-bold text-white/45">{nextReward.daysRemaining}일 남음</div>
-        </div>
-        <div className="h-2 bg-white/[.1] rounded-full overflow-hidden my-3.5">
-          <div
-            className="h-full bg-[#0991B2] rounded-full [transition:width_1s_cubic-bezier(.34,1.56,.64,1)]"
-            style={{ width: `${nextReward.progress}%` }}
-          />
-        </div>
-        <div className="flex items-center justify-between">
-          <span className="text-[11px] text-white/35">
-            {currentStreak} / {nextReward.targetDays}일 완료
-          </span>
-          <div className="flex items-center gap-[5px] bg-[rgba(9,145,178,.25)] border border-[rgba(9,145,178,.4)] rounded-full py-1 px-2.5 text-[12px] font-bold text-[#67E8F9]">
-            🎁 {nextReward.reward}
-          </div>
-        </div>
-        <div className="mt-4 pt-3.5 border-t border-white/[.07]">
-          <p className="text-[12px] text-white/35 leading-[1.65]">{nextReward.rewardDetail}</p>
-        </div>
+      <div className="flex items-center gap-2 mb-4">
+        <span className="w-7 h-7 rounded-lg bg-[#E6F7FA] flex items-center justify-center text-sm">🎯</span>
+        <h3 className="text-[14px] font-bold text-[#0A0A0A]">다음 목표</h3>
       </div>
+
+      <div className="flex items-baseline gap-1.5 mb-1">
+        <span className="text-[28px] font-black text-[#0A0A0A] tracking-[-1px] leading-none">
+          {nextReward.targetDays}일
+        </span>
+        <span className="text-[12px] font-medium text-[#6B7280]">달성 목표</span>
+      </div>
+
+      <div className="h-2 bg-[#F3F4F6] rounded-full overflow-hidden my-3">
+        <div
+          className="h-full bg-[#0991B2] rounded-full [transition:width_1s_cubic-bezier(.34,1.56,.64,1)]"
+          style={{ width: `${nextReward.progress}%` }}
+        />
+      </div>
+
+      <div className="flex items-center justify-between">
+        <span className="text-[11px] text-[#9CA3AF] font-medium">
+          {currentStreak} / {nextReward.targetDays}일
+        </span>
+        <span className="text-[11px] font-bold text-[#0991B2] bg-[#E6F7FA] py-[3px] px-2 rounded-full">
+          🎁 {nextReward.reward}
+        </span>
+      </div>
+
+      <p className="text-[11px] text-[#9CA3AF] leading-[1.6] mt-3 pt-3 border-t border-[#F3F4F6]">
+        {nextReward.rewardDetail}
+      </p>
     </div>
   );
 }
