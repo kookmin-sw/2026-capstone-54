@@ -16,15 +16,15 @@ jest.mock("@/shared/api/client", () => ({
 
 const mockApiRequest = apiRequest as jest.MockedFunction<typeof apiRequest>;
 
-// A backend notification with created_at very close to now so formatTime returns "방금 전"
+// A backend notification with createdAt very close to now so formatTime returns "방금 전"
 const makeBackend = (overrides = {}) => ({
   id: 1,
   message: "Test notification",
   category: "system" as const,
-  is_read: false,
-  notifiable_type_label: "resumes.resume" as string | null,
-  notifiable_id: "abc-123" as string | null,
-  created_at: new Date().toISOString(),
+  isRead: false,
+  notifiableTypeLabel: "resumes.resume" as string | null,
+  notifiableId: "abc-123" as string | null,
+  createdAt: new Date().toISOString(),
   ...overrides,
 });
 
@@ -36,47 +36,47 @@ describe("toStoreNotification", () => {
     expect(result.category).toBe("system");
   });
 
-  it("maps is_read → isRead", () => {
-    expect(toStoreNotification(makeBackend({ is_read: true })).isRead).toBe(true);
-    expect(toStoreNotification(makeBackend({ is_read: false })).isRead).toBe(false);
+  it("maps isRead correctly", () => {
+    expect(toStoreNotification(makeBackend({ isRead: true })).isRead).toBe(true);
+    expect(toStoreNotification(makeBackend({ isRead: false })).isRead).toBe(false);
   });
 
-  it("maps notifiable_type_label → notifiableType", () => {
+  it("maps notifiableTypeLabel → notifiableType", () => {
     expect(toStoreNotification(makeBackend()).notifiableType).toBe("resumes.resume");
-    expect(toStoreNotification(makeBackend({ notifiable_type_label: null })).notifiableType).toBeNull();
+    expect(toStoreNotification(makeBackend({ notifiableTypeLabel: null })).notifiableType).toBeNull();
   });
 
-  it("maps notifiable_id → notifiableId", () => {
+  it("maps notifiableId correctly", () => {
     expect(toStoreNotification(makeBackend()).notifiableId).toBe("abc-123");
-    expect(toStoreNotification(makeBackend({ notifiable_id: null })).notifiableId).toBeNull();
+    expect(toStoreNotification(makeBackend({ notifiableId: null })).notifiableId).toBeNull();
   });
 
-  it("formats a very recent created_at as '방금 전'", () => {
-    const result = toStoreNotification(makeBackend({ created_at: new Date().toISOString() }));
+  it("formats a very recent createdAt as '방금 전'", () => {
+    const result = toStoreNotification(makeBackend({ createdAt: new Date().toISOString() }));
     expect(result.time).toBe("방금 전");
   });
 
   it("formats a 2-minute-old timestamp as '2분 전'", () => {
     const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000).toISOString();
-    const result = toStoreNotification(makeBackend({ created_at: twoMinutesAgo }));
+    const result = toStoreNotification(makeBackend({ createdAt: twoMinutesAgo }));
     expect(result.time).toBe("2분 전");
   });
 
   it("formats a 3-hour-old timestamp as '3시간 전'", () => {
     const threeHoursAgo = new Date(Date.now() - 3 * 3600 * 1000).toISOString();
-    const result = toStoreNotification(makeBackend({ created_at: threeHoursAgo }));
+    const result = toStoreNotification(makeBackend({ createdAt: threeHoursAgo }));
     expect(result.time).toBe("3시간 전");
   });
 
   it("formats a 25-hour-old timestamp as '어제'", () => {
     const yesterday = new Date(Date.now() - 25 * 3600 * 1000).toISOString();
-    const result = toStoreNotification(makeBackend({ created_at: yesterday }));
+    const result = toStoreNotification(makeBackend({ createdAt: yesterday }));
     expect(result.time).toBe("어제");
   });
 
   it("formats a 3-day-old timestamp as '3일 전'", () => {
     const threeDaysAgo = new Date(Date.now() - 3 * 86400 * 1000).toISOString();
-    const result = toStoreNotification(makeBackend({ created_at: threeDaysAgo }));
+    const result = toStoreNotification(makeBackend({ createdAt: threeDaysAgo }));
     expect(result.time).toBe("3일 전");
   });
 });
@@ -128,7 +128,7 @@ describe("markNotificationRead", () => {
   beforeEach(() => mockApiRequest.mockClear());
 
   it("calls PATCH /api/v1/notifications/{id}/read/ with auth:true", async () => {
-    mockApiRequest.mockResolvedValueOnce(makeBackend({ is_read: true }));
+    mockApiRequest.mockResolvedValueOnce(makeBackend({ isRead: true }));
     await markNotificationRead(42);
     expect(mockApiRequest).toHaveBeenCalledWith("/api/v1/notifications/42/read/", {
       method: "PATCH",
@@ -137,7 +137,7 @@ describe("markNotificationRead", () => {
   });
 
   it("returns the mapped notification with read:true", async () => {
-    mockApiRequest.mockResolvedValueOnce(makeBackend({ is_read: true }));
+    mockApiRequest.mockResolvedValueOnce(makeBackend({ isRead: true }));
     const result = await markNotificationRead(1);
     expect(result.isRead).toBe(true);
     expect(result.id).toBe(1);

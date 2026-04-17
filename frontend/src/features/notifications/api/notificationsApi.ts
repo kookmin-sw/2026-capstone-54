@@ -1,22 +1,16 @@
 import { apiRequest } from "@/shared/api/client";
+import type { PaginatedResponse } from "@/shared/api";
 
-// ── Backend response shape (snake_case) ──────────────────────────────────────
+// ── Backend response shape (CamelCaseJSONRenderer 적용 — camelCase) ──────────
 interface BackendNotification {
   id: number;
   message: string;
   category: "interview" | "resume" | "jd" | "system";
-  is_read: boolean;
-  notifiable_type_label: string | null;
-  notifiable_id: string | null;
-  created_at: string;
+  isRead: boolean;
+  notifiableTypeLabel: string | null;
+  notifiableId: string | null;
+  createdAt: string;
 }
-
-type PaginatedResponse = {
-  results: BackendNotification[];
-  count: number;
-  next: string | null;
-  previous: string | null;
-};
 
 // ── Time formatter (standalone — avoids circular dep with store) ──────────────
 function formatTime(isoString: string): string {
@@ -28,16 +22,16 @@ function formatTime(isoString: string): string {
   return `${Math.floor(diff / 86400)}일 전`;
 }
 
-// ── snake_case → camelCase mapper ─────────────────────────────────────────────
+// ── BackendNotification → store Notification mapper ───────────────────────────
 export function toStoreNotification(b: BackendNotification) {
   return {
     id: b.id,
     message: b.message,
-    time: formatTime(b.created_at),
-    isRead: b.is_read,
+    time: formatTime(b.createdAt),
+    isRead: b.isRead,
     category: b.category,
-    notifiableType: b.notifiable_type_label,
-    notifiableId: b.notifiable_id,
+    notifiableType: b.notifiableTypeLabel,
+    notifiableId: b.notifiableId,
   };
 }
 
@@ -48,7 +42,7 @@ export function toStoreNotification(b: BackendNotification) {
  * 페이지네이션 응답과 단순 배열 응답 모두 처리
  */
 export async function fetchNotifications() {
-  const data = await apiRequest<PaginatedResponse | BackendNotification[]>(
+  const data = await apiRequest<PaginatedResponse<BackendNotification> | BackendNotification[]>(
     "/api/v1/notifications/",
     { auth: true },
   );
