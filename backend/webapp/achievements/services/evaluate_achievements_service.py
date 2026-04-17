@@ -22,10 +22,9 @@ class EvaluateAchievementsService(BaseService):
     user = self.user
     context = self.kwargs.get("context", {})
     now = timezone.now()
-    achieved_ids = UserAchievement.objects.filter(user=user).values_list("achievement_id", flat=True)
     candidates = (
       Achievement.objects.filter(is_active=True).exclude(
-        id__in=achieved_ids
+        user_achievements__user=user
       ).filter(Q(starts_at__lte=now) | Q(starts_at__isnull=True)).filter(Q(ends_at__gte=now) | Q(ends_at__isnull=True))
     )
 

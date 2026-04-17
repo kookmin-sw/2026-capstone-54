@@ -12,6 +12,9 @@ class EvaluationResult:
   errors: list[str]
 
 
+ALLOWED_QUERY_FILTER_KEYS = {"date__gte", "date__lte", "date__gt", "date__lt"}
+
+
 class ConditionEvaluator:
   """도전과제 조건 DSL을 평가한다."""
 
@@ -41,7 +44,7 @@ class ConditionEvaluator:
       is_satisfied=is_satisfied,
       evidence={
         "logic": logic,
-        "children": [result.evidence for result in child_results]
+        "children": [result.evidence for result in child_results],
       },
       errors=errors,
     )
@@ -59,7 +62,7 @@ class ConditionEvaluator:
         "metric_key": metric_key,
         "actual": actual,
         "operator": operator,
-        "target": target
+        "target": target,
       },
       errors=[],
     )
@@ -68,14 +71,14 @@ class ConditionEvaluator:
     field_path = rule.get("field_path", "")
     exists_expected = rule.get("exists", True)
     actual_exists = self._resolve_field_exists(user, field_path)
-    is_satisfied = actual_exists is exists_expected
+    is_satisfied = actual_exists == exists_expected
     return EvaluationResult(
       is_satisfied=is_satisfied,
       evidence={
         "type": "field_exists",
         "field_path": field_path,
         "actual_exists": actual_exists,
-        "exists_expected": exists_expected
+        "exists_expected": exists_expected,
       },
       errors=[],
     )
@@ -94,7 +97,7 @@ class ConditionEvaluator:
         "query_key": query_key,
         "actual": actual,
         "operator": operator,
-        "target": target
+        "target": target,
       },
       errors=[],
     )
@@ -107,7 +110,7 @@ class ConditionEvaluator:
 
     if metric_key == "interview.total_count":
       StreakLog = apps.get_model("streaks", "StreakLog")
-      total = StreakLog.objects.filter(user=user).aggregate(total=Sum("interview_results_count"))["total"] or 0
+      total = (StreakLog.objects.filter(user=user).aggregate(total=Sum("interview_results_count"))["total"] or 0)
       return total
 
     raise ValueError(f"Unsupported metric_key: {metric_key}")
@@ -121,6 +124,9 @@ class ConditionEvaluator:
 
   def _resolve_query_count(self, user, query_key: str, filters: dict) -> int:
     if query_key == "interview.logs":
+      invalid_keys = set(filters.keys()) - ALLOWED_QUERY_FILTER_KEYS
+      if invalid_keys:
+        raise ValueError(f"허용되지 않은 필터 키: {invalid_keys}")
       StreakLog = apps.get_model("streaks", "StreakLog")
       queryset = StreakLog.objects.filter(user=user)
       if "date__gte" in filters and isinstance(filters["date__gte"], str):
