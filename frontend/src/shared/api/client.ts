@@ -1,4 +1,5 @@
-export const BASE_URL = "https://mefit.xn--hy1by51c.kr";
+// export const BASE_URL = "https://mefit.xn--hy1by51c.kr";
+export const BASE_URL = "http://localhost:8000";
 
 /* ── Token helpers ── */
 export function getAccessToken(): string | null {
@@ -14,6 +15,15 @@ export function setTokens(access: string, refresh: string): void {
 export function clearTokens(): void {
   localStorage.removeItem("mefit_access");
   localStorage.removeItem("mefit_refresh");
+}
+
+/* ── Paginated Response ── */
+export interface PaginatedResponse<T> {
+  count: number;
+  totalPagesCount: number;
+  nextPage: number | null;
+  previousPage: number | null;
+  results: T[];
 }
 
 /* ── Error type ── */
