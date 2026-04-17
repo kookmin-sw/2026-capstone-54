@@ -645,7 +645,6 @@
 
 .hp-bottom--single {
   grid-template-columns: 1fr;
-  margin-top: 8px;
 }
 
 /* ── STREAK WRAPPER ── */
