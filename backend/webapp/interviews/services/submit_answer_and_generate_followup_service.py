@@ -18,13 +18,25 @@ from common.services.base_service import BaseService
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import transaction
-from django.db.models import Max
+from django.db.models.functions import Coalesce
 from interviews.constants import MAX_FOLLOWUP_PER_ANCHOR
-from interviews.enums import InterviewExchangeType, InterviewSessionStatus, InterviewSessionType, QuestionSource
+from interviews.enums import (
+  InterviewExchangeType,
+  InterviewSessionStatus,
+  InterviewSessionType,
+  QuestionSource,
+)
 from interviews.models import InterviewSession, InterviewTurn
 from interviews.schemas import FollowUpGeneratorInput, FollowUpGeneratorOutput
-from interviews.services.content_service import get_job_description_content, get_resume_content
-from interviews.services.llm import FollowUpQuestionGenerator, TokenUsageCallback, calculate_cost
+from interviews.services.content_service import (
+  get_job_description_content,
+  get_resume_content,
+)
+from interviews.services.llm import (
+  FollowUpQuestionGenerator,
+  TokenUsageCallback,
+  calculate_cost,
+)
 from llm_trackers.enums import TokenOperation, TokenUsageContext
 from llm_trackers.models import TokenUsage
 
@@ -33,6 +45,7 @@ logger = logging.getLogger(__name__)
 
 class FollowupResult(NamedTuple):
   """꼬리질문 생성 결과."""
+
   turns: list[InterviewTurn]
   followup_exhausted: bool  # True: 모든 앵커 체인 소진 (= 면접 종료 신호)
 
@@ -40,13 +53,13 @@ class FollowupResult(NamedTuple):
 class SubmitAnswerAndGenerateFollowupService(BaseService):
   """답변 저장 + 꼬리질문 생성 서비스 (FOLLOWUP 세션 타입 전용).
 
-  LLM 호출을 트랜잭션 밖에서 수행하고,
-  결과를 DB에 저장하는 execute()만 트랜잭션 안에서 실행한다.
+    LLM 호출을 트랜잭션 밖에서 수행하고,
+    결과를 DB에 저장하는 execute()만 트랜잭션 안에서 실행한다.
 
-  앵커 체인이 소진되면:
-  - 다음 앵커가 있으면 → turns=[next_anchor], followup_exhausted=False
-  - 다음 앵커도 없으면 → turns=[], followup_exhausted=True
-  """
+    앵커 체인이 소진되면:
+    - 다음 앵커가 있으면 → turns=[next_anchor], followup_exhausted=False
+    - 다음 앵커도 없으면 → turns=[], followup_exhausted=True
+    """
 
   required_value_kwargs = ["interview_session", "interview_turn", "answer"]
 
@@ -74,10 +87,10 @@ class SubmitAnswerAndGenerateFollowupService(BaseService):
     self.answer: str = self.kwargs["answer"]
 
   def validate(self):
-    if self.interview_session.interview_session_status != InterviewSessionStatus.IN_PROGRESS:
+    if (self.interview_session.interview_session_status != InterviewSessionStatus.IN_PROGRESS):
       raise ValidationError("진행 중인 세션에서만 답변을 제출할 수 있습니다.")
 
-    if self.interview_session.interview_session_type != InterviewSessionType.FOLLOWUP:
+    if (self.interview_session.interview_session_type != InterviewSessionType.FOLLOWUP):
       raise ValidationError("꼬리질문 생성은 FOLLOWUP 세션 타입에서만 가능합니다.")
 
     if self.interview_turn.interview_session_id != self.interview_session.pk:
@@ -144,21 +157,22 @@ class SubmitAnswerAndGenerateFollowupService(BaseService):
     self.interview_turn.answer = self.answer.strip()
     self.interview_turn.save(update_fields=["answer", "updated_at"])
 
-    # 다음 turn_number = 현재 세션의 최대 turn_number + 1
-    max_turn = (
-      InterviewTurn.objects.filter(interview_session=self.interview_session).aggregate(Max("turn_number")
-                                                                                       )["turn_number__max"] or 0
-    )
+    # follow-up 순번 = 현재 앵커의 follow-up 수 + 1
+    existing_followup_count = anchor.followup_turns.count()
+    next_followup_order = existing_followup_count + 1
 
+    # follow-up의 turn_number는 앵커와 동일하게 설정 (그룹화)
+    # 정렬: turn_number ASC, followup_order ASC
     followup_turns = [
       InterviewTurn(
         interview_session=self.interview_session,
         turn_type=InterviewExchangeType.FOLLOWUP,
         question_source=QuestionSource.UNKNOWN,
         question=fq.question,
-        turn_number=max_turn + i,
+        turn_number=anchor.turn_number,
+        followup_order=next_followup_order + i,
         anchor_turn=anchor,
-      ) for i, fq in enumerate(output.followup_questions, start=1)
+      ) for i, fq in enumerate(output.followup_questions, start=0)
     ]
     InterviewTurn.objects.bulk_create(followup_turns)
 
@@ -184,5 +198,8 @@ class SubmitAnswerAndGenerateFollowupService(BaseService):
     """현재 턴 이전의 질문·답변 이력을 반환한다."""
     return list(
       InterviewTurn.objects.filter(interview_session=interview_session
-                                   ).exclude(pk=current_turn.pk).order_by("turn_number").values("question", "answer")
+                                   ).exclude(pk=current_turn.pk
+                                             ).annotate(sort_followup_order=Coalesce("followup_order", 0)
+                                                        ).order_by("turn_number",
+                                                                   "sort_followup_order").values("question", "answer")
     )

@@ -268,6 +268,59 @@ for user in users:
 - 코드가 더 자연스럽고 이해하기 쉬움
 - 커스텀 속성 없이 일반적인 related manager 사용
 
+## 실제 사례: Django Admin 목록 페이지 N+1 (UserJobDescription)
+
+### 문제 상황
+
+`UserJobDescriptionAdmin` 목록 페이지 접근 시 각 레코드마다 `user` 를 개별 조회하는 N+1 쿼리가 발생했다.
+
+```
+SELECT "users" ... WHERE ("users"."deleted_at" IS NULL AND "users"."id" = ?) LIMIT ?
+-- 레코드 수만큼 반복
+```
+
+### 잘못된 진단과 오수정 (교훈)
+
+**오진:** admin log 의 `str(obj)` 호출에서 발생한다고 판단 → `save_model` 오버라이드로 FK 캐시 주입
+
+```python
+# 잘못된 수정 — 저장 시점의 문제가 아니었다
+def save_model(self, request, obj, form, change):
+    super().save_model(request, obj, form, change)
+    if "user" in form.cleaned_data:
+        obj.user = form.cleaned_data["user"]  # 의미 없음
+```
+
+**실제 원인:** 목록 조회(changelist) 자체에서 `select_related` 가 적용되지 않아 각 행 렌더링 시 `__str__` 호출이 개별 쿼리를 유발했다.
+
+### `list_select_related` 만으로는 부족한 이유
+
+`list_select_related` 는 changelist queryset 에만 `select_related` 를 추가한다. 하지만:
+
+- `unfold.admin.ModelAdmin` 의 내부 처리 순서에 따라 적용이 보장되지 않을 수 있다
+- `get_object()`, action queryset 등 changelist 외 컨텍스트에는 적용되지 않는다
+- `ResumeAdmin` 등 다른 어드민이 `get_queryset` 오버라이드를 사용하는 이유가 이 때문이다
+
+### 올바른 수정
+
+```python
+def get_queryset(self, request):
+    """N+1 방지: list/detail 모든 컨텍스트에서 FK를 JOIN으로 eager load."""
+    return super().get_queryset(request).select_related("user", "job_description")
+```
+
+`get_queryset` 에 `select_related` 를 명시하면 changelist·detail·action 등 모든 쿼리에 JOIN 이 적용된다.
+
+### 결론 및 규칙
+
+| 방법 | 적용 범위 | 권장 여부 |
+|------|-----------|-----------|
+| `list_select_related` | changelist 만 | 보조 수단으로만 사용 |
+| `get_queryset` + `select_related` | 모든 컨텍스트 | **필수** |
+| `save_model` FK 캐시 주입 | 저장 직후만 | 잘못된 접근 |
+
+> **규칙:** Django Admin 에서 FK 관련 N+1 을 막으려면 반드시 `get_queryset` 을 오버라이드하여 `select_related` 를 적용한다. `list_select_related` 는 추가 안전망이지 주요 수단이 아니다.
+
 ## 체크리스트
 
 N+1 쿼리를 방지하기 위한 체크리스트:
@@ -279,6 +332,7 @@ N+1 쿼리를 방지하기 위한 체크리스트:
 - [ ] 가능하면 `to_attr` 대신 표준 related manager 사용
 - [ ] nplusone 라이브러리로 개발 환경에서 모니터링
 - [ ] 서비스 레이어에서 객체를 받을 때 ID만 받지 말고 객체 자체도 받을 수 있게 설계
+- [ ] **Django Admin FK N+1: `list_select_related` 만 설정하지 말고 `get_queryset` + `select_related` 를 반드시 추가**
 
 ## 참고 자료
 

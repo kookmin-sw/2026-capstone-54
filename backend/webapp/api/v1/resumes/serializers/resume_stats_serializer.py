@@ -13,8 +13,6 @@ class ResumeCountStatsSerializer(serializers.Serializer):
   pending = serializers.IntegerField()
   completed = serializers.IntegerField()
   failed = serializers.IntegerField()
-  active = serializers.IntegerField()
-  inactive = serializers.IntegerField()
 
 
 class ResumeTypeStatsSerializer(serializers.Serializer):

@@ -41,6 +41,19 @@ class ApplyAnalysisResultTask(BaseTask):
       file_text_content=file_text_content,
       token_usages=token_usages,
     ).perform()
+
+    # 신규 분석 경로(parsed_data 존재)일 때만 알림 발행
+    # 재임베딩(reembed) 경로는 사용자 가시 이벤트가 아니므로 제외
+    if parsed_data is not None:
+      from notifications.services import CreateNotificationService
+
+      CreateNotificationService(
+        user=resume.user,
+        message=f"이력서 '{resume.title}' 분석이 완료되었습니다.",
+        category="resume",
+        notifiable=resume,
+      ).perform()
+
     return resume.pk
 
 

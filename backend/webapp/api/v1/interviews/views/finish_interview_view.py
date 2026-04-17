@@ -2,6 +2,7 @@
 
 리포트 생성은 자동으로 하지 않는다.
 사용자가 분석 > 면접 결과 화면에서 직접 리포트 생성을 요청해야 한다.
+면접 종료 시 스트릭 적립 및 티켓 보상을 처리한다.
 """
 
 from api.v1.interviews.serializers import InterviewSessionSerializer
@@ -12,8 +13,7 @@ from drf_spectacular.utils import extend_schema
 from interviews.enums import InterviewSessionStatus
 from interviews.services import get_interview_session_for_user
 from rest_framework.response import Response
-
-# from streaks.services import RecordInterviewParticipationService
+from streaks.services import RecordInterviewParticipationService
 
 
 @extend_schema(tags=["면접"])
@@ -25,10 +25,10 @@ class FinishInterviewView(BaseAPIView):
   def post(self, request, interview_session_uuid):
     interview_session = get_interview_session_for_user(interview_session_uuid, self.current_user)
 
-    if interview_session.interview_session_status != InterviewSessionStatus.IN_PROGRESS:
+    if (interview_session.interview_session_status != InterviewSessionStatus.IN_PROGRESS):
       raise ValidationException(detail="진행 중인 세션만 종료할 수 있습니다.")
 
     interview_session.mark_completed()
-    # RecordInterviewParticipationService(user=interview_session.user).perform()
+    RecordInterviewParticipationService(user=interview_session.user).perform()
 
     return Response(InterviewSessionSerializer(interview_session).data)

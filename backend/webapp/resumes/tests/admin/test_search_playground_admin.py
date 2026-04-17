@@ -21,7 +21,6 @@ class SearchPlaygroundAdminTests(TestCase):
     self.resume = ResumeFactory(
       user=self.staff_user,
       analysis_status=AnalysisStatus.COMPLETED,
-      is_active=True,
     )
     self.embedding = ResumeEmbeddingFactory(
       user=self.staff_user,

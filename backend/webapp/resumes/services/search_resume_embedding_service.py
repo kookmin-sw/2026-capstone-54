@@ -74,7 +74,6 @@ class SearchResumeEmbeddingService(BaseQueryService):
         user_id=self.user.id,
         resume_id=resume_uuid,
         embedding_vector__isnull=False,
-        resume__is_active=True,
         resume__deleted_at__isnull=True,
         resume__analysis_status=AnalysisStatus.COMPLETED,
       ).annotate(distance=CosineDistance("embedding_vector", query_vector)

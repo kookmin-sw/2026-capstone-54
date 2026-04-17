@@ -33,19 +33,23 @@ from api.v1.demo.routing import sse_urlpatterns as demo_sse_urlpatterns  # noqa:
 from api.v1.demo.routing import websocket_urlpatterns as demo_ws_urlpatterns  # noqa: E402
 from api.v1.interviews.routing import sse_urlpatterns as interviews_sse_urlpatterns  # noqa: E402
 from api.v1.interviews.routing import websocket_urlpatterns as interviews_ws_urlpatterns  # noqa: E402
+from api.v1.job_descriptions.routing import sse_urlpatterns as job_descriptions_sse_urlpatterns  # noqa: E402
 from api.v1.resumes.routing import sse_urlpatterns as resumes_sse_urlpatterns  # noqa: E402
+from notifications.routing import websocket_urlpatterns as notifications_ws_urlpatterns  # noqa: E402
 
 # SSE URL 패턴 — Django middleware(ATOMIC_REQUESTS 등)를 우회해 직접 처리한다.
 sse_urlpatterns = [
   *demo_sse_urlpatterns,
   *interviews_sse_urlpatterns,
   *resumes_sse_urlpatterns,
+  *job_descriptions_sse_urlpatterns,
 ]
 
 # WebSocket URL 패턴
 websocket_urlpatterns = [
   *demo_ws_urlpatterns,
   *interviews_ws_urlpatterns,
+  *notifications_ws_urlpatterns,
 ]
 
 application = ProtocolTypeRouter(

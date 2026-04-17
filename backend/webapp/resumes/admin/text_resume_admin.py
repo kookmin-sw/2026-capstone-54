@@ -17,13 +17,11 @@ class TextResumeAdmin(ModelAdmin):
     "title",
     "analysis_status",
     "analysis_step",
-    "is_active",
     "created_at",
   )
   list_filter = (
     "analysis_status",
     "analysis_step",
-    "is_active",
   )
   search_fields = (
     "title",
@@ -46,9 +44,6 @@ class TextResumeAdmin(ModelAdmin):
         "parsed_data",
         "analyzed_at",
       ),
-    }),
-    ("활성화", {
-      "fields": ("is_active", ),
     }),
     ("날짜", {
       "fields": (

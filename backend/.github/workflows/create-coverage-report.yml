@@ -3,7 +3,7 @@ name: Create Coverage Report
 on:
   push:
     branches:
-      - develop
+      - '**'
   workflow_dispatch:
 
 permissions:
@@ -20,6 +20,7 @@ env:
   POSTGRES_USER: test_user
   POSTGRES_PASSWORD: ${{ secrets.CI_POSTGRES_PASSWORD }}
   POSTGRES_HOST: localhost
+  TEST_DATABASE_NAME: ci_test_db
 
 jobs:
   generate-coverage:
@@ -84,6 +85,7 @@ jobs:
           uv run coverage html
 
       - name: Commit and push coverage report to coverage-docs branch
+        if: github.event.deleted != true
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions@github.com"
@@ -96,7 +98,51 @@ jobs:
 
           # Stage only the htmlcov output
           git rm -rf . 2>/dev/null || true
-          cp -r webapp/htmlcov/* .
+
+          # Create branch-specific directory
+          BRANCH_DIR="${{ github.ref_name }}"
+          mkdir -p "$BRANCH_DIR"
+          cp -r webapp/htmlcov/* "$BRANCH_DIR/"
+
+          # Generate index.html with branch links
+          cat > index.html << 'EOF'
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <title>Coverage Reports</title>
+            <style>
+              body { font-family: -apple-system, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }
+              h1 { border-bottom: 2px solid #333; padding-bottom: 10px; }
+              .branch-list { list-style: none; padding: 0; }
+              .branch-list li { margin: 15px 0; }
+              .branch-list a { font-size: 18px; color: #0366d6; text-decoration: none; }
+              .branch-list a:hover { text-decoration: underline; }
+              .timestamp { color: #666; font-size: 14px; }
+            </style>
+          </head>
+          <body>
+            <h1>Coverage Reports</h1>
+            <p class="timestamp">Last updated: TIMESTAMP</p>
+            <ul class="branch-list">
+          EOF
+
+          # Add links to all existing branch directories
+          for dir in */; do
+            if [ -f "$dir/index.html" ] && [ "$dir" != "coverage/" ]; then
+              branch="${dir%/}"
+              echo "              <li><a href="$branch/index.html">$branch</a></li>" >> index.html
+            fi
+          done
+
+          cat >> index.html << 'EOF'
+            </ul>
+          </body>
+          </html>
+          EOF
+
+          # Replace timestamp
+          sed -i "s/TIMESTAMP/$(date '+%Y-%m-%d %H:%M:%S')/" index.html
 
           # Clean up unwanted files
           find . -name "*.pyc" -delete
@@ -109,10 +155,48 @@ jobs:
             exit 0
           fi
 
-          git commit -m "Coverage Report - $(date '+%Y-%m-%d %H:%M:%S')"
+          git commit -m "Coverage Report - ${{ github.ref_name }} - $(date '+%Y-%m-%d %H:%M:%S')"
 
           # Force push to coverage-docs without deleting the branch first
           # This preserves the GitHub Pages branch association
           git push origin coverage-docs-new:coverage-docs --force
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+
+      - name: Delete coverage report for deleted branch
+        if: github.event.deleted == true
+        run: |
+          DELETED_BRANCH="${{ github.event.ref }}"
+          echo "Deleting coverage report for branch: $DELETED_BRANCH"
+
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions@github.com"
+
+          git fetch origin coverage-docs:coverage-docs 2>/dev/null || true
+          git checkout coverage-docs
+
+          if [ -d "$DELETED_BRANCH" ]; then
+            rm -rf "$DELETED_BRANCH"
+            git add -A
+            git commit -m "Remove coverage report for deleted branch: $DELETED_BRANCH"
+            git push origin coverage-docs
+            echo "✅ Deleted $DELETED_BRANCH"
+          else
+            echo "No coverage report found for branch: $DELETED_BRANCH"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+
+      - name: Post coverage report link
+        if: github.event.deleted != true
+        run: |
+          REPO_NAME="${{ github.repository }}"
+          PAGES_URL="https://${REPO_NAME#*/}.github.io/$REPO_NAME"
+          BRANCH_REPORT_URL="${PAGES_URL}/${{ github.ref_name }}/index.html"
+
+          echo "coverage_url=$BRANCH_REPORT_URL" >> $GITHUB_OUTPUT
+
+          echo "## Coverage Report" >> $GITHUB_STEP_SUMMARY
+          echo "📊 $BRANCH_REPORT_URL" >> $GITHUB_STEP_SUMMARY
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}

@@ -39,7 +39,9 @@ class UserJobDescriptionListSerializer(serializers.ModelSerializer):
     model = UserJobDescription
     fields = [
       "uuid",
+      "title",
       "job_description",
+      "application_status",
       "created_at",
     ]
     read_only_fields = fields
