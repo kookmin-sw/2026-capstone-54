@@ -5,7 +5,6 @@ import {
   Input,
   SectionHeader,
   StatusCard,
-  Toggle,
   Divider,
   Alert,
   Button,
@@ -32,7 +31,6 @@ export function JdAddPage() {
     url,
     customTitle,
     status,
-    interviewActive,
     urlValidState,
     urlAnalysis,
     isSubmitting,
@@ -41,7 +39,6 @@ export function JdAddPage() {
     setUrl,
     setCustomTitle,
     setStatus,
-    setInterviewActive,
     clearError,
     submit,
     saveDraft,
@@ -166,23 +163,6 @@ export function JdAddPage() {
                   gradient="linear-gradient(135deg,#67E8F9,#0891B2)"
                 />
                 <StatusCard options={STATUS_OPTIONS} selected={status} onSelect={setStatus} />
-              </section>
-
-              <Divider />
-
-              {/* 면접 활성화 */}
-              <section className="mb-8">
-                <SectionHeader
-                  icon="⚡"
-                  title="면접 활성화"
-                  gradient="linear-gradient(135deg,#34D399,#059669)"
-                />
-                <Toggle
-                  checked={interviewActive}
-                  onChange={setInterviewActive}
-                  label="AI 면접에 포함하기"
-                  description="비활성화 시 면접 질문 생성에서 제외됩니다"
-                />
               </section>
 
               {/* ERROR */}

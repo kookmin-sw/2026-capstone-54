@@ -43,7 +43,6 @@ export interface JdDetail {
   analyzed: boolean;
   collectionStatus: JobDescriptionCollectionStatus;
   interviewCount: number;
-  interviewActive: boolean;
 }
 
 interface JdDetailState {
@@ -69,7 +68,7 @@ function splitLines(text: string): string[] {
 function toDetail(item: UserJobDescription): JdDetail {
   const jd = item.jobDescription;
   const company = jd.company || "수집 중";
-  const title = jd.title || "채용공고";
+  const title = item.title || jd.title || "채용공고";
   return {
     id: item.uuid,
     company,
@@ -80,7 +79,7 @@ function toDetail(item: UserJobDescription): JdDetail {
     location: jd.location || "",
     experience: jd.experience || "",
     period: jd.workType || "",
-    status: "planned",
+    status: (item.applicationStatus || "planned") as JdStatus,
     originalUrl: jd.url || "",
     summary: jd.duties || "",
     requirements: splitLines(jd.requirements).map((text) => ({ level: "required" as const, text })),
@@ -89,7 +88,6 @@ function toDetail(item: UserJobDescription): JdDetail {
     analyzed: jd.collectionStatus === "done",
     collectionStatus: jd.collectionStatus,
     interviewCount: 0,
-    interviewActive: true,
   };
 }
 
@@ -117,12 +115,28 @@ export const useJdDetailStore = create<JdDetailState>()((set, get) => ({
     const { jd } = get();
     if (!jd) return false;
     set({ isUpdating: true });
-    set({ jd: { ...jd, status: next }, isUpdating: false });
-    return true;
+    try {
+      await userJobDescriptionApi.update(jd.id, { applicationStatus: next });
+      set({ jd: { ...jd, status: next }, isUpdating: false });
+      return true;
+    } catch {
+      set({ isUpdating: false });
+      return false;
+    }
   },
 
   // 삭제 endpoint 는 아직 없음. 지금은 no-op 성공으로 두고 navigate 는 호출 측이 담당.
-  deleteJd: async () => true,
+  deleteJd: async () => {
+    const { jd } = get();
+    if (!jd) return false;
+    try {
+      await userJobDescriptionApi.remove(jd.id);
+      return true;
+    } catch (e) {
+      set({ error: e instanceof Error ? e.message : "삭제에 실패했습니다." });
+      return false;
+    }
+  },
 
   clearError: () => set({ error: null }),
   reset: () => set({ jd: null, isLoading: false, isUpdating: false, error: null }),

@@ -27,9 +27,13 @@ export interface JobDescription {
   updatedAt: string;
 }
 
+export type ApplicationStatus = "planned" | "saved" | "applied";
+
 /** 사용자가 등록한 채용공고. `uuid` 가 인터뷰 생성 시 기준이 된다. */
 export interface UserJobDescription {
   uuid: string;
+  title: string;
+  applicationStatus: ApplicationStatus;
   jobDescription: JobDescription;
   createdAt: string;
 }
@@ -37,6 +41,8 @@ export interface UserJobDescription {
 /** POST /user-job-descriptions/ 응답. */
 export interface CreatedUserJobDescription {
   uuid: string;
+  title: string;
+  applicationStatus: ApplicationStatus;
   jobDescriptionId: number;
   collectionStatus: JobDescriptionCollectionStatus;
   createdAt: string;

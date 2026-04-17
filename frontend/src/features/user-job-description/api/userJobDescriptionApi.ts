@@ -22,10 +22,27 @@ export const userJobDescriptionApi = {
   retrieve: (uuid: string) =>
     apiRequest<UserJobDescription>(`${BASE}/${uuid}/`, { auth: true }),
 
-  create: (url: string) =>
+  create: (params: { url: string; title?: string; applicationStatus?: string }) =>
     apiRequest<CreatedUserJobDescription>(`${BASE}/`, {
       method: "POST",
-      body: JSON.stringify({ url }),
+      body: JSON.stringify({
+        url: params.url,
+        title: params.title || "",
+        application_status: params.applicationStatus || "planned",
+      }),
       auth: true,
     }),
+
+  update: (uuid: string, params: { title?: string; applicationStatus?: string }) =>
+    apiRequest<UserJobDescription>(`${BASE}/${uuid}/`, {
+      method: "PATCH",
+      body: JSON.stringify({
+        ...(params.title !== undefined && { title: params.title }),
+        ...(params.applicationStatus !== undefined && { application_status: params.applicationStatus }),
+      }),
+      auth: true,
+    }),
+
+  remove: (uuid: string) =>
+    apiRequest<void>(`${BASE}/${uuid}/`, { method: "DELETE", auth: true }),
 };

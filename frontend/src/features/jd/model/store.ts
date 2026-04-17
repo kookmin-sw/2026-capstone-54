@@ -24,7 +24,6 @@ interface JdAddState {
   url: string;
   customTitle: string;
   status: JdStatus;
-  interviewActive: boolean;
 
   urlValidState: UrlValidState;
   urlAnalysis: JdUrlAnalysis | null;
@@ -36,7 +35,6 @@ interface JdAddState {
   setUrl: (url: string) => void;
   setCustomTitle: (title: string) => void;
   setStatus: (status: JdStatus) => void;
-  setInterviewActive: (active: boolean) => void;
   clearError: () => void;
   /** 성공 시 생성된 UserJobDescription.uuid 반환. 실패 시 null. */
   submit: () => Promise<string | null>;
@@ -50,7 +48,6 @@ const INITIAL: Pick<
   | "url"
   | "customTitle"
   | "status"
-  | "interviewActive"
   | "urlValidState"
   | "urlAnalysis"
   | "isSubmitting"
@@ -60,7 +57,6 @@ const INITIAL: Pick<
   url: "",
   customTitle: "",
   status: "planned",
-  interviewActive: true,
   urlValidState: "idle",
   urlAnalysis: null,
   isSubmitting: false,
@@ -101,11 +97,10 @@ export const useJdAddStore = create<JdAddState>()((set, get) => ({
 
   setCustomTitle: (customTitle) => set({ customTitle }),
   setStatus: (status) => set({ status }),
-  setInterviewActive: (interviewActive) => set({ interviewActive }),
   clearError: () => set({ error: null }),
 
   submit: async () => {
-    const { url } = get();
+    const { url, customTitle, status } = get();
     const trimmed = url.trim();
     if (!trimmed) {
       set({ error: "URL을 입력해 주세요." });
@@ -117,7 +112,11 @@ export const useJdAddStore = create<JdAddState>()((set, get) => ({
     }
     set({ isSubmitting: true, error: null });
     try {
-      const created = await userJobDescriptionApi.create(trimmed);
+      const created = await userJobDescriptionApi.create({
+        url: trimmed,
+        title: customTitle || undefined,
+        applicationStatus: status,
+      });
       set({ isSubmitting: false });
       return created.uuid;
     } catch (e) {
