@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useJdListStore, type JdListItem } from "@/features/jd";
+import { useUserJobDescriptionScrapingSse } from "@/features/user-job-description";
 
 type FilterKey = "all" | "planned" | "applied" | "saved";
 
@@ -67,9 +68,20 @@ function MoreMenu({ id, onClose }: { id: string; onClose: () => void }) {
 function JdCard({ item }: { item: JdListItem }) {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+  const { fetchList } = useJdListStore();
   const cfg = STATUS_CONFIG[item.status];
   const isAnalyzing = item.status === "analyzing";
   const tagColorCls = (color: string) => TAG_COLOR_CLS[color] ?? TAG_COLOR_CLS.default;
+
+  useUserJobDescriptionScrapingSse({
+    uuid: item.uuid,
+    enabled: isAnalyzing,
+    onTerminal: (event) => {
+      if (event.collection_status === "done") {
+        fetchList();
+      }
+    },
+  });
 
   return (
     <div
