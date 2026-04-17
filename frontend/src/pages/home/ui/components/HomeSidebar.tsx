@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Home, Video, FileText, Building2, BarChart2, Flame, CreditCard, Settings } from "lucide-react";
+import { Home, Video, FileText, Building2, BarChart2, Flame, Trophy, CreditCard, Settings } from "lucide-react";
 
 interface HomeSidebarProps {
   menuOpen: boolean;
@@ -43,6 +43,9 @@ export function HomeSidebar({ menuOpen, currentStreak, floating = false, activeI
       </Link>
       <Link to="/streak" className={`hp-sb-item${isActive("/streak") ? " active" : ""}`}>
         <span className="hp-sb-icon"><Flame size={18} /></span>스트릭
+      </Link>
+      <Link to="/achievements" className={`hp-sb-item${isActive("/achievements") ? " active" : ""}`}>
+        <span className="hp-sb-icon"><Trophy size={18} /></span>도전과제
       </Link>
       <div className="hp-sb-sep">설정</div>
       <Link to="/subscription" className={`hp-sb-item${isActive("/subscription") ? " active" : ""}`}>
