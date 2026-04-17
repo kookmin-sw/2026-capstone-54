@@ -1,7 +1,8 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { getAccessToken } from "@/shared/api/client";
 
-export const VOICE_API_BASE = "https://mefit-voice.xn--hy1by51c.kr/voice-api/api/v1";
+export const VOICE_API_BASE =
+  import.meta.env.VITE_VOICE_API_BASE_URL ?? "https://mefit-voice.xn--hy1by51c.kr/voice-api/api/v1";
 export const TTS_DEFAULT_VOICE = "ko-KR-InJoonNeural";
 
 export interface UseTtsReturn {
