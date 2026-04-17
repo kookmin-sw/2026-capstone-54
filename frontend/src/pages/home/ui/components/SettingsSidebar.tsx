@@ -1,4 +1,5 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import { User, Gem, ClipboardList, Bell, Inbox } from "lucide-react";
 import { useSettingsStore } from "@/features/settings";
 import { useAuthStore } from "@/features/auth";
 import type { SettingsPanel } from "@/features/settings";
@@ -13,10 +14,10 @@ export function SettingsSidebar({ menuOpen }: SettingsSidebarProps) {
   const { data, activePanel, consentBadge, setActivePanel } = useSettingsStore();
   const { user } = useAuthStore();
 
-  const settingsItems: { key: SettingsPanel; icon: string; label: string; badge?: boolean }[] = [
-    { key: "account",       icon: "👤", label: "계정 정보 수정" },
-    { key: "subscription",  icon: "💎", label: "요금제"         },
-    { key: "consent",       icon: "📋", label: "동의 관리", badge: consentBadge },
+  const settingsItems: { key: SettingsPanel; icon: React.ReactNode; label: string; badge?: boolean }[] = [
+    { key: "account",       icon: <User size={18} />,          label: "계정 정보 수정" },
+    { key: "subscription",  icon: <Gem size={18} />,           label: "요금제"         },
+    { key: "consent",       icon: <ClipboardList size={18} />, label: "동의 관리", badge: consentBadge },
   ];
 
   const cls = `hp-sidebar${menuOpen ? " open" : ""}`;
@@ -63,10 +64,10 @@ export function SettingsSidebar({ menuOpen }: SettingsSidebarProps) {
         className={`hp-sb-item w-full text-left border-none bg-transparent${location.pathname === "/settings" && activePanel === "notifications" ? " active" : ""}`}
         onClick={() => { setActivePanel("notifications"); if (location.pathname !== "/settings") navigate("/settings"); }}
       >
-        <span className="hp-sb-icon">🔔</span>알림 설정
+        <span className="hp-sb-icon"><Bell size={18} /></span>알림 설정
       </button>
       <Link to="/notifications" className={`hp-sb-item${location.pathname.startsWith("/notifications") ? " active" : ""}`}>
-        <span className="hp-sb-icon">📬</span>알림 내역
+        <span className="hp-sb-icon"><Inbox size={18} /></span>알림 내역
       </Link>
     </aside>
   );
