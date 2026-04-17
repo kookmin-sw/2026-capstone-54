@@ -1,5 +1,5 @@
 import { apiRequest } from "@/shared/api/client";
-import type { PaginatedResponse } from "@/features/resume";
+import type { PaginatedResponse } from "@/shared/api";
 import type {
   InterviewSessionType,
   InterviewDifficultyLevel,

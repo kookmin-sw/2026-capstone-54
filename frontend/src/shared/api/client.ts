@@ -16,6 +16,15 @@ export function clearTokens(): void {
   localStorage.removeItem("mefit_refresh");
 }
 
+/* ── Paginated Response ── */
+export interface PaginatedResponse<T> {
+  count: number;
+  totalPagesCount: number;
+  nextPage: number | null;
+  previousPage: number | null;
+  results: T[];
+}
+
 /* ── Error type ── */
 export interface ApiError {
   status: number;

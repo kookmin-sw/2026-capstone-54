@@ -123,14 +123,8 @@ export interface ResumeDetail extends ResumeListItem {
   fileUrl: string | null;
 }
 
-// ── Paginated Response ──
-export interface PaginatedResponse<T> {
-  count: number;
-  totalPagesCount: number;
-  nextPage: number | null;
-  previousPage: number | null;
-  results: T[];
-}
+// ── Paginated Response (공통 타입 — shared 에서 re-export) ──
+export type { PaginatedResponse } from "@/shared/api/client";
 
 // ── Stats ──
 export interface ResumeCountStats {

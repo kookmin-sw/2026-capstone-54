@@ -25,6 +25,7 @@ export async function checkNetworkApi(
           method: "GET",
           cache: "no-store",
           headers: authHeaders,
+          signal: AbortSignal.timeout(5000),
         });
       } catch {
         // Even errors give latency info
@@ -47,6 +48,7 @@ export async function checkNetworkApi(
         method: "GET",
         cache: "no-store",
         headers: { ...authHeaders, Accept: "application/json" },
+        signal: AbortSignal.timeout(5000),
       });
       const blob = await res.blob();
       const downloadEnd = performance.now();

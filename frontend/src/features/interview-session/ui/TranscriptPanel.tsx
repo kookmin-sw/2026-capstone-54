@@ -7,6 +7,37 @@ interface TranscriptPanelProps {
   isListening: boolean;
 }
 
+/**
+ * Parses the limited HTML produced by SpeechAnalyzer (only
+ * `<span class="bad-word">` and `<span class="filler-word">` tags)
+ * into React elements, avoiding dangerouslySetInnerHTML / XSS risk.
+ */
+function parseHighlightedHtml(html: string): React.ReactNode[] {
+  const parts: React.ReactNode[] = [];
+  const regex = /<span class="(bad-word|filler-word)">([^<]*)<\/span>/g;
+  let lastIndex = 0;
+  let key = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = regex.exec(html)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(html.slice(lastIndex, match.index));
+    }
+    parts.push(
+      <span key={key++} className={match[1]}>
+        {match[2]}
+      </span>,
+    );
+    lastIndex = match.index + match[0].length;
+  }
+
+  if (lastIndex < html.length) {
+    parts.push(html.slice(lastIndex));
+  }
+
+  return parts;
+}
+
 export function TranscriptPanel({
   interimText,
   highlightedHtml,
@@ -29,10 +60,7 @@ export function TranscriptPanel({
         ref={scrollRef}
         className="flex-1 min-h-0 font-mono text-base leading-relaxed overflow-y-auto"
       >
-        <span
-          className="text-white"
-          dangerouslySetInnerHTML={{ __html: highlightedHtml }}
-        />
+        <span className="text-white">{parseHighlightedHtml(highlightedHtml)}</span>
         <span className="text-indigo-300 italic animate-pulse ml-1">{interimText}</span>
         {!highlightedHtml && !interimText && !isListening && (
           <span className="text-slate-600 italic text-sm">답변이 여기에 표시됩니다...</span>

@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { useNotificationStore, type Notification } from "@/features/notifications";
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { useNotificationStore, type Notification, getNotifiableUrl } from "@/features/notifications";
 
 const CATEGORY_ICON: Record<Notification["category"], string> = {
   interview: "🎥",
@@ -33,44 +34,71 @@ function NotificationItem({
   onMarkRead: (id: number) => void;
   onDelete: (id: number) => void;
 }) {
+  const handleItemClick = () => {
+    if (!n.isRead) onMarkRead(n.id);
+  };
+
   return (
     <div
+      role="article"
+      onClick={handleItemClick}
       className={`flex items-start gap-4 px-5 py-4 border-b border-[#F3F4F6] last:border-0 transition-colors ${
-        !n.read ? "bg-[#F0F9FF]" : "hover:bg-white"
+        !n.isRead
+          ? "bg-[#F0F9FF] cursor-pointer hover:bg-[#E0F4FC]"
+          : "hover:bg-[#FAFAFA]"
       }`}
     >
+      {/* 카테고리 아이콘 */}
       <div
         className={`w-10 h-10 rounded-xl flex items-center justify-center text-[18px] shrink-0 ${
-          !n.read ? "bg-[#E0F2FE]" : "bg-[#F3F4F6]"
+          !n.isRead ? "bg-[#E0F2FE]" : "bg-[#F3F4F6]"
         }`}
       >
         {CATEGORY_ICON[n.category]}
       </div>
 
+      {/* 본문 */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-0.5">
           <span className="text-[10px] font-bold text-[#0991B2] bg-[#E0F2FE] px-2 py-0.5 rounded-full">
             {CATEGORY_LABEL[n.category]}
           </span>
-          {!n.read && <span className="w-1.5 h-1.5 rounded-full bg-[#0991B2]" />}
+          {!n.isRead && (
+            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#0991B2]">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#0991B2]" />
+              새 알림
+            </span>
+          )}
         </div>
-        <p className={`text-[13px] leading-[1.55] ${!n.read ? "font-semibold text-[#0A0A0A]" : "text-[#374151]"}`}>
+        <p className={`text-[13px] leading-[1.55] ${!n.isRead ? "font-semibold text-[#0A0A0A]" : "text-[#374151]"}`}>
           {n.message}
         </p>
-        <p className="text-[11px] text-[#9CA3AF] mt-1">{n.time}</p>
+        <div className="flex items-center gap-3 mt-1">
+          <p className="text-[11px] text-[#9CA3AF]">{n.time}</p>
+          {getNotifiableUrl(n.notifiableType, n.notifiableId) && (
+            <Link
+              to={getNotifiableUrl(n.notifiableType, n.notifiableId)!}
+              onClick={(e) => { e.stopPropagation(); if (!n.isRead) onMarkRead(n.id); }}
+              className="text-[11px] font-semibold text-[#0991B2] hover:underline"
+            >
+              바로 가기 →
+            </Link>
+          )}
+        </div>
       </div>
 
+      {/* 액션 버튼 */}
       <div className="flex items-center gap-1 shrink-0 mt-0.5">
-        {!n.read && (
+        {!n.isRead && (
           <button
-            onClick={() => onMarkRead(n.id)}
+            onClick={(e) => { e.stopPropagation(); onMarkRead(n.id); }}
             className="text-[11px] font-semibold text-[#0991B2] bg-[#E6F7FA] px-2.5 py-1 rounded-lg hover:bg-[#cceef6] transition-colors"
           >
             확인
           </button>
         )}
         <button
-          onClick={() => onDelete(n.id)}
+          onClick={(e) => { e.stopPropagation(); onDelete(n.id); }}
           className="w-7 h-7 flex items-center justify-center rounded-lg text-[#9CA3AF] hover:bg-[#FEF2F2] hover:text-[#EF4444] transition-colors"
           aria-label="알림 삭제"
         >
@@ -111,9 +139,14 @@ function NotificationList({
 }
 
 export function NotificationsPage() {
-  const { notifications, markAllRead, markRead, deleteNotification, deleteAll } = useNotificationStore();
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const { notifications, markAllRead, markRead, deleteNotification, deleteAll, fetchInitial } = useNotificationStore();
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
   const [activeTab, setActiveTab] = useState<TabKey>("all");
+
+  // WS 연결 전 새로고침 케이스 대응 — 마운트 시 서버에서 목록 로드
+  useEffect(() => {
+    fetchInitial();
+  }, [fetchInitial]);
 
   const filtered =
     activeTab === "all"

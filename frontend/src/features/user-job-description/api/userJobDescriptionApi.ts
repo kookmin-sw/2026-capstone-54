@@ -9,13 +9,15 @@
  */
 
 import { apiRequest } from "@/shared/api/client";
+import type { PaginatedResponse } from "@/shared/api";
 import type { CreatedUserJobDescription, UserJobDescription } from "./types";
 
 const BASE = "/api/v1/user-job-descriptions";
 
 export const userJobDescriptionApi = {
   list: () =>
-    apiRequest<UserJobDescription[]>(`${BASE}/`, { auth: true }),
+    apiRequest<PaginatedResponse<UserJobDescription>>(`${BASE}/`, { auth: true })
+      .then((res) => res.results),
 
   retrieve: (uuid: string) =>
     apiRequest<UserJobDescription>(`${BASE}/${uuid}/`, { auth: true }),

@@ -24,6 +24,8 @@ export type WsNotificationMessage = {
   message: string;
   category: "interview" | "resume" | "jd" | "system";
   createdAt: string;
+  notifiableType: string | null;
+  notifiableId: string | null;
 };
 
 type WsEventHandlers = {
