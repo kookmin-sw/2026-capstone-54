@@ -49,13 +49,16 @@ class ClaimAchievementRewardServiceTests(TestCase):
     user_achievement = UserAchievementFactory(achievement=achievement)
     user = user_achievement.user
 
+    existing = UserTicket.objects.filter(user=user).first()
+    before_count = existing.purchased_count if existing else 0
+
     ClaimAchievementRewardService(
       user=user,
       achievement_code=achievement.code,
     ).perform()
 
     ticket = UserTicket.objects.get(user=user)
-    self.assertEqual(ticket.purchased_count, 3)
+    self.assertEqual(ticket.purchased_count, before_count + 3)
 
   def test_single_user_ticket_record_exists_after_claim(self):
     """claim 후 해당 사용자의 UserTicket 레코드가 정확히 1개만 존재한다."""

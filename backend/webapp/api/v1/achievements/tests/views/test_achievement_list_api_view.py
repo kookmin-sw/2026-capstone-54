@@ -35,7 +35,8 @@ class AchievementListAPIViewTests(TestCase):
     response = self.client.get(self.url)
 
     self.assertEqual(response.status_code, status.HTTP_200_OK)
-    item = next(d for d in response.data if d["code"] == achievement.code)
+    item = next((d for d in response.data if d["code"] == achievement.code), None)
+    self.assertIsNotNone(item, f"Achievement with code {achievement.code} not found in response")
     self.assertTrue(item["can_claim_reward"])
 
   def test_can_claim_reward_is_false_for_already_claimed(self):
@@ -50,7 +51,8 @@ class AchievementListAPIViewTests(TestCase):
     response = self.client.get(self.url)
 
     self.assertEqual(response.status_code, status.HTTP_200_OK)
-    item = next(d for d in response.data if d["code"] == achievement.code)
+    item = next((d for d in response.data if d["code"] == achievement.code), None)
+    self.assertIsNotNone(item, f"Achievement with code {achievement.code} not found in response")
     self.assertFalse(item["can_claim_reward"])
 
   def test_can_claim_reward_is_false_for_not_achieved(self):
@@ -61,7 +63,8 @@ class AchievementListAPIViewTests(TestCase):
     response = self.client.get(self.url)
 
     self.assertEqual(response.status_code, status.HTTP_200_OK)
-    item = next(d for d in response.data if d["code"] == achievement.code)
+    item = next((d for d in response.data if d["code"] == achievement.code), None)
+    self.assertIsNotNone(item, f"Achievement with code {achievement.code} not found in response")
     self.assertFalse(item["can_claim_reward"])
     self.assertFalse(item["is_achieved"])
 
