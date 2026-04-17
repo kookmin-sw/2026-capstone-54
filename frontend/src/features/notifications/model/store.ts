@@ -8,6 +8,8 @@ export interface Notification {
   time: string;
   read: boolean;
   category: "interview" | "resume" | "jd" | "system";
+  notifiableType: string | null;
+  notifiableId: string | null;
 }
 
 function formatTime(isoString: string): string {
@@ -26,6 +28,8 @@ function wsMessageToNotification(msg: WsNotificationMessage): Notification {
     time: formatTime(msg.createdAt),
     read: false,
     category: msg.category,
+    notifiableType: msg.notifiableType,
+    notifiableId: msg.notifiableId,
   };
 }
 
