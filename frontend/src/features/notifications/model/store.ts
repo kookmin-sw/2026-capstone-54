@@ -1,6 +1,13 @@
 import { create } from "zustand";
 import { RealtimeClient } from "@/shared/api/realtimeApi";
 import type { WsNotificationMessage } from "@/shared/api/realtimeApi";
+import {
+  fetchNotifications,
+  markNotificationRead,
+  markAllNotificationsRead,
+  deleteNotification as apiDeleteNotification,
+  clearAllNotifications,
+} from "../api/notificationsApi";
 
 export interface Notification {
   id: number;
@@ -36,29 +43,53 @@ function wsMessageToNotification(msg: WsNotificationMessage): Notification {
 interface NotificationState {
   notifications: Notification[];
   connected: boolean;
-  markAllRead: () => void;
-  markRead: (id: number) => void;
-  deleteNotification: (id: number) => void;
-  deleteAll: () => void;
+  fetchInitial: () => Promise<void>;
+  markAllRead: () => Promise<void>;
+  markRead: (id: number) => Promise<void>;
+  deleteNotification: (id: number) => Promise<void>;
+  deleteAll: () => Promise<void>;
   connectWs: () => void;
   disconnectWs: () => void;
 }
 
 let _client: RealtimeClient | null = null;
 
-export const useNotificationStore = create<NotificationState>()((set) => ({
+export const useNotificationStore = create<NotificationState>()((set, get) => ({
   notifications: [],
   connected: false,
 
-  markAllRead: () =>
-    set((s) => ({ notifications: s.notifications.map((n) => ({ ...n, read: true })) })),
-  markRead: (id) =>
+  fetchInitial: async () => {
+    const notifications = await fetchNotifications();
+    set({ notifications });
+  },
+
+  markAllRead: async () => {
+    await markAllNotificationsRead();
     set((s) => ({
-      notifications: s.notifications.map((n) => (n.id === id ? { ...n, read: true } : n)),
-    })),
-  deleteNotification: (id) =>
-    set((s) => ({ notifications: s.notifications.filter((n) => n.id !== id) })),
-  deleteAll: () => set({ notifications: [] }),
+      notifications: s.notifications.map((n) => ({ ...n, read: true })),
+    }));
+  },
+
+  markRead: async (id) => {
+    await markNotificationRead(id);
+    set((s) => ({
+      notifications: s.notifications.map((n) =>
+        n.id === id ? { ...n, read: true } : n,
+      ),
+    }));
+  },
+
+  deleteNotification: async (id) => {
+    await apiDeleteNotification(id);
+    set((s) => ({
+      notifications: s.notifications.filter((n) => n.id !== id),
+    }));
+  },
+
+  deleteAll: async () => {
+    await clearAllNotifications();
+    set({ notifications: [] });
+  },
 
   connectWs: () => {
     if (_client) return; // 이미 연결 중
@@ -70,7 +101,11 @@ export const useNotificationStore = create<NotificationState>()((set) => ({
       },
       onClose: () => set({ connected: false }),
     });
-    _client.connect().then(() => set({ connected: true }));
+    _client.connect().then(() => {
+      set({ connected: true });
+      // WS 연결 성공 시 서버에서 초기 알림 목록 로드
+      get().fetchInitial();
+    });
   },
 
   disconnectWs: () => {
