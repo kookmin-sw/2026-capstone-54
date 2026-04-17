@@ -640,11 +640,12 @@
 .hp-bottom {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: 24px;
 }
 
 .hp-bottom--single {
   grid-template-columns: 1fr;
+  margin-top: 8px;
 }
 
 .hp-card-white {
@@ -815,9 +816,6 @@
   .hp-sidebar.open {
     transform: translateX(0);
   }
-  .hp-stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
   .hp-bottom {
     grid-template-columns: 1fr;
   }
@@ -831,7 +829,7 @@
     padding: 20px 16px 32px;
   }
   .hp-stats-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, 1fr);
   }
   .hp-qs-hero {
     grid-template-columns: 1fr;
