@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { useNotificationStore, type Notification } from "@/features/notifications";
+import { Link } from "react-router-dom";
+import { useNotificationStore, type Notification, getNotifiableUrl } from "@/features/notifications";
 
 const CATEGORY_ICON: Record<Notification["category"], string> = {
   interview: "🎥",
@@ -57,7 +58,17 @@ function NotificationItem({
         <p className={`text-[13px] leading-[1.55] ${!n.read ? "font-semibold text-[#0A0A0A]" : "text-[#374151]"}`}>
           {n.message}
         </p>
-        <p className="text-[11px] text-[#9CA3AF] mt-1">{n.time}</p>
+        <div className="flex items-center gap-3 mt-1">
+          <p className="text-[11px] text-[#9CA3AF]">{n.time}</p>
+          {getNotifiableUrl(n.notifiableType, n.notifiableId) && (
+            <Link
+              to={getNotifiableUrl(n.notifiableType, n.notifiableId)!}
+              className="text-[11px] font-semibold text-[#0991B2] hover:underline"
+            >
+              바로 가기 →
+            </Link>
+          )}
+        </div>
       </div>
 
       <div className="flex items-center gap-1 shrink-0 mt-0.5">
