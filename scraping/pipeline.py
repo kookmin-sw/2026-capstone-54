@@ -97,7 +97,9 @@ async def run(url: str, browser: Browser) -> JobPosting:
     _host = urlparse(url).netloc.lower()
     if _host.startswith("www."):
         _host = _host[4:]
-    force_playwright = any(d in _host for d in _PLAYWRIGHT_ONLY_DOMAINS)
+    force_playwright = any(
+        _host == d or _host.endswith("." + d) for d in _PLAYWRIGHT_ONLY_DOMAINS
+    )
 
     if plugin.PREFERS_BROWSER or force_playwright:
         # JS 렌더링이 필요한 플랫폼은 바로 Playwright 사용
@@ -326,7 +328,7 @@ async def _try_playwright(
             # 이미지는 iframe 스크린샷에 필요하므로 차단하지 않음
             await page.route(
                 re.compile(r"\.(woff2?|ttf|eot|otf)(\?.*)?$"),
-                lambda route: asyncio.ensure_future(route.abort()),
+                lambda route: route.abort(),
             )
 
             await page.goto(url, wait_until="domcontentloaded")
