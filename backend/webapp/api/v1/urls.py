@@ -14,5 +14,6 @@ urlpatterns = [
   path("tickets/", include("api.v1.tickets.urls")),
   path("subscriptions/", include("api.v1.subscriptions.urls")),
   path("notifications/", include("api.v1.notifications.urls")),
+  path("achievements/", include("api.v1.achievements.urls")),
   path("", include("api.v1.profiles.urls")),
 ]
