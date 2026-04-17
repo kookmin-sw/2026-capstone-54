@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useNotificationStore, type Notification, getNotifiableUrl } from "@/features/notifications";
 
@@ -122,9 +122,14 @@ function NotificationList({
 }
 
 export function NotificationsPage() {
-  const { notifications, markAllRead, markRead, deleteNotification, deleteAll } = useNotificationStore();
+  const { notifications, markAllRead, markRead, deleteNotification, deleteAll, fetchInitial } = useNotificationStore();
   const unreadCount = notifications.filter((n) => !n.read).length;
   const [activeTab, setActiveTab] = useState<TabKey>("all");
+
+  // WS 연결 전 새로고침 케이스 대응 — 마운트 시 서버에서 목록 로드
+  useEffect(() => {
+    fetchInitial();
+  }, [fetchInitial]);
 
   const filtered =
     activeTab === "all"
