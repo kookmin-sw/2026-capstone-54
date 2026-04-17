@@ -6,7 +6,11 @@ from common.exceptions import NotFoundException
 from common.views import BaseAPIView
 from drf_spectacular.utils import extend_schema
 from job_descriptions.models import UserJobDescription
-from job_descriptions.services import UpdateUserJobDescriptionService
+from job_descriptions.services import (
+  DeleteUserJobDescriptionService,
+  UpdateUserJobDescriptionService,
+)
+from rest_framework import status
 from rest_framework.response import Response
 
 
@@ -48,3 +52,15 @@ class UserJobDescriptionDetailAPIView(BaseAPIView):
 
     response = UserJobDescriptionListSerializer(user_job_description)
     return Response(response.data)
+
+  @extend_schema(summary="사용자 채용공고 삭제", responses={204: None})
+  def delete(self, request, uuid):
+    try:
+      user_job_description = (
+        UserJobDescription.objects.filter(user=self.current_user).select_related("job_description").get(uuid=uuid)
+      )
+    except UserJobDescription.DoesNotExist:
+      raise NotFoundException("채용공고를 찾을 수 없습니다.")
+
+    DeleteUserJobDescriptionService(user_job_description=user_job_description).perform()
+    return Response(status=status.HTTP_204_NO_CONTENT)
