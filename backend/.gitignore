@@ -361,3 +361,4 @@ docs/.bkit-memory.json
 docs/.pdca-status.json
 
 .commit-generator
+.pr-generator
