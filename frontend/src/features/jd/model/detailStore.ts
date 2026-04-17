@@ -10,6 +10,7 @@ import { create } from "zustand";
 import {
   userJobDescriptionApi,
   type UserJobDescription,
+  type JobDescriptionCollectionStatus,
 } from "@/features/user-job-description";
 import {
   getCompanyColor,
@@ -40,6 +41,7 @@ export interface JdDetail {
   preferences: string[];
   registeredAt: string;
   analyzed: boolean;
+  collectionStatus: JobDescriptionCollectionStatus;
   interviewCount: number;
   interviewActive: boolean;
 }
@@ -85,6 +87,7 @@ function toDetail(item: UserJobDescription): JdDetail {
     preferences: splitLines(jd.preferred),
     registeredAt: getRelativeTime(item.createdAt),
     analyzed: jd.collectionStatus === "done",
+    collectionStatus: jd.collectionStatus,
     interviewCount: 0,
     interviewActive: true,
   };

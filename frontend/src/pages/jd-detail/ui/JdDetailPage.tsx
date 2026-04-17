@@ -1,6 +1,11 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { Loader2 } from "lucide-react";
 import { useJdDetailStore, type JdStatus } from "@/features/jd";
+import {
+  useUserJobDescriptionScrapingSse,
+  type JobDescriptionCollectionStatus,
+} from "@/features/user-job-description";
 
 const STATUS_OPTIONS: { value: JdStatus; icon: string; label: string; sub: string }[] = [
   { value: "planned", icon: "📅", label: "지원 예정",  sub: "곧 지원할 예정" },
@@ -14,11 +19,19 @@ const STATUS_LABEL: Record<JdStatus, string> = {
   applied: "지원 완료",
 };
 
+const COLLECTION_STATUS_LABEL: Record<JobDescriptionCollectionStatus, string> = {
+  pending:     "분석 대기 중이에요",
+  in_progress: "AI가 채용공고를 읽고 분석하고 있어요",
+  done:        "분석이 완료되었어요",
+  error:       "분석에 실패했어요",
+};
+
 const cardCls = "bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)] transition-shadow hover:shadow-[0_4px_6px_rgba(0,0,0,0.07),0_2px_4px_rgba(0,0,0,0.06)]";
 
 export function JdDetailPage() {
   const { uuid } = useParams<{ uuid: string }>();
   const navigate = useNavigate();
+  const [liveStatus, setLiveStatus] = useState<JobDescriptionCollectionStatus | null>(null);
   const { jd, isLoading, isUpdating, error, fetchJd, updateStatus, deleteJd, clearError } =
     useJdDetailStore();
 
@@ -26,6 +39,22 @@ export function JdDetailPage() {
     if (uuid) fetchJd(uuid);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uuid]);
+
+  const sseEnabled = !!uuid && !!jd && !jd.analyzed;
+
+  useUserJobDescriptionScrapingSse({
+    uuid: uuid ?? "",
+    enabled: sseEnabled,
+    onStatus: (event) => {
+      setLiveStatus(event.collection_status);
+    },
+    onTerminal: (event) => {
+      setLiveStatus(event.collection_status);
+      if (event.collection_status === "done" && uuid) {
+        fetchJd(uuid);
+      }
+    },
+  });
 
   const handleDelete = async () => {
     if (!confirm("채용공고를 삭제하시겠어요?")) return;
@@ -60,6 +89,10 @@ export function JdDetailPage() {
     );
   }
 
+  const isProcessing = !jd.analyzed;
+  const currentCollectionStatus: JobDescriptionCollectionStatus =
+    liveStatus ?? jd.collectionStatus ?? (isProcessing ? "in_progress" : "done");
+
   return (
     <div>
 
@@ -70,6 +103,32 @@ export function JdDetailPage() {
           <span className="opacity-50">›</span>
           <span className="text-[#0A0A0A] font-semibold">{jd.company} {jd.title.split("—")[0].trim()}</span>
         </div>
+
+        {/* ── 분석 진행 배너 ── */}
+        {isProcessing && (
+          <div className="mb-6 bg-[#F0F9FF] border border-[#BAE6FD] rounded-lg p-4">
+            {currentCollectionStatus === "error" ? (
+              <div className="flex items-center gap-2">
+                <span className="text-[12px] font-semibold text-[#DC2626]">
+                  ✕ {COLLECTION_STATUS_LABEL.error}
+                </span>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-2">
+                  <Loader2 size={14} className="animate-spin text-[#0991B2] shrink-0" />
+                  <span className="text-[12px] font-semibold text-[#0991B2]">
+                    {COLLECTION_STATUS_LABEL[currentCollectionStatus]}
+                  </span>
+                </div>
+                <div className="h-1 rounded-full bg-[#BAE6FD] overflow-hidden">
+                  <div className="h-full bg-[#0991B2] rounded-full animate-[pulse_2s_ease-in-out_infinite]" />
+                </div>
+                <p className="text-[11px] text-[#6B7280]">분석이 완료되면 상세 내용이 자동으로 표시됩니다.</p>
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="grid grid-cols-[1fr_340px] gap-6 items-start max-[900px]:grid-cols-1">
           {/* ── MAIN ── */}
@@ -123,7 +182,13 @@ export function JdDetailPage() {
                 <span className="w-8 h-8 rounded-lg flex items-center justify-center text-[15px] shrink-0" style={{ background: "linear-gradient(135deg,#67E8F9,#0891B2)" }}>📄</span>
                 직무 요약
               </div>
-              <p className="text-sm text-[#6B7280] leading-[1.8] py-4 px-[18px] bg-[rgba(9,145,178,0.04)] rounded-lg border-l-[3px] border-l-[#0991B2]">{jd.summary}</p>
+              {jd.summary ? (
+                <p className="text-sm text-[#6B7280] leading-[1.8] py-4 px-[18px] bg-[rgba(9,145,178,0.04)] rounded-lg border-l-[3px] border-l-[#0991B2]">{jd.summary}</p>
+              ) : (
+                <div className="py-4 px-[18px] bg-[#F9FAFB] rounded-lg border border-dashed border-[#BAE6FD] text-[12px] text-[#9CA3AF]">
+                  분석 완료 후 표시됩니다
+                </div>
+              )}
             </div>
 
             {/* 필수 자격 요건 */}
@@ -132,18 +197,24 @@ export function JdDetailPage() {
                 <span className="w-8 h-8 rounded-lg flex items-center justify-center text-[15px] shrink-0" style={{ background: "linear-gradient(135deg,#34D399,#059669)" }}>⚡</span>
                 필수 자격 요건
               </div>
-              <div className="flex flex-col gap-2">
-                {jd.requirements.map((req, i) => (
-                  <div key={i} className="flex items-start gap-2.5 p-[10px_14px] bg-white border border-[#E5E7EB] rounded-lg text-[13px] text-[#0A0A0A] leading-[1.6]">
-                    <div className={`w-5 h-5 rounded-lg shrink-0 flex items-center justify-center text-[10px] font-bold mt-px ${
-                      req.level === "required"
-                        ? "bg-gradient-to-br from-[#34D399] to-[#059669] text-white shadow-[0_2px_6px_rgba(5,150,105,0.25)]"
-                        : "bg-[#E6F7FA] text-[#0991B2]"
-                    }`}>✓</div>
-                    {req.text}
-                  </div>
-                ))}
-              </div>
+              {jd.requirements.length > 0 ? (
+                <div className="flex flex-col gap-2">
+                  {jd.requirements.map((req, i) => (
+                    <div key={i} className="flex items-start gap-2.5 p-[10px_14px] bg-white border border-[#E5E7EB] rounded-lg text-[13px] text-[#0A0A0A] leading-[1.6]">
+                      <div className={`w-5 h-5 rounded-lg shrink-0 flex items-center justify-center text-[10px] font-bold mt-px ${
+                        req.level === "required"
+                          ? "bg-gradient-to-br from-[#34D399] to-[#059669] text-white shadow-[0_2px_6px_rgba(5,150,105,0.25)]"
+                          : "bg-[#E6F7FA] text-[#0991B2]"
+                      }`}>✓</div>
+                      {req.text}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="py-4 px-[18px] bg-[#F9FAFB] rounded-lg border border-dashed border-[#BAE6FD] text-[12px] text-[#9CA3AF]">
+                  분석 완료 후 표시됩니다
+                </div>
+              )}
             </div>
 
             {/* 우대 사항 */}
@@ -152,14 +223,20 @@ export function JdDetailPage() {
                 <span className="w-8 h-8 rounded-lg flex items-center justify-center text-[15px] shrink-0" style={{ background: "linear-gradient(135deg,#FCD34D,#D97706)" }}>⭐</span>
                 우대 사항
               </div>
-              <div className="grid grid-cols-2 gap-2 max-[900px]:grid-cols-1">
-                {jd.preferences.map((pref, i) => (
-                  <div key={i} className="p-[10px_14px] bg-white border border-[#E5E7EB] rounded-lg text-[12px] font-semibold text-[#6B7280] flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-[#D97706] shrink-0" />
-                    {pref}
-                  </div>
-                ))}
-              </div>
+              {jd.preferences.length > 0 ? (
+                <div className="grid grid-cols-2 gap-2 max-[900px]:grid-cols-1">
+                  {jd.preferences.map((pref, i) => (
+                    <div key={i} className="p-[10px_14px] bg-white border border-[#E5E7EB] rounded-lg text-[12px] font-semibold text-[#6B7280] flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-[#D97706] shrink-0" />
+                      {pref}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="py-4 px-[18px] bg-[#F9FAFB] rounded-lg border border-dashed border-[#BAE6FD] text-[12px] text-[#9CA3AF]">
+                  분석 완료 후 표시됩니다
+                </div>
+              )}
             </div>
 
           </div>
