@@ -89,7 +89,7 @@ class DailyReportTask(BaseScheduledTask):
     def run(self):
         return DailyReportService().perform()
 
-DailyReportTask = app.register_task(DailyReportTask())
+RegisteredDailyReportTask = app.register_task(DailyReportTask())
 ```
 
 **2. Beat 스케줄 등록**
@@ -97,11 +97,19 @@ DailyReportTask = app.register_task(DailyReportTask())
 settings 파일에서 태스크 클래스를 직접 import 하면 `config.celery` → Django settings 순환 참조가 발생한다.
 반드시 **모듈 경로 문자열**로 참조해야 한다.
 
+> ⚠️ **중요**: Celery 는 `app.register_task(MyTask())` 호출 시점에
+> 태스크 이름을 `<module>.<ClassName>` 형태로 자동 생성한다 (`MyTask.name`).
+> 따라서 `CELERY_BEAT_SCHEDULE` 의 `task` 값은 **클래스 이름** 을 써야 한다.
+> `RegisteredXxxTask` 는 Python 변수명일 뿐 태스크 레지스트리 키가 아니다.
+> 잘못 지정하면 Worker 가 `Received unregistered task of type ...` 오류를 내며
+> 메시지를 폐기한다.
+
 ```python
 # config/settings/components/celery_beat.py
 from celery.schedules import crontab
 
 CELERY_BEAT_SCHEDULE = {
+    # key 와 "task" 값 모두 클래스 이름 (DailyReportTask) 사용
     "myapp.tasks.DailyReportTask": {
         "task": "myapp.tasks.DailyReportTask",
         "schedule": crontab(hour=0, minute=0),
