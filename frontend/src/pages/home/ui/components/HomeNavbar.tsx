@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
+import { Settings, LogOut } from "lucide-react";
 import { useAuthStore } from "@/features/auth";
 import { useNotificationStore } from "@/features/notifications";
 
@@ -149,17 +150,17 @@ export function HomeNavbar({ menuOpen, onMenuToggle }: HomeNavbarProps) {
           <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.1)] border border-[#E5E7EB] py-2 z-50">
             <Link
               to="/settings"
-              className="block px-4 py-2.5 text-sm text-[#0A0A0A] hover:bg-[#F3F4F6] transition-colors"
+              className="flex items-center gap-2 px-4 py-2.5 text-sm text-[#0A0A0A] hover:bg-[#F3F4F6] transition-colors"
               onClick={() => setProfileOpen(false)}
             >
-              ⚙️ 설정
+              <Settings size={15} className="text-[#6B7280]" />설정
             </Link>
             <div className="h-px bg-[#E5E7EB] my-1" />
             <button
               onClick={handleLogout}
-              className="w-full text-left px-4 py-2.5 text-sm text-[#DC2626] hover:bg-[#FEF2F2] transition-colors"
+              className="w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm text-[#DC2626] hover:bg-[#FEF2F2] transition-colors"
             >
-              🚪 로그아웃
+              <LogOut size={15} />로그아웃
             </button>
           </div>
         )}
