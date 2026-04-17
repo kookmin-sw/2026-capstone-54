@@ -1,0 +1,47 @@
+{% extends "admin/base_site.html" %}
+{% load i18n unfold %}
+
+{% block extrahead %}
+  {{ block.super }}
+  <script src="{% url 'admin:jsi18n' %}"></script>
+  {{ form.media }}
+{% endblock %}
+
+{% block breadcrumbs %}
+  <div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">{% trans "Home" %}</a>
+    &rsaquo;
+    <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_label|capfirst }}</a>
+    &rsaquo;
+    <a href="{% url 'admin:notifications_notification_changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>
+    &rsaquo;
+    {% trans "테스트 알림 발송" %}
+  </div>
+{% endblock %}
+
+{% block content %}
+  <form action="" method="post" novalidate>
+    {% csrf_token %}
+    <div class="aligned border border-base-200 mb-8 rounded-default pt-3 px-3 shadow-sm dark:border-base-800">
+      <div class="mb-4">
+        <p class="text-sm text-base-500 dark:text-base-400">
+          카테고리를 선택하고 메시지를 입력하면 선택한 사용자에게 실시간 알림이 발송됩니다.
+        </p>
+      </div>
+
+      {% for field in form %}
+        {% include "unfold/helpers/field.html" with field=field %}
+      {% endfor %}
+    </div>
+
+    <div class="flex justify-end gap-2">
+      <a href="{% url 'admin:notifications_notification_changelist' %}"
+         class="button cancel-link">
+        {% trans "취소" %}
+      </a>
+      {% component "unfold/components/button.html" with submit=1 %}
+        {% trans "발송" %}
+      {% endcomponent %}
+    </div>
+  </form>
+{% endblock %}
