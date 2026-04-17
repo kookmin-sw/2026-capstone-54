@@ -2,6 +2,7 @@
 
 import { apiRequest } from "@/shared/api/client";
 import { userApi } from "@/shared/api/userApi";
+import { getTimeBasedGreeting } from "@/shared/lib/format/greeting";
 
 const USE_MOCK = false; // Set to false when backend is ready
 
@@ -100,7 +101,7 @@ export interface HomeData {
 const MOCK_DATA: HomeData = {
   user: {
     name: "김현준",
-    greeting: "Good morning ☀️",
+    greeting: getTimeBasedGreeting(),
     lastInterviewDaysAgo: 2,
   },
   stats: [
@@ -162,7 +163,7 @@ export async function fetchHomeDataApi(): Promise<{ success: boolean; data?: Hom
       data: {
         user: {
           name: data.user?.name || "사용자",
-          greeting: data.user?.greeting || "Good morning ☀️",
+          greeting: data.user?.greeting || getTimeBasedGreeting(),
           lastInterviewDaysAgo: data.user?.last_interview_days_ago ?? 0,
         },
         stats: (data.stats || []).map((stat) => ({
