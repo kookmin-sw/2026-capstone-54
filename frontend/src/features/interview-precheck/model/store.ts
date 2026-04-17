@@ -30,6 +30,21 @@ let microphone: MediaStreamAudioSourceNode | null = null;
 let micMediaStream: MediaStream | null = null;
 let cameraMediaStream: MediaStream | null = null;
 
+/** True when every check has left idle/checking state. */
+function isAllSettled(s: PrecheckState): boolean {
+  return (
+    s.cameraStatus !== "idle" && s.cameraStatus !== "checking" &&
+    s.micStatus !== "idle" && s.micStatus !== "checking" &&
+    s.networkStatus !== "idle" && s.networkStatus !== "checking" &&
+    s.gpuStatus !== "idle" && s.gpuStatus !== "checking"
+  );
+}
+
+/** True when all critical checks passed (GPU fail is non-blocking). */
+function isAllCriticalPassed(s: PrecheckState): boolean {
+  return s.cameraStatus === "ok" && s.micStatus === "ok" && s.networkStatus === "ok";
+}
+
 function stopAllResources() {
   if (micIntervalRef) { clearInterval(micIntervalRef); micIntervalRef = null; }
   if (pollPassedRef) { clearInterval(pollPassedRef); pollPassedRef = null; }
@@ -128,22 +143,9 @@ export const usePrecheckStore = create<PrecheckState>((set, get) => ({
     // Watch for all-passed
     pollPassedRef = setInterval(() => {
       const s = get();
-      if (
-        s.cameraStatus !== "idle" && s.cameraStatus !== "checking" &&
-        s.micStatus !== "idle" && s.micStatus !== "checking" &&
-        s.networkStatus !== "idle" && s.networkStatus !== "checking" &&
-        s.gpuStatus !== "idle" && s.gpuStatus !== "checking"
-      ) {
-        clearInterval(pollPassedRef!); pollPassedRef = null;
-        if (
-          s.cameraStatus === "ok" &&
-          s.micStatus === "ok" &&
-          s.networkStatus === "ok"
-          // GPU fail is non-blocking — interview can proceed without HW accel
-        ) {
-          set({ allPassed: true });
-        }
-      }
+      if (!isAllSettled(s)) return;
+      clearInterval(pollPassedRef!); pollPassedRef = null;
+      if (isAllCriticalPassed(s)) set({ allPassed: true });
     }, 200);
   },
 
