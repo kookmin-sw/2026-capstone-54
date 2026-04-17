@@ -12,11 +12,11 @@ DEBUG = False
 
 ENVIRONMENT = "test"
 
-STATIC_URL = 'static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'  # noqa: F405
+STATIC_URL = "static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"  # noqa: F405
 
-MEDIA_URL = 'media/'
-MEDIA_ROOT = BASE_DIR / 'media'  # noqa: F405
+MEDIA_URL = "media/"
+MEDIA_ROOT = BASE_DIR / "media"  # noqa: F405
 
 STORAGES = {
   "default": {
@@ -55,6 +55,13 @@ LOGGING = {
     "handlers": ["null"],
     "level": "CRITICAL",
   },
+}
+
+# 테스트 환경에서 채널 레이어는 Redis 없이 인메모리로 동작
+CHANNEL_LAYERS = {
+  "default": {
+    "BACKEND": "channels.layers.InMemoryChannelLayer",
+  }
 }
 
 # 테스트에서는 Flower를 사용하지 않으므로 더미 값으로 scheme 검증만 통과
