@@ -2,8 +2,8 @@
 UserJobDescriptionScrapingStatusConsumer 테스트.
 
 stream() 메서드를 직접 호출하여 각 시나리오의 이벤트 전송 동작을 검증합니다.
-DB 접근 메서드(_get_user_job_description, _get_user_job_description_fresh)는
-모두 mock으로 대체하여 비동기 DB 스레딩 이슈를 피하고 로직에만 집중합니다.
+DB 접근 메서드(_get_user_job_description)는
+mock으로 대체하여 비동기 DB 스레딩 이슈를 피하고 로직에만 집중합니다.
 """
 
 from __future__ import annotations
@@ -135,12 +135,7 @@ class UserJobDescriptionScrapingStatusConsumerTest(TestCase):
       patch.object(
         consumer,
         "_get_user_job_description",
-        new=AsyncMock(return_value=initial_ujd),
-      ),
-      patch.object(
-        consumer,
-        "_get_user_job_description_fresh",
-        new=AsyncMock(side_effect=[ujd_in_progress, ujd_done]),
+        new=AsyncMock(side_effect=[initial_ujd, ujd_in_progress, ujd_done]),
       ),
       patch("api.v1.job_descriptions.consumers.asyncio.sleep", new=AsyncMock()),
     ):
@@ -165,13 +160,8 @@ class UserJobDescriptionScrapingStatusConsumerTest(TestCase):
       patch.object(
         consumer,
         "_get_user_job_description",
-        new=AsyncMock(return_value=initial_ujd),
-      ),
-      patch.object(
-        consumer,
-        "_get_user_job_description_fresh",
         # pending 두 번 반복 후 done으로 변경
-        new=AsyncMock(side_effect=[ujd_same_1, ujd_same_2, ujd_done]),
+        new=AsyncMock(side_effect=[initial_ujd, ujd_same_1, ujd_same_2, ujd_done]),
       ),
       patch("api.v1.job_descriptions.consumers.asyncio.sleep", new=AsyncMock()),
     ):
