@@ -13,6 +13,7 @@ const ACTION_LABEL: Record<string, string> = {
 export function useNotificationToast() {
   const navigate = useNavigate();
   const notifications = useNotificationStore((s) => s.notifications);
+  const markRead = useNotificationStore((s) => s.markRead);
   const prevIdsRef = useRef<Set<number>>(new Set());
 
   useEffect(() => {
@@ -29,7 +30,7 @@ export function useNotificationToast() {
         duration: 5000,
         action:
           url && label
-            ? { label, onClick: () => navigate(url) }
+            ? { label, onClick: () => { markRead(n.id); navigate(url); } }
             : undefined,
       });
     });
