@@ -24,6 +24,7 @@ import { InterviewReportPage } from "@/pages/interview-report";
 import { InterviewResultsPage } from "@/pages/interview-results";
 import { SettingsPage } from "@/pages/settings";
 import { StreakPage } from "@/pages/streak";
+import { AchievementsPage } from "@/pages/achievements";
 import { SubscriptionPage } from "@/pages/subscription";
 import { NotificationsPage } from "@/pages/notifications";
 import { NotFoundPage } from "@/pages/not-found";
@@ -74,6 +75,7 @@ function App() {
         <Route path="/interview/results" element={<ProtectedRoute><InterviewResultsPage /></ProtectedRoute>} />
         <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
         <Route path="/streak" element={<ProtectedRoute><StreakPage /></ProtectedRoute>} />
+        <Route path="/achievements" element={<ProtectedRoute><AchievementsPage /></ProtectedRoute>} />
         <Route path="/subscription" element={<ProtectedRoute><SubscriptionPage /></ProtectedRoute>} />
         <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
 
