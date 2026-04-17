@@ -23,42 +23,31 @@ PACKAGE_APPS = [
   # Django Postgres
   "django.contrib.postgres",
   "psqlextra",
-
   # CORS
   "corsheaders",
-
   # S3 스토리지
   "storages",
-
   # Django ADMIN Import Export
   "import_export",
-
   # Django Extensions
   "django_extensions",
-
   # REST Framework
   "rest_framework",
   "rest_framework_simplejwt",
   "rest_framework_simplejwt.token_blacklist",
-
   # Swagger Docs
   "drf_spectacular",
-
   # Django Filters
   "django_filters",
-
   # Celery
   "django_celery_beat",
   "django_celery_results",
-
   # Logging
   "django_guid",
   "django_structlog",
   "drf_api_logger",
-
   # WebSocket / SSE
   "channels",
-
   # Markdown Editor
   "markdownx",
   "easymde",
@@ -79,6 +68,7 @@ PROJECT_APPS = [
   "tickets",
   "subscriptions",
   "job_descriptions",
+  "notifications",
 ]
 
 INSTALLED_APPS = ADMIN_APPS + DJANGO_APPS + PACKAGE_APPS + PROJECT_APPS
@@ -87,6 +77,7 @@ INSTALLED_APPS = ADMIN_APPS + DJANGO_APPS + PACKAGE_APPS + PROJECT_APPS
 # 앱 시작 시 자동으로 import되어 레지스트리에 등록된다.
 REALTIME_DOCS_CONSUMERS = [
   "api.v1.demo.consumers",
+  "notifications.consumers",
 ]
 
 __all__ = [
