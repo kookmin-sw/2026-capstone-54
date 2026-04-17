@@ -1,5 +1,4 @@
-// export const BASE_URL = "https://mefit.xn--hy1by51c.kr";
-export const BASE_URL = "http://localhost:8000";
+export const BASE_URL = "https://mefit.xn--hy1by51c.kr";
 
 /* ── Token helpers ── */
 export function getAccessToken(): string | null {
