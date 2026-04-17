@@ -1,73 +1,27 @@
 {% extends "admin/base_site.html" %}
-{% load i18n %}
 
-{% block title %}업적 재평가 | {{ site_title|default:_('Django site admin') }}{% endblock %}
+{% load i18n unfold %}
 
-{% block breadcrumbs %}
-<div class="breadcrumbs">
-  <a href="{% url 'admin:index' %}">{% trans 'Home' %}</a>
-  &rsaquo; <a href="{% url 'admin:achievements_achievement_changelist' %}">업적</a>
-  &rsaquo; 업적 재평가
-</div>
+{% block extrahead %}
+    {{ block.super }}
+    <script src="{% url 'admin:jsi18n' %}"></script>
+    {{ form.media }}
 {% endblock %}
 
 {% block content %}
-<h1>업적 재평가</h1>
+    <form action="" method="post" novalidate>
+        <div class="aligned border border-base-200 mb-8 rounded-default pt-3 px-3 shadow-sm dark:border-base-800">
+            {% csrf_token %}
 
-<div style="margin-bottom: 1.5rem;">
-  <h2 style="font-size: 1rem; margin-bottom: 0.5rem;">선택된 업적 ({{ achievements.count }}개)</h2>
-  <ul style="margin: 0; padding-left: 1.5rem;">
-    {% for achievement in achievements %}
-      <li><strong>{{ achievement.code }}</strong> — {{ achievement.name }}</li>
-    {% endfor %}
-  </ul>
-</div>
+            {% for field in form %}
+                {% include "unfold/helpers/field.html" with field=field %}
+            {% endfor %}
+        </div>
 
-{% if form.non_field_errors %}
-  <ul class="errorlist">
-    {% for error in form.non_field_errors %}
-      <li>{{ error }}</li>
-    {% endfor %}
-  </ul>
-{% endif %}
-
-<form method="post">
-  {% csrf_token %}
-  <fieldset class="module aligned">
-    <div class="form-row">
-      <div>
-        <label>{{ form.target.label }}</label>
-        {{ form.target }}
-        {% if form.target.errors %}
-          <ul class="errorlist">{% for e in form.target.errors %}<li>{{ e }}</li>{% endfor %}</ul>
-        {% endif %}
-      </div>
-    </div>
-    <div class="form-row">
-      <div>
-        <label for="{{ form.user_email.id_for_label }}">{{ form.user_email.label }}</label>
-        {{ form.user_email }}
-        <p class="help">{{ form.user_email.help_text }}</p>
-        {% if form.user_email.errors %}
-          <ul class="errorlist">{% for e in form.user_email.errors %}<li>{{ e }}</li>{% endfor %}</ul>
-        {% endif %}
-      </div>
-    </div>
-    <div class="form-row">
-      <div>
-        <label for="{{ form.reset_existing.id_for_label }}">{{ form.reset_existing.label }}</label>
-        {{ form.reset_existing }}
-        <p class="help" style="color: #ba2121;">{{ form.reset_existing.help_text }}</p>
-        {% if form.reset_existing.errors %}
-          <ul class="errorlist">{% for e in form.reset_existing.errors %}<li>{{ e }}</li>{% endfor %}</ul>
-        {% endif %}
-      </div>
-    </div>
-  </fieldset>
-
-  <div class="submit-row">
-    <input type="submit" value="재평가 실행" class="default">
-    <a href="{% url 'admin:achievements_achievement_changelist' %}" class="button cancel-link">취소</a>
-  </div>
-</form>
+        <div class="flex justify-end">
+            {% component "unfold/components/button.html" with submit=1 %}
+                {% trans "재평가 실행" %}
+            {% endcomponent %}
+        </div>
+    </form>
 {% endblock %}
