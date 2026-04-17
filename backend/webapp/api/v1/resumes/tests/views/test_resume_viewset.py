@@ -7,6 +7,7 @@ from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
+from resumes.enums import AnalysisStatus
 from resumes.factories import TextResumeFactory
 from resumes.models import Resume, ResumeTextContent
 from users.factories import UserFactory
@@ -22,6 +23,8 @@ class ResumeViewSetTests(TestCase):
     self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {str(token.access_token)}")
 
     self.resume = TextResumeFactory(user=self.user, title="테스트 이력서")
+    self.resume.analysis_status = AnalysisStatus.COMPLETED
+    self.resume.save(update_fields=["analysis_status"])
     self.text_content = ResumeTextContent.objects.create(
       user=self.user,
       resume=self.resume,
