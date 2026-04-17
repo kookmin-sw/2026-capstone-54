@@ -172,6 +172,9 @@ curl --fail --show-error --silent \
 2. `docker compose ps --all` 직접 확인
 3. GUI `Logs` 모드에서 서비스 로그 확인
 
+> frontend는 Docker Compose 대상이 아니므로 mefit-tools GUI/통합 logs에서 제어/조회하지 않습니다.
+> frontend 로컬 실행/로그는 frontend 프로젝트에서 직접 관리하세요 (`bun run dev`).
+
 ---
 
 ## 8) 유지보수 가이드 (코드)

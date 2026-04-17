@@ -121,6 +121,7 @@ PROJECTS = {
 # ============================================
 
 QUICK_LINKS = {
+    "Frontend": "http://localhost:5173",
     "Backend API": "http://localhost:8000",
     "Flower (Celery)": "http://localhost:5555/admin/flower",
     "S3 Mock": "http://localhost:9090",

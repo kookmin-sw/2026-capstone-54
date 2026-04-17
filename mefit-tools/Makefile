@@ -32,6 +32,7 @@
 PROJECT_ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST)))/..)
 TOOLS_DIR := $(PROJECT_ROOT)/mefit-tools
 SCRIPTS_DIR := $(TOOLS_DIR)/scripts
+FRONTEND_LOG_FILE := $(TOOLS_DIR)/frontend-dev.log
 
 # Default values
 PROJECT ?=
@@ -99,10 +100,15 @@ network-create: ## Create the mefit-local network
 up-frontend: ## Start frontend (Vite dev server)
 	@echo "$(YELLOW)Starting frontend (Vite dev server)...$(NC)"
 	@echo "$(BLUE)Access: http://localhost:5173$(NC)"
-	@cd $(PROJECT_ROOT)/frontend && nohup bun run dev > /dev/null 2>&1 &
+	@mkdir -p $(TOOLS_DIR)
+	@if [ ! -d "$(PROJECT_ROOT)/frontend/node_modules" ]; then \
+		echo "$(YELLOW)frontend/node_modules not found. Running bun install...$(NC)"; \
+		cd $(PROJECT_ROOT)/frontend && bun install; \
+	fi
+	@cd $(PROJECT_ROOT)/frontend && nohup bun run dev >> "$(FRONTEND_LOG_FILE)" 2>&1 &
 	@echo "$(GREEN)Frontend started!$(NC)"
 	@sleep 2
-	@ps aux | grep -v grep | grep "vite" > /dev/null && echo "Frontend is running on http://localhost:5173" || echo "$(RED)Warning: Frontend may not have started properly$(NC)"
+	@lsof -i TCP:5173 -sTCP:LISTEN >/dev/null 2>&1 && echo "Frontend is running on http://localhost:5173" || echo "$(RED)Warning: Frontend may not have started properly. Check logs with 'make logs-frontend'$(NC)"
 
 .PHONY: down-frontend
 down-frontend: ## Stop frontend
@@ -116,9 +122,18 @@ restart-frontend: down-frontend up-frontend ## Restart frontend
 
 .PHONY: status-frontend
 status-frontend: ## Check frontend status
-	@ps aux | grep -v grep | grep "vite" > /dev/null && \
+	@lsof -i TCP:5173 -sTCP:LISTEN >/dev/null 2>&1 && \
 		echo "$(GREEN)Frontend is running on http://localhost:5173$(NC)" || \
 		echo "$(YELLOW)Frontend is not running$(NC)"
+
+.PHONY: logs-frontend
+logs-frontend: ## Show frontend local dev logs
+	@if [ -f "$(FRONTEND_LOG_FILE)" ]; then \
+		tail -n 100 -f "$(FRONTEND_LOG_FILE)"; \
+	else \
+		echo "$(YELLOW)No frontend log file found: $(FRONTEND_LOG_FILE)$(NC)"; \
+		echo "Run 'make up-frontend' first."; \
+	fi
 
 # ========================================
 # All Services
@@ -265,11 +280,11 @@ status: ## Show status of all or specific project (use PROJECT=<name>)
 		echo "$(YELLOW)Frontend:$(NC)"; \
 		ps aux | grep -v grep | grep "vite" > /dev/null && echo "  Running on http://localhost:5173" || echo "  Not running"; \
 	else \
-		@if [ "$(PROJECT)" = "frontend" ]; then \
+		if [ "$(PROJECT)" = "frontend" ]; then \
 			$(MAKE) status-frontend; \
 		else \
 			cd $(PROJECT_ROOT)/$(PROJECT) && $(DOCKER_COMPOSE) ps $(SERVICE); \
-		fi \
+		fi; \
 	fi
 	@echo ""
 	@echo "$(BLUE)========================================$(NC)"
@@ -281,7 +296,11 @@ logs: ## Show logs (use PROJECT=<name> and SERVICE=<service>)
 		echo "Usage: make logs PROJECT=backend SERVICE=webapp"; \
 		exit 1; \
 	fi
-	@cd $(PROJECT_ROOT)/$(PROJECT) && $(DOCKER_COMPOSE) logs $(SERVICE) --tail=100 -f
+	@if [ "$(PROJECT)" = "frontend" ]; then \
+		$(MAKE) logs-frontend; \
+	else \
+		cd $(PROJECT_ROOT)/$(PROJECT) && $(DOCKER_COMPOSE) logs $(SERVICE) --tail=100 -f; \
+	fi
 
 .PHONY: ps
 ps: status ## Alias for status
