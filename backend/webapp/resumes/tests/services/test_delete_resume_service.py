@@ -1,4 +1,6 @@
+from common.exceptions import ConflictException
 from django.test import TestCase
+from resumes.enums import AnalysisStatus
 from resumes.factories import TextResumeFactory
 from resumes.models import Resume
 from resumes.services import DeleteResumeService
@@ -11,6 +13,8 @@ class DeleteResumeServiceTests(TestCase):
   def setUp(self):
     self.user = UserFactory()
     self.resume = TextResumeFactory(user=self.user, title="삭제 대상 이력서")
+    self.resume.analysis_status = AnalysisStatus.COMPLETED
+    self.resume.save(update_fields=["analysis_status"])
 
   def test_soft_delete_후_deleted_at_기록(self):
     """soft delete 수행 후 deleted_at 필드에 타임스탬프가 기록된다."""
@@ -30,3 +34,19 @@ class DeleteResumeServiceTests(TestCase):
     DeleteResumeService(resume=self.resume).perform()
 
     self.assertTrue(Resume.all_objects.filter(pk=self.resume.pk).exists())
+
+  def test_analysis_pending_resume_deletion_raises_conflict(self):
+    """분석 대기 중(pending) 이력서 삭제 시 ConflictException이 발생한다."""
+    self.resume.analysis_status = AnalysisStatus.PENDING
+    self.resume.save(update_fields=["analysis_status"])
+
+    with self.assertRaises(ConflictException):
+      DeleteResumeService(resume=self.resume).perform()
+
+  def test_analysis_processing_resume_deletion_raises_conflict(self):
+    """분석 중(processing) 이력서 삭제 시 ConflictException이 발생한다."""
+    self.resume.analysis_status = AnalysisStatus.PROCESSING
+    self.resume.save(update_fields=["analysis_status"])
+
+    with self.assertRaises(ConflictException):
+      DeleteResumeService(resume=self.resume).perform()
