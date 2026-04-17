@@ -648,6 +648,11 @@
   margin-top: 8px;
 }
 
+/* ── STREAK WRAPPER ── */
+.hp-streak-wrapper {
+  margin-bottom: 16px;
+}
+
 .hp-card-white {
   background: #fff;
   border: 1px solid #e5e7eb;

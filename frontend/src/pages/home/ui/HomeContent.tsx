@@ -56,7 +56,7 @@ export function HomeContent() {
           <RecentSessions sessions={data.recentSessions} revealed={revealed} />
 
           {streakData && (
-            <div style={{ marginBottom: "16px" }}>
+            <div className="hp-streak-wrapper">
               <StreakCalendar
                 calendarDoneMap={streakData.calendarDoneMap}
                 revealed={revealed}
