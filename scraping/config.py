@@ -17,16 +17,16 @@ OUTPUT_DIR = BASE_DIR / "output"
 OUTPUT_DIR.mkdir(exist_ok=True)
 
 # 브라우저 설정
-BROWSER_TIMEOUT_MS = 30_000        # 페이지 로드 타임아웃 (ms)
-ELEMENT_WAIT_TIMEOUT_MS = 10_000   # 요소 대기 타임아웃 (ms)
-NAVIGATION_TIMEOUT_MS = 60_000     # 전체 내비게이션 타임아웃 (ms)
+BROWSER_TIMEOUT_MS = 30_000  # 페이지 로드 타임아웃 (ms)
+ELEMENT_WAIT_TIMEOUT_MS = 10_000  # 요소 대기 타임아웃 (ms)
+NAVIGATION_TIMEOUT_MS = 60_000  # 전체 내비게이션 타임아웃 (ms)
 
 # HTTP 요청 설정
 HTTP_TIMEOUT_SECONDS = 15
 HTTP_MAX_RETRIES = 2
 
 # 봇 탐지 회피 설정
-RANDOM_DELAY_MIN_MS = 500   # 액션 사이 최소 딜레이 (ms)
+RANDOM_DELAY_MIN_MS = 500  # 액션 사이 최소 딜레이 (ms)
 RANDOM_DELAY_MAX_MS = 1500  # 액션 사이 최대 딜레이 (ms)
 
 # Headless 모드 (운영 환경에서는 True)
@@ -41,7 +41,9 @@ OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 OPENAI_VISION_MODEL = os.getenv("OPENAI_VISION_MODEL", "gpt-4o")  # 이미지 공고 추출용
 
 # LLM 추출 설정
-LLM_MAX_TEXT_CHARS = int(os.getenv("LLM_MAX_TEXT_CHARS", "10000"))  # HTML에서 추출한 텍스트 최대 길이
+LLM_MAX_TEXT_CHARS = int(
+    os.getenv("LLM_MAX_TEXT_CHARS", "8000")
+)  # HTML에서 추출한 텍스트 최대 길이
 
 # ── Database (backend/ job_descriptions 테이블에 직접 저장) ──
 DB_HOST = os.getenv("POSTGRES_HOST", "localhost")
