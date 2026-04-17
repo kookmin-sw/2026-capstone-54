@@ -6,6 +6,7 @@ interface AchievementsState {
   data: Achievement[] | null;
   loading: boolean;
   error: string | null;
+  claimError: string | null;
   claimingCodes: Set<string>;
   fetchAchievements: () => Promise<void>;
   claimAchievement: (code: string) => Promise<void>;
@@ -15,6 +16,7 @@ export const useAchievementsStore = create<AchievementsState>()((set, get) => ({
   data: null,
   loading: false,
   error: null,
+  claimError: null,
   claimingCodes: new Set(),
 
   fetchAchievements: async () => {
@@ -28,31 +30,33 @@ export const useAchievementsStore = create<AchievementsState>()((set, get) => ({
   },
 
   claimAchievement: async (code: string) => {
-    const { claimingCodes, data } = get();
-    if (claimingCodes.has(code)) return; // 더블클릭 방지
+    if (get().claimingCodes.has(code)) return; // 더블클릭 방지
 
-    set({ claimingCodes: new Set([...claimingCodes, code]) });
+    set((state) => ({
+      claimingCodes: new Set(state.claimingCodes).add(code),
+      claimError: null,
+    }));
 
     const res = await claimAchievementApi(code);
 
-    if (res.success && res.data && data) {
-      // 로컬 상태 업데이트: 해당 achievement의 reward_claimed_at 갱신
-      const updated = data.map((a) =>
-        a.code === code
-          ? { ...a, reward_claimed_at: res.data!.reward_claimed_at, can_claim_reward: false }
-          : a
-      );
-      set((state) => {
-        const next = new Set(state.claimingCodes);
-        next.delete(code);
-        return { data: updated, claimingCodes: next };
-      });
-    } else {
-      set((state) => {
-        const next = new Set(state.claimingCodes);
-        next.delete(code);
-        return { claimingCodes: next };
-      });
-    }
+    set((state) => {
+      const nextClaiming = new Set(state.claimingCodes);
+      nextClaiming.delete(code);
+
+      if (res.success && res.data && state.data) {
+        // 로컬 상태 업데이트: 해당 achievement의 reward_claimed_at 갱신
+        const updatedData = state.data.map((a) =>
+          a.code === code
+            ? { ...a, reward_claimed_at: res.data!.reward_claimed_at, can_claim_reward: false }
+            : a
+        );
+        return { data: updatedData, claimingCodes: nextClaiming };
+      }
+
+      return {
+        claimingCodes: nextClaiming,
+        claimError: res.error ?? "보상 수령에 실패했습니다.",
+      };
+    });
   },
 }));

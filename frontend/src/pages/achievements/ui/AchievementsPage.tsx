@@ -5,7 +5,7 @@ import { AchievementCard } from "@/features/achievements";
 import { refreshAchievementsApi } from "@/features/achievements/api/achievementsApi";
 
 export function AchievementsPage() {
-  const { data, loading, error, fetchAchievements, claimAchievement, claimingCodes } =
+  const { data, loading, error, claimError, fetchAchievements, claimAchievement, claimingCodes } =
     useAchievementsStore();
 
   const [refreshing, setRefreshing] = useState(false);
@@ -70,33 +70,42 @@ export function AchievementsPage() {
           <div className="flex justify-center py-20">
             <Loader2 className="w-6 h-6 animate-spin text-[#0991B2]" />
           </div>
-        ) : error ? (
+        ) : !data && error ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <span className="text-5xl mb-5">⚠️</span>
             <p className="text-[15px] font-extrabold text-[#0A0A0A] mb-2">불러오기 실패</p>
             <p className="text-sm text-[#9CA3AF]">{error}</p>
           </div>
-        ) : data && data.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center">
-            <span className="text-5xl mb-5">🏆</span>
-            <p className="text-[15px] font-extrabold text-[#0A0A0A] mb-2">아직 달성한 도전과제가 없어요</p>
-            <p className="text-sm text-[#9CA3AF]">면접 연습을 통해 도전과제를 달성해 보세요</p>
-          </div>
-        ) : data ? (
-          <div
-            className="grid gap-[18px]"
-            style={{ gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))" }}
-          >
-            {data.map((achievement) => (
-              <AchievementCard
-                key={achievement.code}
-                achievement={achievement}
-                isClaiming={claimingCodes.has(achievement.code)}
-                onClaim={claimAchievement}
-              />
-            ))}
-          </div>
-        ) : null}
+        ) : (
+          <>
+            {(error || claimError) && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                {error ?? claimError}
+              </div>
+            )}
+            {data && data.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 text-center">
+                <span className="text-5xl mb-5">🏆</span>
+                <p className="text-[15px] font-extrabold text-[#0A0A0A] mb-2">아직 달성한 도전과제가 없어요</p>
+                <p className="text-sm text-[#9CA3AF]">면접 연습을 통해 도전과제를 달성해 보세요</p>
+              </div>
+            ) : data ? (
+              <div
+                className="grid gap-[18px]"
+                style={{ gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))" }}
+              >
+                {data.map((achievement) => (
+                  <AchievementCard
+                    key={achievement.code}
+                    achievement={achievement}
+                    isClaiming={claimingCodes.has(achievement.code)}
+                    onClaim={claimAchievement}
+                  />
+                ))}
+              </div>
+            ) : null}
+          </>
+        )}
       </div>
     </div>
   );
