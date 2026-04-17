@@ -15,7 +15,7 @@ class GrantDailySubscriptionTicketsTask(BaseScheduledTask):
   """활성 구독 중인 사용자에게 일일 티켓을 지급한다. KST 00:00 실행."""
 
   # KST 00:00 = UTC 15:00
-  schedule = crontab(hour=15, minute=0)
+  schedule = crontab(hour=0, minute=0)
 
   def run(self):
     return GrantDailySubscriptionTicketsService().perform()

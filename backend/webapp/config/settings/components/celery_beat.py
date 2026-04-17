@@ -23,7 +23,7 @@ CELERY_BEAT_SCHEDULE = {
   # 구독 플랜 일일 티켓 지급 (KST 00:00 = UTC 15:00)
   "subscriptions.tasks.grant_daily_subscription_tickets_task.RegisteredGrantDailySubscriptionTicketsTask": {
     "task": "subscriptions.tasks.grant_daily_subscription_tickets_task.RegisteredGrantDailySubscriptionTicketsTask",
-    "schedule": crontab(hour=15, minute=0),
+    "schedule": crontab(hour=0, minute=0),
     "args": (),
     "kwargs": {},
     "options": {},

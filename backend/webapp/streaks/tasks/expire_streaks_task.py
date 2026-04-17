@@ -14,7 +14,7 @@ class ExpireStreaksTask(BaseScheduledTask):
   """스트릭 만료 배치. KST 02:00 실행."""
 
   # KST 02:00 = UTC 17:00
-  schedule = crontab(hour=17, minute=0)
+  schedule = crontab(hour=2, minute=0)
 
   def run(self):
     from streaks.services import ExpireStreaksService
