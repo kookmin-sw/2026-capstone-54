@@ -4,6 +4,7 @@ import { HomeNavbar } from "@/pages/home/ui/components/HomeNavbar";
 import { HomeSidebar } from "@/pages/home/ui/components/HomeSidebar";
 import { SettingsSidebar } from "@/pages/home/ui/components/SettingsSidebar";
 import { useHomeStore } from "@/features/home";
+import { useNotificationToast } from "@/features/notifications";
 import "@/pages/home/ui/HomePage.css";
 
 interface AppLayoutProps {
@@ -14,6 +15,7 @@ interface AppLayoutProps {
 const FULL_SCREEN_PREFIXES = ["/interview/session/", "/interview/precheck/"];
 
 export function AppLayout({ children }: AppLayoutProps) {
+  useNotificationToast();
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
   const { data } = useHomeStore();
