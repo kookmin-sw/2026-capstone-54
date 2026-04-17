@@ -1,9 +1,10 @@
 """알림 REST API ViewSet."""
 
 from common.views import BaseGenericViewSet
-from drf_spectacular.utils import extend_schema
+from django.utils import timezone
+from drf_spectacular.utils import extend_schema, inline_serializer
 from notifications.models import Notification
-from rest_framework import mixins, status
+from rest_framework import mixins, serializers, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -42,14 +43,31 @@ class NotificationViewSet(
     notification.save(update_fields=["is_read", "updated_at"])
     return Response(NotificationSerializer(notification).data)
 
-  @extend_schema(summary="전체 알림 읽음 처리")
+  @extend_schema(
+    summary="전체 알림 읽음 처리",
+    responses={200: inline_serializer(
+      name="MarkAllReadResponse",
+      fields={"updated": serializers.IntegerField()},
+    )},
+  )
   @action(detail=False, methods=["patch"], url_path="mark-all-read")
   def mark_all_read(self, request):
     """전체 읽음 처리."""
-    updated = Notification.objects.filter(user=self.current_user, is_read=False).update(is_read=True)
+    updated = Notification.objects.filter(user=self.current_user, is_read=False).update(
+      is_read=True,
+      updated_at=timezone.now(),
+    )
     return Response({"updated": updated})
 
-  @extend_schema(summary="전체 알림 삭제")
+  @extend_schema(
+    summary="전체 알림 삭제",
+    responses={
+      200: inline_serializer(
+        name="ClearNotificationsResponse",
+        fields={"deleted": serializers.IntegerField()},
+      )
+    },
+  )
   @action(detail=False, methods=["delete"], url_path="clear")
   def clear(self, request):
     """전체 삭제."""
