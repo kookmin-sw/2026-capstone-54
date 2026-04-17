@@ -4,6 +4,7 @@ from api.v1.user_job_descriptions.serializers import (
   UserJobDescriptionResponseSerializer,
 )
 from common.filters import TrigramSearchFilter
+from common.pagination import StandardPagination
 from common.views import BaseAPIView
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import OpenApiParameter, extend_schema
@@ -19,6 +20,7 @@ class UserJobDescriptionAPIView(BaseAPIView):
   """사용자 채용공고 등록 및 목록 조회."""
 
   serializer_class = CreateUserJobDescriptionSerializer
+  pagination_class = StandardPagination
   filter_backends = [DjangoFilterBackend, TrigramSearchFilter]
   filterset_fields = ["application_status"]
   search_fields = ["title", "job_description__company"]
@@ -48,9 +50,13 @@ class UserJobDescriptionAPIView(BaseAPIView):
                                         ).select_related("job_description").order_by("-created_at")
     )
 
-    # filter_backends 적용
     for backend in self.filter_backends:
       queryset = backend().filter_queryset(request, queryset, self)
+
+    page = self.paginate_queryset(queryset)
+    if page is not None:
+      serializer = UserJobDescriptionListSerializer(page, many=True)
+      return self.get_paginated_response(serializer.data)
 
     serializer = UserJobDescriptionListSerializer(queryset, many=True)
     return Response(serializer.data)
