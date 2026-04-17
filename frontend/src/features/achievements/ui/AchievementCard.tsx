@@ -36,25 +36,25 @@ export function AchievementCard({ achievement, isClaiming, onClaim }: Achievemen
     name,
     description,
     category,
-    is_achieved,
-    achieved_at,
-    reward_claimed_at,
-    can_claim_reward,
+    isAchieved,
+    achievedAt,
+    rewardClaimedAt,
+    canClaimReward,
   } = achievement;
 
   return (
     <div
-      className={`p-7 bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)] flex flex-col gap-3 transition-opacity ${!is_achieved ? "opacity-60" : ""}`}
+      className={`p-7 bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)] flex flex-col gap-3 transition-opacity ${!isAchieved ? "opacity-60" : ""}`}
     >
       {/* Header: name + category badge */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2 flex-1 min-w-0">
-          {is_achieved ? (
+          {isAchieved ? (
             <CheckCircle2 size={18} className="text-[#10B981] shrink-0" />
           ) : (
             <div className="w-[18px] h-[18px] rounded-full border-2 border-[#D1D5DB] shrink-0" />
           )}
-          <span className={`font-bold text-[14px] truncate ${is_achieved ? "text-[#0A0A0A]" : "text-[#9CA3AF]"}`}>
+          <span className={`font-bold text-[14px] truncate ${isAchieved ? "text-[#0A0A0A]" : "text-[#9CA3AF]"}`}>
             {name}
           </span>
         </div>
@@ -68,11 +68,11 @@ export function AchievementCard({ achievement, isClaiming, onClaim }: Achievemen
 
       {/* Footer */}
       <div className="mt-auto pt-3 border-t border-[#F3F4F6]">
-        {is_achieved && achieved_at && !reward_claimed_at && !can_claim_reward && (
-          <p className="text-[12px] text-[#9CA3AF]">달성일: {formatDate(achieved_at)}</p>
+        {isAchieved && achievedAt && !rewardClaimedAt && !canClaimReward && (
+          <p className="text-[12px] text-[#9CA3AF]">달성일: {formatDate(achievedAt)}</p>
         )}
 
-        {can_claim_reward && (
+        {canClaimReward && (
           <Button
             variant="primary"
             size="sm"
@@ -85,14 +85,14 @@ export function AchievementCard({ achievement, isClaiming, onClaim }: Achievemen
           </Button>
         )}
 
-        {reward_claimed_at && (
+        {rewardClaimedAt && (
           <div className="flex items-center gap-1.5 text-[12px] text-[#9CA3AF]">
             <Ticket size={14} className="text-[#0991B2] shrink-0" />
-            <span>수령 완료 · {formatDate(reward_claimed_at)}</span>
+            <span>수령 완료 · {formatDate(rewardClaimedAt)}</span>
           </div>
         )}
 
-        {!is_achieved && !can_claim_reward && !reward_claimed_at && (
+        {!isAchieved && !canClaimReward && !rewardClaimedAt && (
           <p className="text-[12px] text-[#9CA3AF]">아직 달성하지 못한 도전과제입니다</p>
         )}
       </div>

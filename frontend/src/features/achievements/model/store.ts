@@ -43,13 +43,13 @@ export const useAchievementsStore = create<AchievementsState>()((set, get) => ({
       const nextClaiming = new Set(state.claimingCodes);
       nextClaiming.delete(code);
 
-      if (res.success && res.data && state.data) {
-        // 로컬 상태 업데이트: 해당 achievement의 reward_claimed_at 갱신
-        const updatedData = state.data.map((a) =>
-          a.code === code
-            ? { ...a, reward_claimed_at: res.data!.reward_claimed_at, can_claim_reward: false }
-            : a
-        );
+        if (res.success && res.data && state.data) {
+          // 로컬 상태 업데이트: 해당 achievement의 rewardClaimedAt 갱신
+          const updatedData = state.data.map((a) =>
+            a.code === code
+              ? { ...a, rewardClaimedAt: res.data!.rewardClaimedAt, canClaimReward: false }
+              : a
+          );
         return { data: updatedData, claimingCodes: nextClaiming };
       }
 

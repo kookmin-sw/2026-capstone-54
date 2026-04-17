@@ -21,8 +21,8 @@ export function AchievementsPage() {
     const res = await refreshAchievementsApi();
     if (res.success) {
       setRefreshMsg(
-        res.data && res.data.created_achievements_count > 0
-          ? `${res.data.created_achievements_count}개의 새 도전과제가 추가됐습니다.`
+        res.data && res.data.createdAchievementsCount > 0
+          ? `${res.data.createdAchievementsCount}개의 새 도전과제가 추가됐습니다.`
           : "이미 최신 상태입니다."
       );
       await fetchAchievements();
