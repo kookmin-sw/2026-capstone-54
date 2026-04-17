@@ -2,8 +2,7 @@
 채용공고 스크래핑 상태 SSE consumer.
 
 특정 사용자 채용공고(UserJobDescription)의 수집 진행 상태를
-실시간으로 push합니다. DB polling 방식으로 상태 변경을 감지하며,
-READ COMMITTED 격리 수준에서 커밋된 최신 값을 읽습니다.
+실시간으로 push합니다. DB polling 방식으로 상태 변경을 감지합니다.
 """
 
 from __future__ import annotations
@@ -12,7 +11,6 @@ import asyncio
 
 from channels.db import database_sync_to_async
 from common.consumers.sse import UserSseConsumer
-from django.db import connection
 from job_descriptions.models import UserJobDescription
 from realtime_docs.decorators import sse_consumer
 
@@ -83,7 +81,7 @@ class UserJobDescriptionScrapingStatusConsumer(UserSseConsumer):
     while not self.disconnected:
       await asyncio.sleep(self.POLL_INTERVAL)
 
-      user_job_description = await self._get_user_job_description_fresh(user_job_description.pk)
+      user_job_description = await self._get_user_job_description(user_job_description.pk)
       if user_job_description is None:
         break
 
@@ -114,16 +112,5 @@ class UserJobDescriptionScrapingStatusConsumer(UserSseConsumer):
     """UUID(PK)로 사용자 채용공고를 조회합니다."""
     try:
       return UserJobDescription.objects.select_related("job_description").get(pk=uuid)
-    except UserJobDescription.DoesNotExist:
-      return None
-
-  @database_sync_to_async
-  def _get_user_job_description_fresh(self, pk) -> UserJobDescription | None:
-    """PK로 사용자 채용공고를 재조회합니다. autocommit 모드에서 최신 커밋 값을 읽습니다."""
-    connection.ensure_connection()
-    if connection.in_atomic_block:
-      connection.set_autocommit(True)
-    try:
-      return UserJobDescription.objects.select_related("job_description").get(pk=pk)
     except UserJobDescription.DoesNotExist:
       return None
