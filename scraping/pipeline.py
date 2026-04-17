@@ -10,6 +10,7 @@ HTML 수집 전략 (2단계 Fallback):
   HTML은 LLM 전달 전 정제(노이즈 제거 + 텍스트 추출)하여 토큰을 절약합니다.
 """
 
+import asyncio
 import base64
 import re
 import httpx
@@ -18,7 +19,11 @@ from urllib.parse import urlparse
 from playwright.async_api import Browser
 
 from config import HTTP_TIMEOUT_SECONDS, HTTP_MAX_RETRIES, LLM_MAX_TEXT_CHARS
-from extractors.llm_extractor import clean_html_to_text, extract_with_llm, extract_with_vision_llm
+from extractors.llm_extractor import (
+    clean_html_to_text,
+    extract_with_llm,
+    extract_with_vision_llm,
+)
 from extractors.schema import JobPosting, normalize
 from plugins.base import BaseScraper
 from plugins.registry import get_plugin
@@ -27,6 +32,18 @@ from utils.browser import create_page
 from utils.logger import get_logger
 
 logger = get_logger(__name__)
+
+# HTTP 요청 없이 바로 Playwright를 사용할 도메인 목록
+# 이 사이트들은 항상 JS 렌더링이 필요하므로 HTTP 시도를 스킵합니다.
+_PLAYWRIGHT_ONLY_DOMAINS = {
+    "wanted.co.kr",
+    "saramin.co.kr",
+    "jobkorea.co.kr",
+    "jumpit.co.kr",
+    "programmers.co.kr",
+    "rocketpunch.com",
+    "linkedin.com",
+}
 
 
 def _normalize_url(url: str) -> str:
@@ -44,7 +61,9 @@ def _normalize_url(url: str) -> str:
         params = dict(p.split("=", 1) for p in parsed.query.split("&") if "=" in p)
         rec_idx = params.get("rec_idx")
         if rec_idx:
-            normalized = f"https://www.saramin.co.kr/zf_user/jobs/view?rec_idx={rec_idx}"
+            normalized = (
+                f"https://www.saramin.co.kr/zf_user/jobs/view?rec_idx={rec_idx}"
+            )
             logger.info("사람인 relay URL → 직접 URL 변환: %s", normalized)
             return normalized
 
@@ -74,21 +93,53 @@ async def run(url: str, browser: Browser) -> JobPosting:
     image_urls: list[str] = []
     iframe_is_same_domain: bool = False
 
-    if plugin.PREFERS_BROWSER:
+    # PREFERS_BROWSER 또는 알려진 Playwright-only 도메인이면 HTTP 시도 스킵
+    _host = urlparse(url).netloc.lower()
+    if _host.startswith("www."):
+        _host = _host[4:]
+    force_playwright = any(
+        _host == d or _host.endswith("." + d) for d in _PLAYWRIGHT_ONLY_DOMAINS
+    )
+
+    if plugin.PREFERS_BROWSER or force_playwright:
         # JS 렌더링이 필요한 플랫폼은 바로 Playwright 사용
-        logger.info("Playwright 직접 사용 (PREFERS_BROWSER=True)")
-        html, iframe_htmls, iframe_texts, image_urls, iframe_is_same_domain = await _try_playwright(url, plugin, browser)
+        reason = (
+            "PREFERS_BROWSER=True"
+            if plugin.PREFERS_BROWSER
+            else f"known JS-heavy domain ({_host})"
+        )
+        logger.info("Playwright 직접 사용 (%s)", reason)
+        (
+            html,
+            iframe_htmls,
+            iframe_texts,
+            image_urls,
+            iframe_is_same_domain,
+        ) = await _try_playwright(url, plugin, browser)
     else:
         # 1단계: 직접 HTTP 요청
         html = await _try_direct_request(url)
 
         # 2단계: 봇 차단 / 구조 불완전 / 숨겨진 콘텐츠 감지 시 Playwright로 재시도
-        if html is None or is_bot_blocked(html) or _is_incomplete_html(html) or _has_expandable_content(html):
+        if (
+            html is None
+            or is_bot_blocked(html)
+            or _is_incomplete_html(html)
+            or _has_expandable_content(html)
+        ):
             if html is not None:
-                logger.warning("봇 차단, 불완전 응답, 또는 펼치기 버튼 감지 → Playwright로 재시도")
+                logger.warning(
+                    "봇 차단, 불완전 응답, 또는 펼치기 버튼 감지 → Playwright로 재시도"
+                )
             else:
                 logger.info("HTTP 요청 실패 → Playwright로 재시도")
-            html, iframe_htmls, iframe_texts, image_urls, iframe_is_same_domain = await _try_playwright(url, plugin, browser)
+            (
+                html,
+                iframe_htmls,
+                iframe_texts,
+                image_urls,
+                iframe_is_same_domain,
+            ) = await _try_playwright(url, plugin, browser)
 
     if not html:
         logger.error("HTML 수집 실패: %s", url)
@@ -98,12 +149,11 @@ async def run(url: str, browser: Browser) -> JobPosting:
     logger.info("LLM 데이터 추출 중...")
     text = clean_html_to_text(html)
 
-    # 정제 후 텍스트가 너무 짧으면 JS SPA 또는 이미지 공고 가능성 → Playwright로 재시도
+    # 정제 후 텍스트가 너무 짧으면 Vision LLM 폴백으로 처리 (두 번째 Playwright 재시도 제거)
     if len(text) < 1000 and not plugin.PREFERS_BROWSER:
-        logger.warning("정제된 텍스트가 너무 짧음 (%d자) → JS SPA 의심, Playwright로 재시도", len(text))
-        html, iframe_htmls, iframe_texts, image_urls, iframe_is_same_domain = await _try_playwright(url, plugin, browser)
-        if html:
-            text = clean_html_to_text(html)
+        logger.warning(
+            "정제된 텍스트가 너무 짧음 (%d자) → Vision LLM 폴백으로 처리", len(text)
+        )
 
     # iframe 콘텐츠 병합
     # - 동일도메인 ID매칭 iframe: 공고 본문 전용 iframe → 메인 텍스트 길이와 무관하게 항상 병합
@@ -116,8 +166,14 @@ async def run(url: str, browser: Browser) -> JobPosting:
             non_empty = [t for t in iframe_texts if t.strip()]
             if non_empty:
                 text = "\n\n".join(non_empty) + "\n\n" + text
-                merge_reason = "동일도메인 공고 iframe" if iframe_is_same_domain else f"메인 텍스트 부족 ({len(text)}자)"
-                logger.info("iframe %d개 텍스트 병합 (%s)", len(non_empty), merge_reason)
+                merge_reason = (
+                    "동일도메인 공고 iframe"
+                    if iframe_is_same_domain
+                    else f"메인 텍스트 부족 ({len(text)}자)"
+                )
+                logger.info(
+                    "iframe %d개 텍스트 병합 (%s)", len(non_empty), merge_reason
+                )
         else:
             logger.debug("외부 iframe 건너뜀 (메인 텍스트 충분: %d자)", len(text))
 
@@ -135,20 +191,28 @@ async def run(url: str, browser: Browser) -> JobPosting:
     # Vision LLM 전달 전 광고/트래킹 URL 최종 필터링
     # (data: URL은 이미 base64 변환된 안전한 URL이므로 제외하지 않음)
     _VISION_AD_PATTERNS = (
-        "doubleclick", "googlesyndication", "googletagmanager",
-        "adservice", "amazon-adsystem", "pagead", "criteo",
-        "facebook.com/tr", "scorecardresearch",
+        "doubleclick",
+        "googlesyndication",
+        "googletagmanager",
+        "adservice",
+        "amazon-adsystem",
+        "pagead",
+        "criteo",
+        "facebook.com/tr",
+        "scorecardresearch",
     )
     image_urls = [
-        u for u in image_urls
+        u
+        for u in image_urls
         if u.startswith("data:") or not any(ad in u for ad in _VISION_AD_PATTERNS)
     ]
 
     # 텍스트가 매우 짧으면 바로 Vision 사용
     _VISION_TEXT_THRESHOLD = 300
+    _MAX_VISION_IMAGES = 5  # Vision LLM에 전달할 최대 이미지 수
     if len(text) < _VISION_TEXT_THRESHOLD and image_urls:
         logger.info("텍스트 부족 (%d자) + 이미지 있음 → Vision LLM으로 처리", len(text))
-        raw = await extract_with_vision_llm(image_urls, url)
+        raw = await extract_with_vision_llm(image_urls[:_MAX_VISION_IMAGES], url)
     else:
         # 텍스트 기반 LLM 추출
         raw = await extract_with_llm(text, url)
@@ -161,16 +225,33 @@ async def run(url: str, browser: Browser) -> JobPosting:
         duties_insufficient = not duties_val or len(duties_val) < 50
         if duties_insufficient and not preferred_val and image_urls:
             if not duties_val:
-                logger.info("duties/preferred 비어 있음 + 이미지 있음 → Vision LLM으로 보완")
+                logger.info(
+                    "duties/preferred 비어 있음 + 이미지 있음 → Vision LLM으로 보완"
+                )
             else:
-                logger.info("duties 너무 짧음 (%d자) + 이미지 있음 → Vision LLM으로 보완", len(duties_val))
-            vision_raw = await extract_with_vision_llm(image_urls, url)
+                logger.info(
+                    "duties 너무 짧음 (%d자) + 이미지 있음 → Vision LLM으로 보완",
+                    len(duties_val),
+                )
+            vision_raw = await extract_with_vision_llm(
+                image_urls[:_MAX_VISION_IMAGES], url
+            )
             # Vision 결과로 빈/부족한 필드 채우기
-            for field in ("duties", "preferred", "requirements", "title", "company",
-                          "work_type", "salary", "location", "education", "experience"):
+            for field in (
+                "duties",
+                "preferred",
+                "requirements",
+                "title",
+                "company",
+                "work_type",
+                "salary",
+                "location",
+                "education",
+                "experience",
+            ):
                 if vision_raw.get(field) and (
-                    not raw.get(field) or
-                    (field == "duties" and len(raw.get("duties", "")) < 50)
+                    not raw.get(field)
+                    or (field == "duties" and len(raw.get("duties", "")) < 50)
                 ):
                     raw[field] = vision_raw[field]
 
@@ -197,7 +278,10 @@ async def _try_direct_request(url: str) -> str | None:
                 response = await client.get(url)
                 logger.debug(
                     "HTTP 응답: status=%d, size=%d bytes (시도 %d/%d)",
-                    response.status_code, len(response.content), attempt, HTTP_MAX_RETRIES
+                    response.status_code,
+                    len(response.content),
+                    attempt,
+                    HTTP_MAX_RETRIES,
                 )
 
                 if response.status_code in (403, 429, 503):
@@ -240,31 +324,43 @@ async def _try_playwright(
             # 네비게이션 전 플러그인 셋업 (응답 인터셉터 등록 등)
             await plugin.setup(page)
 
+            # 폰트/미디어 리소스 차단으로 페이지 로드 속도 향상
+            # 이미지는 iframe 스크린샷에 필요하므로 차단하지 않음
+            await page.route(
+                re.compile(r"\.(woff2?|ttf|eot|otf)(\?.*)?$"),
+                lambda route: route.abort(),
+            )
+
             await page.goto(url, wait_until="domcontentloaded")
 
             # SPA 초기 렌더링 대기:
             # domcontentloaded → React 마운트 → useEffect API 호출 → 콘텐츠 렌더링 순서로 진행됨
             # React가 effect를 시작할 시간을 먼저 주고, 이후 networkidle로 API 완료 대기
-            await page.wait_for_timeout(2_000)
+            await page.wait_for_timeout(500)
             try:
-                await page.wait_for_load_state("networkidle", timeout=15_000)
+                await page.wait_for_load_state("networkidle", timeout=8_000)
             except Exception:
                 pass
 
             # Cloudflare JS 챌린지 감지 및 대기
             # 챌린지 통과 시 자동 리다이렉트되므로 새 페이지 로드를 기다림
             title = await page.title()
-            if any(sig in title.lower() for sig in ("just a moment", "checking your browser", "ddos")):
+            if any(
+                sig in title.lower()
+                for sig in ("just a moment", "checking your browser", "ddos")
+            ):
                 logger.info("Cloudflare 챌린지 감지 → 자동 통과 대기 중...")
                 try:
-                    await page.wait_for_load_state("networkidle", timeout=20_000)
+                    await page.wait_for_load_state("networkidle", timeout=10_000)
                     # 챌린지 후 실제 페이지 안착 확인
                     await page.wait_for_function(
                         "document.title !== 'Just a moment...' && "
                         "!document.title.toLowerCase().includes('checking')",
-                        timeout=15_000,
+                        timeout=8_000,
                     )
-                    logger.info("Cloudflare 챌린지 통과: title='%s'", await page.title())
+                    logger.info(
+                        "Cloudflare 챌린지 통과: title='%s'", await page.title()
+                    )
                 except Exception:
                     logger.warning("Cloudflare 챌린지 대기 타임아웃 — 현재 상태로 계속")
 
@@ -277,7 +373,7 @@ async def _try_playwright(
 
             # 상호작용 후 추가 렌더링 대기
             try:
-                await page.wait_for_load_state("networkidle", timeout=10_000)
+                await page.wait_for_load_state("networkidle", timeout=5_000)
             except Exception:
                 pass  # 타임아웃이어도 현재 상태로 계속 진행
 
@@ -290,9 +386,16 @@ async def _try_playwright(
             # 외부 도메인 iframe을 우선 수집합니다.
             # 광고/추적 도메인은 제외합니다.
             _AD_DOMAINS = (
-                "doubleclick", "googlesyndication", "googletagmanager",
-                "googletagservices", "adservice", "amazon-adsystem",
-                "moatads", "scorecardresearch", "quantserve", "facebook.com",
+                "doubleclick",
+                "googlesyndication",
+                "googletagmanager",
+                "googletagservices",
+                "adservice",
+                "amazon-adsystem",
+                "moatads",
+                "scorecardresearch",
+                "quantserve",
+                "facebook.com",
             )
             main_domain = ".".join(urlparse(url).netloc.lower().split(".")[-2:])
 
@@ -300,32 +403,36 @@ async def _try_playwright(
             main_url_str = urlparse(url).path + "?" + urlparse(url).query
             main_ids = set(re.findall(r"\b\d{5,}\b", main_url_str))
 
-            same_domain_matched: list[str] = []        # 동일 도메인 + ID 매칭: HTML
-            same_domain_matched_texts: list[str] = []   # 동일 도메인 + ID 매칭: DOM innerText
+            same_domain_matched: list[str] = []  # 동일 도메인 + ID 매칭: HTML
+            same_domain_matched_texts: list[
+                str
+            ] = []  # 동일 도메인 + ID 매칭: DOM innerText
             same_domain_frames: list = []
-            external_domain: list[str] = []              # 외부 도메인: HTML
-            external_domain_texts: list[str] = []        # 외부 도메인: DOM innerText
+            external_domain: list[str] = []  # 외부 도메인: HTML
+            external_domain_texts: list[str] = []  # 외부 도메인: DOM innerText
             external_frames: list = []
 
-            for frame in page.frames[1:]:  # 첫 번째는 메인 페이지
+            async def _process_iframe(frame):
                 try:
                     frame_url = frame.url
                     if not frame_url or frame_url in ("about:blank", ""):
-                        continue
+                        return None
                     frame_host = urlparse(frame_url).netloc.lower()
                     if any(ad in frame_host for ad in _AD_DOMAINS):
-                        continue
+                        return None
                     frame_domain = ".".join(frame_host.split(".")[-2:])
-                    frame_url_str = urlparse(frame_url).path + "?" + urlparse(frame_url).query
+                    frame_url_str = (
+                        urlparse(frame_url).path + "?" + urlparse(frame_url).query
+                    )
                     frame_ids = set(re.findall(r"\b\d{5,}\b", frame_url_str))
 
                     try:
-                        await frame.wait_for_load_state("networkidle", timeout=8_000)
+                        await frame.wait_for_load_state("networkidle", timeout=3_000)
                     except Exception:
                         pass
                     frame_html = await frame.content()
                     if len(frame_html) <= 500:
-                        continue
+                        return None
 
                     # DOM에서 직접 텍스트 추출
                     # Next.js SPA처럼 networkidle 이후에도 AJAX로 콘텐츠를 로드하는 iframe은
@@ -337,18 +444,38 @@ async def _try_playwright(
                         logger.debug("iframe innerText 실패: %s", e)
                         frame_text = ""
 
-                    if frame_domain == main_domain and main_ids and (main_ids & frame_ids):
-                        same_domain_matched.append(frame_html)
-                        same_domain_matched_texts.append(frame_text)
-                        same_domain_frames.append(frame)
-                        logger.debug("동일 도메인 ID 매칭 iframe: %s", frame_url)
-                    elif frame_domain != main_domain:
-                        external_domain.append(frame_html)
-                        external_domain_texts.append(frame_text)
-                        external_frames.append(frame)
-                        logger.debug("외부 도메인 iframe: %s", frame_url)
+                    return (
+                        frame,
+                        frame_html,
+                        frame_text,
+                        frame_domain,
+                        frame_ids,
+                        frame_url,
+                    )
                 except Exception:
-                    pass
+                    return None
+
+            # 모든 iframe을 병렬로 처리
+            iframe_results = await asyncio.gather(
+                *[_process_iframe(f) for f in page.frames[1:]],
+                return_exceptions=True,
+            )
+            for result in iframe_results:
+                if not result or isinstance(result, Exception):
+                    continue
+                frame, frame_html, frame_text, frame_domain, frame_ids, frame_url = (
+                    result
+                )
+                if frame_domain == main_domain and main_ids and (main_ids & frame_ids):
+                    same_domain_matched.append(frame_html)
+                    same_domain_matched_texts.append(frame_text)
+                    same_domain_frames.append(frame)
+                    logger.debug("동일 도메인 ID 매칭 iframe: %s", frame_url)
+                elif frame_domain != main_domain:
+                    external_domain.append(frame_html)
+                    external_domain_texts.append(frame_text)
+                    external_frames.append(frame)
+                    logger.debug("외부 도메인 iframe: %s", frame_url)
 
             # 우선순위: 동일 도메인 ID 매칭 > 외부 도메인
             # 둘을 동시에 사용하면 다른 회사 공고가 섞여 오염됨
@@ -394,32 +521,62 @@ async def _try_playwright(
             #   - iframe이 JS에 의해 동적으로 교체되더라도 항상 현재 요소를 가져옴
             #   - frame 객체는 낡은 참조(detached)가 될 수 있으므로 frame_element()로 우회
             screenshot_urls: list[str] = []
-            updated_iframe_texts = list(iframe_texts)  # 기존 수집 텍스트 복사 (교체 전 값)
-            for idx, frame in enumerate(relevant_frames):
+
+            async def _capture_frame(idx: int, frame):
                 try:
                     frame_el = await frame.frame_element()
-                    screenshot = await frame_el.screenshot(type="jpeg", quality=85)
-                    if len(screenshot) > 10_000:  # 10KB 미만은 빈 화면 제외
-                        b64 = base64.b64encode(screenshot).decode()
-                        screenshot_urls.append(f"data:image/jpeg;base64,{b64}")
-                        logger.debug("iframe 스크린샷 캡처 완료 (%d bytes)", len(screenshot))
+                    screenshot_b64 = None
+                    try:
+                        screenshot = await frame_el.screenshot(type="jpeg", quality=85)
+                        if len(screenshot) > 10_000:  # 10KB 미만은 빈 화면 제외
+                            b64 = base64.b64encode(screenshot).decode()
+                            screenshot_b64 = f"data:image/jpeg;base64,{b64}"
+                            logger.debug(
+                                "iframe 스크린샷 캡처 완료 (%d bytes)", len(screenshot)
+                            )
+                    except Exception as e:
+                        logger.debug("iframe 스크린샷 실패: %s", e)
 
                     # 스크린샷 이후 재시도: contentWindow로 현재 iframe 문서 텍스트 추출
                     # (frame 객체가 detached되어도 frame_element를 통해 현재 iframe 접근)
+                    late_text = None
                     try:
                         late_text = await frame_el.evaluate(
                             "el => el.contentWindow && el.contentWindow.document && el.contentWindow.document.body"
                             " ? el.contentWindow.document.body.innerText : ''"
                         )
-                        if late_text and len(late_text.strip()) > len(iframe_texts[idx].strip()):
-                            logger.debug("iframe contentWindow 텍스트: %d자", len(late_text))
-                            iframe_texts[idx] = late_text
-                        else:
-                            logger.debug("iframe contentWindow: %d자 (갱신 없음)", len(late_text) if late_text else 0)
                     except Exception as e:
                         logger.debug("iframe contentWindow 실패: %s", e)
+
+                    return (idx, screenshot_b64, late_text)
                 except Exception as e:
-                    logger.debug("iframe 스크린샷 실패: %s", e)
+                    logger.debug("iframe frame_element 실패: %s", e)
+                    return (idx, None, None)
+
+            # 모든 iframe 스크린샷 + contentWindow를 병렬로 처리
+            capture_results = await asyncio.gather(
+                *[
+                    _capture_frame(idx, frame)
+                    for idx, frame in enumerate(relevant_frames)
+                ],
+                return_exceptions=True,
+            )
+            for result in capture_results:
+                if isinstance(result, Exception):
+                    continue
+                idx, screenshot_b64, late_text = result
+                if screenshot_b64:
+                    screenshot_urls.append(screenshot_b64)
+                if late_text and len(late_text.strip()) > len(
+                    iframe_texts[idx].strip()
+                ):
+                    logger.debug("iframe contentWindow 텍스트: %d자", len(late_text))
+                    iframe_texts[idx] = late_text
+                else:
+                    logger.debug(
+                        "iframe contentWindow: %d자 (갱신 없음)",
+                        len(late_text) if late_text else 0,
+                    )
 
             # iframe HTML에서 추출한 직접 이미지 URL을 httpx로 다운로드 → base64 변환
             # JS fetch()는 CORS로 차단되므로 서버 사이드 httpx를 사용합니다.
@@ -428,34 +585,53 @@ async def _try_playwright(
             if direct_iframe_image_urls:
                 _img_headers = {
                     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                                  "AppleWebKit/537.36 (KHTML, like Gecko) "
-                                  "Chrome/122.0.0.0 Safari/537.36",
+                    "AppleWebKit/537.36 (KHTML, like Gecko) "
+                    "Chrome/122.0.0.0 Safari/537.36",
                     "Accept": "image/webp,image/apng,image/*,*/*;q=0.8",
                     "Referer": f"https://{urlparse(url).netloc}/",
                 }
-                for img_url in direct_iframe_image_urls:
+
+                async def _download_image(
+                    img_url: str, client: httpx.AsyncClient
+                ) -> str | None:
                     try:
-                        async with httpx.AsyncClient(
-                            headers=_img_headers,
-                            follow_redirects=True,
-                            timeout=15,
-                        ) as img_client:
-                            resp = await img_client.get(img_url)
+                        resp = await client.get(img_url)
                         if resp.status_code == 200 and resp.content:
                             ct = resp.headers.get("content-type", "image/jpeg")
                             b64 = base64.b64encode(resp.content).decode()
-                            direct_image_b64_urls.append(f"data:{ct};base64,{b64}")
                             logger.debug(
                                 "iframe 이미지 다운로드 성공: %s (%d bytes)",
-                                img_url[:80], len(resp.content),
+                                img_url[:80],
+                                len(resp.content),
                             )
+                            return f"data:{ct};base64,{b64}"
                         else:
                             logger.debug(
                                 "iframe 이미지 다운로드 실패 (HTTP %d): %s",
-                                resp.status_code, img_url[:80],
+                                resp.status_code,
+                                img_url[:80],
                             )
                     except Exception as e:
-                        logger.debug("iframe 이미지 다운로드 오류: %s — %s", img_url[:80], e)
+                        logger.debug(
+                            "iframe 이미지 다운로드 오류: %s — %s", img_url[:80], e
+                        )
+                    return None
+
+                async with httpx.AsyncClient(
+                    headers=_img_headers,
+                    follow_redirects=True,
+                    timeout=10,
+                ) as img_client:
+                    dl_results = await asyncio.gather(
+                        *[
+                            _download_image(u, img_client)
+                            for u in direct_iframe_image_urls
+                        ],
+                        return_exceptions=True,
+                    )
+                direct_image_b64_urls = [
+                    r for r in dl_results if r and not isinstance(r, Exception)
+                ]
 
             # 이미지 우선순위:
             #   1. 플러그인 정밀 스크린샷 (특정 요소만 캡처 → 노이즈 없음)
@@ -481,8 +657,12 @@ async def _try_playwright(
                     pass
 
             if image_urls:
-                logger.debug("이미지 %d개 수집 완료 (직접URL %d + 스크린샷 %d)",
-                             len(image_urls), len(direct_iframe_image_urls), len(screenshot_urls))
+                logger.debug(
+                    "이미지 %d개 수집 완료 (직접URL %d + 스크린샷 %d)",
+                    len(image_urls),
+                    len(direct_iframe_image_urls),
+                    len(screenshot_urls),
+                )
 
             # 모든 iframe 처리와 스크린샷 이후 최신 HTML 수집
             # (networkidle 이후 비동기 로드된 콘텐츠까지 포함)
@@ -538,8 +718,18 @@ def _has_expandable_content(html: str) -> bool:
     # <button> 태그가 있는지 먼저 빠르게 확인
     if "<button" not in html_lower:
         return False
-    _MORE_KEYWORDS = ("더 보기", "더보기", "show more", "read more", "see more", "view more", "펼치기", "상세보기")
+    _MORE_KEYWORDS = (
+        "더 보기",
+        "더보기",
+        "show more",
+        "read more",
+        "see more",
+        "view more",
+        "펼치기",
+        "상세보기",
+    )
     from bs4 import BeautifulSoup
+
     soup = BeautifulSoup(html, "lxml")
     for btn in soup.find_all("button"):
         text = btn.get_text(separator=" ").strip()
@@ -557,13 +747,33 @@ def _extract_image_urls_from_html(html: str) -> list[str]:
     아이콘·로고·트래킹 픽셀은 제외하고 콘텐츠 이미지만 반환합니다.
     """
     from bs4 import BeautifulSoup
+
     soup = BeautifulSoup(html, "lxml")
     urls = []
-    _EXCLUDE_KEYWORDS = ("icon", "logo", "pixel", "track", "beacon", "1x1", "spinner", "loading")
+    _EXCLUDE_KEYWORDS = (
+        "icon",
+        "logo",
+        "pixel",
+        "track",
+        "beacon",
+        "1x1",
+        "spinner",
+        "loading",
+    )
     _AD_DOMAINS = (
-        "doubleclick", "googlesyndication", "googletagmanager", "googletagservices",
-        "adservice", "amazon-adsystem", "moatads", "scorecardresearch",
-        "quantserve", "facebook.com", "criteo", "pagead", "adsystem",
+        "doubleclick",
+        "googlesyndication",
+        "googletagmanager",
+        "googletagservices",
+        "adservice",
+        "amazon-adsystem",
+        "moatads",
+        "scorecardresearch",
+        "quantserve",
+        "facebook.com",
+        "criteo",
+        "pagead",
+        "adsystem",
     )
     for img in soup.find_all("img"):
         src = img.get("src", "")
@@ -603,8 +813,12 @@ def _is_incomplete_html(html: str) -> bool:
         return True
     html_lower = html.lower()
     has_heading = "<h1" in html_lower or "<h2" in html_lower
-    has_og_title = 'property="og:title"' in html_lower or "property='og:title'" in html_lower
+    has_og_title = (
+        'property="og:title"' in html_lower or "property='og:title'" in html_lower
+    )
     if not has_heading and not has_og_title:
-        logger.warning("응답 HTML에 제목 구조(h1/h2/og:title) 없음 → 불완전 응답으로 판단")
+        logger.warning(
+            "응답 HTML에 제목 구조(h1/h2/og:title) 없음 → 불완전 응답으로 판단"
+        )
         return True
     return False
