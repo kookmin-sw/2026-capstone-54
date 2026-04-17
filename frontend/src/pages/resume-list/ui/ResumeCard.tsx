@@ -62,7 +62,12 @@ export function ResumeCard({ resume, onDetail, onEdit, onDelete }: ResumeCardPro
           {menuOpen && (
             <div className="absolute right-0 top-[calc(100%+4px)] bg-white border border-[#E5E7EB] rounded-lg shadow-[0_8px_24px_rgba(0,0,0,0.1)] min-w-[150px] overflow-hidden z-10">
               <MenuItem icon={<Edit2 size={13} />} label="수정하기" onClick={() => { setMenuOpen(false); onEdit(); }} />
-              <MenuItem icon={<Trash2 size={13} />} label="삭제하기" danger onClick={() => { setMenuOpen(false); onDelete(); }} />
+              <MenuItem icon={<Trash2 size={13} />} label="삭제하기" danger disabled={isProcessing} onClick={() => { if (!isProcessing) { setMenuOpen(false); onDelete(); } }} />
+              {isProcessing && (
+                <div className="px-3.5 py-2 text-[11px] text-[#9CA3AF] border-t border-[#F3F4F6]">
+                  분석 중에는 삭제할 수 없어요
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -77,12 +82,19 @@ export function ResumeCard({ resume, onDetail, onEdit, onDelete }: ResumeCardPro
 }
 
 function MenuItem({
-  icon, label, onClick, danger,
-}: { icon: React.ReactNode; label: string; onClick: () => void; danger?: boolean }) {
+  icon, label, onClick, danger, disabled,
+}: { icon: React.ReactNode; label: string; onClick: () => void; danger?: boolean; disabled?: boolean }) {
   return (
     <button
-      onClick={onClick}
-      className={`w-full flex items-center gap-2 py-2.5 px-3.5 text-[13px] font-semibold text-left transition-colors hover:bg-[#F9FAFB] ${danger ? "text-[#DC2626]" : "text-[#374151]"}`}
+      onClick={disabled ? undefined : onClick}
+      disabled={disabled}
+      className={`w-full flex items-center gap-2 py-2.5 px-3.5 text-[13px] font-semibold text-left transition-colors ${
+        disabled
+          ? "text-[#D1D5DB] cursor-not-allowed"
+          : danger
+            ? "text-[#DC2626] hover:bg-[#F9FAFB]"
+            : "text-[#374151] hover:bg-[#F9FAFB]"
+      }`}
     >
       {icon} {label}
     </button>

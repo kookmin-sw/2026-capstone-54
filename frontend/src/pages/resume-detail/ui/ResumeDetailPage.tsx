@@ -203,10 +203,15 @@ export function ResumeDetailPage() {
 
           <div className="flex items-center gap-2 shrink-0">
             <button
-              onClick={handleDelete}
-              className="inline-flex items-center gap-1.5 text-[12px] font-bold border border-[#FECACA] text-[#DC2626] rounded-lg px-3 py-2 hover:bg-[#FEF2F2] transition-colors"
+              onClick={isProcessing ? undefined : handleDelete}
+              disabled={isProcessing}
+              className={`inline-flex items-center gap-1.5 text-[12px] font-bold border rounded-lg px-3 py-2 transition-colors ${
+                isProcessing
+                  ? "border-[#E5E7EB] text-[#D1D5DB] cursor-not-allowed"
+                  : "border-[#FECACA] text-[#DC2626] hover:bg-[#FEF2F2]"
+              }`}
             >
-              <Trash2 size={13} /> 삭제
+              <Trash2 size={13} /> {isProcessing ? "분석 중..." : "삭제"}
             </button>
           </div>
         </div>
