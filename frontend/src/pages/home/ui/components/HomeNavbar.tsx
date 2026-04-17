@@ -15,7 +15,7 @@ interface HomeNavbarProps {
 export function HomeNavbar({ menuOpen, onMenuToggle }: HomeNavbarProps) {
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
-  const { notifications, markAllRead } = useNotificationStore();
+  const { notifications, markAllRead, markRead } = useNotificationStore();
   const unreadCount = notifications.filter((n) => !n.read).length;
   const { tickets } = useTicketCount();
   const { policy } = useTicketPolicy();
@@ -117,11 +117,16 @@ export function HomeNavbar({ menuOpen, onMenuToggle }: HomeNavbarProps) {
                 notifications.slice(0, 4).map((n) => (
                   <li
                     key={n.id}
-                    className={`flex items-start gap-3 px-4 py-3 border-b border-[#F3F4F6] last:border-0 ${!n.read ? "bg-[#F0F9FF]" : ""}`}
+                    onClick={() => { markRead(n.id); setNotiOpen(false); }}
+                    className={`flex items-start gap-3 px-4 py-3 border-b border-[#F3F4F6] last:border-0 cursor-pointer transition-colors ${
+                      !n.read ? "bg-[#F0F9FF] hover:bg-[#E0F4FC]" : "hover:bg-[#F9FAFB]"
+                    }`}
                   >
-                    <span className={`mt-1 w-2 h-2 rounded-full flex-shrink-0 ${!n.read ? "bg-[#0991B2]" : "bg-transparent"}`} />
+                    <span className={`mt-1.5 w-2 h-2 rounded-full flex-shrink-0 transition-colors ${!n.read ? "bg-[#0991B2]" : "bg-transparent"}`} />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-[#0A0A0A]">{n.message}</p>
+                      <p className={`text-sm leading-snug ${!n.read ? "font-semibold text-[#0A0A0A]" : "text-[#374151]"}`}>
+                        {n.message}
+                      </p>
                       <p className="text-xs text-[#9CA3AF] mt-0.5">{n.time}</p>
                     </div>
                   </li>
