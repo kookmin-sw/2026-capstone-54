@@ -23,6 +23,7 @@ interface PrecheckState {
 }
 
 let micIntervalRef: ReturnType<typeof setInterval> | null = null;
+let pollPassedRef: ReturnType<typeof setInterval> | null = null;
 let audioContext: AudioContext | null = null;
 let analyser: AnalyserNode | null = null;
 let microphone: MediaStreamAudioSourceNode | null = null;
@@ -31,6 +32,7 @@ let cameraMediaStream: MediaStream | null = null;
 
 function stopAllResources() {
   if (micIntervalRef) { clearInterval(micIntervalRef); micIntervalRef = null; }
+  if (pollPassedRef) { clearInterval(pollPassedRef); pollPassedRef = null; }
   if (microphone) { microphone.disconnect(); microphone = null; }
   if (audioContext) { audioContext.close(); audioContext = null; }
   if (micMediaStream) { micMediaStream.getTracks().forEach((t) => t.stop()); micMediaStream = null; }
@@ -94,6 +96,7 @@ export const usePrecheckStore = create<PrecheckState>((set, get) => ({
 
     // Real mic level via Web Audio API
     if (micIntervalRef) { clearInterval(micIntervalRef); micIntervalRef = null; }
+    if (micMediaStream) { micMediaStream.getTracks().forEach((t) => t.stop()); micMediaStream = null; }
 
     navigator.mediaDevices
       .getUserMedia({ audio: true })
@@ -123,7 +126,7 @@ export const usePrecheckStore = create<PrecheckState>((set, get) => ({
       });
 
     // Watch for all-passed
-    const pollPassed = setInterval(() => {
+    pollPassedRef = setInterval(() => {
       const s = get();
       if (
         s.cameraStatus !== "idle" && s.cameraStatus !== "checking" &&
@@ -131,7 +134,7 @@ export const usePrecheckStore = create<PrecheckState>((set, get) => ({
         s.networkStatus !== "idle" && s.networkStatus !== "checking" &&
         s.gpuStatus !== "idle" && s.gpuStatus !== "checking"
       ) {
-        clearInterval(pollPassed);
+        clearInterval(pollPassedRef!); pollPassedRef = null;
         if (
           s.cameraStatus === "ok" &&
           s.micStatus === "ok" &&
