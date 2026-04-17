@@ -1,0 +1,105 @@
+{% extends "admin/base_site.html" %}
+{% load i18n unfold %}
+
+{% block extrahead %}
+  {{ block.super }}
+  <script src="{% url 'admin:jsi18n' %}"></script>
+  {{ form.media }}
+{% endblock %}
+
+{% block breadcrumbs %}
+  <div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">{% trans "Home" %}</a>
+    &rsaquo;
+    <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_label|capfirst }}</a>
+    &rsaquo;
+    <a href="{% url 'admin:notifications_notification_changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>
+    &rsaquo;
+    {% trans "테스트 알림 발송" %}
+  </div>
+{% endblock %}
+
+{% block content %}
+  <div class="max-w-2xl">
+
+    {# ── 안내 배너 ───────────────────────────────────────────────── #}
+    <div class="border border-blue-200 dark:border-blue-800 rounded-default p-4 mb-6
+                bg-blue-50 dark:bg-blue-900/20 flex gap-3 items-start">
+      <span class="material-symbols-outlined text-blue-500 dark:text-blue-400 text-xl mt-0.5 flex-shrink-0">
+        info
+      </span>
+      <div class="text-sm text-blue-700 dark:text-blue-300 leading-relaxed">
+        <p class="font-medium mb-1">테스트 알림 발송</p>
+        <p class="text-blue-600 dark:text-blue-400">
+          선택한 사용자에게 DB 저장과 WebSocket 실시간 푸시가 동시에 이루어집니다.
+          사용자가 현재 접속 중이라면 브라우저에서 즉시 알림을 수신합니다.
+        </p>
+      </div>
+    </div>
+
+    {# ── 폼 카드 ─────────────────────────────────────────────────── #}
+    <form action="" method="post" novalidate>
+      {% csrf_token %}
+
+      <div class="bg-white dark:bg-base-900 border border-base-200 dark:border-base-800
+                  rounded-default shadow-xs overflow-hidden mb-6">
+
+        {# 카드 헤더 #}
+        <div class="border-b border-base-200 dark:border-base-800 px-6 py-4 flex items-center gap-2">
+          <span class="material-symbols-outlined text-base-400 dark:text-base-500 text-lg">
+            notifications
+          </span>
+          <h2 class="font-semibold text-[15px] text-base-800 dark:text-base-200">
+            {% trans "발송 정보 입력" %}
+          </h2>
+        </div>
+
+        {# 카드 본문 — 폼 필드 #}
+        <div class="px-6 py-5 space-y-1">
+          {% for field in form %}
+            {% include "unfold/helpers/field.html" with field=field %}
+          {% endfor %}
+        </div>
+
+        {# 카드 푸터 — 카테고리 안내 #}
+        <div class="border-t border-base-200 dark:border-base-800 px-6 py-3
+                    bg-base-50 dark:bg-base-900/50">
+          <div class="flex flex-wrap gap-2 items-center">
+            <span class="text-xs text-base-500 dark:text-base-400 font-medium">카테고리:</span>
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
+                         bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300">
+              면접
+            </span>
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
+                         bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
+              이력서
+            </span>
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
+                         bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
+              채용공고
+            </span>
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
+                         bg-base-100 text-base-600 dark:bg-base-800 dark:text-base-400">
+              시스템
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {# ── 액션 버튼 ────────────────────────────────────────────── #}
+      <div class="flex items-center justify-between">
+        <a href="{% url 'admin:notifications_notification_changelist' %}"
+           class="text-sm text-base-500 dark:text-base-400 hover:text-base-700
+                  dark:hover:text-base-200 transition-colors flex items-center gap-1">
+          <span class="material-symbols-outlined text-base" style="font-size:16px">arrow_back</span>
+          {% trans "목록으로 돌아가기" %}
+        </a>
+
+        {% component "unfold/components/button.html" with submit=1 %}
+          {% trans "알림 발송" %}
+        {% endcomponent %}
+      </div>
+    </form>
+
+  </div>
+{% endblock %}
