@@ -56,13 +56,15 @@ export function HomeContent() {
           <RecentSessions sessions={data.recentSessions} revealed={revealed} />
 
           {streakData && (
-            <StreakCalendar
-              calendarDoneMap={streakData.calendarDoneMap}
-              revealed={revealed}
-              todayYear={todayY}
-              todayMonth={todayM}
-              todayDay={todayD}
-            />
+            <div style={{ marginBottom: "16px" }}>
+              <StreakCalendar
+                calendarDoneMap={streakData.calendarDoneMap}
+                revealed={revealed}
+                todayYear={todayY}
+                todayMonth={todayM}
+                todayDay={todayD}
+              />
+            </div>
           )}
 
           <div className="hp-bottom hp-bottom--single">
