@@ -32,11 +32,11 @@ const mockClear = notificationsApi.clearAllNotifications as jest.MockedFunction<
   typeof notificationsApi.clearAllNotifications
 >;
 
-const makeNotification = (id: number, read = false) => ({
+const makeNotification = (id: number, isRead = false) => ({
   id,
   message: `Notification ${id}`,
   time: "방금 전",
-  read,
+  isRead,
   category: "system" as const,
   notifiableType: null,
   notifiableId: null,
@@ -86,7 +86,7 @@ describe("useNotificationStore", () => {
       await useNotificationStore.getState().markRead(1);
 
       const { notifications } = useNotificationStore.getState();
-      expect(notifications.find((n) => n.id === 1)?.read).toBe(true);
+      expect(notifications.find((n) => n.id === 1)?.isRead).toBe(true);
     });
 
     it("does not affect other notifications", async () => {
@@ -97,7 +97,7 @@ describe("useNotificationStore", () => {
 
       await useNotificationStore.getState().markRead(1);
 
-      expect(useNotificationStore.getState().notifications.find((n) => n.id === 2)?.read).toBe(
+      expect(useNotificationStore.getState().notifications.find((n) => n.id === 2)?.isRead).toBe(
         false
       );
     });
@@ -122,7 +122,7 @@ describe("useNotificationStore", () => {
       await useNotificationStore.getState().markAllRead();
 
       const { notifications } = useNotificationStore.getState();
-      expect(notifications.every((n) => n.read)).toBe(true);
+      expect(notifications.every((n) => n.isRead)).toBe(true);
     });
 
     it("works correctly when notifications list is empty", async () => {

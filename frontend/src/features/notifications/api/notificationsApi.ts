@@ -34,7 +34,7 @@ export function toStoreNotification(b: BackendNotification) {
     id: b.id,
     message: b.message,
     time: formatTime(b.created_at),
-    read: b.is_read,
+    isRead: b.is_read,
     category: b.category,
     notifiableType: b.notifiable_type_label,
     notifiableId: b.notifiable_id,

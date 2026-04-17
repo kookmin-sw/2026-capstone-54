@@ -13,7 +13,7 @@ export interface Notification {
   id: number;
   message: string;
   time: string;
-  read: boolean;
+  isRead: boolean;
   category: "interview" | "resume" | "jd" | "system";
   notifiableType: string | null;
   notifiableId: string | null;
@@ -33,7 +33,7 @@ function wsMessageToNotification(msg: WsNotificationMessage): Notification {
     id: msg.id,
     message: msg.message,
     time: formatTime(msg.createdAt),
-    read: false,
+    isRead: false,
     category: msg.category,
     notifiableType: msg.notifiableType,
     notifiableId: msg.notifiableId,
@@ -66,7 +66,7 @@ export const useNotificationStore = create<NotificationState>()((set, get) => ({
   markAllRead: async () => {
     await markAllNotificationsRead();
     set((s) => ({
-      notifications: s.notifications.map((n) => ({ ...n, read: true })),
+      notifications: s.notifications.map((n) => ({ ...n, isRead: true })),
     }));
   },
 
@@ -74,7 +74,7 @@ export const useNotificationStore = create<NotificationState>()((set, get) => ({
     await markNotificationRead(id);
     set((s) => ({
       notifications: s.notifications.map((n) =>
-        n.id === id ? { ...n, read: true } : n,
+        n.id === id ? { ...n, isRead: true } : n,
       ),
     }));
   },

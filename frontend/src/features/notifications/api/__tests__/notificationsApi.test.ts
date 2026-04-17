@@ -36,9 +36,9 @@ describe("toStoreNotification", () => {
     expect(result.category).toBe("system");
   });
 
-  it("maps is_read → read", () => {
-    expect(toStoreNotification(makeBackend({ is_read: true })).read).toBe(true);
-    expect(toStoreNotification(makeBackend({ is_read: false })).read).toBe(false);
+  it("maps is_read → isRead", () => {
+    expect(toStoreNotification(makeBackend({ is_read: true })).isRead).toBe(true);
+    expect(toStoreNotification(makeBackend({ is_read: false })).isRead).toBe(false);
   });
 
   it("maps notifiable_type_label → notifiableType", () => {
@@ -104,7 +104,7 @@ describe("fetchNotifications", () => {
     });
     const result = await fetchNotifications();
     expect(result).toHaveLength(1);
-    expect(result[0].read).toBe(false);
+    expect(result[0].isRead).toBe(false);
     expect(result[0].notifiableType).toBe("resumes.resume");
     expect(result[0].notifiableId).toBe("abc-123");
   });
@@ -139,7 +139,7 @@ describe("markNotificationRead", () => {
   it("returns the mapped notification with read:true", async () => {
     mockApiRequest.mockResolvedValueOnce(makeBackend({ is_read: true }));
     const result = await markNotificationRead(1);
-    expect(result.read).toBe(true);
+    expect(result.isRead).toBe(true);
     expect(result.id).toBe(1);
   });
 });
