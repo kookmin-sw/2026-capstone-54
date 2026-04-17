@@ -18,7 +18,11 @@ export function SessionCard({ session: s, isGenerating, onContinue, onViewReport
   const isBusy = s.reportStatus === "generating" || s.reportStatus === "pending";
 
   return (
-    <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-5 shadow-[0_1px_3px_rgba(0,0,0,0.06)] flex flex-col gap-0">
+    <div
+      className={`bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-5 shadow-[0_1px_3px_rgba(0,0,0,0.06)] flex flex-col gap-0 ${
+        isBusy ? "relative overflow-hidden border-l-[3px] border-l-[#0991B2]" : ""
+      }`}
+    >
       <div className="flex items-start gap-3">
         <div className="w-10 h-10 rounded-lg bg-white border border-[#E5E7EB] flex items-center justify-center text-lg shrink-0">
           {isInProgress ? "🎙️" : hasReport ? "📊" : "🗒️"}
@@ -36,10 +40,21 @@ export function SessionCard({ session: s, isGenerating, onContinue, onViewReport
               </span>
             )}
             {badge && !isInProgress && (
-              <span className={`text-[10px] font-bold border rounded-full px-2 py-px ${badge.cls}`}>
+              <span
+                className={
+                  isBusy
+                    ? `text-[11px] font-extrabold border rounded-full px-2.5 py-0.5 ${badge.cls}`
+                    : `text-[10px] font-bold border rounded-full px-2 py-px ${badge.cls}`
+                }
+              >
                 {isBusy ? (
-                  <span className="flex items-center gap-1"><Loader2 size={10} className="animate-spin" />{badge.label}</span>
-                ) : badge.label}
+                  <span className="flex items-center gap-1.5">
+                    <Loader2 size={12} className="animate-spin" />
+                    {s.reportStatus === "generating" ? "리포트 생성 중..." : "대기 중..."}
+                  </span>
+                ) : (
+                  badge.label
+                )}
               </span>
             )}
           </div>
@@ -72,6 +87,23 @@ export function SessionCard({ session: s, isGenerating, onContinue, onViewReport
           )}
         </div>
       </div>
+
+      {isBusy && (
+        <div className="mt-2 pt-2 border-t border-[#E5E7EB]">
+          <div className="flex items-center gap-2 mb-1.5">
+            <div className="w-5 h-5 border-2 border-[rgba(9,145,178,0.15)] border-t-[#0991B2] rounded-full animate-spin" />
+            <span className="text-[12px] font-bold text-[#0991B2]">
+              {s.reportStatus === "generating" ? "AI가 면접 결과를 분석하고 있어요" : "리포트 생성 대기 중..."}
+            </span>
+          </div>
+          <div className="h-1 rounded-full bg-[#E5E7EB] overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-[#06B6D4] to-[#0991B2] rounded-full animate-[pulse_2s_ease-in-out_infinite]"
+              style={{ width: "60%" }}
+            />
+          </div>
+        </div>
+      )}
 
       {s.anchorQuestions.length > 0 && (
         <div className="mt-3 pt-3 border-t border-[#F3F4F6]">
