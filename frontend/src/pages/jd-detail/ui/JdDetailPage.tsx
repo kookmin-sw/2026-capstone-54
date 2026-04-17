@@ -170,8 +170,15 @@ export function JdDetailPage() {
                 <a href={jd.originalUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#6B7280] bg-transparent border-none cursor-pointer py-[10px] px-4 rounded-lg transition-all hover:text-[#0A0A0A] hover:bg-[#F3F4F6] no-underline">
                   🔗 원문 보기
                 </a>
-                <button type="button" className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#6B7280] bg-transparent border-none cursor-pointer py-[10px] px-4 rounded-lg transition-all hover:text-[#DC2626] hover:bg-[#FEF2F2]" onClick={handleDelete}>
-                  🗑 삭제
+                <button
+                  type="button"
+                  className={`inline-flex items-center gap-1.5 text-[13px] font-semibold bg-transparent border-none py-[10px] px-4 rounded-lg transition-all ${
+                    isProcessing ? "text-[#D1D5DB] cursor-not-allowed" : "text-[#6B7280] cursor-pointer hover:text-[#DC2626] hover:bg-[#FEF2F2]"
+                  }`}
+                  onClick={isProcessing ? undefined : handleDelete}
+                  disabled={isProcessing}
+                >
+                  🗑 {isProcessing ? "수집 중..." : "삭제"}
                 </button>
               </div>
             </div>
@@ -322,14 +329,6 @@ export function JdDetailPage() {
               <div className="flex items-center justify-between py-2.5 border-b border-[#F3F4F6] text-[13px]">
                 <span className="text-[#6B7280] font-semibold">면접 횟수</span>
                 <span className="text-[#0A0A0A] font-medium text-right">{jd.interviewCount}회 진행</span>
-              </div>
-              <div className="flex items-center justify-between py-2.5 text-[13px]">
-                <span className="text-[#6B7280] font-semibold">AI 활성화</span>
-                <span className="text-[#0A0A0A] font-medium text-right">
-                  {jd.interviewActive
-                    ? <span className="inline-flex items-center gap-1 text-[11px] font-bold py-[3px] px-2.5 rounded-full bg-[#D1FAE5] text-[#047857]">활성</span>
-                    : <span className="inline-flex items-center gap-1 text-[11px] font-bold py-[3px] px-2.5 rounded-full bg-[#F3F4F6] text-[#9CA3AF]">비활성</span>}
-                </span>
               </div>
             </div>
 

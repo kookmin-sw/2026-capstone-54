@@ -73,11 +73,11 @@ interface JdListState {
 function transform(item: UserJobDescription): JdListItem {
   const jd = item.jobDescription;
   const company = jd.company || "수집 중";
-  const title = jd.title || "채용공고";
+  const title = item.title || jd.title || "채용공고";
 
   // 수집 중이면 "분석 중" 으로 보여주고, 끝나면 기본 사용자 상태("planned") 로 둔다.
   const isAnalyzing = jd.collectionStatus === "pending" || jd.collectionStatus === "in_progress";
-  const status: JdListStatus = isAnalyzing ? "analyzing" : "planned";
+  const status: JdListStatus = isAnalyzing ? "analyzing" : (item.applicationStatus || "planned") as JdStatus;
 
   // 태그 자리 — backend 에 아직 없으니 platform / location 을 임시로 태그로 노출
   const tags: JdTag[] = [];

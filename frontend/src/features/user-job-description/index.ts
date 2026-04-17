@@ -1,5 +1,6 @@
 export { userJobDescriptionApi } from "./api/userJobDescriptionApi";
 export type {
+  ApplicationStatus,
   CreatedUserJobDescription,
   JobDescription,
   JobDescriptionCollectionStatus,
