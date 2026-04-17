@@ -91,7 +91,7 @@ export function JdDetailPage() {
 
   const isProcessing = !jd.analyzed;
   const currentCollectionStatus: JobDescriptionCollectionStatus =
-    liveStatus ?? (isProcessing ? "in_progress" : "done");
+    liveStatus ?? jd.collectionStatus ?? (isProcessing ? "in_progress" : "done");
 
   return (
     <div>

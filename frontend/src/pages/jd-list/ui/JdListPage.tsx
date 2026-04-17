@@ -76,10 +76,8 @@ function JdCard({ item }: { item: JdListItem }) {
   useUserJobDescriptionScrapingSse({
     uuid: item.uuid,
     enabled: isAnalyzing,
-    onTerminal: (event) => {
-      if (event.collection_status === "done") {
-        fetchList();
-      }
+    onTerminal: () => {
+      fetchList();
     },
   });
 

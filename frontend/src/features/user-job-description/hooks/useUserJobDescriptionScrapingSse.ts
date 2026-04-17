@@ -40,8 +40,8 @@ export function useUserJobDescriptionScrapingSse({
     const cancel = openSseStream(
       `/sse/user-job-descriptions/${uuid}/collection-status/`,
       (event, data) => {
-        if (!data || typeof data !== "object") return;
         if (event === "status") {
+          if (!data || typeof data !== "object") return;
           const payload = data as UserJobDescriptionCollectionStatusEvent;
           onStatusRef.current?.(payload);
           if (!terminalFired && TERMINAL.includes(payload.collection_status)) {
@@ -52,8 +52,8 @@ export function useUserJobDescriptionScrapingSse({
         }
         if (event === "error") {
           const msg =
-            (data as { message?: string }).message ??
-            "채용공고 스크래핑 상태를 받을 수 없어요.";
+            (data as { message?: string })?.message ??
+            (typeof data === "string" ? data : "채용공고 스크래핑 상태를 받을 수 없어요.");
           terminalFired = true;
           onErrorRef.current?.(new Error(msg));
         }
