@@ -1,0 +1,31 @@
+# ==============================
+# mefit-tools local artifacts
+# ==============================
+
+# macOS
+.DS_Store
+
+# Python / Streamlit (gui)
+gui/.venv/
+gui/.pytest_cache/
+gui/__pycache__/
+gui/**/*.pyc
+gui/**/*.pyo
+gui/**/*.pyd
+gui/.mypy_cache/
+gui/.ruff_cache/
+gui/.coverage
+gui/htmlcov/
+
+# Build artifacts
+gui/build/
+gui/dist/
+
+# Runtime temp/logs
+*.log
+logs/
+tmp/
+
+# IDE/editor
+.idea/
+.vscode/
