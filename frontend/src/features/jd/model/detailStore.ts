@@ -110,7 +110,6 @@ export const useJdDetailStore = create<JdDetailState>()((set, get) => ({
     }
   },
 
-  // 사용자 상태(planned/applied/saved) 는 아직 backend 에 없으므로 로컬 상태로만 반영.
   updateStatus: async (next) => {
     const { jd } = get();
     if (!jd) return false;
@@ -119,13 +118,15 @@ export const useJdDetailStore = create<JdDetailState>()((set, get) => ({
       await userJobDescriptionApi.update(jd.id, { applicationStatus: next });
       set({ jd: { ...jd, status: next }, isUpdating: false });
       return true;
-    } catch {
-      set({ isUpdating: false });
+    } catch (e) {
+      set({
+        isUpdating: false,
+        error: e instanceof Error ? e.message : "상태 변경에 실패했습니다.",
+      });
       return false;
     }
   },
 
-  // 삭제 endpoint 는 아직 없음. 지금은 no-op 성공으로 두고 navigate 는 호출 측이 담당.
   deleteJd: async () => {
     const { jd } = get();
     if (!jd) return false;
