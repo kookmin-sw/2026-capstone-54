@@ -1,9 +1,14 @@
 from api.v1.interviews.views import (
+  AbortRecordingView,
+  CompleteRecordingView,
   FinishInterviewView,
   GenerateAnalysisReportView,
+  InitiateRecordingView,
   InterviewAnalysisReportView,
   InterviewSessionViewSet,
   InterviewTurnListView,
+  PlaybackUrlView,
+  RecordingListView,
   StartInterviewView,
   SubmitAnswerView,
 )
@@ -16,7 +21,11 @@ router.register("interview-sessions", InterviewSessionViewSet, basename="intervi
 urlpatterns = [
   path("", include(router.urls)),
   # 면접 진행
-  path("interview-sessions/<uuid:interview_session_uuid>/start/", StartInterviewView.as_view(), name="interview-start"),
+  path(
+    "interview-sessions/<uuid:interview_session_uuid>/start/",
+    StartInterviewView.as_view(),
+    name="interview-start",
+  ),
   path(
     "interview-sessions/<uuid:interview_session_uuid>/turns/",
     InterviewTurnListView.as_view(),
@@ -28,7 +37,35 @@ urlpatterns = [
     name="interview-answer",
   ),
   path(
-    "interview-sessions/<uuid:interview_session_uuid>/finish/", FinishInterviewView.as_view(), name="interview-finish"
+    "interview-sessions/<uuid:interview_session_uuid>/finish/",
+    FinishInterviewView.as_view(),
+    name="interview-finish",
+  ),
+  # 녹화
+  path(
+    "interview-sessions/<uuid:uuid>/recordings/initiate/",
+    InitiateRecordingView.as_view(),
+    name="recording-initiate",
+  ),
+  path(
+    "interview-sessions/<uuid:uuid>/recordings/",
+    RecordingListView.as_view(),
+    name="recording-list",
+  ),
+  path(
+    "recordings/<uuid:uuid>/complete/",
+    CompleteRecordingView.as_view(),
+    name="recording-complete",
+  ),
+  path(
+    "recordings/<uuid:uuid>/abort/",
+    AbortRecordingView.as_view(),
+    name="recording-abort",
+  ),
+  path(
+    "recordings/<uuid:uuid>/playback-url/",
+    PlaybackUrlView.as_view(),
+    name="recording-playback-url",
   ),
   # 리포트
   path(
