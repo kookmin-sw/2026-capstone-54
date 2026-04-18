@@ -29,6 +29,7 @@ export function useRecordingManager({
   const [managerError, setManagerError] = useState<string | null>(null);
 
   const recordingIdRef = useRef<string | null>(null);
+  const singleUploadUrlRef = useRef<string | null>(null);
   const startTimeRef = useRef<number | null>(null);
   const isInitializedRef = useRef(false);
   const collectedPartsRef = useRef<UploadedPart[]>([]);
@@ -63,6 +64,15 @@ export function useRecordingManager({
     }
   }, [mediaRecorder.error]);
 
+  const resetRefs = useCallback(() => {
+    recordingIdRef.current = null;
+    singleUploadUrlRef.current = null;
+    startTimeRef.current = null;
+    isInitializedRef.current = false;
+    collectedPartsRef.current = [];
+    chunkUploader.reset();
+  }, [chunkUploader]);
+
   const abortRecording = useCallback(async () => {
     if (recordingIdRef.current) {
       await recordingApi.abort(recordingIdRef.current).catch(() => {});
@@ -70,12 +80,8 @@ export function useRecordingManager({
     if (mediaRecorder.isRecording) {
       await mediaRecorder.stop();
     }
-    recordingIdRef.current = null;
-    startTimeRef.current = null;
-    isInitializedRef.current = false;
-    collectedPartsRef.current = [];
-    chunkUploader.reset();
-  }, [mediaRecorder, chunkUploader]);
+    resetRefs();
+  }, [mediaRecorder, resetRefs]);
 
   const startRecording = useCallback(
     async (turnId: number) => {
@@ -87,6 +93,7 @@ export function useRecordingManager({
       try {
         const initRes = await recordingApi.initiate(sessionUuid, turnId, "video");
         recordingIdRef.current = initRes.recordingId;
+        singleUploadUrlRef.current = initRes.singleUploadUrl;
 
         try {
           chunkUploader.init(initRes.presignedUrls);
@@ -99,6 +106,7 @@ export function useRecordingManager({
           setRecordingEnabled(false);
           await recordingApi.abort(recordingIdRef.current).catch(() => {});
           recordingIdRef.current = null;
+          singleUploadUrlRef.current = null;
           throw innerErr;
         }
       } catch (err) {
@@ -123,7 +131,9 @@ export function useRecordingManager({
     try {
       const finalBlob = await mediaRecorder.stop();
 
-      if (finalBlob && finalBlob.size > 0) {
+      const hasParts = collectedPartsRef.current.length > 0;
+
+      if (hasParts && finalBlob && finalBlob.size > 0) {
         const finalPart = await chunkUploader.uploadChunk(finalBlob);
         if (finalPart) {
           collectedPartsRef.current = [...collectedPartsRef.current, finalPart];
@@ -131,14 +141,21 @@ export function useRecordingManager({
       }
 
       const parts = collectedPartsRef.current;
-      if (parts.length === 0) {
+      const useSingleUpload = parts.length === 0 && finalBlob && finalBlob.size > 0;
+
+      if (parts.length === 0 && !useSingleUpload) {
         setManagerError("업로드된 청크가 없습니다.");
         await recordingApi.abort(recordingIdRef.current).catch(() => {});
-        recordingIdRef.current = null;
-        startTimeRef.current = null;
-        collectedPartsRef.current = [];
-        chunkUploader.reset();
+        resetRefs();
         return;
+      }
+
+      console.info("[RecordingManager] decision: hasParts=%s useSingleUpload=%s", hasParts, useSingleUpload);
+
+      if (useSingleUpload) {
+        console.info("[RecordingManager] proxy upload via backend, blob size=%d", finalBlob.size);
+        await recordingApi.upload(recordingIdRef.current, finalBlob);
+        console.info("[RecordingManager] proxy upload complete");
       }
 
       const endTime = Date.now();
@@ -150,24 +167,22 @@ export function useRecordingManager({
         parts,
         endTimestamp,
         durationMs,
+        useSingleUpload ?? false,
       );
 
-      chunkUploader.reset();
-      recordingIdRef.current = null;
-      startTimeRef.current = null;
-      collectedPartsRef.current = [];
+      console.info("[RecordingManager] recording completed, mode=%s, parts=%d",
+        useSingleUpload ? "single" : "multipart", parts.length);
+
+      resetRefs();
       isInitializedRef.current = false;
     } catch (err) {
       setManagerError(
         err instanceof Error ? err.message : "녹화 완료 실패",
       );
-      recordingIdRef.current = null;
-      startTimeRef.current = null;
-      collectedPartsRef.current = [];
+      resetRefs();
       isInitializedRef.current = false;
-      chunkUploader.reset();
     }
-  }, [recordingEnabled, mediaRecorder, chunkUploader]);
+  }, [recordingEnabled, mediaRecorder, chunkUploader, resetRefs]);
 
   const combinedError = managerError || chunkUploader.error || mediaRecorder.error;
 

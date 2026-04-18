@@ -59,7 +59,9 @@ export function useMediaSetup() {
     mediaStreamRef.current?.getTracks().forEach((t) => t.stop());
     mediaStreamRef.current = null;
     if (audioRafRef.current) cancelAnimationFrame(audioRafRef.current);
-    audioCtxRef.current?.close();
+    audioRafRef.current = null;
+    audioCtxRef.current?.close().catch(() => {});
+    audioCtxRef.current = null;
     analyserRef.current = null;
   }, []);
 

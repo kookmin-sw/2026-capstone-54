@@ -36,8 +36,11 @@ class MockMediaRecorder {
   removeEventListener() { /* noop */ }
 }
 
-const mockTrack = { stop: jest.fn(), kind: "video" as const, enabled: true };
-const mockStream = { getTracks: () => [mockTrack] } as unknown as MediaStream;
+const mockTrack = { stop: jest.fn(), kind: "video" as const, enabled: true, readyState: "live" as const };
+const mockStream = {
+  getTracks: () => [mockTrack],
+  clone: () => ({ getTracks: () => [{ ...mockTrack, stop: jest.fn() }], clone: () => mockStream }),
+} as unknown as MediaStream;
 
 beforeAll(() => {
   Object.defineProperty(globalThis, "MediaRecorder", { value: MockMediaRecorder, writable: true });

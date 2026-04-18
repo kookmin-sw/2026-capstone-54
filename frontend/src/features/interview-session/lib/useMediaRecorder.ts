@@ -15,6 +15,8 @@ interface UseMediaRecorderReturn {
   error: string | null;
 }
 
+const MIN_S3_PART_SIZE = 5 * 1024 * 1024;
+
 export function useMediaRecorder({
   timeslice = 5000,
   onChunk,
@@ -30,6 +32,7 @@ export function useMediaRecorder({
   const finalChunkResolveRef = useRef<((blob: Blob | null) => void) | null>(null);
   const isStartingRef = useRef(false);
   const isRecordingRef = useRef(false);
+  const bufferRef = useRef<Blob[]>([]);
 
   useEffect(() => {
     onChunkRef.current = onChunk;
@@ -48,7 +51,8 @@ export function useMediaRecorder({
 
     isStartingRef.current = true;
     try {
-      const mediaStream = externalStream ?? await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      const sourceStream = externalStream ?? await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      const mediaStream = sourceStream.clone();
       setStream(mediaStream);
 
       let selectedMimeType = mimeType;
@@ -62,15 +66,33 @@ export function useMediaRecorder({
       });
 
       recorder.ondataavailable = (event) => {
+        console.info("[MediaRecorder] ondataavailable size=%d state=%s", event.data?.size ?? 0, recorder.state);
         if (event.data && event.data.size > 0) {
           if (recorder.state === "inactive" && finalChunkResolveRef.current) {
-            finalChunkResolveRef.current(event.data);
+            const allChunks = [...bufferRef.current, event.data];
+            bufferRef.current = [];
+            const merged = new Blob(allChunks, { type: event.data.type });
+            finalChunkResolveRef.current(merged);
             finalChunkResolveRef.current = null;
           } else {
-            onChunkRef.current(event.data);
+            bufferRef.current.push(event.data);
+            const bufferSize = bufferRef.current.reduce((sum, b) => sum + b.size, 0);
+            if (bufferSize >= MIN_S3_PART_SIZE) {
+              const merged = new Blob(bufferRef.current, { type: event.data.type });
+              bufferRef.current = [];
+              console.info("[MediaRecorder] flushing buffer, size=%d", merged.size);
+              onChunkRef.current(merged);
+            }
           }
         } else if (recorder.state === "inactive" && finalChunkResolveRef.current) {
-          finalChunkResolveRef.current(null);
+          const allChunks = bufferRef.current;
+          bufferRef.current = [];
+          if (allChunks.length > 0) {
+            const merged = new Blob(allChunks);
+            finalChunkResolveRef.current(merged);
+          } else {
+            finalChunkResolveRef.current(null);
+          }
           finalChunkResolveRef.current = null;
         }
       };
@@ -83,11 +105,14 @@ export function useMediaRecorder({
       };
 
       recorderRef.current = recorder;
+      bufferRef.current = [];
       recorder.start(timeslice);
       isRecordingRef.current = true;
       setIsRecording(true);
       setError(null);
-      console.info("[MediaRecorder] started, timeslice=%dms, mimeType=%s", timeslice, selectedMimeType);
+      console.info("[MediaRecorder] started, timeslice=%dms, mimeType=%s, tracks=%o",
+        timeslice, selectedMimeType,
+        mediaStream.getTracks().map(t => ({ kind: t.kind, readyState: t.readyState, enabled: t.enabled })));
     } catch (err) {
       if (!externalStream && stream) {
         stream.getTracks().forEach((track) => track.stop());
@@ -102,6 +127,7 @@ export function useMediaRecorder({
   }, [timeslice, mimeType, externalStream, stream]);
 
   const stop = useCallback((): Promise<Blob | null> => {
+    console.info("[MediaRecorder] stop() called, recorderState=%s", recorderRef.current?.state ?? "null");
     return new Promise((resolve) => {
       if (!recorderRef.current || recorderRef.current.state === "inactive") {
         if (stream && !externalStream) {
@@ -131,11 +157,8 @@ export function useMediaRecorder({
       if (recorderRef.current && recorderRef.current.state !== "inactive") {
         recorderRef.current.stop();
       }
-      if (stream && !externalStream) {
-        stream.getTracks().forEach((track) => track.stop());
-      }
     };
-  }, [stream, externalStream]);
+  }, []);
 
   return { start, stop, stream, isRecording, error };
 }

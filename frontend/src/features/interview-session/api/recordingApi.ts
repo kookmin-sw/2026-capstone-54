@@ -1,10 +1,11 @@
-import { apiRequest } from "@/shared/api/client";
+import { apiRequest, BASE_URL, getAccessToken } from "@/shared/api/client";
 
 export interface InitiateRecordingResponse {
   recordingId: string;
   uploadId: string;
   s3Key: string;
   presignedUrls: { partNumber: number; url: string }[];
+  singleUploadUrl: string;
 }
 
 export interface CompleteRecordingResponse {
@@ -42,18 +43,33 @@ export const recordingApi = {
       },
     ),
 
-  complete: (recordingId: string, parts: { partNumber: number; etag: string }[], endTimestamp: string, durationMs: number) =>
+  complete: (recordingId: string, parts: { partNumber: number; etag: string }[], endTimestamp: string, durationMs: number, singleUpload = false) =>
     apiRequest<CompleteRecordingResponse>(
       `${BASE}/recordings/${recordingId}/complete/`,
       {
         method: "POST",
-        body: JSON.stringify({ parts, endTimestamp, durationMs }),
+        body: JSON.stringify({ parts, endTimestamp, durationMs, singleUpload }),
         auth: true,
       },
     ),
 
   abort: (recordingId: string) =>
     apiRequest<void>(`${BASE}/recordings/${recordingId}/abort/`, { method: "POST", auth: true }),
+
+  upload: (recordingId: string, blob: Blob) => {
+    const formData = new FormData();
+    formData.append("file", blob, "recording.webm");
+    return fetch(`${BASE_URL}${BASE}/recordings/${recordingId}/upload/`, {
+      method: "PUT",
+      body: formData,
+      headers: {
+        Authorization: `Bearer ${getAccessToken() ?? ""}`,
+      },
+    }).then((res) => {
+      if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
+      return res.json();
+    });
+  },
 
   list: (sessionUuid: string) =>
     apiRequest<RecordingItem[]>(`${BASE}/interview-sessions/${sessionUuid}/recordings/`, { auth: true }),
