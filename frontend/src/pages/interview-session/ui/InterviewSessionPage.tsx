@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
-import { useInterviewSessionStore } from "@/features/interview-session";
+import { useInterviewSessionStore, useRecordingManager, RecordingIndicator } from "@/features/interview-session";
 import { AvatarSection } from "@/features/interview-session/ui/AvatarSection";
 import { QuestionPanel } from "@/features/interview-session/ui/QuestionPanel";
 import { TranscriptPanel } from "@/features/interview-session/ui/TranscriptPanel";
@@ -47,6 +47,20 @@ export function InterviewSessionPage() {
   const video = useVideoAnalysis(videoRef);
   const { screenSize, isTooSmall } = useScreenSize();
 
+  const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
+
+  useEffect(() => {
+    if (videoRef.current?.srcObject) {
+      setMediaStream(videoRef.current.srcObject as MediaStream);
+    }
+  }, [mediaReady, videoRef]);
+
+  const recording = useRecordingManager({
+    sessionUuid: interviewSessionUuid ?? "",
+    externalStream: mediaStream,
+    enabled: !!interviewSessionUuid,
+  });
+
   const avatarRef = useRef<IAvatarProvider | null>(null);
   const prevTurnIdRef = useRef<number | null>(null);
   const speechAnalyzerRef = useRef(new SpeechAnalyzer());
@@ -71,7 +85,8 @@ export function InterviewSessionPage() {
     destroyTts();
     cleanupMedia();
     video.stopVideoAnalysis();
-  }, [stopStt, destroyTts, cleanupMedia, video]);
+    recording.abortRecording().catch(() => {});
+  }, [stopStt, destroyTts, cleanupMedia, video, recording]);
 
   // ── Init ──
   useEffect(() => {
@@ -83,10 +98,13 @@ export function InterviewSessionPage() {
   }, [interviewSessionUuid]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    const handler = () => cleanup();
+    const handler = () => {
+      recording.abortRecording().catch(() => {});
+      cleanup();
+    };
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);
-  }, [cleanup]);
+  }, [cleanup, recording]);
 
   // ── Resume session: use ref to avoid setState-in-effect ──
   const handleResumeSession = useCallback(() => {
@@ -138,7 +156,8 @@ export function InterviewSessionPage() {
     setCountdown(null);
     setAnswerState("speaking");
     startStt();
-  }, [startStt]);
+    if (currentInterviewTurn) recording.startRecording(currentInterviewTurn.id);
+  }, [startStt, currentInterviewTurn, recording]);
 
   useEffect(() => {
     if (countdown === 0 && isRealMode && hasStarted) {
@@ -149,12 +168,13 @@ export function InterviewSessionPage() {
   // ── Finished → navigate ──
   const handleFinished = useCallback(() => {
     stopStt();
+    recording.stopRecording().catch(() => {});
     setCountdown(null);
     destroyTts();
     cleanupMedia();
     video.stopVideoAnalysis();
     setTimeout(() => navigate("/interview/results"), 1500);
-  }, [stopStt, destroyTts, cleanupMedia, video, navigate]);
+  }, [stopStt, destroyTts, cleanupMedia, video, navigate, recording]);
 
   useEffect(() => {
     if (interviewPhase === "finished") {
@@ -188,6 +208,7 @@ export function InterviewSessionPage() {
     const answer = (finalText + " " + interimText).trim();
     if (!answer) return;
     stopStt();
+    await recording.stopRecording();
     setAnswerState("waiting_ready");
     setCountdown(null);
     await submitInterviewAnswer(interviewSessionUuid, currentInterviewTurn.id, answer);
@@ -213,9 +234,14 @@ export function InterviewSessionPage() {
 
       <main className="flex-1 flex overflow-hidden min-h-0">
         <section className="flex-1 flex flex-col overflow-hidden border-r border-white/10">
-          {(interviewError || isFinished) && (
+          {(interviewError || isFinished || recording.error) && (
             <div className="shrink-0 px-6 pt-4">
               {interviewError && <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 text-red-400 text-sm mb-3">{interviewError}</div>}
+              {recording.error && (
+                <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 text-amber-400 text-sm mb-3">
+                  녹화 오류: {recording.error}
+                </div>
+              )}
               {isFinished && (
                 <div className="bg-indigo-500/10 border border-indigo-500/30 rounded-xl p-4 text-center mb-3">
                   <p className="text-indigo-300 font-bold text-base mb-1">면접이 종료되었습니다</p>
@@ -246,7 +272,11 @@ export function InterviewSessionPage() {
             ttsPlaying={ttsPlaying} audioLevel={audioLevel}
             finalText={finalText} interimText={interimText}
             onStart={handleStart}
-            onPracticeStart={() => { setAnswerState("speaking"); startStt(); }}
+            onPracticeStart={() => { 
+              setAnswerState("speaking"); 
+              startStt(); 
+              if (currentInterviewTurn) recording.startRecording(currentInterviewTurn.id);
+            }}
             onSubmitAnswer={handleSubmitAnswer}
           />
           <div className="flex-1 min-h-0 p-4 flex">
@@ -262,6 +292,9 @@ export function InterviewSessionPage() {
                 <path d="M 50 10 C 35 10, 35 45, 50 45 C 65 45, 65 10, 50 10 Z" fill="none" stroke="currentColor" strokeWidth="2" strokeDasharray="4 6" />
                 <path d="M 10 95 C 10 60, 90 60, 90 95" fill="none" stroke="currentColor" strokeWidth="2" strokeDasharray="4 6" />
               </svg>
+            </div>
+            <div className="absolute top-2 right-2 z-10">
+              <RecordingIndicator isRecording={recording.isRecording} />
             </div>
             {video.isAnalyzing && (
               <div className="absolute top-2 left-2 text-[9px] font-bold text-green-400 bg-green-400/10 border border-green-400/30 rounded px-1.5 py-px flex items-center gap-1">
