@@ -91,15 +91,12 @@ export function useRecordingManager({
         try {
           chunkUploader.init(initRes.presignedUrls);
           await mediaRecorder.start();
-
-          if (mediaRecorder.error) {
-            setRecordingEnabled(false);
-            throw new Error(mediaRecorder.error);
-          }
-
           startTimeRef.current = Date.now();
           isInitializedRef.current = true;
+          console.info("[RecordingManager] recording started, turnId=%d", turnId);
         } catch (innerErr) {
+          console.warn("[RecordingManager] start failed, aborting:", innerErr);
+          setRecordingEnabled(false);
           await recordingApi.abort(recordingIdRef.current).catch(() => {});
           recordingIdRef.current = null;
           throw innerErr;

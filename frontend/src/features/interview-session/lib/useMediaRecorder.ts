@@ -36,10 +36,14 @@ export function useMediaRecorder({
   }, [onChunk]);
 
   const start = useCallback(async () => {
-    if (isStartingRef.current || isRecordingRef.current) return;
-    if (typeof navigator === "undefined" || !navigator.mediaDevices || typeof MediaRecorder === "undefined") {
-      setError("이 브라우저에서는 녹화를 지원하지 않습니다.");
+    if (isStartingRef.current || isRecordingRef.current) {
+      console.warn("[MediaRecorder] start() skipped: already starting or recording");
       return;
+    }
+    if (typeof navigator === "undefined" || !navigator.mediaDevices || typeof MediaRecorder === "undefined") {
+      const msg = "이 브라우저에서는 녹화를 지원하지 않습니다.";
+      setError(msg);
+      throw new Error(msg);
     }
 
     isStartingRef.current = true;
@@ -53,50 +57,49 @@ export function useMediaRecorder({
         selectedMimeType = types.find((type) => MediaRecorder.isTypeSupported(type)) || "";
       }
 
-      try {
-        const recorder = new MediaRecorder(mediaStream, {
-          mimeType: selectedMimeType,
-        });
+      const recorder = new MediaRecorder(mediaStream, {
+        mimeType: selectedMimeType,
+      });
 
-        recorder.ondataavailable = (event) => {
-          if (event.data && event.data.size > 0) {
-            if (recorder.state === "inactive" && finalChunkResolveRef.current) {
-              finalChunkResolveRef.current(event.data);
-              finalChunkResolveRef.current = null;
-            } else {
-              onChunkRef.current(event.data);
-            }
-          } else if (recorder.state === "inactive" && finalChunkResolveRef.current) {
-            finalChunkResolveRef.current(null);
+      recorder.ondataavailable = (event) => {
+        if (event.data && event.data.size > 0) {
+          if (recorder.state === "inactive" && finalChunkResolveRef.current) {
+            finalChunkResolveRef.current(event.data);
             finalChunkResolveRef.current = null;
+          } else {
+            onChunkRef.current(event.data);
           }
-        };
-
-        recorder.onstop = () => {
-          if (finalChunkResolveRef.current) {
-            finalChunkResolveRef.current(null);
-            finalChunkResolveRef.current = null;
-          }
-        };
-
-        recorderRef.current = recorder;
-        recorder.start(timeslice);
-        isRecordingRef.current = true;
-        setIsRecording(true);
-        setError(null);
-      } catch {
-        if (!externalStream) {
-          mediaStream.getTracks().forEach((track) => track.stop());
+        } else if (recorder.state === "inactive" && finalChunkResolveRef.current) {
+          finalChunkResolveRef.current(null);
+          finalChunkResolveRef.current = null;
         }
-        setStream(null);
-        setError("이 브라우저에서는 녹화를 지원하지 않습니다.");
+      };
+
+      recorder.onstop = () => {
+        if (finalChunkResolveRef.current) {
+          finalChunkResolveRef.current(null);
+          finalChunkResolveRef.current = null;
+        }
+      };
+
+      recorderRef.current = recorder;
+      recorder.start(timeslice);
+      isRecordingRef.current = true;
+      setIsRecording(true);
+      setError(null);
+      console.info("[MediaRecorder] started, timeslice=%dms, mimeType=%s", timeslice, selectedMimeType);
+    } catch (err) {
+      if (!externalStream && stream) {
+        stream.getTracks().forEach((track) => track.stop());
       }
-    } catch {
-      setError("카메라/마이크 권한이 필요합니다.");
+      setStream(null);
+      const msg = err instanceof Error ? err.message : "녹화 시작 실패";
+      setError(msg);
+      throw err;
     } finally {
       isStartingRef.current = false;
     }
-  }, [timeslice, mimeType, externalStream]);
+  }, [timeslice, mimeType, externalStream, stream]);
 
   const stop = useCallback((): Promise<Blob | null> => {
     return new Promise((resolve) => {
