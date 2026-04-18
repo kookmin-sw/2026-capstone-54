@@ -164,6 +164,11 @@ export function useRecordingManager({
       setManagerError(
         err instanceof Error ? err.message : "녹화 완료 실패",
       );
+      recordingIdRef.current = null;
+      startTimeRef.current = null;
+      collectedPartsRef.current = [];
+      isInitializedRef.current = false;
+      chunkUploader.reset();
     }
   }, [recordingEnabled, mediaRecorder, chunkUploader]);
 
