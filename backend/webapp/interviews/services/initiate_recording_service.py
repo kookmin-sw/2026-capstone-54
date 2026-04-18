@@ -6,7 +6,7 @@ from django.conf import settings
 from interviews.enums import InterviewSessionStatus, RecordingMediaType, RecordingStatus
 from interviews.models import InterviewRecording
 
-from .get_s3_client import get_video_s3_client
+from .get_s3_client import get_video_s3_client, get_video_s3_presign_client
 
 
 class InitiateRecordingService(BaseService):
@@ -53,9 +53,10 @@ class InitiateRecordingService(BaseService):
     )
     upload_id = response["UploadId"]
 
+    presign_s3 = get_video_s3_presign_client()
     presigned_urls = []
     for part_number in range(1, 21):
-      url = s3.generate_presigned_url(
+      url = presign_s3.generate_presigned_url(
         "upload_part",
         Params={
           "Bucket": bucket,

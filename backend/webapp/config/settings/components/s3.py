@@ -22,6 +22,11 @@ AWS_S3_ENDPOINT_URL = env.str("AWS_S3_ENDPOINT_URL", default="") or None
 # 미설정 시 AWS_S3_ENDPOINT_URL 을 fallback 으로 사용
 VIDEO_S3_ENDPOINT_URL = env.str("VIDEO_S3_ENDPOINT_URL", default="") or None
 
+# 브라우저에서 직접 접근할 presigned URL 용 엔드포인트
+# 개발: http://localhost:4566 (Docker 포트 포워딩)
+# 운영: 미설정 (AWS S3 기본 URL 사용)
+VIDEO_S3_PUBLIC_ENDPOINT_URL = (env.str("VIDEO_S3_PUBLIC_ENDPOINT_URL", default="") or None)
+
 # 영상·음성 녹화 관련 S3 버킷
 VIDEO_S3_BUCKET = env.str("VIDEO_S3_BUCKET", default="pj-kmucd1-04-mefit-video-files")
 SCALED_VIDEO_S3_BUCKET = env.str("SCALED_VIDEO_S3_BUCKET", default="pj-kmucd1-04-mefit-scaled-video-files")
@@ -44,5 +49,6 @@ __all__ = [
   "AUDIO_S3_BUCKET",
   "SCALED_AUDIO_S3_BUCKET",
   "VIDEO_S3_ENDPOINT_URL",
+  "VIDEO_S3_PUBLIC_ENDPOINT_URL",
   "VIDEO_PRESIGNED_URL_EXPIRY",
 ]

@@ -2,7 +2,7 @@ from common.exceptions import PermissionDeniedException
 from common.services import BaseQueryService
 from django.conf import settings
 
-from .get_s3_client import get_video_s3_client
+from .get_s3_client import get_video_s3_presign_client
 
 
 class GeneratePlaybackUrlService(BaseQueryService):
@@ -18,7 +18,7 @@ class GeneratePlaybackUrlService(BaseQueryService):
 
   def execute(self):
     recording = self.kwargs["recording"]
-    s3 = get_video_s3_client()
+    s3 = get_video_s3_presign_client()
     expiry = settings.VIDEO_PRESIGNED_URL_EXPIRY
 
     url = s3.generate_presigned_url(
