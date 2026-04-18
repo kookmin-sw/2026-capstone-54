@@ -13,7 +13,6 @@ services:
       - "./localstack_init.sh:/etc/localstack/init/ready.d/init.sh"
       - "../functions:/opt/mefit/functions:ro"
       - "../layers:/opt/mefit/layers:ro"
-      - "./package_lambda.sh:/opt/mefit/package_lambda.sh:ro"
       - localstack_data:/var/lib/localstack
       - /var/run/docker.sock:/var/run/docker.sock
     networks:

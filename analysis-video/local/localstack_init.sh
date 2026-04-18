@@ -15,11 +15,24 @@ FRAME_BUCKET="pj-kmucd1-04-mefit-video-frame-files"
 AUDIO_BUCKET="pj-kmucd1-04-mefit-audio-files"
 SCALED_AUDIO_BUCKET="pj-kmucd1-04-mefit-scaled-audio-files"
 
+CORS_CONFIG='{
+  "CORSRules": [
+    {
+      "AllowedHeaders": ["*"],
+      "AllowedMethods": ["GET", "PUT", "HEAD"],
+      "AllowedOrigins": ["*"],
+      "ExposeHeaders": ["ETag", "Content-Length", "Content-Type"],
+      "MaxAgeSeconds": 3600
+    }
+  ]
+}'
+
 echo ""
-echo "=== 1. S3 Buckets ==="
+echo "=== 1. S3 Buckets + CORS ==="
 for BUCKET in $VIDEO_BUCKET $SCALED_VIDEO_BUCKET $FRAME_BUCKET $AUDIO_BUCKET $SCALED_AUDIO_BUCKET; do
   awslocal s3 mb "s3://$BUCKET" 2>/dev/null || true
-  echo "  [OK] $BUCKET"
+  awslocal s3api put-bucket-cors --bucket "$BUCKET" --cors-configuration "$CORS_CONFIG"
+  echo "  [OK] $BUCKET (CORS enabled)"
 done
 
 echo ""
@@ -35,26 +48,23 @@ echo "  [OK] SQS Queue: $QUEUE_URL (subscribed to SNS)"
 echo ""
 echo "=== 3. Lambda Functions (Layer code bundled) ==="
 
-PACKAGE_SCRIPT="/opt/mefit/package_lambda.sh"
-chmod +x "$PACKAGE_SCRIPT"
+FUNCTIONS_DIR="/opt/mefit/functions"
+LAYERS_DIR="/opt/mefit/layers/common/python"
+OUT_DIR="/tmp/lambda-packages"
+mkdir -p "$OUT_DIR"
 
-LAMBDA_ENV="Variables={
-  VIDEO_BUCKET=$VIDEO_BUCKET,
-  SCALED_VIDEO_BUCKET=$SCALED_VIDEO_BUCKET,
-  FRAME_BUCKET=$FRAME_BUCKET,
-  AUDIO_BUCKET=$AUDIO_BUCKET,
-  SCALED_AUDIO_BUCKET=$SCALED_AUDIO_BUCKET,
-  SNS_TOPIC_ARN=$TOPIC_ARN,
-  REGION=$REGION,
-  FFMPEG_PATH=ffmpeg
-}"
+LAMBDA_ENV="Variables={VIDEO_BUCKET=$VIDEO_BUCKET,SCALED_VIDEO_BUCKET=$SCALED_VIDEO_BUCKET,FRAME_BUCKET=$FRAME_BUCKET,AUDIO_BUCKET=$AUDIO_BUCKET,SCALED_AUDIO_BUCKET=$SCALED_AUDIO_BUCKET,SNS_TOPIC_ARN=$TOPIC_ARN,REGION=$REGION,FFMPEG_PATH=ffmpeg}"
 
 FUNCTIONS="video_converter frame_extractor audio_extractor audio_scaler processing_notifier"
 
 for FUNC in $FUNCTIONS; do
-  ZIP_PATH=$($PACKAGE_SCRIPT "$FUNC")
+  TMPDIR=$(mktemp -d)
+  cp "$FUNCTIONS_DIR/$FUNC/handler.py" "$TMPDIR/"
+  cp -r "$LAYERS_DIR/mefit_video_common" "$TMPDIR/"
+  (cd "$TMPDIR" && zip -qr "$OUT_DIR/$FUNC.zip" .)
+  rm -rf "$TMPDIR"
+
   FUNC_DASH=$(echo "$FUNC" | tr '_' '-')
-  FUNC_ARN="arn:aws:lambda:${REGION}:${ACCOUNT_ID}:function:mefit-${FUNC_DASH}"
 
   awslocal lambda delete-function --function-name "mefit-${FUNC_DASH}" 2>/dev/null || true
 
@@ -62,7 +72,7 @@ for FUNC in $FUNCTIONS; do
     --function-name "mefit-${FUNC_DASH}" \
     --runtime python3.12 \
     --handler handler.handler \
-    --zip-file "fileb://${ZIP_PATH}" \
+    --zip-file "fileb://${OUT_DIR}/${FUNC}.zip" \
     --role "$LAMBDA_ROLE" \
     --timeout 300 \
     --memory-size 512 \
@@ -78,8 +88,6 @@ echo "=== 4. S3 Event Notifications → Lambda ==="
 add_s3_trigger() {
   local BUCKET=$1
   local FUNC_DASH=$2
-  local SUFFIX=$3
-  local FUNC_ARN="arn:aws:lambda:${REGION}:${ACCOUNT_ID}:function:${FUNC_DASH}"
 
   awslocal lambda add-permission \
     --function-name "$FUNC_DASH" \
@@ -113,9 +121,9 @@ awslocal s3api put-bucket-notification-configuration \
   }'
 echo "  [OK] $VIDEO_BUCKET → video-converter, frame-extractor, audio-extractor"
 
-add_s3_trigger "$VIDEO_BUCKET" "mefit-video-converter" ".webm"
-add_s3_trigger "$VIDEO_BUCKET" "mefit-frame-extractor" ".webm"
-add_s3_trigger "$VIDEO_BUCKET" "mefit-audio-extractor" ".webm"
+add_s3_trigger "$VIDEO_BUCKET" "mefit-video-converter"
+add_s3_trigger "$VIDEO_BUCKET" "mefit-frame-extractor"
+add_s3_trigger "$VIDEO_BUCKET" "mefit-audio-extractor"
 
 awslocal s3api put-bucket-notification-configuration \
   --bucket "$AUDIO_BUCKET" \
@@ -129,7 +137,7 @@ awslocal s3api put-bucket-notification-configuration \
     ]
   }'
 echo "  [OK] $AUDIO_BUCKET → audio-scaler"
-add_s3_trigger "$AUDIO_BUCKET" "mefit-audio-scaler" ".wav"
+add_s3_trigger "$AUDIO_BUCKET" "mefit-audio-scaler"
 
 awslocal s3api put-bucket-notification-configuration \
   --bucket "$SCALED_VIDEO_BUCKET" \
@@ -141,14 +149,14 @@ awslocal s3api put-bucket-notification-configuration \
       }
     ]
   }'
-add_s3_trigger "$SCALED_VIDEO_BUCKET" "mefit-processing-notifier" ""
+add_s3_trigger "$SCALED_VIDEO_BUCKET" "mefit-processing-notifier"
 echo "  [OK] $SCALED_VIDEO_BUCKET → processing-notifier"
 
 echo ""
 echo "========================================="
 echo "  Init complete!"
 echo ""
-echo "  S3 Buckets:     5"
+echo "  S3 Buckets:     5 (CORS enabled)"
 echo "  Lambda:         5 (layer code bundled)"
 echo "  S3 Triggers:    5"
 echo "  SNS → SQS:      1"
