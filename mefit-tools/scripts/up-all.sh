@@ -56,6 +56,10 @@ echo -e "${YELLOW}5. Starting interview-analysis-report worker...${NC}"
 cd "$PROJECT_ROOT/interview-analysis-report" && docker-compose up -d
 echo ""
 
+echo -e "${YELLOW}6. Starting analysis-video (LocalStack)...${NC}"
+cd "$PROJECT_ROOT/analysis-video/local" && docker-compose up -d
+echo ""
+
 echo -e "${GREEN}========================================${NC}"
 echo -e "${GREEN}All services started!${NC}"
 echo ""
@@ -64,6 +68,7 @@ echo "  - Backend API:     http://localhost:8000"
 echo "  - Flower (Celery): http://localhost:5555/admin/flower"
 echo "  - S3 Mock:         http://localhost:9090"
 echo "  - Voice API:       http://localhost:8001"
+echo "  - LocalStack:      http://localhost:4566"
 echo -e "${GREEN}========================================${NC}"
 echo ""
 

@@ -158,30 +158,36 @@ up-all: network-create up-frontend ## Start all services
 	@echo "$(YELLOW)5. Starting interview-analysis-report worker...$(NC)"
 	@cd $(PROJECT_ROOT)/interview-analysis-report && $(DOCKER_COMPOSE) up -d
 	@echo ""
+	@echo "$(YELLOW)6. Starting analysis-video (LocalStack)...$(NC)"
+	@cd $(PROJECT_ROOT)/analysis-video/local && $(DOCKER_COMPOSE) up -d
+	@echo ""
 	@echo "$(GREEN)========================================$(NC)"
 	@echo "$(GREEN)All services started!$(NC)"
 	@echo ""
 	@echo "Access points:"
-	@echo "  - Frontend:       http://localhost:5173"
-	@echo "  - Backend API:   http://localhost:8000"
+	@echo "  - Frontend:        http://localhost:5173"
+	@echo "  - Backend API:     http://localhost:8000"
 	@echo "  - Flower (Celery): http://localhost:5555/admin/flower"
 	@echo "  - S3 Mock:         http://localhost:9090"
 	@echo "  - Voice API:       http://localhost:8001"
+	@echo "  - LocalStack:      http://localhost:4566"
 	@echo "$(GREEN)========================================$(NC)"
 	@make status
 
 .PHONY: down-all
 down-all: down-frontend ## Stop all services
 	@echo "$(YELLOW)Stopping all MeFit services...$(NC)"
-	@echo "$(YELLOW)1. Stopping interview-analysis-report...$(NC)"
+	@echo "$(YELLOW)1. Stopping analysis-video (LocalStack)...$(NC)"
+	@cd $(PROJECT_ROOT)/analysis-video/local && $(DOCKER_COMPOSE) down 2>/dev/null || true
+	@echo "$(YELLOW)2. Stopping interview-analysis-report...$(NC)"
 	@cd $(PROJECT_ROOT)/interview-analysis-report && $(DOCKER_COMPOSE) down 2>/dev/null || true
-	@echo "$(YELLOW)2. Stopping analysis-resume...$(NC)"
+	@echo "$(YELLOW)3. Stopping analysis-resume...$(NC)"
 	@cd $(PROJECT_ROOT)/analysis-resume && $(DOCKER_COMPOSE) down 2>/dev/null || true
-	@echo "$(YELLOW)3. Stopping scraping...$(NC)"
+	@echo "$(YELLOW)4. Stopping scraping...$(NC)"
 	@cd $(PROJECT_ROOT)/scraping && $(DOCKER_COMPOSE) down 2>/dev/null || true
-	@echo "$(YELLOW)4. Stopping voice-api...$(NC)"
+	@echo "$(YELLOW)5. Stopping voice-api...$(NC)"
 	@cd $(PROJECT_ROOT)/voice-api && $(DOCKER_COMPOSE) down 2>/dev/null || true
-	@echo "$(YELLOW)5. Stopping backend...$(NC)"
+	@echo "$(YELLOW)6. Stopping backend...$(NC)"
 	@cd $(PROJECT_ROOT)/backend && $(DOCKER_COMPOSE) down 2>/dev/null || true
 	@echo ""
 	@echo "$(GREEN)All services stopped!$(NC)"

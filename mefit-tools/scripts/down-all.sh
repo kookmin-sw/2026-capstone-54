@@ -26,23 +26,27 @@ echo -e "${BLUE}========================================${NC}"
 echo ""
 
 # Stop in reverse order of startup
-echo -e "${YELLOW}1. Stopping interview-analysis-report...${NC}"
+echo -e "${YELLOW}1. Stopping analysis-video (LocalStack)...${NC}"
+cd "$PROJECT_ROOT/analysis-video/local" && docker-compose down 2>/dev/null || true
+echo ""
+
+echo -e "${YELLOW}2. Stopping interview-analysis-report...${NC}"
 cd "$PROJECT_ROOT/interview-analysis-report" && docker-compose down 2>/dev/null || true
 echo ""
 
-echo -e "${YELLOW}2. Stopping analysis-resume...${NC}"
+echo -e "${YELLOW}3. Stopping analysis-resume...${NC}"
 cd "$PROJECT_ROOT/analysis-resume" && docker-compose down 2>/dev/null || true
 echo ""
 
-echo -e "${YELLOW}3. Stopping scraping...${NC}"
+echo -e "${YELLOW}4. Stopping scraping...${NC}"
 cd "$PROJECT_ROOT/scraping" && docker-compose down 2>/dev/null || true
 echo ""
 
-echo -e "${YELLOW}4. Stopping voice-api...${NC}"
+echo -e "${YELLOW}5. Stopping voice-api...${NC}"
 cd "$PROJECT_ROOT/voice-api" && docker-compose down 2>/dev/null || true
 echo ""
 
-echo -e "${YELLOW}5. Stopping backend...${NC}"
+echo -e "${YELLOW}6. Stopping backend...${NC}"
 cd "$PROJECT_ROOT/backend" && docker-compose down 2>/dev/null || true
 echo ""
 

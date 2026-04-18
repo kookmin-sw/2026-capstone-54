@@ -114,6 +114,21 @@ PROJECTS = {
             ),
         ],
     ),
+    "analysis-video": ProjectInfo(
+        name="analysis-video",
+        display_name="Video Analysis",
+        description="Video/Audio Processing (LocalStack: S3, Lambda, SNS, SQS)",
+        directory="analysis-video/local",
+        services=[
+            ServiceInfo(
+                "localstack",
+                "LocalStack",
+                "S3 + Lambda + SNS + SQS",
+                port=4566,
+                url="http://localhost:4566",
+            ),
+        ],
+    ),
 }
 
 # ============================================
@@ -126,6 +141,7 @@ QUICK_LINKS = {
     "Flower (Celery)": "http://localhost:5555/admin/flower",
     "S3 Mock": "http://localhost:9090",
     "Voice API": "http://localhost:8001",
+    "LocalStack": "http://localhost:4566",
 }
 
 # ============================================

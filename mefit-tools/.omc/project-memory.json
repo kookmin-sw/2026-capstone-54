@@ -1,0 +1,83 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1776389431724,
+  "projectRoot": "/Users/koa/006-capstone-modules/mefit-tools",
+  "techStack": {
+    "languages": [
+      {
+        "name": "C/C++",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "Makefile"
+        ]
+      }
+    ],
+    "frameworks": [],
+    "packageManager": null,
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": "make build",
+    "testCommand": "make test",
+    "lintCommand": null,
+    "devCommand": null,
+    "scripts": {}
+  },
+  "conventions": {
+    "namingStyle": null,
+    "importStyle": null,
+    "testPattern": null,
+    "fileOrganization": null
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [
+      "docs",
+      "scripts"
+    ],
+    "gitBranches": {
+      "defaultBranch": "main",
+      "branchingStrategy": null
+    }
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "docs": {
+      "path": "docs",
+      "purpose": "Documentation",
+      "fileCount": 2,
+      "lastAccessed": 1776389431711,
+      "keyFiles": []
+    },
+    "gui": {
+      "path": "gui",
+      "purpose": null,
+      "fileCount": 7,
+      "lastAccessed": 1776389431714,
+      "keyFiles": [
+        "Dockerfile",
+        "README.md",
+        "app.py",
+        "config.py",
+        "docker-compose.gui.yml"
+      ]
+    },
+    "scripts": {
+      "path": "scripts",
+      "purpose": "Build/utility scripts",
+      "fileCount": 6,
+      "lastAccessed": 1776389431715,
+      "keyFiles": [
+        "down-all.sh",
+        "down.sh",
+        "logs.sh",
+        "status.sh",
+        "up-all.sh"
+      ]
+    }
+  },
+  "hotPaths": [],
+  "userDirectives": []
+}

@@ -14,6 +14,12 @@ from config import get_all_projects, get_project
 _COMPOSE_CMD_CACHE: Optional[List[str]] = None
 
 
+def _resolve_project_dir(project_name: str) -> str:
+    project = get_project(project_name)
+    directory = project.directory if project else project_name
+    return os.path.join(PROJECT_ROOT, directory)
+
+
 def _should_try_next_compose(stderr: str) -> bool:
     lower = (stderr or "").lower()
     fallback_markers = [
@@ -152,7 +158,7 @@ def _normalize_compose_state(state: str) -> str:
 def get_project_containers(
     project_name: str,
 ) -> Tuple[List[Dict[str, str]], Optional[str]]:
-    project_dir = os.path.join(PROJECT_ROOT, project_name)
+    project_dir = _resolve_project_dir(project_name)
     if not os.path.exists(project_dir):
         return [], f"Project directory not found: {project_dir}"
 
@@ -291,7 +297,7 @@ def get_docker_stats(container_filter: str = "") -> pd.DataFrame:
 
 
 def get_container_logs(project_name: str, service_name: str, lines: int = 50) -> str:
-    project_dir = os.path.join(PROJECT_ROOT, project_name)
+    project_dir = _resolve_project_dir(project_name)
     if not os.path.exists(project_dir):
         return f"Error: Project directory not found: {project_dir}"
 
@@ -303,7 +309,7 @@ def get_container_logs(project_name: str, service_name: str, lines: int = 50) ->
 
 def start_project(project_name: str) -> Tuple[bool, str]:
     subprocess.run(["docker", "network", "create", "mefit-local"], capture_output=True)
-    project_dir = os.path.join(PROJECT_ROOT, project_name)
+    project_dir = _resolve_project_dir(project_name)
     if not os.path.exists(project_dir):
         return False, f"Project directory not found: {project_dir}"
 
@@ -315,7 +321,7 @@ def start_project(project_name: str) -> Tuple[bool, str]:
 
 
 def stop_project(project_name: str) -> Tuple[bool, str]:
-    project_dir = os.path.join(PROJECT_ROOT, project_name)
+    project_dir = _resolve_project_dir(project_name)
     if not os.path.exists(project_dir):
         return False, f"Project directory not found: {project_dir}"
 
@@ -334,7 +340,7 @@ def restart_project(project_name: str) -> Tuple[bool, str]:
 
 
 def start_service(project_name: str, service_name: str) -> Tuple[bool, str]:
-    project_dir = os.path.join(PROJECT_ROOT, project_name)
+    project_dir = _resolve_project_dir(project_name)
     if not os.path.exists(project_dir):
         return False, f"Project directory not found: {project_dir}"
 
@@ -347,7 +353,7 @@ def start_service(project_name: str, service_name: str) -> Tuple[bool, str]:
 
 
 def stop_service(project_name: str, service_name: str) -> Tuple[bool, str]:
-    project_dir = os.path.join(PROJECT_ROOT, project_name)
+    project_dir = _resolve_project_dir(project_name)
     if not os.path.exists(project_dir):
         return False, f"Project directory not found: {project_dir}"
 
