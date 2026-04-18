@@ -85,9 +85,29 @@ cd local
 docker compose up -d
 ```
 
-5개 S3 버킷 + SNS 토픽 + SQS 큐가 자동 생성됩니다.
+5개 S3 버킷 + SNS 토픽 + SQS 큐 + Lambda 5개가 자동 생성됩니다.
 
-### Lambda 핸들러 로컬 테스트
+### 로컬 환경 제한사항
+
+LocalStack Community 에디션에서는 **Lambda Layer**와 **Lambda 컨테이너 볼륨 마운트**가 제한적입니다.
+따라서 ffmpeg를 사용하는 Lambda 함수(video_converter, frame_extractor, audio_extractor, audio_scaler)는 로컬에서 정상 실행되지 않습니다.
+
+| 환경 | Lambda 후처리 | 영상 재생 |
+|------|--------------|-----------|
+| **로컬 (LocalStack)** | S3 이벤트 트리거됨, ffmpeg 미동작 | 원본 .webm 직접 재생 |
+| **프로덕션 (AWS)** | Lambda Layer로 ffmpeg 제공, 정상 동작 | 다운스케일 .mp4 재생 (원본 .webm fallback) |
+
+로컬에서 녹화 → S3 업로드 → 리포트 페이지 재생까지의 흐름은 정상 동작합니다.
+Lambda 후처리 파이프라인은 AWS 배포 후 검증합니다.
+
+### S3 파일 확인
+
+```bash
+cd local
+./s3_browser.sh
+```
+
+### Lambda 핸들러 로컬 테스트 (invoke_local.py)
 
 ```bash
 # 공통 Layer를 PYTHONPATH에 추가하여 실행

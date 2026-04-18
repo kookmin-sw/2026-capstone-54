@@ -8,18 +8,19 @@ services:
       SERVICES: s3,lambda,sns,sqs
       DEFAULT_REGION: us-east-1
       LAMBDA_RUNTIME_ENVIRONMENT_TIMEOUT: 300
-      LAMBDA_DOCKER_NETWORK: mefit-local
+      LAMBDA_DOCKER_FLAGS: -v mefit-ffmpeg-bin:/opt/ffmpeg-bin
     volumes:
       - "./localstack_init.sh:/etc/localstack/init/ready.d/init.sh"
       - "../functions:/opt/mefit/functions:ro"
       - "../layers:/opt/mefit/layers:ro"
       - localstack_data:/var/lib/localstack
+      - mefit-ffmpeg-bin:/tmp/mefit-ffmpeg
       - /var/run/docker.sock:/var/run/docker.sock
-    networks:
-      - mefit-local
 
 volumes:
   localstack_data:
+  mefit-ffmpeg-bin:
+    name: mefit-ffmpeg-bin
 
 networks:
   mefit-local:

@@ -46,14 +46,32 @@ awslocal sns subscribe --topic-arn "$TOPIC_ARN" --protocol sqs --notification-en
 echo "  [OK] SQS Queue: $QUEUE_URL (subscribed to SNS)"
 
 echo ""
-echo "=== 3. Lambda Functions (Layer code bundled) ==="
+echo "=== 3. Install ffmpeg ==="
+FFMPEG_DIR="/tmp/mefit-ffmpeg"
+if [ ! -f "$FFMPEG_DIR/ffmpeg" ]; then
+  mkdir -p "$FFMPEG_DIR"
+  apt-get update -qq && apt-get install -y -qq ffmpeg > /dev/null 2>&1 || true
+  FFMPEG_BIN=$(which ffmpeg 2>/dev/null || echo "")
+  if [ -n "$FFMPEG_BIN" ]; then
+    cp "$FFMPEG_BIN" "$FFMPEG_DIR/ffmpeg"
+    chmod +x "$FFMPEG_DIR/ffmpeg"
+    echo "  [OK] ffmpeg installed: $FFMPEG_DIR/ffmpeg"
+  else
+    echo "  [WARN] ffmpeg not available — Lambda functions needing ffmpeg will fail"
+  fi
+else
+  echo "  [OK] ffmpeg already present: $FFMPEG_DIR/ffmpeg"
+fi
+
+echo ""
+echo "=== 4. Lambda Functions (Layer code + ffmpeg bundled) ==="
 
 FUNCTIONS_DIR="/opt/mefit/functions"
 LAYERS_DIR="/opt/mefit/layers/common/python"
 OUT_DIR="/tmp/lambda-packages"
 mkdir -p "$OUT_DIR"
 
-LAMBDA_ENV="Variables={VIDEO_BUCKET=$VIDEO_BUCKET,SCALED_VIDEO_BUCKET=$SCALED_VIDEO_BUCKET,FRAME_BUCKET=$FRAME_BUCKET,AUDIO_BUCKET=$AUDIO_BUCKET,SCALED_AUDIO_BUCKET=$SCALED_AUDIO_BUCKET,SNS_TOPIC_ARN=$TOPIC_ARN,REGION=$REGION,FFMPEG_PATH=ffmpeg}"
+LAMBDA_ENV="Variables={VIDEO_BUCKET=$VIDEO_BUCKET,SCALED_VIDEO_BUCKET=$SCALED_VIDEO_BUCKET,FRAME_BUCKET=$FRAME_BUCKET,AUDIO_BUCKET=$AUDIO_BUCKET,SCALED_AUDIO_BUCKET=$SCALED_AUDIO_BUCKET,SNS_TOPIC_ARN=$TOPIC_ARN,REGION=$REGION,FFMPEG_PATH=/opt/ffmpeg-bin/ffmpeg,S3_ENDPOINT_URL=http://host.docker.internal:4566}"
 
 FUNCTIONS="video_converter frame_extractor audio_extractor audio_scaler processing_notifier"
 
@@ -85,7 +103,7 @@ for FUNC in $FUNCTIONS; do
 done
 
 echo ""
-echo "=== 4. S3 Event Notifications → Lambda ==="
+echo "=== 5. S3 Event Notifications → Lambda ==="
 
 add_s3_trigger() {
   local BUCKET=$1
@@ -159,7 +177,7 @@ echo "========================================="
 echo "  Init complete!"
 echo ""
 echo "  S3 Buckets:     5 (CORS enabled)"
-echo "  Lambda:         5 (layer code bundled)"
+echo "  Lambda:         5 (layer code + ffmpeg bundled)"
 echo "  S3 Triggers:    5"
 echo "  SNS → SQS:      1"
 echo ""

@@ -1,5 +1,5 @@
 import boto3
-from mefit_video_common.config import REGION
+from mefit_video_common.config import REGION, S3_ENDPOINT_URL
 
 _client = None
 
@@ -7,7 +7,10 @@ _client = None
 def get_s3_client():
     global _client
     if _client is None:
-        _client = boto3.client("s3", region_name=REGION)
+        kwargs = {"region_name": REGION}
+        if S3_ENDPOINT_URL:
+            kwargs["endpoint_url"] = S3_ENDPOINT_URL
+        _client = boto3.client("s3", **kwargs)
     return _client
 
 
