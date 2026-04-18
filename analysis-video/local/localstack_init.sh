@@ -79,6 +79,8 @@ for FUNC in $FUNCTIONS; do
     --environment "$LAMBDA_ENV" \
     > /dev/null
 
+  echo "  [..] Lambda: mefit-${FUNC_DASH} (waiting for Active...)"
+  awslocal lambda wait function-active-v2 --function-name "mefit-${FUNC_DASH}" 2>/dev/null || sleep 5
   echo "  [OK] Lambda: mefit-${FUNC_DASH}"
 done
 
