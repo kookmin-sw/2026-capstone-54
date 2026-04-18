@@ -158,7 +158,7 @@ class RecordingServicesTests(TestCase):
       AbortRecordingService(recording=recording).perform()
     mock_get_client.assert_not_called()
 
-  @patch("interviews.services.generate_playback_url_service.get_video_s3_client")
+  @patch("interviews.services.generate_playback_url_service.get_video_s3_presign_client")
   def test_generate_playback_url_returns_presigned_urls(self, mock_get_client):
     """녹화 재생 URL 요청 시 모든 URL 필드를 반환한다."""
     mock_s3 = MagicMock()

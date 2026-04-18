@@ -19,9 +19,13 @@ from interviews.services import (
 from interviews.tasks.cleanup_stale_recordings_task import CleanupStaleRecordingsTask
 from users.factories import UserFactory
 
+MOCK_INITIATE_S3 = "interviews.services.initiate_recording_service.get_video_s3_client"
+MOCK_INITIATE_PRESIGN = ("interviews.services.initiate_recording_service.get_video_s3_presign_client")
+MOCK_COMPLETE_S3 = "interviews.services.complete_recording_service.get_video_s3_client"
+MOCK_ABORT_S3 = "interviews.services.abort_recording_service.get_video_s3_client"
+
 
 class RecordingSafetyGuardScenarioTests(TestCase):
-  """면접 녹화 안전장치 시나리오 테스트 — 정상·비정상 흐름 전체를 검증한다."""
 
   def setUp(self):
     self.user = UserFactory()
@@ -39,12 +43,13 @@ class RecordingSafetyGuardScenarioTests(TestCase):
 
   # ── Scenario 1: Normal flow ──
 
-  @patch("interviews.services.complete_recording_service.get_video_s3_client")
-  @patch("interviews.services.initiate_recording_service.get_video_s3_client")
-  def test_scenario_normal_answer_submit(self, mock_init_s3, mock_complete_s3):
-    """정상 답변 제출: initiate → complete → status COMPLETED."""
-    mock_init_s3.return_value = self._create_mock_s3()
-    mock_complete_s3.return_value = MagicMock()
+  @patch(MOCK_COMPLETE_S3)
+  @patch(MOCK_INITIATE_PRESIGN)
+  @patch(MOCK_INITIATE_S3)
+  def test_scenario_normal_answer_submit(self, mock_s3, mock_presign, mock_complete):
+    mock_s3.return_value = self._create_mock_s3()
+    mock_presign.return_value = self._create_mock_s3()
+    mock_complete.return_value = MagicMock()
 
     result = InitiateRecordingService(
       interview_session=self.session,
@@ -72,12 +77,13 @@ class RecordingSafetyGuardScenarioTests(TestCase):
 
   # ── Scenario 2: Browser close with successful abort ──
 
-  @patch("interviews.services.abort_recording_service.get_video_s3_client")
-  @patch("interviews.services.initiate_recording_service.get_video_s3_client")
-  def test_scenario_browser_close_abort_success(self, mock_init_s3, mock_abort_s3):
-    """브라우저 닫기(abort 성공): initiate → abort → status FAILED."""
-    mock_init_s3.return_value = self._create_mock_s3()
-    mock_abort_s3.return_value = MagicMock()
+  @patch(MOCK_ABORT_S3)
+  @patch(MOCK_INITIATE_PRESIGN)
+  @patch(MOCK_INITIATE_S3)
+  def test_scenario_browser_close_abort_success(self, mock_s3, mock_presign, mock_abort):
+    mock_s3.return_value = self._create_mock_s3()
+    mock_presign.return_value = self._create_mock_s3()
+    mock_abort.return_value = MagicMock()
 
     result = InitiateRecordingService(
       interview_session=self.session,
@@ -94,10 +100,11 @@ class RecordingSafetyGuardScenarioTests(TestCase):
 
   # ── Scenario 3: Reconnect — same turn re-initiate marks previous ABANDONED ──
 
-  @patch("interviews.services.initiate_recording_service.get_video_s3_client")
-  def test_scenario_reconnect_same_turn_abandons_previous(self, mock_s3):
-    """재접속 같은 턴 재녹화: 이전 INITIATED 녹화가 ABANDONED로 전환된다."""
+  @patch(MOCK_INITIATE_PRESIGN)
+  @patch(MOCK_INITIATE_S3)
+  def test_scenario_reconnect_same_turn_abandons_previous(self, mock_s3, mock_presign):
     mock_s3.return_value = self._create_mock_s3()
+    mock_presign.return_value = self._create_mock_s3()
 
     first_result = InitiateRecordingService(
       interview_session=self.session,
@@ -122,10 +129,11 @@ class RecordingSafetyGuardScenarioTests(TestCase):
     self.assertEqual(second_recording.status, RecordingStatus.INITIATED)
     self.assertNotEqual(first_id, second_id)
 
-  @patch("interviews.services.initiate_recording_service.get_video_s3_client")
-  def test_scenario_reconnect_does_not_abandon_completed_recording(self, mock_s3):
-    """재접속 시 이미 COMPLETED인 녹화는 ABANDONED로 전환되지 않는다."""
+  @patch(MOCK_INITIATE_PRESIGN)
+  @patch(MOCK_INITIATE_S3)
+  def test_scenario_reconnect_does_not_abandon_completed_recording(self, mock_s3, mock_presign):
     mock_s3.return_value = self._create_mock_s3()
+    mock_presign.return_value = self._create_mock_s3()
 
     completed_recording = InterviewRecordingFactory(
       interview_session=self.session,
@@ -144,10 +152,11 @@ class RecordingSafetyGuardScenarioTests(TestCase):
     completed_recording.refresh_from_db()
     self.assertEqual(completed_recording.status, RecordingStatus.COMPLETED)
 
-  @patch("interviews.services.initiate_recording_service.get_video_s3_client")
-  def test_scenario_reconnect_abandons_multiple_stale_recordings(self, mock_s3):
-    """재접속 시 같은 턴의 미완료 녹화가 여러 개이면 모두 ABANDONED로 전환된다."""
+  @patch(MOCK_INITIATE_PRESIGN)
+  @patch(MOCK_INITIATE_S3)
+  def test_scenario_reconnect_abandons_multiple_stale_recordings(self, mock_s3, mock_presign):
     mock_s3.return_value = self._create_mock_s3()
+    mock_presign.return_value = self._create_mock_s3()
 
     stale1 = InterviewRecordingFactory(
       interview_session=self.session,
@@ -284,13 +293,13 @@ class RecordingSafetyGuardScenarioTests(TestCase):
 
   # ── Scenario 7: Full lifecycle — answer, leave, reconnect, answer again ──
 
-  @patch("interviews.services.complete_recording_service.get_video_s3_client")
-  @patch("interviews.services.initiate_recording_service.get_video_s3_client")
-  def test_scenario_full_lifecycle_leave_and_reconnect(self, mock_init_s3, mock_complete_s3):
-    """전체 흐름: 답변 시작 → 이탈(abort 실패) → 재접속 → 재답변 → 완료.
-        이전 녹화는 ABANDONED, 새 녹화만 COMPLETED."""
-    mock_init_s3.return_value = self._create_mock_s3()
-    mock_complete_s3.return_value = MagicMock()
+  @patch(MOCK_COMPLETE_S3)
+  @patch(MOCK_INITIATE_PRESIGN)
+  @patch(MOCK_INITIATE_S3)
+  def test_scenario_full_lifecycle_leave_and_reconnect(self, mock_s3, mock_presign, mock_complete):
+    mock_s3.return_value = self._create_mock_s3()
+    mock_presign.return_value = self._create_mock_s3()
+    mock_complete.return_value = MagicMock()
 
     first_result = InitiateRecordingService(
       interview_session=self.session,

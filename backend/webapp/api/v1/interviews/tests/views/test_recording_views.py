@@ -19,8 +19,8 @@ class RecordingViewTests(TestCase):
 
   def setUp(self):
     self.client = APIClient()
-    self.user = UserFactory()
-    self.other_user = UserFactory()
+    self.user = UserFactory(is_email_confirmed=True)
+    self.other_user = UserFactory(is_email_confirmed=True)
     token = RefreshToken.for_user(self.user)
     self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {str(token.access_token)}")
 
