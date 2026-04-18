@@ -31,6 +31,15 @@ class CompleteRecordingService(BaseService):
     s3 = get_video_s3_client()
 
     if not single_upload:
+      # 클라이언트/테스트에 따라 part_number(backend snake_case) 또는 partNumber(frontend camelCase)로 전달될 수 있다.
+      normalized_parts = []
+      for p in parts:
+        part_number = p.get("part_number") or p.get("partNumber")
+        normalized_parts.append({
+          "part_number": part_number,
+          "etag": p.get("etag") or p.get("ETag"),
+        })
+
       s3.complete_multipart_upload(
         Bucket=recording.s3_bucket,
         Key=recording.s3_key,
@@ -38,8 +47,8 @@ class CompleteRecordingService(BaseService):
         MultipartUpload={
           "Parts": [{
             "PartNumber": p["part_number"],
-            "ETag": p["etag"]
-          } for p in parts],
+            "ETag": p["etag"],
+          } for p in normalized_parts],
         },
       )
 
