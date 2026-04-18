@@ -162,9 +162,10 @@ export function useRecordingManager({
       const durationMs = endTime - startTimeRef.current;
       const endTimestamp = new Date(endTime).toISOString();
 
+      const sortedParts = [...parts].sort((a, b) => a.partNumber - b.partNumber);
       await recordingApi.complete(
         recordingIdRef.current,
-        parts,
+        sortedParts,
         endTimestamp,
         durationMs,
         useSingleUpload ?? false,

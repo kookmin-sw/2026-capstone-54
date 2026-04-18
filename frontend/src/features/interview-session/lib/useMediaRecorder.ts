@@ -33,6 +33,8 @@ export function useMediaRecorder({
   const isStartingRef = useRef(false);
   const isRecordingRef = useRef(false);
   const bufferRef = useRef<Blob[]>([]);
+  const sourceStreamRef = useRef<MediaStream | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
   useEffect(() => {
     onChunkRef.current = onChunk;
@@ -52,8 +54,12 @@ export function useMediaRecorder({
     isStartingRef.current = true;
     try {
       const sourceStream = externalStream ?? await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      if (!externalStream) {
+        sourceStreamRef.current = sourceStream;
+      }
       const mediaStream = sourceStream.clone();
       setStream(mediaStream);
+      streamRef.current = mediaStream;
 
       let selectedMimeType = mimeType;
       if (!selectedMimeType) {
@@ -114,9 +120,14 @@ export function useMediaRecorder({
         timeslice, selectedMimeType,
         mediaStream.getTracks().map(t => ({ kind: t.kind, readyState: t.readyState, enabled: t.enabled })));
     } catch (err) {
-      if (!externalStream && stream) {
-        stream.getTracks().forEach((track) => track.stop());
+      if (!externalStream && streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
       }
+      if (sourceStreamRef.current) {
+        sourceStreamRef.current.getTracks().forEach((t) => t.stop());
+        sourceStreamRef.current = null;
+      }
+      streamRef.current = null;
       setStream(null);
       const msg = err instanceof Error ? err.message : "녹화 시작 실패";
       setError(msg);
@@ -130,9 +141,14 @@ export function useMediaRecorder({
     console.info("[MediaRecorder] stop() called, recorderState=%s", recorderRef.current?.state ?? "null");
     return new Promise((resolve) => {
       if (!recorderRef.current || recorderRef.current.state === "inactive") {
-        if (stream && !externalStream) {
-          stream.getTracks().forEach((track) => track.stop());
+        if (streamRef.current && !externalStream) {
+          streamRef.current.getTracks().forEach((track) => track.stop());
         }
+        if (sourceStreamRef.current) {
+          sourceStreamRef.current.getTracks().forEach((t) => t.stop());
+          sourceStreamRef.current = null;
+        }
+        streamRef.current = null;
         isRecordingRef.current = false;
         setIsRecording(false);
         resolve(null);
@@ -140,9 +156,14 @@ export function useMediaRecorder({
       }
 
       finalChunkResolveRef.current = (blob) => {
-        if (stream && !externalStream) {
-          stream.getTracks().forEach((track) => track.stop());
+        if (streamRef.current && !externalStream) {
+          streamRef.current.getTracks().forEach((track) => track.stop());
         }
+        if (sourceStreamRef.current) {
+          sourceStreamRef.current.getTracks().forEach((t) => t.stop());
+          sourceStreamRef.current = null;
+        }
+        streamRef.current = null;
         isRecordingRef.current = false;
         setIsRecording(false);
         resolve(blob);
@@ -156,6 +177,14 @@ export function useMediaRecorder({
     return () => {
       if (recorderRef.current && recorderRef.current.state !== "inactive") {
         recorderRef.current.stop();
+      }
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((t) => t.stop());
+        streamRef.current = null;
+      }
+      if (sourceStreamRef.current) {
+        sourceStreamRef.current.getTracks().forEach((t) => t.stop());
+        sourceStreamRef.current = null;
       }
     };
   }, []);
