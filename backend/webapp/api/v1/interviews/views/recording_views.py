@@ -154,7 +154,7 @@ class UploadRecordingView(BaseAPIView):
       s3.put_object(
         Bucket=recording.s3_bucket,
         Key=recording.s3_key,
-        Body=file.read(),
+        Body=file,
         ContentType=file.content_type or "video/webm",
       )
     except (BotoCoreError, ClientError) as e:
