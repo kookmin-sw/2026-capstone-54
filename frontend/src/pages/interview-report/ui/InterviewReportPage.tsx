@@ -1,7 +1,8 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Loader2, ArrowLeft } from "lucide-react";
-import { useInterviewSessionStore } from "@/features/interview-session";
+import { useInterviewSessionStore, recordingApi } from "@/features/interview-session";
+import type { RecordingItem } from "@/features/interview-session";
 import { RadarChart } from "./RadarChart";
 import { ScoreGauge } from "./ScoreGauge";
 import { StrengthsImprovements } from "./StrengthsImprovements";
@@ -18,6 +19,7 @@ const GRADE_KO: Record<string, string> = {
 
 export function InterviewReportPage() {
   const { interviewSessionUuid } = useParams<{ interviewSessionUuid: string }>();
+  const [recordings, setRecordings] = useState<RecordingItem[]>([]);
 
   const {
     interviewSession, interviewTurns, interviewAnalysisReport, isReportPolling,
@@ -30,6 +32,7 @@ export function InterviewReportPage() {
     loadInterviewSession(interviewSessionUuid);
     loadInterviewTurns(interviewSessionUuid);
     startReportPolling(interviewSessionUuid);
+    recordingApi.list(interviewSessionUuid).then(setRecordings).catch(() => {});
   }, [interviewSessionUuid]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const turnAnswerMap = Object.fromEntries(interviewTurns.map((t) => [t.id, t.answer]));
@@ -123,7 +126,7 @@ export function InterviewReportPage() {
             )}
 
             <StrengthsImprovements strengths={report.strengths} improvements={report.improvementAreas} />
-            <QuestionFeedbackList feedbacks={report.questionFeedbacks} turnAnswerMap={turnAnswerMap} />
+            <QuestionFeedbackList feedbacks={report.questionFeedbacks} turnAnswerMap={turnAnswerMap} recordings={recordings} />
 
             {/* CTA */}
             <div className="flex gap-3 justify-center flex-wrap">
