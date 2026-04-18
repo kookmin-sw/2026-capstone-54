@@ -14,9 +14,10 @@ class CompleteRecordingPartSerializer(serializers.Serializer):
 
 
 class CompleteRecordingSerializer(serializers.Serializer):
-  parts = CompleteRecordingPartSerializer(many=True)
+  parts = CompleteRecordingPartSerializer(many=True, required=False, default=[])
   end_timestamp = serializers.DateTimeField()
   duration_ms = serializers.IntegerField()
+  single_upload = serializers.BooleanField(required=False, default=False)
 
 
 class PresignedUrlItemSerializer(serializers.Serializer):
@@ -29,6 +30,7 @@ class InitiateRecordingResponseSerializer(serializers.Serializer):
   upload_id = serializers.CharField(source="uploadId")
   s3_key = serializers.CharField(source="s3Key")
   presigned_urls = PresignedUrlItemSerializer(many=True, source="presignedUrls")
+  single_upload_url = serializers.CharField(source="singleUploadUrl")
 
 
 class RecordingListSerializer(serializers.Serializer):

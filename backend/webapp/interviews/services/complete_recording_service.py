@@ -26,19 +26,22 @@ class CompleteRecordingService(BaseService):
     parts = self.kwargs["parts"]
     end_timestamp = self.kwargs["end_timestamp"]
     duration_ms = self.kwargs["duration_ms"]
+    single_upload = self.kwargs.get("single_upload", False)
 
     s3 = get_video_s3_client()
-    s3.complete_multipart_upload(
-      Bucket=recording.s3_bucket,
-      Key=recording.s3_key,
-      UploadId=recording.upload_id,
-      MultipartUpload={
-        "Parts": [{
-          "PartNumber": p["part_number"],
-          "ETag": p["etag"]
-        } for p in parts],
-      },
-    )
+
+    if not single_upload:
+      s3.complete_multipart_upload(
+        Bucket=recording.s3_bucket,
+        Key=recording.s3_key,
+        UploadId=recording.upload_id,
+        MultipartUpload={
+          "Parts": [{
+            "PartNumber": p["part_number"],
+            "ETag": p["etag"]
+          } for p in parts],
+        },
+      )
 
     recording.status = RecordingStatus.COMPLETED
     recording.end_timestamp = end_timestamp

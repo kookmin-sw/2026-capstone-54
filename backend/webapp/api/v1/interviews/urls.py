@@ -11,6 +11,7 @@ from api.v1.interviews.views import (
   RecordingListView,
   StartInterviewView,
   SubmitAnswerView,
+  UploadRecordingView,
 )
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
@@ -61,6 +62,11 @@ urlpatterns = [
     "recordings/<uuid:uuid>/abort/",
     AbortRecordingView.as_view(),
     name="recording-abort",
+  ),
+  path(
+    "recordings/<uuid:uuid>/upload/",
+    UploadRecordingView.as_view(),
+    name="recording-upload",
   ),
   path(
     "recordings/<uuid:uuid>/playback-url/",

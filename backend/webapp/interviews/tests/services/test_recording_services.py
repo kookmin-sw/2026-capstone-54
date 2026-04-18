@@ -87,7 +87,7 @@ class RecordingServicesTests(TestCase):
       status=RecordingStatus.INITIATED,
     )
 
-    parts = [{"PartNumber": 1, "ETag": "test-etag"}]
+    parts = [{"part_number": 1, "etag": "test-etag"}]
 
     CompleteRecordingService(
       recording=recording,
@@ -182,7 +182,7 @@ class RecordingServicesTests(TestCase):
     self.assertIn("expiresIn", result)
     self.assertEqual(result["mediaType"], "video")
 
-  @patch("interviews.services.generate_playback_url_service.get_video_s3_client")
+  @patch("interviews.services.generate_playback_url_service.get_video_s3_presign_client")
   def test_generate_playback_url_rejects_wrong_user(self, mock_get_client):
     """본인의 녹화가 아닌 경우 조회 시 PermissionDeniedException을 발생시킨다."""
     recording = InterviewRecordingFactory(
@@ -196,4 +196,67 @@ class RecordingServicesTests(TestCase):
         recording=recording,
         user=self.other_user,
       ).perform()
+    mock_get_client.assert_not_called()
+
+  @patch("interviews.services.initiate_recording_service.get_video_s3_presign_client")
+  @patch("interviews.services.initiate_recording_service.get_video_s3_client")
+  def test_initiate_returns_single_upload_url(self, mock_get_client, mock_get_presign):
+    """initiate 응답에 singleUploadUrl이 포함된다."""
+    mock_s3 = MagicMock()
+    mock_get_client.return_value = mock_s3
+    mock_s3.create_multipart_upload.return_value = {"UploadId": "test-upload-id"}
+
+    mock_presign = MagicMock()
+    mock_get_presign.return_value = mock_presign
+    mock_presign.generate_presigned_url.return_value = ("https://presigned.example.com")
+
+    result = InitiateRecordingService(
+      interview_session=self.session,
+      interview_turn=self.turn,
+      user=self.user,
+      media_type="video",
+    ).perform()
+
+    self.assertIn("singleUploadUrl", result)
+    self.assertEqual(result["singleUploadUrl"], "https://presigned.example.com")
+
+  @patch("interviews.services.complete_recording_service.get_video_s3_client")
+  def test_complete_single_upload_aborts_multipart_and_completes(self, mock_get_client):
+    """단일 업로드 모드에서는 멀티파트를 abort하고 상태를 COMPLETED로 변경한다."""
+    mock_s3 = MagicMock()
+    mock_get_client.return_value = mock_s3
+
+    recording = InterviewRecordingFactory(
+      interview_session=self.session,
+      interview_turn=self.turn,
+      user=self.user,
+      status=RecordingStatus.INITIATED,
+    )
+
+    CompleteRecordingService(
+      recording=recording,
+      parts=[],
+      end_timestamp="2023-01-01T00:00:00Z",
+      duration_ms=3000,
+      single_upload=True,
+      user=self.user,
+    ).perform()
+
+    recording.refresh_from_db()
+    self.assertEqual(recording.status, RecordingStatus.COMPLETED)
+    mock_s3.abort_multipart_upload.assert_called_once()
+    mock_s3.complete_multipart_upload.assert_not_called()
+
+  @patch("interviews.services.abort_recording_service.get_video_s3_client")
+  def test_abort_rejects_wrong_user(self, mock_get_client):
+    """본인의 녹화가 아닌 경우 abort 시 PermissionDeniedException을 발생시킨다."""
+    recording = InterviewRecordingFactory(
+      interview_session=self.session,
+      interview_turn=self.turn,
+      user=self.user,
+      status=RecordingStatus.INITIATED,
+    )
+
+    with self.assertRaises(PermissionDeniedException):
+      AbortRecordingService(recording=recording, user=self.other_user).perform()
     mock_get_client.assert_not_called()

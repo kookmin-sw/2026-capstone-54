@@ -23,7 +23,9 @@ from interviews.services import (
   InitiateRecordingService,
   get_interview_session_for_user,
 )
+from interviews.services.get_s3_client import get_video_s3_client
 from rest_framework import status
+from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 
 
@@ -84,6 +86,7 @@ class CompleteRecordingView(BaseAPIView):
         parts=data["parts"],
         end_timestamp=data["end_timestamp"],
         duration_ms=data["duration_ms"],
+        single_upload=data.get("single_upload", False),
         user=self.current_user,
       ).perform()
     except (BotoCoreError, ClientError) as e:
@@ -115,6 +118,49 @@ class AbortRecordingView(BaseAPIView):
       raise ServiceUnavailableException(f"S3 오류가 발생했습니다: {str(e)}")
 
     return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@extend_schema(tags=["면접 녹화"])
+class UploadRecordingView(BaseAPIView):
+  permission_classes = [IsEmailVerified]
+  parser_classes = [MultiPartParser]
+
+  @extend_schema(summary="녹화 파일 직접 업로드 (단일 파일)")
+  def put(self, request, uuid):
+    try:
+      recording = InterviewRecording.objects.get(pk=uuid)
+    except InterviewRecording.DoesNotExist:
+      raise NotFoundException()
+
+    if recording.user != self.current_user:
+      from common.exceptions import PermissionDeniedException
+
+      raise PermissionDeniedException("본인의 녹화만 업로드할 수 있습니다.")
+
+    if recording.status not in (
+      RecordingStatus.INITIATED,
+      RecordingStatus.UPLOADING,
+    ):
+      raise ConflictException("업로드 가능한 상태가 아닙니다.")
+
+    file = request.FILES.get("file")
+    if not file:
+      from common.exceptions import ValidationException
+
+      raise ValidationException("file 필드가 필요합니다.")
+
+    try:
+      s3 = get_video_s3_client()
+      s3.put_object(
+        Bucket=recording.s3_bucket,
+        Key=recording.s3_key,
+        Body=file.read(),
+        ContentType=file.content_type or "video/webm",
+      )
+    except (BotoCoreError, ClientError) as e:
+      raise ServiceUnavailableException(f"S3 오류가 발생했습니다: {str(e)}")
+
+    return Response({"status": "uploaded"}, status=status.HTTP_200_OK)
 
 
 @extend_schema(tags=["면접 녹화"])

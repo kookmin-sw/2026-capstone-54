@@ -8,6 +8,7 @@ from .recording_views import (
   InitiateRecordingView,
   PlaybackUrlView,
   RecordingListView,
+  UploadRecordingView,
 )
 from .start_interview_view import StartInterviewView
 from .submit_answer_view import SubmitAnswerView
@@ -26,4 +27,5 @@ __all__ = [
   "RecordingListView",
   "StartInterviewView",
   "SubmitAnswerView",
+  "UploadRecordingView",
 ]

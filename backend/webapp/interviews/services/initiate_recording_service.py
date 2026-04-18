@@ -39,8 +39,8 @@ class InitiateRecordingService(BaseService):
       status__in=stale_statuses,
     ).update(status=RecordingStatus.ABANDONED)
 
-    now_iso = datetime.now(tz=timezone.utc).isoformat()
-    s3_key = f"{session.pk}/{turn.pk}/{now_iso}.webm"
+    ts = int(datetime.now(tz=timezone.utc).timestamp() * 1000)
+    s3_key = f"{session.pk}/{turn.pk}/{ts}.webm"
 
     s3 = get_video_s3_client()
     bucket = settings.VIDEO_S3_BUCKET
@@ -68,6 +68,15 @@ class InitiateRecordingService(BaseService):
       )
       presigned_urls.append({"partNumber": part_number, "url": url})
 
+    single_upload_url = presign_s3.generate_presigned_url(
+      "put_object",
+      Params={
+        "Bucket": bucket,
+        "Key": s3_key
+      },
+      ExpiresIn=settings.VIDEO_PRESIGNED_URL_EXPIRY,
+    )
+
     recording = InterviewRecording.objects.create(
       interview_session=session,
       interview_turn=turn,
@@ -84,4 +93,5 @@ class InitiateRecordingService(BaseService):
       "uploadId": upload_id,
       "s3Key": s3_key,
       "presignedUrls": presigned_urls,
+      "singleUploadUrl": single_upload_url,
     }
