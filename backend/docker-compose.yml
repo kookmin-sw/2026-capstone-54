@@ -98,7 +98,7 @@ services:
     image: adobe/s3mock:latest
     container_name: mefit-s3mock
     environment:
-      - COM_ADOBE_TESTING_S3MOCK_STORE_INITIAL_BUCKETS=${AWS_STORAGE_BUCKET_NAME:-mefit-files}
+      - COM_ADOBE_TESTING_S3MOCK_STORE_INITIAL_BUCKETS=${AWS_STORAGE_BUCKET_NAME:-mefit-files},pj-kmucd1-04-mefit-video-files,pj-kmucd1-04-mefit-scaled-video-files,pj-kmucd1-04-mefit-video-frame-files,pj-kmucd1-04-mefit-audio-files,pj-kmucd1-04-mefit-scaled-audio-files
       - COM_ADOBE_TESTING_S3MOCK_STORE_ROOT=containers3root
       - COM_ADOBE_TESTING_S3MOCK_STORE_RETAIN_FILES_ON_EXIT=true
       - debug=false
