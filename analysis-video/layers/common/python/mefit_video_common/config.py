@@ -12,4 +12,8 @@ SCALED_AUDIO_BUCKET = os.environ.get(
 SNS_TOPIC_ARN = os.environ.get("SNS_TOPIC_ARN", "")
 REGION = os.environ.get("REGION", "us-east-1")
 FFMPEG_PATH = os.environ.get("FFMPEG_PATH", "/opt/bin/ffmpeg")
-S3_ENDPOINT_URL = os.environ.get("S3_ENDPOINT_URL", "") or None
+S3_ENDPOINT_URL = (
+    os.environ.get("S3_ENDPOINT_URL", "")
+    or os.environ.get("AWS_ENDPOINT_URL", "")
+    or None
+)

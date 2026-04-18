@@ -46,21 +46,19 @@ awslocal sns subscribe --topic-arn "$TOPIC_ARN" --protocol sqs --notification-en
 echo "  [OK] SQS Queue: $QUEUE_URL (subscribed to SNS)"
 
 echo ""
-echo "=== 3. Install ffmpeg ==="
+echo "=== 3. Install ffmpeg (static build for Lambda) ==="
 FFMPEG_DIR="/tmp/mefit-ffmpeg"
-if [ ! -f "$FFMPEG_DIR/ffmpeg" ]; then
+if [ ! -f "$FFMPEG_DIR/ffmpeg" ] || ! "$FFMPEG_DIR/ffmpeg" -version > /dev/null 2>&1; then
   mkdir -p "$FFMPEG_DIR"
-  apt-get update -qq && apt-get install -y -qq ffmpeg > /dev/null 2>&1 || true
-  FFMPEG_BIN=$(which ffmpeg 2>/dev/null || echo "")
-  if [ -n "$FFMPEG_BIN" ]; then
-    cp "$FFMPEG_BIN" "$FFMPEG_DIR/ffmpeg"
-    chmod +x "$FFMPEG_DIR/ffmpeg"
-    echo "  [OK] ffmpeg installed: $FFMPEG_DIR/ffmpeg"
-  else
-    echo "  [WARN] ffmpeg not available — Lambda functions needing ffmpeg will fail"
-  fi
+  echo "  Downloading static ffmpeg..."
+  curl -sL "https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz" -o /tmp/ffmpeg-static.tar.xz
+  tar xf /tmp/ffmpeg-static.tar.xz -C /tmp/ --wildcards '*/ffmpeg' --strip-components=1
+  mv /tmp/ffmpeg "$FFMPEG_DIR/ffmpeg"
+  chmod +x "$FFMPEG_DIR/ffmpeg"
+  rm -f /tmp/ffmpeg-static.tar.xz
+  echo "  [OK] ffmpeg static build: $($FFMPEG_DIR/ffmpeg -version 2>&1 | head -1)"
 else
-  echo "  [OK] ffmpeg already present: $FFMPEG_DIR/ffmpeg"
+  echo "  [OK] ffmpeg already present: $($FFMPEG_DIR/ffmpeg -version 2>&1 | head -1)"
 fi
 
 echo ""
@@ -71,7 +69,7 @@ LAYERS_DIR="/opt/mefit/layers/common/python"
 OUT_DIR="/tmp/lambda-packages"
 mkdir -p "$OUT_DIR"
 
-LAMBDA_ENV="Variables={VIDEO_BUCKET=$VIDEO_BUCKET,SCALED_VIDEO_BUCKET=$SCALED_VIDEO_BUCKET,FRAME_BUCKET=$FRAME_BUCKET,AUDIO_BUCKET=$AUDIO_BUCKET,SCALED_AUDIO_BUCKET=$SCALED_AUDIO_BUCKET,SNS_TOPIC_ARN=$TOPIC_ARN,REGION=$REGION,FFMPEG_PATH=/opt/ffmpeg-bin/ffmpeg,S3_ENDPOINT_URL=http://host.docker.internal:4566}"
+LAMBDA_ENV="Variables={VIDEO_BUCKET=$VIDEO_BUCKET,SCALED_VIDEO_BUCKET=$SCALED_VIDEO_BUCKET,FRAME_BUCKET=$FRAME_BUCKET,AUDIO_BUCKET=$AUDIO_BUCKET,SCALED_AUDIO_BUCKET=$SCALED_AUDIO_BUCKET,SNS_TOPIC_ARN=$TOPIC_ARN,REGION=$REGION,FFMPEG_PATH=/opt/ffmpeg-bin/ffmpeg}"
 
 FUNCTIONS="video_converter frame_extractor audio_extractor audio_scaler processing_notifier"
 
