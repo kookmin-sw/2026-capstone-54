@@ -110,7 +110,7 @@ class AbortRecordingView(BaseAPIView):
       raise NotFoundException()
 
     try:
-      AbortRecordingService(recording=recording).perform()
+      AbortRecordingService(recording=recording, user=self.current_user).perform()
     except (BotoCoreError, ClientError) as e:
       raise ServiceUnavailableException(f"S3 오류가 발생했습니다: {str(e)}")
 

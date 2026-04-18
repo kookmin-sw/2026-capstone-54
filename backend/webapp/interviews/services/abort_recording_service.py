@@ -1,4 +1,4 @@
-from common.exceptions import ConflictException
+from common.exceptions import ConflictException, PermissionDeniedException
 from common.services import BaseService
 from interviews.enums import RecordingStatus
 
@@ -12,10 +12,12 @@ class AbortRecordingService(BaseService):
 
   def validate(self):
     recording = self.kwargs["recording"]
-    if recording.status not in [
+    if self.user is not None and recording.user != self.user:
+      raise PermissionDeniedException("본인의 녹화만 취소할 수 있습니다.")
+    if recording.status not in (
       RecordingStatus.INITIATED,
       RecordingStatus.UPLOADING,
-    ]:
+    ):
       raise ConflictException("업로드 진행 중인 녹화만 취소할 수 있습니다.")
 
   def execute(self):

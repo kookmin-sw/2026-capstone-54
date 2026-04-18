@@ -1,7 +1,9 @@
 import json
 import logging
+import re
 
 import requests
+from common.exceptions import NotFoundException
 from django.http import HttpResponse
 from interviews.enums import RecordingStatus
 from interviews.models import InterviewRecording
@@ -11,6 +13,8 @@ from rest_framework.permissions import AllowAny
 
 logger = logging.getLogger(__name__)
 
+SNS_URL_PATTERN = re.compile(r"^https://sns\.[a-z0-9-]+\.amazonaws\.com/")
+
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
@@ -19,8 +23,8 @@ def video_processing_webhook(request):
 
   if sns_type == "SubscriptionConfirmation":
     body = json.loads(request.body)
-    subscribe_url = body.get("SubscribeURL")
-    if subscribe_url:
+    subscribe_url = body.get("SubscribeURL", "")
+    if subscribe_url and SNS_URL_PATTERN.match(subscribe_url):
       requests.get(subscribe_url, timeout=10)
     return HttpResponse("OK", status=200)
 
@@ -52,8 +56,11 @@ def video_processing_webhook(request):
             scaled_audio_key=message.get("scaledAudioKey", ""),
             frame_prefix=message.get("framePrefix", ""),
           ).perform()
+        except NotFoundException:
+          logger.warning("Recording not found: session=%s turn=%s", session_uuid, turn_id)
         except Exception as e:
-          logger.error(f"Failed to process video processing complete notification: {e}")
+          logger.error("Video processing webhook failed: %s", e, exc_info=True)
+          return HttpResponse("Error", status=500)
 
     return HttpResponse("OK", status=200)
 

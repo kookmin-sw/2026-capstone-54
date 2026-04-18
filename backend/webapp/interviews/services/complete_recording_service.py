@@ -34,7 +34,7 @@ class CompleteRecordingService(BaseService):
       UploadId=recording.upload_id,
       MultipartUpload={
         "Parts": [{
-          "PartNumber": p["partNumber"],
+          "PartNumber": p["part_number"],
           "ETag": p["etag"]
         } for p in parts],
       },
