@@ -79,7 +79,6 @@ export function useChunkUploader({
           const response = await fetch(url, {
             method: "PUT",
             body: blob,
-            headers: { "Content-Type": blob.type },
           });
 
           if (!response.ok) {
@@ -96,6 +95,7 @@ export function useChunkUploader({
           return part;
         } catch (err) {
           attempt++;
+          console.warn(`[ChunkUploader] Part ${partNumber} attempt ${attempt}/${maxRetries} failed:`, err);
           if (attempt > maxRetries) {
             setError(err instanceof Error ? err.message : "Upload failed after retries.");
             setIsUploading(false);
