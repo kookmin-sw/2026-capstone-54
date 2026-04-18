@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 
 interface UseChunkUploaderOptions {
   maxRetries?: number;
@@ -33,27 +33,27 @@ export function useChunkUploader({
   maxRetries = 3,
   retryBaseDelay = 1000,
 }: UseChunkUploaderOptions = {}): UseChunkUploaderReturn {
-  const [urls, setUrls] = useState<PresignedUrl[]>([]);
   const [uploadedParts, setUploadedParts] = useState<{ partNumber: number; etag: string }[]>([]);
-  const [currentPartNumber, setCurrentPartNumber] = useState<number>(1);
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  const progress = urls.length > 0 ? (uploadedParts.length / urls.length) * 100 : 0;
+  const urlsRef = useRef<PresignedUrl[]>([]);
+  const partCounterRef = useRef<number>(1);
+
+  const progress = urlsRef.current.length > 0 ? (uploadedParts.length / urlsRef.current.length) * 100 : 0;
 
   const init = useCallback((presignedUrls: PresignedUrl[]) => {
-    setUrls(presignedUrls);
+    urlsRef.current = presignedUrls;
+    partCounterRef.current = presignedUrls.length > 0 ? Math.min(...presignedUrls.map(p => p.partNumber)) : 1;
     setUploadedParts([]);
-    const initialPart = presignedUrls.length > 0 ? Math.min(...presignedUrls.map(p => p.partNumber)) : 1;
-    setCurrentPartNumber(initialPart);
     setIsUploading(false);
     setError(null);
   }, []);
 
   const reset = useCallback(() => {
-    setUrls([]);
+    urlsRef.current = [];
+    partCounterRef.current = 1;
     setUploadedParts([]);
-    setCurrentPartNumber(1);
     setIsUploading(false);
     setError(null);
   }, []);
@@ -63,8 +63,10 @@ export function useChunkUploader({
       setIsUploading(true);
       setError(null);
 
-      const targetUrlObj = urls.find((u) => u.partNumber === currentPartNumber);
+      const currentPart = partCounterRef.current;
+      const targetUrlObj = urlsRef.current.find((u) => u.partNumber === currentPart);
       if (!targetUrlObj) {
+        console.warn(`[ChunkUploader] No presigned URL for part ${currentPart}, urls count: ${urlsRef.current.length}`);
         setError("No presigned URL found for current part.");
         setIsUploading(false);
         return null;
@@ -90,7 +92,7 @@ export function useChunkUploader({
 
           const part: UploadedPart = { partNumber, etag };
           setUploadedParts((prev) => [...prev, part]);
-          setCurrentPartNumber((prev) => prev + 1);
+          partCounterRef.current = currentPart + 1;
           setIsUploading(false);
           return part;
         } catch (err) {
@@ -110,12 +112,12 @@ export function useChunkUploader({
       setIsUploading(false);
       return null;
     },
-    [urls, currentPartNumber, maxRetries, retryBaseDelay]
+    [maxRetries, retryBaseDelay]
   );
 
   return {
     uploadedParts,
-    currentPartNumber,
+    currentPartNumber: partCounterRef.current,
     isUploading,
     progress,
     error,

@@ -29,16 +29,16 @@ export function useMediaRecorder({
   const onChunkRef = useRef(onChunk);
   const finalChunkResolveRef = useRef<((blob: Blob | null) => void) | null>(null);
   const isStartingRef = useRef(false);
+  const isRecordingRef = useRef(false);
 
   useEffect(() => {
     onChunkRef.current = onChunk;
   }, [onChunk]);
 
   const start = useCallback(async () => {
-    if (isStartingRef.current || isRecording) return;
+    if (isStartingRef.current || isRecordingRef.current) return;
     if (typeof navigator === "undefined" || !navigator.mediaDevices || typeof MediaRecorder === "undefined") {
       setError("이 브라우저에서는 녹화를 지원하지 않습니다.");
-      setIsRecording(false);
       return;
     }
 
@@ -81,6 +81,7 @@ export function useMediaRecorder({
 
         recorderRef.current = recorder;
         recorder.start(timeslice);
+        isRecordingRef.current = true;
         setIsRecording(true);
         setError(null);
       } catch {
@@ -89,15 +90,13 @@ export function useMediaRecorder({
         }
         setStream(null);
         setError("이 브라우저에서는 녹화를 지원하지 않습니다.");
-        setIsRecording(false);
       }
     } catch {
       setError("카메라/마이크 권한이 필요합니다.");
-      setIsRecording(false);
     } finally {
       isStartingRef.current = false;
     }
-  }, [timeslice, mimeType, externalStream, isRecording]);
+  }, [timeslice, mimeType, externalStream]);
 
   const stop = useCallback((): Promise<Blob | null> => {
     return new Promise((resolve) => {
@@ -105,6 +104,7 @@ export function useMediaRecorder({
         if (stream && !externalStream) {
           stream.getTracks().forEach((track) => track.stop());
         }
+        isRecordingRef.current = false;
         setIsRecording(false);
         resolve(null);
         return;
@@ -114,6 +114,7 @@ export function useMediaRecorder({
         if (stream && !externalStream) {
           stream.getTracks().forEach((track) => track.stop());
         }
+        isRecordingRef.current = false;
         setIsRecording(false);
         resolve(blob);
       };
