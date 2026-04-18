@@ -33,6 +33,14 @@ CELERY_BEAT_SCHEDULE = {
     "kwargs": {},
     "options": {},
   },
+  # 고아 녹화 정리 (30분마다)
+  "interviews.tasks.cleanup_stale_recordings_task.CleanupStaleRecordingsTask": {
+    "task": "interviews.tasks.cleanup_stale_recordings_task.CleanupStaleRecordingsTask",
+    "schedule": crontab(minute="*/30"),
+    "args": (),
+    "kwargs": {},
+    "options": {},
+  },
 }
 
 __all__ = [
