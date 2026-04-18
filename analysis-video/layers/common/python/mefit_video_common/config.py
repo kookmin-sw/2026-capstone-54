@@ -1,0 +1,14 @@
+import os
+
+VIDEO_BUCKET = os.environ.get("VIDEO_BUCKET", "pj-kmucd1-04-mefit-video-files")
+SCALED_VIDEO_BUCKET = os.environ.get(
+    "SCALED_VIDEO_BUCKET", "pj-kmucd1-04-mefit-scaled-video-files"
+)
+FRAME_BUCKET = os.environ.get("FRAME_BUCKET", "pj-kmucd1-04-mefit-video-frame-files")
+AUDIO_BUCKET = os.environ.get("AUDIO_BUCKET", "pj-kmucd1-04-mefit-audio-files")
+SCALED_AUDIO_BUCKET = os.environ.get(
+    "SCALED_AUDIO_BUCKET", "pj-kmucd1-04-mefit-scaled-audio-files"
+)
+SNS_TOPIC_ARN = os.environ.get("SNS_TOPIC_ARN", "")
+REGION = os.environ.get("REGION", "us-east-1")
+FFMPEG_PATH = os.environ.get("FFMPEG_PATH", "/opt/bin/ffmpeg")
