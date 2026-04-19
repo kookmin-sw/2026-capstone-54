@@ -37,19 +37,40 @@ done
 
 echo ""
 echo "=== 2. SNS Topics + SQS Queues ==="
+
 TOPIC_ARN=$(awslocal sns create-topic --name mefit-video-processing-complete --query 'TopicArn' --output text)
-echo "  [OK] SNS Topic: $TOPIC_ARN"
+echo "  [OK] SNS Topic (processing-complete): $TOPIC_ARN"
 
 QUEUE_URL=$(awslocal sqs create-queue --queue-name mefit-video-processing-queue --query 'QueueUrl' --output text)
 QUEUE_ARN=$(awslocal sqs get-queue-attributes --queue-url "$QUEUE_URL" --attribute-names QueueArn --query 'Attributes.QueueArn' --output text)
 awslocal sns subscribe --topic-arn "$TOPIC_ARN" --protocol sqs --notification-endpoint "$QUEUE_ARN" > /dev/null
-echo "  [OK] SQS Queue: $QUEUE_URL (subscribed to SNS)"
+echo "  [OK] SQS Queue (processing): $QUEUE_URL → SNS subscribed"
 
 STEP_COMPLETE_QUEUE_URL=$(awslocal sqs create-queue --queue-name mefit-video-step-complete --query 'QueueUrl' --output text)
 echo "  [OK] SQS Queue (step-complete): $STEP_COMPLETE_QUEUE_URL"
 
 UPLOAD_SNS_ARN=$(awslocal sns create-topic --name mefit-video-uploaded --query 'TopicArn' --output text)
-echo "  [OK] SNS Topic (fan-out): $UPLOAD_SNS_ARN"
+echo "  [OK] SNS Topic (video-uploaded fan-out): $UPLOAD_SNS_ARN"
+
+create_fanout_queue() {
+  local QUEUE_NAME=$1
+  local SNS_ARN=$2
+  local Q_URL
+  local Q_ARN
+
+  Q_URL=$(awslocal sqs create-queue --queue-name "$QUEUE_NAME" --query 'QueueUrl' --output text)
+  Q_ARN=$(awslocal sqs get-queue-attributes --queue-url "$Q_URL" --attribute-names QueueArn --query 'Attributes.QueueArn' --output text)
+  awslocal sqs set-queue-attributes --queue-url "$Q_URL" --attributes '{
+    "Policy": "{\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":\"*\",\"Action\":\"sqs:SendMessage\",\"Resource\":\"*\"}]}"
+  }'
+  awslocal sns subscribe --topic-arn "$SNS_ARN" --protocol sqs --notification-endpoint "$Q_ARN" > /dev/null
+  echo "  [OK] SQS: $QUEUE_NAME → SNS subscribed"
+  echo "$Q_ARN"
+}
+
+VC_QUEUE_ARN=$(create_fanout_queue "mefit-video-converter-queue" "$UPLOAD_SNS_ARN")
+FE_QUEUE_ARN=$(create_fanout_queue "mefit-frame-extractor-queue" "$UPLOAD_SNS_ARN")
+AE_QUEUE_ARN=$(create_fanout_queue "mefit-audio-extractor-queue" "$UPLOAD_SNS_ARN")
 
 echo ""
 echo "=== 3. Install ffmpeg (static build for Lambda) ==="
@@ -135,12 +156,24 @@ awslocal lambda wait function-active-v2 --function-name "pj-kmucd1-04-mefit-voic
 echo "  [OK] Lambda: pj-kmucd1-04-mefit-voice-analyzer"
 
 echo ""
-echo "=== 5. S3 Event Notifications → Lambda ==="
+echo "=== 5. S3 → SNS Event Notification ==="
 
-add_s3_trigger() {
+awslocal s3api put-bucket-notification-configuration \
+  --bucket "$VIDEO_BUCKET" \
+  --notification-configuration '{
+    "TopicConfigurations": [
+      {
+        "TopicArn": "'"$UPLOAD_SNS_ARN"'",
+        "Events": ["s3:ObjectCreated:*"],
+        "Filter": {"Key": {"FilterRules": [{"Name": "suffix", "Value": ".webm"}]}}
+      }
+    ]
+  }'
+echo "  [OK] $VIDEO_BUCKET (.webm) → SNS: video-uploaded"
+
+add_s3_lambda_trigger() {
   local BUCKET=$1
   local FUNC_DASH=$2
-
   awslocal lambda add-permission \
     --function-name "$FUNC_DASH" \
     --statement-id "s3-trigger-${BUCKET}-${FUNC_DASH}" \
@@ -149,33 +182,6 @@ add_s3_trigger() {
     --source-arn "arn:aws:s3:::${BUCKET}" \
     2>/dev/null || true
 }
-
-awslocal s3api put-bucket-notification-configuration \
-  --bucket "$VIDEO_BUCKET" \
-  --notification-configuration '{
-    "LambdaFunctionConfigurations": [
-      {
-        "LambdaFunctionArn": "arn:aws:lambda:'"$REGION"':'"$ACCOUNT_ID"':function:mefit-video-converter",
-        "Events": ["s3:ObjectCreated:*"],
-        "Filter": {"Key": {"FilterRules": [{"Name": "suffix", "Value": ".webm"}]}}
-      },
-      {
-        "LambdaFunctionArn": "arn:aws:lambda:'"$REGION"':'"$ACCOUNT_ID"':function:mefit-frame-extractor",
-        "Events": ["s3:ObjectCreated:*"],
-        "Filter": {"Key": {"FilterRules": [{"Name": "suffix", "Value": ".webm"}]}}
-      },
-      {
-        "LambdaFunctionArn": "arn:aws:lambda:'"$REGION"':'"$ACCOUNT_ID"':function:mefit-audio-extractor",
-        "Events": ["s3:ObjectCreated:*"],
-        "Filter": {"Key": {"FilterRules": [{"Name": "suffix", "Value": ".webm"}]}}
-      }
-    ]
-  }'
-echo "  [OK] $VIDEO_BUCKET → video-converter, frame-extractor, audio-extractor"
-
-add_s3_trigger "$VIDEO_BUCKET" "mefit-video-converter"
-add_s3_trigger "$VIDEO_BUCKET" "mefit-frame-extractor"
-add_s3_trigger "$VIDEO_BUCKET" "mefit-audio-extractor"
 
 awslocal s3api put-bucket-notification-configuration \
   --bucket "$AUDIO_BUCKET" \
@@ -188,8 +194,8 @@ awslocal s3api put-bucket-notification-configuration \
       }
     ]
   }'
-echo "  [OK] $AUDIO_BUCKET → audio-scaler"
-add_s3_trigger "$AUDIO_BUCKET" "mefit-audio-scaler"
+add_s3_lambda_trigger "$AUDIO_BUCKET" "mefit-audio-scaler"
+echo "  [OK] $AUDIO_BUCKET (.wav) → Lambda: audio-scaler"
 
 awslocal s3api put-bucket-notification-configuration \
   --bucket "$SCALED_VIDEO_BUCKET" \
@@ -201,19 +207,41 @@ awslocal s3api put-bucket-notification-configuration \
       }
     ]
   }'
-add_s3_trigger "$SCALED_VIDEO_BUCKET" "mefit-processing-notifier"
-echo "  [OK] $SCALED_VIDEO_BUCKET → processing-notifier"
+add_s3_lambda_trigger "$SCALED_VIDEO_BUCKET" "mefit-processing-notifier"
+echo "  [OK] $SCALED_VIDEO_BUCKET → Lambda: processing-notifier"
+
+echo ""
+echo "=== 6. SQS → Lambda Event Source Mappings (fan-out) ==="
+
+for PAIR in \
+  "mefit-video-converter:$VC_QUEUE_ARN" \
+  "mefit-frame-extractor:$FE_QUEUE_ARN" \
+  "mefit-audio-extractor:$AE_QUEUE_ARN"; do
+
+  FUNC_NAME="${PAIR%%:*}"
+  QUEUE_ARN="${PAIR##*:}"
+
+  awslocal lambda create-event-source-mapping \
+    --function-name "$FUNC_NAME" \
+    --event-source-arn "$QUEUE_ARN" \
+    --batch-size 1 \
+    --enabled \
+    > /dev/null 2>&1 || true
+  echo "  [OK] SQS → Lambda: $FUNC_NAME"
+done
 
 echo ""
 echo "========================================="
 echo "  Init complete!"
 echo ""
-echo "  S3 Buckets:     5 (CORS enabled)"
-echo "  Lambda:         6 (5 video pipeline + 1 voice-analyzer)"
-echo "  S3 Triggers:    5"
-echo "  SNS Topics:     2 (processing-complete, video-uploaded)"
-echo "  SQS Queues:     2 (processing-queue, step-complete)"
+echo "  S3 Buckets:        5 (CORS enabled)"
+echo "  Lambda:            6 (5 pipeline + 1 voice-analyzer)"
+echo "  SNS Topics:        2 (video-uploaded, processing-complete)"
+echo "  SQS Queues:        5 (3 fan-out + processing + step-complete)"
+echo "  Event Sources:     3 (SQS→Lambda fan-out)"
+echo "  S3→Lambda Direct:  2 (audio-scaler, processing-notifier)"
 echo ""
+echo "  Flow: S3 .webm → SNS → 3×SQS → 3×Lambda"
 echo "  Endpoint: http://localhost:4566"
 echo "  Step-Complete SQS: $STEP_COMPLETE_QUEUE_URL"
 echo "========================================="
