@@ -6,12 +6,11 @@ from mefit_video_common.config import (
     SCALED_VIDEO_BUCKET,
     AUDIO_BUCKET,
 )
+from mefit_video_common.event_parser import parse_s3_records
 
 
 def handler(event, context):
-    for record in event.get("Records", []):
-        key = record["s3"]["object"]["key"]
-
+    for _bucket, key in parse_s3_records(event):
         parts = key.split("/")
         if len(parts) < 2:
             continue
