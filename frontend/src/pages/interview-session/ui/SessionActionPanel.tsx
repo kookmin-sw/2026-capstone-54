@@ -14,6 +14,7 @@ type ActionMode =
   | "real_tts_playing"
   | "real_countdown"
   | "practice_tts_playing"
+  | "preparing_record"
   | "practice_ready"
   | "speaking"
   | "submitting"
@@ -39,6 +40,7 @@ function deriveActionMode(machinePhase: MachinePhase, isRealMode: boolean): Acti
     case "ready": return "not_started";
     case "starting": return "starting";
     case "tts_playing": return isRealMode ? "real_tts_playing" : "practice_tts_playing";
+    case "preparing_record": return "preparing_record";
     case "countdown": return "real_countdown";
     case "awaiting_start": return "practice_ready";
     case "speaking": return "speaking";
@@ -112,6 +114,12 @@ export function SessionActionPanel({
       {mode === "practice_tts_playing" && (
         <button disabled className="w-full py-3 rounded-xl font-bold text-base bg-green-600 transition-colors opacity-50 flex items-center justify-center gap-2">
           <Loader2 size={14} className="animate-spin" /> 질문 음성 재생 중...
+        </button>
+      )}
+
+      {mode === "preparing_record" && (
+        <button disabled className="w-full py-3 rounded-xl font-bold text-base bg-green-600 transition-colors opacity-50 flex items-center justify-center gap-2">
+          <Loader2 size={14} className="animate-spin" /> 녹화 준비 중...
         </button>
       )}
 

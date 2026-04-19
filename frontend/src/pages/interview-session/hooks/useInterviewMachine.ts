@@ -93,7 +93,9 @@ export function useInterviewMachine(deps: InterviewMachineDeps): UseInterviewMac
     }
   }, [storePhase, state.phase]);
 
-  // ── Effect: tts_playing entry → TTS + recording 준비를 병렬 실행, 둘 다 완료 후 전이 ──
+  // ── Effect: tts_playing → TTS 재생 + 녹화 준비 병렬 시작 ──
+  const preparePromiseRef = useRef<Promise<void> | null>(null);
+
   useEffect(() => {
     if (state.phase !== "tts_playing" || !state.question || !state.turnId) return;
     let cancelled = false;
@@ -101,11 +103,8 @@ export function useInterviewMachine(deps: InterviewMachineDeps): UseInterviewMac
     const d = depsRef.current;
     d.resetText();
     d.avatarSpeak(state.question);
-
-    Promise.all([
-      d.prepareRecording(state.turnId).catch(() => {}),
-      d.playTtsText(state.question),
-    ]).then(() => {
+    preparePromiseRef.current = d.prepareRecording(state.turnId).catch(() => {});
+    d.playTtsText(state.question).then(() => {
       if (!cancelled) dispatch({ type: "TTS_DONE" });
     });
 
@@ -114,6 +113,19 @@ export function useInterviewMachine(deps: InterviewMachineDeps): UseInterviewMac
       depsRef.current.skipTts();
     };
   }, [state.phase, state.turnId, state.question]);
+
+  // ── Effect: preparing_record → 녹화 준비 완료 대기 ──
+  useEffect(() => {
+    if (state.phase !== "preparing_record") return;
+    let cancelled = false;
+
+    const promise = preparePromiseRef.current ?? Promise.resolve();
+    promise.then(() => {
+      if (!cancelled) dispatch({ type: "RECORDING_READY" });
+    });
+
+    return () => { cancelled = true; };
+  }, [state.phase]);
 
   // ── Effect: countdown tick ──
   useEffect(() => {

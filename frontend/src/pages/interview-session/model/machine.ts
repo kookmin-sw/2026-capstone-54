@@ -1,18 +1,19 @@
 /**
  * Interview Session State Machine — Pure reducer.
- * idle → ready → starting → tts_playing ⇄ countdown|awaiting_start → speaking → submitting → (loop | finished)
+ * idle → ready → starting → tts_playing → preparing_record → countdown|awaiting_start → speaking → submitting → (loop | finished)
  * Side effects live in useInterviewMachine hook, not here.
  */
 
 export type MachinePhase =
-  | "idle"            // waiting for session + media
-  | "ready"           // user can click Start
-  | "starting"        // startInterview API in-flight
-  | "tts_playing"     // question audio playing
-  | "countdown"       // real mode: auto-start countdown
-  | "awaiting_start"  // practice mode: waiting user click
-  | "speaking"        // STT + recording active
-  | "submitting"      // answer submitted, backend processing
+  | "idle"              // waiting for session + media
+  | "ready"             // user can click Start
+  | "starting"          // startInterview API in-flight
+  | "tts_playing"       // question audio playing
+  | "preparing_record"  // TTS done, waiting for recording initiate to complete
+  | "countdown"         // real mode: auto-start countdown
+  | "awaiting_start"    // practice mode: waiting user click
+  | "speaking"          // STT + recording active
+  | "submitting"        // answer submitted, backend processing
   | "finished"
   | "error";
 
@@ -31,6 +32,7 @@ export type MachineEvent =
   | { type: "START" }
   | { type: "QUESTION_ARRIVED"; turnId: number; question: string }
   | { type: "TTS_DONE" }
+  | { type: "RECORDING_READY" }
   | { type: "COUNTDOWN_TICK" }
   | { type: "PRACTICE_START" }
   | { type: "SUBMIT" }
@@ -83,6 +85,12 @@ export function machineReducer(state: MachineState, event: MachineEvent): Machin
 
     case "tts_playing":
       if (event.type === "TTS_DONE") {
+        return { ...state, phase: "preparing_record" };
+      }
+      return state;
+
+    case "preparing_record":
+      if (event.type === "RECORDING_READY") {
         return state.isRealMode
           ? { ...state, phase: "countdown", countdown: randomCountdown() }
           : { ...state, phase: "awaiting_start" };
