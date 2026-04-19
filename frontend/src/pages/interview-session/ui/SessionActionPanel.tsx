@@ -139,7 +139,7 @@ export function SessionActionPanel({
       {mode === "submitting" && (
         <button disabled className="w-full py-3 rounded-xl font-bold text-base bg-indigo-600 opacity-50 flex items-center justify-center gap-2">
           <Loader2 size={16} className="animate-spin" />
-          {interviewPhase === "generating_followup" ? "꼬리질문 생성 중..." : "제출 중..."}
+          {interviewPhase === "generating_followup" ? "꼬리질문 생성 중..." : interviewPhase === "submitting" ? "제출 중..." : "답변 저장 중..."}
         </button>
       )}
     </div>

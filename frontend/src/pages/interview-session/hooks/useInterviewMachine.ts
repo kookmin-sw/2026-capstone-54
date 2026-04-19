@@ -182,10 +182,10 @@ export function useInterviewMachine(deps: InterviewMachineDeps): UseInterviewMac
       if (busyRef.current || !state.turnId || !answer.trim()) return;
       busyRef.current = true;
 
+      dispatch({ type: "SUBMIT" });
       const d = depsRef.current;
       d.stopStt();
       await d.stopRecording();
-      dispatch({ type: "SUBMIT" });
 
       try {
         await submitInterviewAnswer(deps.sessionUuid, state.turnId, answer, speechSegments);
