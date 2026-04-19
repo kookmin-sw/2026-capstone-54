@@ -43,6 +43,7 @@ export class WebSpeechSTTProvider implements ISTTProvider {
   private resultCallback?: (result: STTResult) => void;
   private errorCallback?: (error: unknown) => void;
   private isIntentionalStop = false;
+  private startTime = 0;
 
   constructor() {
     const SpeechRecognitionClass = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -66,8 +67,9 @@ export class WebSpeechSTTProvider implements ISTTProvider {
         }
       }
       if (this.resultCallback) {
-        if (finalTranscript) this.resultCallback({ text: finalTranscript, isFinal: true });
-        if (interimTranscript) this.resultCallback({ text: interimTranscript, isFinal: false });
+        const timestampMs = Date.now() - this.startTime;
+        if (finalTranscript) this.resultCallback({ text: finalTranscript, isFinal: true, timestampMs });
+        if (interimTranscript) this.resultCallback({ text: interimTranscript, isFinal: false, timestampMs });
       }
     };
 
@@ -86,8 +88,13 @@ export class WebSpeechSTTProvider implements ISTTProvider {
   start(language: string): void {
     if (!this.recognition) return;
     this.isIntentionalStop = false;
+    this.startTime = Date.now();
     this.recognition.lang = language;
     try { this.recognition.start(); } catch { /* already started */ }
+  }
+
+  getStartTime(): number {
+    return this.startTime;
   }
 
   stop(): void {

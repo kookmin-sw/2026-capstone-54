@@ -128,6 +128,31 @@ async function _request<T>(
   return body as T;
 }
 
+/* ── Authenticated fetch with 401 retry (for raw fetch calls outside apiRequest) ── */
+
+export async function fetchWithAuth(
+  url: string | URL,
+  options: RequestInit = {},
+): Promise<Response> {
+  const token = getAccessToken();
+  const headers = new Headers(options.headers);
+  if (token) headers.set("Authorization", `Bearer ${token}`);
+
+  const res = await fetch(url, { ...options, headers });
+
+  if (res.status === 401) {
+    const refreshed = await refreshAccessToken();
+    if (refreshed) {
+      const newToken = getAccessToken();
+      const retryHeaders = new Headers(options.headers);
+      if (newToken) retryHeaders.set("Authorization", `Bearer ${newToken}`);
+      return fetch(url, { ...options, headers: retryHeaders });
+    }
+  }
+
+  return res;
+}
+
 /* ── Token refresh helper ── */
 
 // refresh 실패 시 호출할 콜백 (순환 의존 방지를 위해 런타임에 등록)

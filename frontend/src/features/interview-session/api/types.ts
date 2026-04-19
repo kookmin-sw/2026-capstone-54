@@ -20,12 +20,19 @@ export interface InterviewSession {
   updatedAt: string;
 }
 
+export interface SpeechSegment {
+  text: string;
+  startMs: number;
+  endMs: number;
+}
+
 export interface InterviewTurn {
   id: number;
   turnType: InterviewTurnType;
   questionSource: string;
   question: string;
   answer: string;
+  speechSegments: SpeechSegment[];
   turnNumber: number;
   followupOrder: number | null;
   createdAt: string;
@@ -99,3 +106,34 @@ export interface InterviewSessionListItem {
   anchorQuestions: { id: number; question: string }[];
   reportStatus: InterviewAnalysisReportStatus | null;
 }
+
+export interface SpeechTimelineSegment {
+  startMs: number;
+  endMs: number;
+  type: "speech" | "silence";
+  dbfs: number | null;
+}
+
+export interface VoiceSummary {
+  totalDurationMs: number;
+  speechDurationMs: number;
+  silenceDurationMs: number;
+  silenceRatio: number;
+  speechRatio: number;
+  avgDbfsOverall: number | null;
+  avgDbfsSpeech: number | null;
+  silenceSegmentCount: number;
+  speechSegmentCount: number;
+}
+
+export interface BehaviorAnalysis {
+  uuid: string;
+  interviewTurn: number;
+  status: string;
+  speechData: {
+    summary: VoiceSummary;
+    timeline: SpeechTimelineSegment[];
+  } | null;
+  expressionData: Record<string, unknown>;
+}
+

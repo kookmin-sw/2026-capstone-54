@@ -21,6 +21,7 @@ export type {
   SubmitAnswerFollowupResponse,
   SubmitAnswerFullProcessResponse,
   SubmitAnswerResponse,
+  BehaviorAnalysis,
 } from "./api/types";
 
 export { SESSION_TYPE_LABEL, DIFFICULTY_LABEL, REPORT_STATUS_BADGE } from "./constants/labels";
@@ -29,3 +30,15 @@ export { AvatarSection } from "./ui/AvatarSection";
 export { QuestionPanel } from "./ui/QuestionPanel";
 export { TranscriptPanel } from "./ui/TranscriptPanel";
 export { BehaviorMetrics } from "./ui/BehaviorMetrics";
+
+export { recordingApi } from "./api/recordingApi";
+export { useMediaRecorder } from "./lib/useMediaRecorder";
+export { useChunkUploader } from "./lib/useChunkUploader";
+export { useRecordingManager } from "./lib/useRecordingManager";
+
+export { VideoPreview } from "./ui/VideoPreview";
+export { RecordingIndicator } from "./ui/RecordingIndicator";
+export { MediaPlayer } from "./ui/MediaPlayer";
+export type { RecordingItem } from "./api/recordingApi";
+
+
