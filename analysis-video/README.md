@@ -11,7 +11,7 @@ pj-kmucd1-04-mefit-video-files (원본 .webm 업로드)
     │
     └─ S3 이벤트 → SNS (video-uploaded) ─┬→ video-converter  → scaled-video-files (.mp4)
                                          ├→ frame-extractor  → video-frame-files (.jpg)
-                                         └→ audio-extractor  → scaled-audio-files (.wav, 16kHz mono)
+                                         └→ audio-extractor  → audio-files (.wav 원본) + scaled-audio-files (.wav 16kHz)
 
 각 Lambda 완료 시 → SQS (step-complete) → Django Celery Worker
 ```
@@ -53,7 +53,7 @@ analysis-video/
 |------|--------|------|------|----------|--------|
 | `video-converter` | SNS: video-uploaded | 원본 WebM | MP4 (720p H.264) | 5분 | 1024MB |
 | `frame-extractor` | SNS: video-uploaded | 원본 WebM | JPEG 프레임 (1FPS) | 3분 | 512MB |
-| `audio-extractor` | SNS: video-uploaded | 원본 WebM | WAV (16kHz mono) | 2분 | 512MB |
+| `audio-extractor` | SNS: video-uploaded | 원본 WebM | WAV 원본 (audio-files) + WAV 16kHz mono (scaled-audio) | 2분 | 512MB |
 | `voice-analyzer` | 온디맨드 (boto3.invoke) | WAV (scaled-audio) | JSON (summary + timeline) | 2분 | 1024MB |
 
 ## S3 버킷
