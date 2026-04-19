@@ -22,40 +22,40 @@ def handler(event, context):
 
 def _process(bucket, key):
     input_path = download_to_tmp(bucket, key)
-        tmp_dir = input_path.rsplit(".", 1)[0] + "_frames"
-        os.makedirs(tmp_dir, exist_ok=True)
+    tmp_dir = input_path.rsplit(".", 1)[0] + "_frames"
+    os.makedirs(tmp_dir, exist_ok=True)
 
-        run_ffmpeg(
-            [
-                "-i",
-                input_path,
-                "-vf",
-                "fps=1",
-                "-q:v",
-                "3",
-                f"{tmp_dir}/frame_%05d.jpg",
-            ],
-            description=f"extract frames {key}",
+    run_ffmpeg(
+        [
+            "-i",
+            input_path,
+            "-vf",
+            "fps=1",
+            "-q:v",
+            "3",
+            f"{tmp_dir}/frame_%05d.jpg",
+        ],
+        description=f"extract frames {key}",
+    )
+
+    original_key_prefix = key.rsplit(".", 1)[0]
+    frame_prefix = f"{original_key_prefix}/frames/"
+
+    for frame_path in glob.glob(f"{tmp_dir}/frame_*.jpg"):
+        frame_filename = os.path.basename(frame_path)
+        frame_key = f"{frame_prefix}{frame_filename}"
+        upload_from_tmp(frame_path, FRAME_BUCKET, frame_key, "image/jpeg")
+        os.remove(frame_path)
+
+    parts = key.split("/")
+    if len(parts) >= 2:
+        publish_step_complete(
+            session_uuid=parts[0],
+            turn_id=parts[1],
+            step="frame_extractor",
+            output_bucket=FRAME_BUCKET,
+            output_key=frame_prefix,
         )
 
-        original_key_prefix = key.rsplit(".", 1)[0]
-        frame_prefix = f"{original_key_prefix}/frames/"
-
-        for frame_path in glob.glob(f"{tmp_dir}/frame_*.jpg"):
-            frame_filename = os.path.basename(frame_path)
-            frame_key = f"{frame_prefix}{frame_filename}"
-            upload_from_tmp(frame_path, FRAME_BUCKET, frame_key, "image/jpeg")
-            os.remove(frame_path)
-
-        parts = key.split("/")
-        if len(parts) >= 2:
-            publish_step_complete(
-                session_uuid=parts[0],
-                turn_id=parts[1],
-                step="frame_extractor",
-                output_bucket=FRAME_BUCKET,
-                output_key=frame_prefix,
-            )
-
-        os.rmdir(tmp_dir)
-        os.remove(input_path)
+    os.rmdir(tmp_dir)
+    os.remove(input_path)

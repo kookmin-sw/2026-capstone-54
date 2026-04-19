@@ -21,34 +21,34 @@ def handler(event, context):
 
 def _process(bucket, key):
     input_path = download_to_tmp(bucket, key)
-        base_path = input_path.rsplit(".", 1)[0]
-        raw_path = base_path + ".wav"
-        scaled_path = base_path + "_16k.wav"
+    base_path = input_path.rsplit(".", 1)[0]
+    raw_path = base_path + ".wav"
+    scaled_path = base_path + "_16k.wav"
 
-        run_ffmpeg(
-            ["-i", input_path, "-vn", "-acodec", "pcm_s16le", raw_path],
-            description=f"extract audio {key}",
+    run_ffmpeg(
+        ["-i", input_path, "-vn", "-acodec", "pcm_s16le", raw_path],
+        description=f"extract audio {key}",
+    )
+
+    run_ffmpeg(
+        ["-i", raw_path, "-ar", "16000", "-ac", "1", scaled_path],
+        description=f"scale audio {key}",
+    )
+
+    output_key = key.rsplit(".", 1)[0] + ".wav"
+    upload_from_tmp(raw_path, AUDIO_BUCKET, output_key, "audio/wav")
+    upload_from_tmp(scaled_path, SCALED_AUDIO_BUCKET, output_key, "audio/wav")
+
+    parts = key.split("/")
+    if len(parts) >= 2:
+        publish_step_complete(
+            session_uuid=parts[0],
+            turn_id=parts[1],
+            step="audio_extractor",
+            output_bucket=SCALED_AUDIO_BUCKET,
+            output_key=output_key,
         )
 
-        run_ffmpeg(
-            ["-i", raw_path, "-ar", "16000", "-ac", "1", scaled_path],
-            description=f"scale audio {key}",
-        )
-
-        output_key = key.rsplit(".", 1)[0] + ".wav"
-        upload_from_tmp(raw_path, AUDIO_BUCKET, output_key, "audio/wav")
-        upload_from_tmp(scaled_path, SCALED_AUDIO_BUCKET, output_key, "audio/wav")
-
-        parts = key.split("/")
-        if len(parts) >= 2:
-            publish_step_complete(
-                session_uuid=parts[0],
-                turn_id=parts[1],
-                step="audio_extractor",
-                output_bucket=SCALED_AUDIO_BUCKET,
-                output_key=output_key,
-            )
-
-        os.remove(input_path)
-        os.remove(raw_path)
-        os.remove(scaled_path)
+    os.remove(input_path)
+    os.remove(raw_path)
+    os.remove(scaled_path)
