@@ -64,12 +64,11 @@ class InitiateRecordingService(BaseService):
       upload_id=upload_id,
     )
 
-    base_url = settings.BASE_URL.rstrip("/")
     recording_id = str(recording.pk)
     part_urls = [
       {
         "partNumber": n,
-        "url": f"{base_url}/api/v1/interviews/recordings/{recording_id}/parts/{n}/",
+        "url": f"/api/v1/interviews/recordings/{recording_id}/parts/{n}/",
       } for n in range(1, 101)
     ]
 
