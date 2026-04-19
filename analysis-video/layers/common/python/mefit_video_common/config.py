@@ -10,7 +10,6 @@ SCALED_AUDIO_BUCKET = os.environ.get(
     "SCALED_AUDIO_BUCKET", "pj-kmucd1-04-mefit-scaled-audio-files"
 )
 
-SNS_TOPIC_ARN = os.environ.get("SNS_TOPIC_ARN", "")
 STEP_COMPLETE_SQS_URL = os.environ.get("STEP_COMPLETE_SQS_URL", "")
 REGION = os.environ.get("REGION", "us-east-1")
 FFMPEG_PATH = os.environ.get("FFMPEG_PATH", "/opt/bin/ffmpeg")

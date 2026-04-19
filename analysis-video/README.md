@@ -38,8 +38,7 @@ analysis-video/
 │   ├── frame_extractor/       # 1FPS JPEG 프레임 추출
 │   ├── audio_extractor/       # 영상 → WAV 음성 분리
 │   ├── audio_scaler/          # WAV → 16kHz mono 다운샘플링
-│   ├── expression_analyzer/   # 표정 분석 (stub)
-│   └── speech_analyzer/       # 음성 분석 (stub)
+│   └── voice_analyzer/         # 음성 분석 (pydub, 온디맨드)
 │
 ├── local/                                  # 로컬 개발 환경
 │   ├── docker-compose.yml     # LocalStack (S3, Lambda, SNS, SQS)
@@ -59,8 +58,7 @@ analysis-video/
 | `frame-extractor` | SNS: video-uploaded | 원본 WebM | JPEG 프레임 (1FPS) | 3분 | 512MB |
 | `audio-extractor` | SNS: video-uploaded | 원본 WebM | WAV (44.1kHz) | 2분 | 512MB |
 | `audio-scaler` | S3: audio-files `.wav` | WAV | WAV (16kHz mono) | 2분 | 512MB |
-| `expression-analyzer` | S3: frame-files `.jpg` | JPEG 프레임 | SNS 분석 결과 | 5분 | 2048MB |
-| `speech-analyzer` | S3: scaled-audio `.wav` | WAV (16kHz) | SNS 분석 결과 | 3분 | 1024MB |
+| `voice-analyzer` | 온디맨드 (boto3.invoke) | WAV (scaled-audio) | JSON (summary + timeline) | 2분 | 1024MB |
 
 ## S3 버킷
 
@@ -150,7 +148,6 @@ AWS 콘솔 또는 EC2 CLI를 통해 배포. 상세 절차:
 | `FRAME_BUCKET` | 프레임 버킷 | `pj-kmucd1-04-mefit-video-frame-files` |
 | `AUDIO_BUCKET` | 음성 버킷 | `pj-kmucd1-04-mefit-audio-files` |
 | `SCALED_AUDIO_BUCKET` | 스케일 음성 버킷 | `pj-kmucd1-04-mefit-scaled-audio-files` |
-| `SNS_TOPIC_ARN` | 완료 알림 SNS ARN | — |
 | `REGION` | AWS 리전 | `us-east-1` |
 | `FFMPEG_PATH` | ffmpeg 바이너리 경로 | `/opt/bin/ffmpeg` |
 
