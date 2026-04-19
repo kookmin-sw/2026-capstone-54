@@ -10,7 +10,6 @@ from .recording_serializers import (
   InitiateRecordingResponseSerializer,
   InitiateRecordingSerializer,
   PlaybackUrlResponseSerializer,
-  PresignedUrlItemSerializer,
   RecordingListSerializer,
 )
 from .submit_answer_serializer import SubmitAnswerSerializer
@@ -27,7 +26,6 @@ __all__ = [
   "InterviewSessionSerializer",
   "InterviewTurnSerializer",
   "PlaybackUrlResponseSerializer",
-  "PresignedUrlItemSerializer",
   "RecordingListSerializer",
   "SubmitAnswerSerializer",
 ]
