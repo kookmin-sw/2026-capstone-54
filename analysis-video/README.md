@@ -15,7 +15,7 @@ pj-kmucd1-04-mefit-video-files (원본 .webm 업로드)
                                                                     │
                                                                     └─ audio-scaler → scaled-audio-files (.wav)
 
-scaled-video-files 출력 완료 시 → processing-notifier → SNS → Django backend
+각 Lambda 완료 시 → SQS (step-complete) → Django Celery Worker
 ```
 
 S3 이벤트 알림은 동일 버킷·이벤트 유형·접미사에 대해 여러 대상을 지정할 수 없으므로
@@ -38,7 +38,6 @@ analysis-video/
 │   ├── frame_extractor/       # 1FPS JPEG 프레임 추출
 │   ├── audio_extractor/       # 영상 → WAV 음성 분리
 │   ├── audio_scaler/          # WAV → 16kHz mono 다운샘플링
-│   ├── processing_notifier/   # 파이프라인 완료 확인 → SNS 알림
 │   ├── expression_analyzer/   # 표정 분석 (stub)
 │   └── speech_analyzer/       # 음성 분석 (stub)
 │
@@ -60,7 +59,6 @@ analysis-video/
 | `frame-extractor` | SNS: video-uploaded | 원본 WebM | JPEG 프레임 (1FPS) | 3분 | 512MB |
 | `audio-extractor` | SNS: video-uploaded | 원본 WebM | WAV (44.1kHz) | 2분 | 512MB |
 | `audio-scaler` | S3: audio-files `.wav` | WAV | WAV (16kHz mono) | 2분 | 512MB |
-| `processing-notifier` | S3: 출력 버킷 | — | SNS 메시지 | 30초 | 256MB |
 | `expression-analyzer` | S3: frame-files `.jpg` | JPEG 프레임 | SNS 분석 결과 | 5분 | 2048MB |
 | `speech-analyzer` | S3: scaled-audio `.wav` | WAV (16kHz) | SNS 분석 결과 | 3분 | 1024MB |
 
@@ -89,7 +87,7 @@ cd local
 docker compose up -d
 ```
 
-5개 S3 버킷 + SNS 토픽 + SQS 큐 + Lambda 5개가 자동 생성됩니다.
+5개 S3 버킷 + SNS 토픽 + SQS 큐 + Lambda 5개(4 pipeline + 1 voice-analyzer)가 자동 생성됩니다.
 
 ### 로컬 환경 제한사항
 
@@ -119,7 +117,7 @@ python local/invoke_local.py video_converter pj-kmucd1-04-mefit-video-files test
 python local/invoke_local.py frame_extractor pj-kmucd1-04-mefit-video-files test/sample.webm
 python local/invoke_local.py audio_extractor pj-kmucd1-04-mefit-video-files test/sample.webm
 python local/invoke_local.py audio_scaler pj-kmucd1-04-mefit-audio-files test/sample.wav
-python local/invoke_local.py processing_notifier pj-kmucd1-04-mefit-scaled-video-files test/sample.mp4
+
 ```
 
 ## Lambda Layer

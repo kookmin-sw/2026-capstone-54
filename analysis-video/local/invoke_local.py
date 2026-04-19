@@ -5,7 +5,6 @@ Usage:
     python local/invoke_local.py frame_extractor <bucket> <key>
     python local/invoke_local.py audio_extractor <bucket> <key>
     python local/invoke_local.py audio_scaler <bucket> <key>
-    python local/invoke_local.py processing_notifier <bucket> <key>
 """
 
 import importlib

@@ -38,14 +38,6 @@ done
 echo ""
 echo "=== 2. SNS Topics + SQS Queues ==="
 
-TOPIC_ARN=$(awslocal sns create-topic --name mefit-video-processing-complete --query 'TopicArn' --output text)
-echo "  [OK] SNS Topic (processing-complete): $TOPIC_ARN"
-
-QUEUE_URL=$(awslocal sqs create-queue --queue-name mefit-video-processing-queue --query 'QueueUrl' --output text)
-QUEUE_ARN=$(awslocal sqs get-queue-attributes --queue-url "$QUEUE_URL" --attribute-names QueueArn --query 'Attributes.QueueArn' --output text)
-awslocal sns subscribe --topic-arn "$TOPIC_ARN" --protocol sqs --notification-endpoint "$QUEUE_ARN" > /dev/null
-echo "  [OK] SQS Queue (processing): $QUEUE_URL → SNS subscribed"
-
 STEP_COMPLETE_QUEUE_URL=$(awslocal sqs create-queue --queue-name mefit-video-step-complete --query 'QueueUrl' --output text)
 echo "  [OK] SQS Queue (step-complete): $STEP_COMPLETE_QUEUE_URL"
 
@@ -96,9 +88,9 @@ LAYERS_DIR="/opt/mefit/layers/common/python"
 OUT_DIR="/tmp/lambda-packages"
 mkdir -p "$OUT_DIR"
 
-LAMBDA_ENV="Variables={VIDEO_BUCKET=$VIDEO_BUCKET,SCALED_VIDEO_BUCKET=$SCALED_VIDEO_BUCKET,FRAME_BUCKET=$FRAME_BUCKET,AUDIO_BUCKET=$AUDIO_BUCKET,SCALED_AUDIO_BUCKET=$SCALED_AUDIO_BUCKET,SNS_TOPIC_ARN=$TOPIC_ARN,STEP_COMPLETE_SQS_URL=$STEP_COMPLETE_QUEUE_URL,REGION=$REGION,FFMPEG_PATH=/opt/ffmpeg-bin/ffmpeg}"
+LAMBDA_ENV="Variables={VIDEO_BUCKET=$VIDEO_BUCKET,SCALED_VIDEO_BUCKET=$SCALED_VIDEO_BUCKET,FRAME_BUCKET=$FRAME_BUCKET,AUDIO_BUCKET=$AUDIO_BUCKET,SCALED_AUDIO_BUCKET=$SCALED_AUDIO_BUCKET,STEP_COMPLETE_SQS_URL=$STEP_COMPLETE_QUEUE_URL,REGION=$REGION,FFMPEG_PATH=/opt/ffmpeg-bin/ffmpeg}"
 
-FUNCTIONS="video_converter frame_extractor audio_extractor audio_scaler processing_notifier"
+FUNCTIONS="video_converter frame_extractor audio_extractor audio_scaler"
 
 for FUNC in $FUNCTIONS; do
   TMPDIR=$(mktemp -d)
@@ -197,18 +189,7 @@ awslocal s3api put-bucket-notification-configuration \
 add_s3_lambda_trigger "$AUDIO_BUCKET" "mefit-audio-scaler"
 echo "  [OK] $AUDIO_BUCKET (.wav) → Lambda: audio-scaler"
 
-awslocal s3api put-bucket-notification-configuration \
-  --bucket "$SCALED_VIDEO_BUCKET" \
-  --notification-configuration '{
-    "LambdaFunctionConfigurations": [
-      {
-        "LambdaFunctionArn": "arn:aws:lambda:'"$REGION"':'"$ACCOUNT_ID"':function:mefit-processing-notifier",
-        "Events": ["s3:ObjectCreated:*"]
-      }
-    ]
-  }'
-add_s3_lambda_trigger "$SCALED_VIDEO_BUCKET" "mefit-processing-notifier"
-echo "  [OK] $SCALED_VIDEO_BUCKET → Lambda: processing-notifier"
+
 
 echo ""
 echo "=== 6. SQS → Lambda Event Source Mappings (fan-out) ==="
@@ -235,11 +216,11 @@ echo "========================================="
 echo "  Init complete!"
 echo ""
 echo "  S3 Buckets:        5 (CORS enabled)"
-echo "  Lambda:            6 (5 pipeline + 1 voice-analyzer)"
-echo "  SNS Topics:        2 (video-uploaded, processing-complete)"
-echo "  SQS Queues:        5 (3 fan-out + processing + step-complete)"
+echo "  Lambda:            5 (4 pipeline + 1 voice-analyzer)"
+echo "  SNS Topics:        1 (video-uploaded)"
+echo "  SQS Queues:        4 (3 fan-out + step-complete)"
 echo "  Event Sources:     3 (SQS→Lambda fan-out)"
-echo "  S3→Lambda Direct:  2 (audio-scaler, processing-notifier)"
+echo "  S3→Lambda Direct:  1 (audio-scaler)"
 echo ""
 echo "  Flow: S3 .webm → SNS → 3×SQS → 3×Lambda"
 echo "  Endpoint: http://localhost:4566"
