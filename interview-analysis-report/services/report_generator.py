@@ -23,6 +23,7 @@ from db.models import (
 )
 from services.llm_analyzer import AnalysisContext, ExchangeData, LLMAnalyzer
 from services.voice_analysis_invoker import VoiceAnalysisInvoker
+from sqlalchemy import case, Integer
 from utils.content_loader import get_job_description_content, get_resume_content
 
 logger = logging.getLogger(__name__)
@@ -62,7 +63,10 @@ class ReportGeneratorService:
                 .filter(InterviewTurnTable.interview_session_id == session_id)
                 .order_by(
                     InterviewTurnTable.turn_number,
-                    InterviewTurnTable.followup_order,
+                    case(
+                        (InterviewTurnTable.followup_order.is_(None), 0),
+                        else_=InterviewTurnTable.followup_order,
+                    ).cast(Integer),
                 )
                 .all()
             )
