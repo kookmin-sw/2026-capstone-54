@@ -8,8 +8,7 @@ logger = logging.getLogger(__name__)
 STEP_FIELD_MAP = {
   "video_converter": "scaled_video_key",
   "frame_extractor": "frame_prefix",
-  "audio_extractor": "audio_key",
-  "audio_scaler": "scaled_audio_key",
+  "audio_extractor": "scaled_audio_key",
 }
 
 

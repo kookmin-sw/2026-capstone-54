@@ -61,6 +61,5 @@ class UpdateRecordingStepService(BaseService):
     return all([
       recording.scaled_video_key,
       recording.frame_prefix,
-      recording.audio_key,
       recording.scaled_audio_key,
     ])
