@@ -21,3 +21,17 @@ def get_video_s3_client():
 
   _video_s3_client = boto3.client("s3", **kwargs)
   return _video_s3_client
+
+
+def get_video_s3_presign_client():
+  public_endpoint = getattr(settings, "VIDEO_S3_PUBLIC_ENDPOINT_URL", None)
+  if public_endpoint:
+    return boto3.client(
+      "s3",
+      region_name=settings.AWS_S3_REGION_NAME,
+      endpoint_url=public_endpoint,
+      aws_access_key_id="dummy",
+      aws_secret_access_key="dummy",
+      config=_PATH_STYLE,
+    )
+  return get_video_s3_client()
