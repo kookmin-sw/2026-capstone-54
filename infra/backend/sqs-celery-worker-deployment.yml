@@ -35,7 +35,7 @@ spec:
         - name: CELERY_BROKER_URL
           value: ""
         command: [ "celery" ]
-        args: [ "-A", "config.celery_sqs", "worker", "-Q", "mefit-video-step-complete", "-l", "INFO", "--concurrency", "2", "--without-heartbeat", "--without-mingle", "--without-gossip", "-b", "sqs://" ]
+        args: [ "-A", "config.celery_sqs", "worker", "-Q", "mefit-video-step-complete", "-l", "INFO", "--concurrency", "2", "--without-heartbeat", "--without-mingle", "--without-gossip" ]
         resources:
           requests:
             cpu: 100m
