@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Archive, Eye, FileText, Flame, Gem, Megaphone, ShieldCheck, Star, TriangleAlert, Zap } from "lucide-react";
+import { Archive, ClipboardList, Eye, FileText, Flame, Gem, KeyRound, Lock, Megaphone, ShieldCheck, Star, TriangleAlert, UserCircle, Zap } from "lucide-react";
 import { useSettingsStore } from "@/features/settings";
 import { useSubscriptionStore } from "@/features/subscription";
 import { TicketPolicyInfo } from "@/features/subscription/ui/TicketPolicyInfo";
@@ -113,7 +113,9 @@ export function SettingsPage() {
                   </div>
 
                   <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl px-7 py-7 shadow-[var(--sc)] mb-4 max-[640px]:px-[18px]">
-                    <div className="font-plex-sans-kr text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">👤 프로필 사진</div>
+                    <div className="font-plex-sans-kr text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">
+                      <UserCircle size={15} className="text-[#0991B2]" /> 프로필 사진
+                    </div>
                     <div className="flex items-center gap-4 mb-5">
                       {data.profile.avatarUrl ? (
                         <img src={data.profile.avatarUrl} alt="프로필" className="w-16 h-16 rounded-full object-cover shadow-[0_2px_8px_rgba(9,145,178,0.3)] shrink-0" />
@@ -133,7 +135,9 @@ export function SettingsPage() {
                   </div>
 
                   <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl px-7 py-7 shadow-[var(--sc)] mb-4 max-[640px]:px-[18px]">
-                    <div className="font-plex-sans-kr text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">📝 기본 정보</div>
+                    <div className="font-plex-sans-kr text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">
+                      <ClipboardList size={15} className="text-[#059669]" /> 기본 정보
+                    </div>
                     <div className="flex flex-col gap-4">
                       <div className="flex flex-col gap-[5px]">
                         <label className="font-plex-sans-kr text-[12px] font-bold text-[#0A0A0A] tracking-[0.1px] flex items-center gap-1">
@@ -185,7 +189,9 @@ export function SettingsPage() {
                   </div>
 
                   <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl px-7 py-7 shadow-[var(--sc)] mb-4 max-[640px]:px-[18px]">
-                    <div className="font-plex-sans-kr text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">🔑 비밀번호 변경</div>
+                    <div className="font-plex-sans-kr text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">
+                      <KeyRound size={15} className="text-[#F59E0B]" /> 비밀번호 변경
+                    </div>
                     <div className="flex flex-col gap-4">
                       <div className="flex flex-col gap-[5px]">
                         <label className="font-plex-sans-kr text-[12px] font-bold text-[#0A0A0A] tracking-[0.1px] flex items-center gap-1">현재 비밀번호 <span className="text-[#EF4444] text-[10px]">*</span></label>
@@ -213,7 +219,7 @@ export function SettingsPage() {
 
                   <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl px-7 py-7 shadow-[var(--sc)] mb-4 max-[640px]:px-[18px]" style={{ background: "rgba(9,145,178,.03)", borderColor: "rgba(9,145,178,.12)" }}>
                     <p style={{ fontSize: 13, color: "#6B7280", lineHeight: 1.7 }}>
-                      🔒 비밀번호는 암호화되어 저장됩니다.<br />
+                      <Lock size={13} className="text-[#0991B2] inline-block mr-1 align-text-bottom" /> 비밀번호는 암호화되어 저장됩니다.<br />
                       분실 시 로그인 화면에서 <strong style={{ color: "#0991B2" }}>비밀번호 찾기</strong>를 이용하세요.
                     </p>
                   </div>
