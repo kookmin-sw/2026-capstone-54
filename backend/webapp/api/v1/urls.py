@@ -16,5 +16,4 @@ urlpatterns = [
   path("notifications/", include("api.v1.notifications.urls")),
   path("achievements/", include("api.v1.achievements.urls")),
   path("", include("api.v1.profiles.urls")),
-  path("webhooks/", include("api.v1.webhooks.urls")),
 ]

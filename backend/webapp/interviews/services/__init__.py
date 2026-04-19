@@ -18,7 +18,6 @@ from .submit_answer_and_generate_followup_service import (
   SubmitAnswerAndGenerateFollowupService,
 )
 from .submit_answer_for_full_process_service import SubmitAnswerForFullProcessService
-from .update_recording_status_service import UpdateRecordingStatusService
 from .update_recording_step_service import UpdateRecordingStepService
 
 __all__ = [
@@ -36,6 +35,5 @@ __all__ = [
   "dispatch_report_task",
   "get_resume_bundle_url",
   "regenerate_analysis_report",
-  "UpdateRecordingStatusService",
   "UpdateRecordingStepService",
 ]
