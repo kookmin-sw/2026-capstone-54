@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { Download, Video, Mic, AlertCircle } from "lucide-react";
 import { recordingApi } from "../api/recordingApi";
 import type { PlaybackUrlResponse } from "../api/recordingApi";
@@ -36,7 +36,7 @@ export function MediaPlayer({ recordingId, mediaType, className = "" }: MediaPla
     };
   }, []);
 
-  const loadMedia = async () => {
+  const loadMedia = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(false);
@@ -47,13 +47,13 @@ export function MediaPlayer({ recordingId, mediaType, className = "" }: MediaPla
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [recordingId]);
 
   useEffect(() => {
     if (isVisible && !playbackData && !error) {
       loadMedia();
     }
-  }, [isVisible, recordingId, playbackData, error]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isVisible, playbackData, error, loadMedia]);
 
   const renderContent = () => {
     if (error) {

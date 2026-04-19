@@ -115,7 +115,7 @@ export function InteractiveTimeline({
     recordingApi.playbackUrl(recordingId).then(data => {
       setVideoUrl(data.scaledUrl || data.url);
       setAudioUrl(data.audioUrl || data.url);
-    }).catch(() => {});
+    }).catch((err) => { console.error("Failed to load playback URL:", err); });
   }, [recordingId]);
 
   if (!speechData?.summary || !speechData?.timeline) return null;

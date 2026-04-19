@@ -135,7 +135,7 @@ export function useMediaRecorder({
     } finally {
       isStartingRef.current = false;
     }
-  }, [timeslice, mimeType, externalStream, stream]);
+  }, [timeslice, mimeType, externalStream]);
 
   const stop = useCallback((): Promise<Blob | null> => {
     console.info("[MediaRecorder] stop() called, recorderState=%s", recorderRef.current?.state ?? "null");
@@ -171,7 +171,7 @@ export function useMediaRecorder({
 
       recorderRef.current.stop();
     });
-  }, [stream, externalStream]);
+  }, [externalStream]);
 
   useEffect(() => {
     return () => {
