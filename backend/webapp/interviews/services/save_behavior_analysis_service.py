@@ -33,6 +33,8 @@ class SaveBehaviorAnalysisService(BaseService):
       },
     )
 
+    analysis = InterviewBehaviorAnalysis.objects.select_for_update().get(pk=analysis.pk)
+
     analysis_type = self.kwargs["analysis_type"]
     data = self.kwargs.get("data", {})
 
