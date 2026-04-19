@@ -43,6 +43,10 @@ S3_ENDPOINT_URL = os.getenv("AWS_S3_ENDPOINT_URL", "") or None
 S3_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID", "") or None
 S3_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY", "") or None
 
+LAMBDA_ENDPOINT_URL = (
+    os.getenv("LAMBDA_ENDPOINT_URL", "") or os.getenv("AWS_ENDPOINT_URL", "") or None
+)
+
 MEDIA_ROOT: str = os.getenv("MEDIA_ROOT", "/app/media")
 
 # ── 로그 레벨 ────────────────────────────────────

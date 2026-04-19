@@ -48,6 +48,7 @@ class ExchangeData:
     answer: str
     turn_type: str  # "initial" or "followup"
     question_source: str  # "resume", "job_posting", ""
+    voice_summary: dict | None = None
 
 
 @dataclass
@@ -73,7 +74,9 @@ class AnalysisResult:
     category_scores: list[dict] = field(default_factory=list)  # 6개 카테고리
     question_feedbacks: list[dict] = field(default_factory=list)
     strengths: list[dict] = field(default_factory=list)  # 2+ [{title, evidence}]
-    improvement_areas: list[dict] = field(default_factory=list)  # 2+ [{title, evidence}]
+    improvement_areas: list[dict] = field(
+        default_factory=list
+    )  # 2+ [{title, evidence}]
     input_tokens: int = 0
     output_tokens: int = 0
     total_tokens: int = 0
@@ -146,8 +149,8 @@ class LLMAnalyzer:
 2. **구체성**: 답변에 구체적인 수치, 사례, 경험이 포함되어 있는지 평가.
 3. **전달력(명확성)**: 답변의 논리적 구조와 표현의 명확성 평가.
 4. **일관성**: 이력서에 기재된 경력, 프로젝트, 기술 스택과 답변이 일치하는지 평가. 이력서 내용을 주요 기준으로 참조.
-5. **유창성**: 답변의 자연스러운 흐름과 표현력 평가.
-6. **답변 길이 적절성**: 질문의 복잡도 대비 답변 분량의 적절성 평가.
+5. **유창성**: 답변의 자연스러운 흐름과 표현력 평가. [음성 분석] 데이터가 있는 경우, 묵음 비율과 묵음 구간 수를 참고하여 답변의 유창성(머뭇거림, 긴 침묵)을 평가에 반영하세요.
+6. **답변 길이 적절성**: 질문의 복잡도 대비 답변 분량의 적절성 평가. [음성 분석]의 총 발화 시간을 참고할 수 있습니다.
 
 ### 질문 메타데이터 활용
 - question_source가 "resume"인 질문: 이력서 기반 질문이므로 이력서 내용과의 일치도를 중점 평가
@@ -195,7 +198,6 @@ strengths와 improvement_areas는 각각 최소 2개 이상 생성하세요.
 
     @staticmethod
     def _format_exchanges(exchanges: list[ExchangeData]) -> str:
-        """질문-답변 목록을 프롬프트용 텍스트로 포맷한다."""
         if not exchanges:
             return "(질문-답변 데이터 없음)"
 
@@ -203,16 +205,26 @@ strengths와 improvement_areas는 각각 최소 2개 이상 생성하세요.
         for ex in exchanges:
             meta = f" (출처: {ex.question_source})" if ex.question_source else ""
 
-            parts.append(
+            block = (
                 f"### [{ex.turn_type}] 질문 #{ex.turn_id}{meta}\n"
                 f"Q: {ex.question}\n"
                 f"A: {ex.answer}"
             )
+
+            if ex.voice_summary:
+                vs = ex.voice_summary
+                block += (
+                    f"\n[음성 분석]\n"
+                    f"- 총 발화 시간: {vs.get('speechDurationMs', 0)}ms / 총 길이: {vs.get('totalDurationMs', 0)}ms\n"
+                    f"- 묵음 비율: {vs.get('silenceRatio', 0):.1%}\n"
+                    f"- 묵음 구간 수: {vs.get('silenceSegmentCount', 0)}회\n"
+                    f"- 평균 음량(발화): {vs.get('avgDbfsSpeech', 'N/A')} dBFS"
+                )
+
+            parts.append(block)
         return "\n\n".join(parts)
 
-    def _parse_response(
-        self, response_text: str, context: AnalysisContext
-    ) -> dict:
+    def _parse_response(self, response_text: str, context: AnalysisContext) -> dict:
         """LLM 응답 텍스트를 파싱하고 스키마를 검증한다."""
         data = self._extract_json(response_text)
         return self._validate_schema(data, context)
@@ -280,7 +292,9 @@ strengths와 improvement_areas는 각각 최소 2개 이상 생성하세요.
             if grade:
                 logger.warning(
                     "등급 불일치 보정: score=%d, LLM grade=%s → %s",
-                    score, grade, expected,
+                    score,
+                    grade,
+                    expected,
                 )
             return expected
         return grade
@@ -306,18 +320,21 @@ strengths와 improvement_areas는 각각 최소 2개 이상 생성하세요.
             item = raw_by_name.get(cat_name, {})
             cat_score = int(item.get("score", 0))
             cat_score = max(0, min(100, cat_score))
-            comment = item.get("comment", "") or f"{cat_name} 평가 코멘트가 제공되지 않았습니다."
-            result.append({
-                "category": cat_name,
-                "score": cat_score,
-                "comment": comment,
-            })
+            comment = (
+                item.get("comment", "")
+                or f"{cat_name} 평가 코멘트가 제공되지 않았습니다."
+            )
+            result.append(
+                {
+                    "category": cat_name,
+                    "score": cat_score,
+                    "comment": comment,
+                }
+            )
         return result
 
     @staticmethod
-    def _validate_feedbacks(
-        raw: list, exchanges: list[ExchangeData]
-    ) -> list[dict]:
+    def _validate_feedbacks(raw: list, exchanges: list[ExchangeData]) -> list[dict]:
         """질문별 피드백을 검증/보정한다."""
         result: list[dict] = []
         raw_by_id: dict[int, dict] = {}
@@ -333,15 +350,19 @@ strengths와 improvement_areas는 각각 최소 2개 이상 생성하세요.
             improvements = item.get("improvements", [])
             if not isinstance(improvements, list) or len(improvements) < 1:
                 improvements = ["피드백이 제공되지 않았습니다."]
-            model_answer = item.get("model_answer", "") or "모범답변이 제공되지 않았습니다."
+            model_answer = (
+                item.get("model_answer", "") or "모범답변이 제공되지 않았습니다."
+            )
 
-            result.append({
-                "turn_id": ex.turn_id,
-                "question": ex.question,
-                "strengths": strengths,
-                "improvements": improvements,
-                "model_answer": model_answer,
-            })
+            result.append(
+                {
+                    "turn_id": ex.turn_id,
+                    "question": ex.question,
+                    "strengths": strengths,
+                    "improvements": improvements,
+                    "model_answer": model_answer,
+                }
+            )
         return result
 
     @staticmethod
@@ -352,14 +373,19 @@ strengths와 improvement_areas는 각각 최소 2개 이상 생성하세요.
         result: list[dict] = []
         for item in raw if isinstance(raw, list) else []:
             if isinstance(item, dict) and item.get("title"):
-                result.append({
-                    "title": item["title"],
-                    "evidence": item.get("evidence", "") or f"{label} 근거가 제공되지 않았습니다.",
-                })
+                result.append(
+                    {
+                        "title": item["title"],
+                        "evidence": item.get("evidence", "")
+                        or f"{label} 근거가 제공되지 않았습니다.",
+                    }
+                )
 
         while len(result) < min_count:
-            result.append({
-                "title": f"추가 {label} {len(result) + 1}",
-                "evidence": f"{label} 분석 근거가 제공되지 않았습니다.",
-            })
+            result.append(
+                {
+                    "title": f"추가 {label} {len(result) + 1}",
+                    "evidence": f"{label} 분석 근거가 제공되지 않았습니다.",
+                }
+            )
         return result

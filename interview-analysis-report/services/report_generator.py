@@ -16,11 +16,13 @@ from db.connection import get_session
 from db.models import (
     AnalysisReportTable,
     DjangoContentTypeTable,
+    InterviewBehaviorAnalysisTable,
     InterviewSessionTable,
     InterviewTurnTable,
     TokenUsageTable,
 )
 from services.llm_analyzer import AnalysisContext, ExchangeData, LLMAnalyzer
+from services.voice_analysis_invoker import VoiceAnalysisInvoker
 from utils.content_loader import get_job_description_content, get_resume_content
 
 logger = logging.getLogger(__name__)
@@ -31,14 +33,9 @@ class ReportGeneratorService:
 
     def __init__(self) -> None:
         self._analyzer = LLMAnalyzer()
+        self._voice_invoker = VoiceAnalysisInvoker()
 
     def generate(self, report_id: int, bundle_url: str = "") -> None:
-        """리포트를 생성하고 DB에 저장한다.
-
-        Args:
-            report_id: AnalysisReport 레코드의 PK.
-            bundle_url: backend 가 업로드한 이력서 정규화 bundle JSON 의 URL.
-        """
         try:
             self._do_generate(report_id, bundle_url=bundle_url)
         except Exception as e:
@@ -46,9 +43,7 @@ class ReportGeneratorService:
             self._mark_failed(report_id, str(e))
 
     def _do_generate(self, report_id: int, bundle_url: str = "") -> None:
-        """실제 생성 로직. 예외는 호출자가 처리한다."""
         with get_session() as session:
-            # 1) AnalysisReport 조회 → interview_session_id 획득
             report = (
                 session.query(AnalysisReportTable)
                 .filter(AnalysisReportTable.id == report_id)
@@ -56,14 +51,12 @@ class ReportGeneratorService:
             )
             session_id = report.interview_session_id
 
-            # 2) InterviewSession 조회
             interview = (
                 session.query(InterviewSessionTable)
                 .filter(InterviewSessionTable.uuid == session_id)
                 .one()
             )
 
-            # 3) InterviewTurn 목록 조회
             turns = (
                 session.query(InterviewTurnTable)
                 .filter(InterviewTurnTable.interview_session_id == session_id)
@@ -71,14 +64,22 @@ class ReportGeneratorService:
                 .all()
             )
 
-            # 4) 이력서 콘텐츠는 bundle URL 에서 fetch (정규화된 JSON)
-            #    채용공고는 여전히 DB 직접 조회
             resume_content = get_resume_content(bundle_url)
             job_posting_content = get_job_description_content(
                 session, interview.user_job_description_id or ""
             )
 
-            # 5) AnalysisContext 구성
+            self._ensure_behavior_analyses(str(session_id), turns, interview.user_id)
+
+            # 6) 음성 분석 (병렬 Lambda 호출)
+            voice_results = {}
+            try:
+                voice_results = self._voice_invoker.analyze_all_turns(str(session_id))
+                logger.info("음성 분석 완료: %d턴", len(voice_results))
+            except Exception:
+                logger.exception("음성 분석 실패 — LLM 분석은 음성 데이터 없이 진행")
+
+            # 6) AnalysisContext 구성
             exchange_data_list = [
                 ExchangeData(
                     turn_id=turn.id,
@@ -86,6 +87,7 @@ class ReportGeneratorService:
                     answer=turn.answer or "",
                     turn_type=turn.turn_type or "",
                     question_source=turn.question_source or "",
+                    voice_summary=voice_results.get(turn.id, {}).get("summary"),
                 )
                 for turn in turns
             ]
@@ -100,7 +102,7 @@ class ReportGeneratorService:
                 job_posting_content=job_posting_content,
             )
 
-            # 6) LLM 분석 실행
+            # 7) LLM 분석 실행
             result = self._analyzer.analyze(context)
 
             # 7) 결과를 AnalysisReport에 저장
@@ -132,6 +134,35 @@ class ReportGeneratorService:
                 cost_usd=result.total_cost_usd,
             )
             session.add(token_usage)
+
+    @staticmethod
+    def _ensure_behavior_analyses(session_id: str, turns, user_id: int) -> None:
+        import uuid as uuid_mod
+
+        now = datetime.utcnow()
+        with get_session() as db:
+            existing = set(
+                r[0]
+                for r in db.query(InterviewBehaviorAnalysisTable.interview_turn_id)
+                .filter(
+                    InterviewBehaviorAnalysisTable.interview_session_id == session_id
+                )
+                .all()
+            )
+
+            for turn in turns:
+                if turn.id not in existing:
+                    db.add(
+                        InterviewBehaviorAnalysisTable(
+                            uuid=str(uuid_mod.uuid4()),
+                            created_at=now,
+                            updated_at=now,
+                            interview_session_id=session_id,
+                            interview_turn_id=turn.id,
+                            user_id=user_id,
+                            status="pending",
+                        )
+                    )
 
     def _mark_failed(self, report_id: int, error_message: str) -> None:
         """리포트 상태를 failed로 업데이트한다."""

@@ -29,6 +29,7 @@ class InterviewSessionTable(Base):
     interview_practice_mode = Column(String(20))
     resume_id = Column(UUID(as_uuid=False))
     user_job_description_id = Column(UUID(as_uuid=False))
+    user_id = Column(Integer, nullable=False)
     total_questions = Column(Integer)
     total_followup_questions = Column(Integer)
 
@@ -101,6 +102,40 @@ class DjangoContentTypeTable(Base):
     id = Column(Integer, primary_key=True)
     app_label = Column(String(100))
     model = Column(String(100))
+
+
+class InterviewRecordingTable(Base):
+    __tablename__ = "interview_recordings"
+
+    uuid = Column(UUID(as_uuid=False), primary_key=True)
+    created_at = Column(DateTime, server_default="now()")
+    updated_at = Column(DateTime, server_default="now()")
+    interview_session_id = Column(UUID(as_uuid=False), nullable=False)
+    interview_turn_id = Column(Integer, nullable=False)
+    media_type = Column(String(10))
+    status = Column(String(20))
+    s3_bucket = Column(String(100))
+    s3_key = Column(String(500))
+    scaled_video_key = Column(String(500), default="")
+    frame_prefix = Column(String(500), default="")
+    audio_key = Column(String(500), default="")
+    scaled_audio_key = Column(String(500), default="")
+    duration_ms = Column(Integer, nullable=True)
+
+
+class InterviewBehaviorAnalysisTable(Base):
+    __tablename__ = "interview_behavior_analyses"
+
+    uuid = Column(UUID(as_uuid=False), primary_key=True)
+    created_at = Column(DateTime, server_default="now()")
+    updated_at = Column(DateTime, server_default="now()")
+    interview_session_id = Column(UUID(as_uuid=False), nullable=False)
+    interview_turn_id = Column(Integer, nullable=False)
+    interview_recording_id = Column(UUID(as_uuid=False), nullable=True)
+    user_id = Column(Integer, nullable=False)
+    status = Column(String(20), default="pending")
+    expression_data = Column(JSONB, default=dict)
+    speech_data = Column(JSONB, default=dict)
 
 
 class ResumeTable(Base):
