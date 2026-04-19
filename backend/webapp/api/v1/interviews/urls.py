@@ -12,6 +12,7 @@ from api.v1.interviews.views import (
   RecordingListView,
   StartInterviewView,
   SubmitAnswerView,
+  UploadPartView,
   UploadRecordingView,
 )
 from django.urls import include, path
@@ -68,6 +69,11 @@ urlpatterns = [
     "recordings/<uuid:uuid>/upload/",
     UploadRecordingView.as_view(),
     name="recording-upload",
+  ),
+  path(
+    "recordings/<uuid:uuid>/parts/<int:part_number>/",
+    UploadPartView.as_view(),
+    name="recording-part-upload",
   ),
   path(
     "recordings/<uuid:uuid>/playback-url/",

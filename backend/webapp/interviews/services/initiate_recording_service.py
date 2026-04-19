@@ -6,7 +6,7 @@ from django.conf import settings
 from interviews.enums import InterviewSessionStatus, RecordingMediaType, RecordingStatus
 from interviews.models import InterviewRecording
 
-from .get_s3_client import get_video_s3_client, get_video_s3_presign_client
+from .get_s3_client import get_video_s3_client
 
 
 class InitiateRecordingService(BaseService):
@@ -53,30 +53,6 @@ class InitiateRecordingService(BaseService):
     )
     upload_id = response["UploadId"]
 
-    presign_s3 = get_video_s3_presign_client()
-    presigned_urls = []
-    for part_number in range(1, 101):
-      url = presign_s3.generate_presigned_url(
-        "upload_part",
-        Params={
-          "Bucket": bucket,
-          "Key": s3_key,
-          "UploadId": upload_id,
-          "PartNumber": part_number,
-        },
-        ExpiresIn=settings.VIDEO_PRESIGNED_URL_EXPIRY,
-      )
-      presigned_urls.append({"partNumber": part_number, "url": url})
-
-    single_upload_url = presign_s3.generate_presigned_url(
-      "put_object",
-      Params={
-        "Bucket": bucket,
-        "Key": s3_key
-      },
-      ExpiresIn=settings.VIDEO_PRESIGNED_URL_EXPIRY,
-    )
-
     recording = InterviewRecording.objects.create(
       interview_session=session,
       interview_turn=turn,
@@ -88,10 +64,19 @@ class InitiateRecordingService(BaseService):
       upload_id=upload_id,
     )
 
+    base_url = settings.BASE_URL.rstrip("/")
+    recording_id = str(recording.pk)
+    part_urls = [
+      {
+        "partNumber": n,
+        "url": f"{base_url}/api/v1/interviews/recordings/{recording_id}/parts/{n}/",
+      } for n in range(1, 101)
+    ]
+
     return {
-      "recordingId": str(recording.pk),
+      "recordingId": recording_id,
       "uploadId": upload_id,
       "s3Key": s3_key,
-      "presignedUrls": presigned_urls,
-      "singleUploadUrl": single_upload_url,
+      "presignedUrls": part_urls,
+      "singleUploadUrl": "",
     }

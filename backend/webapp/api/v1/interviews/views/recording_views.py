@@ -10,6 +10,7 @@ from common.exceptions import (
   ConflictException,
   NotFoundException,
   ServiceUnavailableException,
+  ValidationException,
 )
 from common.permissions import IsEmailVerified
 from common.views import BaseAPIView
@@ -161,6 +162,38 @@ class UploadRecordingView(BaseAPIView):
       raise ServiceUnavailableException(f"S3 오류가 발생했습니다: {str(e)}")
 
     return Response({"status": "uploaded"}, status=status.HTTP_200_OK)
+
+
+@extend_schema(tags=["면접 녹화"])
+class UploadPartView(BaseAPIView):
+  permission_classes = [IsEmailVerified]
+  parser_classes = [MultiPartParser]
+
+  @extend_schema(summary="녹화 파트 업로드")
+  def put(self, request, uuid, part_number):
+    try:
+      recording = InterviewRecording.objects.get(pk=uuid, user=self.current_user)
+    except InterviewRecording.DoesNotExist:
+      raise NotFoundException()
+
+    file = request.FILES.get("file")
+    if not file:
+      raise ValidationException("file 필드가 필요합니다.")
+
+    try:
+      s3 = get_video_s3_client()
+      response = s3.upload_part(
+        Bucket=recording.s3_bucket,
+        Key=recording.s3_key,
+        UploadId=recording.upload_id,
+        PartNumber=part_number,
+        Body=file,
+      )
+    except (BotoCoreError, ClientError) as e:
+      raise ServiceUnavailableException(f"S3 오류: {str(e)}")
+
+    etag = response.get("ETag", "").strip('"')
+    return Response({"etag": etag}, status=status.HTTP_200_OK)
 
 
 @extend_schema(tags=["면접 녹화"])
