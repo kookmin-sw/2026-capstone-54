@@ -20,17 +20,10 @@ class CompleteRecordingSerializer(serializers.Serializer):
   single_upload = serializers.BooleanField(required=False, default=False)
 
 
-class PresignedUrlItemSerializer(serializers.Serializer):
-  part_number = serializers.IntegerField(source="partNumber")
-  url = serializers.URLField()
-
-
 class InitiateRecordingResponseSerializer(serializers.Serializer):
   recording_id = serializers.UUIDField(source="recordingId")
   upload_id = serializers.CharField(source="uploadId")
   s3_key = serializers.CharField(source="s3Key")
-  presigned_urls = PresignedUrlItemSerializer(many=True, source="presignedUrls")
-  single_upload_url = serializers.CharField(source="singleUploadUrl")
 
 
 class RecordingListSerializer(serializers.Serializer):
