@@ -64,4 +64,4 @@ spec:
             memory: 640Mi
           limits:
             cpu: "1.2"
-            memory: 1.2Gi
+            memory: 1229Mi
