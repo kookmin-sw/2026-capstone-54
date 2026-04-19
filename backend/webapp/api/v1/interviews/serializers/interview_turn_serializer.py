@@ -15,6 +15,7 @@ class InterviewTurnSerializer(serializers.ModelSerializer):
       "question_source",
       "question",
       "answer",
+      "speech_segments",
       "turn_number",
       "followup_order",
       "created_at",

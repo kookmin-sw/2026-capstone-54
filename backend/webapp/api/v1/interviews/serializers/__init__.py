@@ -1,3 +1,4 @@
+from .behavior_analysis_serializer import BehaviorAnalysisSerializer
 from .create_interview_session_serializer import CreateInterviewSessionSerializer
 from .interview_analysis_report_serializer import InterviewAnalysisReportSerializer
 from .interview_session_list_serializer import InterviewSessionListSerializer
@@ -15,6 +16,7 @@ from .recording_serializers import (
 from .submit_answer_serializer import SubmitAnswerSerializer
 
 __all__ = [
+  "BehaviorAnalysisSerializer",
   "CompleteRecordingPartSerializer",
   "CompleteRecordingSerializer",
   "CreateInterviewSessionSerializer",

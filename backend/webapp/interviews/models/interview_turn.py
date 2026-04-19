@@ -48,6 +48,11 @@ class InterviewTurn(BaseModel):
 
   question = models.TextField(verbose_name="질문")
   answer = models.TextField(blank=True, default="", verbose_name="답변")
+  speech_segments = models.JSONField(
+    default=list,
+    blank=True,
+    verbose_name="발화 세그먼트",
+  )
 
   turn_number = models.PositiveIntegerField(
     default=1,

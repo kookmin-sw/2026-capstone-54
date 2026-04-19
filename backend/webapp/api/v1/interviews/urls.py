@@ -1,5 +1,6 @@
 from api.v1.interviews.views import (
   AbortRecordingView,
+  BehaviorAnalysisListView,
   CompleteRecordingView,
   FinishInterviewView,
   GenerateAnalysisReportView,
@@ -83,5 +84,10 @@ urlpatterns = [
     "interview-sessions/<uuid:interview_session_uuid>/generate-report/",
     GenerateAnalysisReportView.as_view(),
     name="interview-generate-report",
+  ),
+  path(
+    "interview-sessions/<uuid:interview_session_uuid>/behavior-analyses/",
+    BehaviorAnalysisListView.as_view(),
+    name="interview-behavior-analyses",
   ),
 ]
