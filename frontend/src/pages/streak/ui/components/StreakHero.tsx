@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { Flame, Trophy, Calendar, Gift } from "lucide-react";
 
 interface StreakHeroProps {
   currentStreak: number;
@@ -33,7 +34,7 @@ export function StreakHero({
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <span className="text-[40px] leading-none max-sm:text-[32px]">🔥</span>
+              <Flame size={40} className="text-[#F97316] max-sm:w-8 max-sm:h-8" />
               <span className="text-[64px] font-black leading-[.85] tracking-[-3px] text-white max-sm:text-[48px]">
                 {currentStreak}
               </span>
@@ -76,9 +77,9 @@ export function StreakHero({
       {/* Bottom stats strip */}
       <div className="relative z-[1] border-t border-white/[.06] grid grid-cols-3 max-sm:grid-cols-3">
         {[
-          { label: "최장 기록", value: `${bestStreak}일`, icon: "🏆" },
-          { label: "총 참여일", value: `${totalDays}일`, icon: "📅" },
-          { label: "보상 수령", value: `${rewardsCount}회`, icon: "🎁" },
+          { label: "최장 기록", value: `${bestStreak}일`, icon: <Trophy size={14} className="text-[#F59E0B]" /> },
+          { label: "총 참여일", value: `${totalDays}일`, icon: <Calendar size={14} className="text-[#0991B2]" /> },
+          { label: "보상 수령", value: `${rewardsCount}회`, icon: <Gift size={14} className="text-[#059669]" /> },
         ].map((s, i) => (
           <div
             key={i}
@@ -86,7 +87,7 @@ export function StreakHero({
               i < 2 ? "border-r border-white/[.06]" : ""
             }`}
           >
-            <span className="text-[12px] block mb-0.5">{s.icon}</span>
+            <span className="flex justify-center mb-1.5">{s.icon}</span>
             <div className="text-[18px] font-black text-white leading-none tracking-[-0.5px] max-sm:text-[16px]">
               {s.value}
             </div>
