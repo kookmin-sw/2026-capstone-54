@@ -7,6 +7,8 @@ Celery worker에서 동기 호출(RequestResponse)로 사용한다.
 
 import json
 import os
+import re
+import subprocess
 import tempfile
 import warnings
 
@@ -72,6 +74,28 @@ def handler(event, context):
         os.unlink(tmp_path)
 
 
+def _get_dbfs_from_ffmpeg(file_path: str) -> float | None:
+    """ffmpeg volumedetect로 dBFS 계산 (pydub.dBFS 실패 시 폴백)."""
+    cmd = [
+        FFMPEG_BIN,
+        "-i",
+        file_path,
+        "-af",
+        "volumedetect",
+        "-f",
+        "null",
+        "-",
+    ]
+    result = subprocess.run(cmd, capture_output=True, text=True)
+
+    for line in result.stderr.split("\n"):
+        if "mean_dbfs" in line:
+            match = re.search(r"mean_dbfs:\s*([-\d.]+)", line)
+            if match:
+                return float(match.group(1))
+    return None
+
+
 def _analyze(file_path: str) -> dict:
     audio = AudioSegment.from_file(file_path)
     total_ms = len(audio)
@@ -91,9 +115,21 @@ def _analyze(file_path: str) -> dict:
     silence_ms = sum(end - start for start, end in silence_ranges)
     speech_ms = total_ms - silence_ms
     speech_segs = [t for t in timeline if t["type"] == "speech"]
-    avg_dbfs_speech = (
-        sum(t["dbfs"] for t in speech_segs) / len(speech_segs) if speech_segs else None
-    )
+
+    avg_dbfs_speech = None
+    avg_dbfs_overall = None
+    if speech_segs:
+        dbfs_values = [t["dbfs"] for t in speech_segs if t["dbfs"] is not None]
+        if dbfs_values:
+            avg_dbfs_speech = sum(dbfs_values) / len(dbfs_values)
+
+    if avg_dbfs_overall is None or avg_dbfs_speech is None:
+        dbfs_ffmpeg = _get_dbfs_from_ffmpeg(file_path)
+        if dbfs_ffmpeg is not None:
+            if avg_dbfs_speech is None:
+                avg_dbfs_speech = dbfs_ffmpeg
+            if avg_dbfs_overall is None:
+                avg_dbfs_overall = dbfs_ffmpeg
 
     summary = {
         "totalDurationMs": total_ms,
@@ -101,10 +137,8 @@ def _analyze(file_path: str) -> dict:
         "silenceDurationMs": silence_ms,
         "silenceRatio": round(silence_ms / total_ms, 4),
         "speechRatio": round(speech_ms / total_ms, 4),
-        "avgDbfsOverall": round(audio.dBFS, 2),
-        "avgDbfsSpeech": round(avg_dbfs_speech, 2)
-        if avg_dbfs_speech is not None
-        else None,
+        "avgDbfsOverall": round(avg_dbfs_overall, 2) if avg_dbfs_overall else None,
+        "avgDbfsSpeech": round(avg_dbfs_speech, 2) if avg_dbfs_speech else None,
         "silenceSegmentCount": len(silence_ranges),
         "speechSegmentCount": len(speech_segs),
     }
