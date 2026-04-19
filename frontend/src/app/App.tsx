@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "sonner";
 import { useAuthStore } from "@/features/auth";
 import { useNotificationStore } from "@/features/notifications";
@@ -25,7 +25,6 @@ import { InterviewResultsPage } from "@/pages/interview-results";
 import { SettingsPage } from "@/pages/settings";
 import { StreakPage } from "@/pages/streak";
 import { AchievementsPage } from "@/pages/achievements";
-import { SubscriptionPage } from "@/pages/subscription";
 import { NotificationsPage } from "@/pages/notifications";
 import { NotFoundPage } from "@/pages/not-found";
 import { ServerErrorPage } from "@/pages/server-error";
@@ -76,7 +75,7 @@ function App() {
         <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
         <Route path="/streak" element={<ProtectedRoute><StreakPage /></ProtectedRoute>} />
         <Route path="/achievements" element={<ProtectedRoute><AchievementsPage /></ProtectedRoute>} />
-        <Route path="/subscription" element={<ProtectedRoute><SubscriptionPage /></ProtectedRoute>} />
+        <Route path="/subscription" element={<Navigate to="/settings?panel=subscription" replace />} />
         <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
 
         {/* ── 에러 페이지 ── */}

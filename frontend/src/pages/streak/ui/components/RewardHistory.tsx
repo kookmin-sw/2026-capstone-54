@@ -1,3 +1,5 @@
+import { Gift, Package } from "lucide-react";
+
 interface RewardHistoryItem {
   id: string;
   icon: string;
@@ -23,13 +25,17 @@ export function RewardHistory({ rewardHistory, revealed }: RewardHistoryProps) {
       style={{ transitionDelay: "130ms" }}
     >
       <div className="flex items-center gap-2 mb-4">
-        <span className="w-7 h-7 rounded-lg bg-[#ECFDF5] flex items-center justify-center text-sm">🎁</span>
+        <span className="w-7 h-7 rounded-lg bg-[#ECFDF5] flex items-center justify-center">
+          <Gift size={14} className="text-[#059669]" />
+        </span>
         <h3 className="text-[14px] font-bold text-[#0A0A0A]">보상 수령 이력</h3>
       </div>
 
       {rewardHistory.length === 0 ? (
         <div className="text-center py-8">
-          <span className="text-[28px] block mb-2">📦</span>
+          <span className="flex justify-center mb-2">
+            <Package size={28} className="text-[#D1D5DB]" />
+          </span>
           <p className="text-[12px] text-[#9CA3AF] font-medium">아직 수령한 보상이 없어요</p>
           <p className="text-[11px] text-[#D1D5DB] mt-1">마일스톤을 달성하면 보상이 지급됩니다</p>
         </div>
