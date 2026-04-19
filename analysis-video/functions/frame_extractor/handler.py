@@ -4,13 +4,24 @@ import os
 from mefit_video_common.config import FRAME_BUCKET
 from mefit_video_common.event_parser import parse_s3_records
 from mefit_video_common.ffmpeg_runner import run_ffmpeg
+from mefit_video_common.logger import get_logger
 from mefit_video_common.s3_client import download_to_tmp, upload_from_tmp
 from mefit_video_common.celery_publisher import publish_step_complete
+
+log = get_logger(__name__)
 
 
 def handler(event, context):
     for bucket, key in parse_s3_records(event):
-        input_path = download_to_tmp(bucket, key)
+        try:
+            _process(bucket, key)
+        except RuntimeError as e:
+            log.error("skipped_corrupt_file", key=key, error=str(e)[:200])
+            continue
+
+
+def _process(bucket, key):
+    input_path = download_to_tmp(bucket, key)
         tmp_dir = input_path.rsplit(".", 1)[0] + "_frames"
         os.makedirs(tmp_dir, exist_ok=True)
 
