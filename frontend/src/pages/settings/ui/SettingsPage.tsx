@@ -4,6 +4,7 @@ import { Archive, Eye, FileText, Flame, Gem, Megaphone, ShieldCheck, Star, Trian
 import { useSettingsStore } from "@/features/settings";
 import { useSubscriptionStore } from "@/features/subscription";
 import { TicketPolicyInfo } from "@/features/subscription/ui/TicketPolicyInfo";
+import { JobCategorySelector } from "./JobCategorySelector";
 import type { SettingsPanel } from "@/features/settings";
 
 /* ── Password strength helper ── */
@@ -88,7 +89,6 @@ export function SettingsPage() {
   };
 
   const inputClass = "font-plex-sans-kr text-[14px] text-[#0A0A0A] bg-white border-[1.5px] border-[#E5E7EB] rounded-lg px-[14px] py-[10px] outline-none transition-[border-color,box-shadow] duration-[180ms] w-full placeholder-[#9CA3AF] focus:border-[#0991B2] focus:shadow-[0_0_0_3px_rgba(9,145,178,0.1)] read-only:opacity-50 read-only:cursor-not-allowed read-only:bg-[#F9FAFB]";
-  const selectClass = "font-plex-sans-kr text-[14px] text-[#0A0A0A] bg-white border-[1.5px] border-[#E5E7EB] rounded-lg px-[14px] py-[10px] outline-none appearance-none cursor-pointer w-full transition-[border-color] duration-[180ms] focus:border-[#0991B2] focus:shadow-[0_0_0_3px_rgba(9,145,178,0.1)]";
 
   return (
     <>
@@ -155,65 +155,16 @@ export function SettingsPage() {
                         <p className="text-[11px] text-[#6B7280] leading-[1.45]">이메일 주소는 변경할 수 없습니다. 고객센터로 문의해주세요.</p>
                       </div>
                       <div className="flex flex-col gap-4">
-                        {/* 직군 선택 */}
-                        <div className="flex flex-col gap-[5px]">
-                          <label className="font-plex-sans-kr text-[12px] font-bold text-[#0A0A0A] tracking-[0.1px] flex items-center gap-1">
-                            희망 직군 <span className="text-[#EF4444] text-[10px]">*</span>
-                          </label>
-                          {jobCategoriesLoading ? (
-                            <div className="text-[12px] text-[#9CA3AF] py-2">직군 목록 불러오는 중...</div>
-                          ) : (
-                            <select
-                              className={selectClass}
-                              value={profileDraft.jobCategoryId ?? ""}
-                              onChange={(e) => {
-                                const id = e.target.value ? Number(e.target.value) : null;
-                                setProfileDraftField("jobCategoryId", id);
-                              }}
-                            >
-                              <option value="">직군을 선택하세요</option>
-                              {jobCategories.map((cat) => (
-                                <option key={cat.id} value={cat.id}>
-                                  {cat.emoji} {cat.name}
-                                </option>
-                              ))}
-                            </select>
-                          )}
-                          <p className="text-[11px] text-[#6B7280] leading-[1.45]">면접 질문 생성에 반영됩니다</p>
-                        </div>
-
-                        {/* 직업 다중 선택 */}
-                        {profileDraft.jobCategoryId && (
-                          <div className="flex flex-col gap-[5px]">
-                            <label className="font-plex-sans-kr text-[12px] font-bold text-[#0A0A0A] tracking-[0.1px]">
-                              직업 선택 <span className="text-[11px] font-normal text-[#6B7280]">(복수 선택 가능)</span>
-                            </label>
-                            {availableJobsLoading ? (
-                              <div className="text-[12px] text-[#9CA3AF]">직업 목록 불러오는 중...</div>
-                            ) : (
-                              <div className="grid grid-cols-2 gap-2 max-[640px]:grid-cols-1">
-                                {availableJobs.map((job) => {
-                                  const isSelected = profileDraft.jobIds.includes(job.id);
-                                  return (
-                                    <button
-                                      key={job.id}
-                                      type="button"
-                                      onClick={() => toggleJobId(job.id)}
-                                      className={`text-left text-[12px] font-semibold px-3 py-2 rounded-lg border-[1.5px] transition-all ${
-                                        isSelected
-                                          ? "border-[#0991B2] bg-[#E6F7FA] text-[#0991B2]"
-                                          : "border-[#E5E7EB] bg-[#F9FAFB] text-[#374151] hover:border-[#0991B2]"
-                                      }`}
-                                    >
-                                      {isSelected ? "✓ " : ""}{job.name}
-                                    </button>
-                                  );
-                                })}
-                              </div>
-                            )}
-                            <p className="text-[11px] text-[#6B7280] leading-[1.45]">면접 맥락 설정에 활용됩니다</p>
-                          </div>
-                        )}
+                        <JobCategorySelector
+                          categories={jobCategories}
+                          categoriesLoading={jobCategoriesLoading}
+                          selectedCategoryId={profileDraft.jobCategoryId}
+                          availableJobs={availableJobs}
+                          jobsLoading={availableJobsLoading}
+                          selectedJobIds={profileDraft.jobIds}
+                          onSelectCategory={(id) => setProfileDraftField("jobCategoryId", id)}
+                          onToggleJob={toggleJobId}
+                        />
                       </div>
                     </div>
                   </div>
