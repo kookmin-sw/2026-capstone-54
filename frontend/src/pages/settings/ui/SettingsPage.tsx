@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { Archive, Eye, FileText, Gem, Star, Zap } from "lucide-react";
 import { useSettingsStore } from "@/features/settings";
+import { useSubscriptionStore } from "@/features/subscription";
+import { TicketPolicyInfo } from "@/features/subscription/ui/TicketPolicyInfo";
 import type { SettingsPanel } from "@/features/settings";
 
 /* ── Password strength helper ── */
@@ -41,6 +44,11 @@ export function SettingsPage() {
     clearMessage,
   } = useSettingsStore();
 
+  const {
+    status: subStatus,
+    fetchStatus: fetchSubStatus,
+  } = useSubscriptionStore();
+
   const [searchParams] = useSearchParams();
   const [deleteConfirm, setDeleteConfirm] = useState<"data" | "account" | null>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
@@ -54,7 +62,8 @@ export function SettingsPage() {
   useEffect(() => {
     fetchSettings();
     loadJobCategories();
-  }, [fetchSettings, loadJobCategories]);
+    fetchSubStatus();
+  }, [fetchSettings, loadJobCategories, fetchSubStatus]);
 
   useEffect(() => {
     if (saveMessage) {
@@ -339,7 +348,9 @@ export function SettingsPage() {
                   </div>
 
                   <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl px-7 py-7 shadow-[var(--sc)] mb-4 max-[640px]:px-[18px]">
-                    <div className="font-plex-sans-kr text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">⭐ 현재 플랜</div>
+                    <div className="font-plex-sans-kr text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">
+                      <Star size={15} className="text-[#F59E0B]" /> 현재 플랜
+                    </div>
                     <div className="bg-[#0A0A0A] rounded-[10px] px-[22px] py-5 relative overflow-hidden">
                       <div className="flex items-center justify-between gap-3 max-[640px]:flex-col max-[640px]:items-start">
                         <div>
@@ -368,16 +379,18 @@ export function SettingsPage() {
                   </div>
 
                   <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl px-7 py-7 shadow-[var(--sc)] mb-4 max-[640px]:px-[18px]">
-                    <div className="font-plex-sans-kr text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">💎 Pro 플랜 혜택</div>
+                    <div className="font-plex-sans-kr text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">
+                      <Gem size={15} className="text-[#0991B2]" /> Pro 플랜 혜택
+                    </div>
                     <div className="grid grid-cols-2 gap-[10px] max-[640px]:grid-cols-1">
-                      {[
-                        { icon: "👁️", name: "시선 추적 분석", desc: "면접 중 시선 이탈 횟수 측정" },
-                        { icon: "⚡", name: "실전 모드", desc: "랜덤 대기 후 자동 시작" },
-                        { icon: "📄", name: "상세 리포트 PDF", desc: "면접 리포트 저장·공유" },
-                        { icon: "🗂️", name: "무제한 아카이브", desc: "전체 면접 세션 보관" },
-                      ].map((item) => (
+                      {([
+                        { icon: <Eye size={20} className="text-[#8B5CF6]" />, name: "시선 추적 분석", desc: "면접 중 시선 이탈 횟수 측정" },
+                        { icon: <Zap size={20} className="text-[#F59E0B]" />, name: "실전 모드", desc: "랜덤 대기 후 자동 시작" },
+                        { icon: <FileText size={20} className="text-[#0991B2]" />, name: "상세 리포트 PDF", desc: "면접 리포트 저장·공유" },
+                        { icon: <Archive size={20} className="text-[#059669]" />, name: "무제한 아카이브", desc: "전체 면접 세션 보관" },
+                      ] as const).map((item) => (
                         <div key={item.name} className="bg-white border border-[#E5E7EB] rounded-[10px] px-4 py-[14px] transition-all duration-150 hover:border-[rgba(9,145,178,0.3)] hover:shadow-[0_2px_8px_rgba(0,0,0,0.1),0_8px_24px_rgba(0,0,0,0.08)]">
-                          <div className="text-[20px] mb-[6px]">{item.icon}</div>
+                          <div className="mb-[8px]">{item.icon}</div>
                           <div className="font-plex-sans-kr text-[13px] font-bold text-[#0A0A0A] mb-0.5">{item.name}</div>
                           <div className="text-[11px] text-[#6B7280]">{item.desc}</div>
                         </div>
@@ -388,10 +401,12 @@ export function SettingsPage() {
                         className="font-plex-sans-kr text-[14px] font-bold text-white bg-[#0A0A0A] border-none rounded-lg py-[10px] cursor-pointer transition-all duration-150 flex items-center gap-[7px] hover:opacity-85 hover:-translate-y-px justify-center w-full"
                         style={{ borderRadius: 8 }}
                       >
-                        💎 Pro 업그레이드 — 첫 7일 무료
+                        <Gem size={15} className="text-[#06B6D4]" /> Pro 업그레이드 — 첫 7일 무료
                       </button>
                     </div>
                   </div>
+
+                  <TicketPolicyInfo currentPlan={subStatus?.currentPlan ?? "free"} />
                 </div>
 
                 {/* ─── CONSENT PANEL ─── */}
