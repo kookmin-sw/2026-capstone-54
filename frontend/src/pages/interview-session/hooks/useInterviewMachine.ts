@@ -93,7 +93,7 @@ export function useInterviewMachine(deps: InterviewMachineDeps): UseInterviewMac
     }
   }, [storePhase, state.phase]);
 
-  // ── Effect: tts_playing entry → play TTS + avatar + pre-init recording ──
+  // ── Effect: tts_playing entry → TTS + recording 준비를 병렬 실행, 둘 다 완료 후 전이 ──
   useEffect(() => {
     if (state.phase !== "tts_playing" || !state.question || !state.turnId) return;
     let cancelled = false;
@@ -101,8 +101,11 @@ export function useInterviewMachine(deps: InterviewMachineDeps): UseInterviewMac
     const d = depsRef.current;
     d.resetText();
     d.avatarSpeak(state.question);
-    d.prepareRecording(state.turnId).catch(() => {});
-    d.playTtsText(state.question).then(() => {
+
+    Promise.all([
+      d.prepareRecording(state.turnId).catch(() => {}),
+      d.playTtsText(state.question),
+    ]).then(() => {
       if (!cancelled) dispatch({ type: "TTS_DONE" });
     });
 
