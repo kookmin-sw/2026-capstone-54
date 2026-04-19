@@ -5,7 +5,6 @@
 """
 
 from api.v1.interviews.serializers import InterviewAnalysisReportSerializer
-from celery import current_app
 from common.exceptions import ValidationException
 from common.permissions import IsEmailVerified
 from common.views import BaseAPIView
@@ -44,11 +43,13 @@ class GenerateAnalysisReportView(BaseAPIView):
 
       regenerate_analysis_report(report)
     else:
-      current_app.send_task(
-        "analysis.tasks.generate_report.generate_analysis_report",
-        args=[report.pk],
-        queue="analysis",
+      from interviews.services.regenerate_analysis_report_service import (
+        dispatch_report_task,
+        get_resume_bundle_url,
       )
+
+      bundle_url = get_resume_bundle_url(interview_session)
+      dispatch_report_task(report, bundle_url=bundle_url)
 
     return Response(
       InterviewAnalysisReportSerializer(report).data,

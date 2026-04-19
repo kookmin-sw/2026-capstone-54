@@ -1,12 +1,35 @@
-"""분석 리포트 재생성 서비스."""
-
 from celery import current_app
+from django.core.files.storage import default_storage
 from interviews.enums import InterviewAnalysisReportStatus
 from interviews.models import InterviewAnalysisReport
+from resumes.models import Resume
+from resumes.services import UploadResumeBundleService
+
+
+def get_resume_bundle_url(interview_session) -> str:
+  if not interview_session.resume_id:
+    return ""
+  key = f"resume_bundles/{interview_session.resume_id}.json"
+  if default_storage.exists(key):
+    return default_storage.url(key)
+
+  try:
+    resume = Resume.objects.get(pk=interview_session.resume_id)
+    return UploadResumeBundleService(resume=resume).perform()
+  except Resume.DoesNotExist:
+    return ""
+
+
+def dispatch_report_task(report: InterviewAnalysisReport, bundle_url: str = "") -> None:
+  current_app.send_task(
+    "analysis.tasks.generate_report.generate_analysis_report",
+    args=[report.pk],
+    kwargs={"bundle_url": bundle_url},
+    queue="analysis",
+  )
 
 
 def regenerate_analysis_report(report: InterviewAnalysisReport) -> None:
-  """리포트를 pending 상태로 초기화하고 Celery 재생성 태스크를 발행한다."""
   report.interview_analysis_report_status = InterviewAnalysisReportStatus.PENDING
   report.error_message = ""
   report.overall_score = None
@@ -30,8 +53,5 @@ def regenerate_analysis_report(report: InterviewAnalysisReport) -> None:
       "updated_at",
     ]
   )
-  current_app.send_task(
-    "analysis.tasks.generate_report.generate_analysis_report",
-    args=[report.pk],
-    queue="analysis",
-  )
+  bundle_url = get_resume_bundle_url(report.interview_session)
+  dispatch_report_task(report, bundle_url=bundle_url)

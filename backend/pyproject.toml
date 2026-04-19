@@ -51,6 +51,7 @@ dependencies = [
     "faiss-cpu>=1.13.2",
     "pydantic>=2.12.5",
     "pytest>=9.0.3",
+    "pycurl>=7.45",
 ]
 
 [dependency-groups]

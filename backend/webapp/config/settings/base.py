@@ -15,6 +15,7 @@ from .components.auth import *
 from .components.cache import *
 from .components.celery import *
 from .components.celery_beat import *
+from .components.celery_sqs import *
 from .components.channel_layer import *
 from .components.common import *
 from .components.database import *

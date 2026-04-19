@@ -1,6 +1,9 @@
 """답변 제출 뷰 — 꼬리질문 생성 또는 다음 질문 반환."""
 
-from api.v1.interviews.serializers import InterviewTurnSerializer, SubmitAnswerSerializer
+from api.v1.interviews.serializers import (
+  InterviewTurnSerializer,
+  SubmitAnswerSerializer,
+)
 from common.permissions import IsEmailVerified
 from common.views import BaseAPIView
 from drf_spectacular.utils import extend_schema
@@ -29,10 +32,17 @@ class SubmitAnswerView(BaseAPIView):
     serializer = SubmitAnswerSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     answer = serializer.validated_data["answer"]
+    speech_segments = serializer.validated_data.get("speech_segments", [])
+
+    if speech_segments:
+      interview_turn.speech_segments = speech_segments
+      interview_turn.save(update_fields=["speech_segments"])
 
     if interview_session.interview_session_type == InterviewSessionType.FOLLOWUP:
       result = SubmitAnswerAndGenerateFollowupService(
-        interview_session=interview_session, interview_turn=interview_turn, answer=answer
+        interview_session=interview_session,
+        interview_turn=interview_turn,
+        answer=answer,
       ).perform()
 
       return Response(
@@ -44,7 +54,9 @@ class SubmitAnswerView(BaseAPIView):
       )
     else:
       next_turn = SubmitAnswerForFullProcessService(
-        interview_session=interview_session, interview_turn=interview_turn, answer=answer
+        interview_session=interview_session,
+        interview_turn=interview_turn,
+        answer=answer,
       ).perform()
 
       if next_turn is None:
