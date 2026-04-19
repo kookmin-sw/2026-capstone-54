@@ -19,17 +19,14 @@ spec:
             - /bin/sh
             - -c
             - |
-              # DB 연결 대기 (최대 30초)
-              echo "Waiting for database connections to be available..."
+              echo "Waiting for database connection..."
               for i in $(seq 1 6); do
-                if python manage.py migrate --noinput --check 2>/dev/null; then
-                  echo "Database check passed, starting migration..."
+                if python -c "import django; django.setup(); from django.db import connection; connection.ensure_connection(); print('connected')" 2>/dev/null; then
                   break
                 fi
-                echo "Attempt $i/6 failed, waiting 5 seconds..."
+                echo "Attempt $i/6: DB not ready, waiting 5 seconds..."
                 sleep 5
               done
-              # 실제 migration 실행
               python manage.py migrate --noinput
           envFrom:
             - configMapRef:
