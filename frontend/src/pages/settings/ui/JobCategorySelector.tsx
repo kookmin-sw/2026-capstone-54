@@ -1,28 +1,21 @@
 import { useState, useRef, useEffect } from "react";
 import {
   ChevronDown, Check,
-  DollarSign, Handshake, Megaphone, Users, Code2, Wrench,
-  Stethoscope, GraduationCap, Truck, Palette, ShieldCheck, MoreHorizontal,
+  DollarSign, Handshake, Megaphone, Users, Code2, MoreHorizontal,
 } from "lucide-react";
 import type { JobCategory, Job } from "@/shared/api/profileApi";
 
-/* 직군 이름 → lucide 아이콘 + 색상 매핑 */
-const CATEGORY_ICON: Record<string, { icon: React.ReactNode }> = {
-  "금융/회계":    { icon: <DollarSign  size={16} className="text-[#F59E0B]" /> },
-  "영업/서비스":  { icon: <Handshake   size={16} className="text-[#0991B2]" /> },
-  "마케팅":       { icon: <Megaphone   size={16} className="text-[#EC4899]" /> },
-  "인사/HR":      { icon: <Users       size={16} className="text-[#8B5CF6]" /> },
-  "IT/개발":      { icon: <Code2       size={16} className="text-[#059669]" /> },
-  "엔지니어링":   { icon: <Wrench      size={16} className="text-[#6B7280]" /> },
-  "의료/보건":    { icon: <Stethoscope size={16} className="text-[#EF4444]" /> },
-  "교육":         { icon: <GraduationCap size={16} className="text-[#F97316]" /> },
-  "물류/유통":    { icon: <Truck       size={16} className="text-[#0EA5E9]" /> },
-  "디자인":       { icon: <Palette     size={16} className="text-[#A855F7]" /> },
-  "법률/공공":    { icon: <ShieldCheck size={16} className="text-[#374151]" /> },
+/* 직군 ID → lucide 아이콘 + 색상 매핑 */
+const CATEGORY_ICON: Record<number, { icon: React.ReactNode }> = {
+  3: { icon: <DollarSign size={16} className="text-[#F59E0B]" /> },  // 금융/회계
+  4: { icon: <Handshake  size={16} className="text-[#0991B2]" /> },  // 영업/서비스
+  2: { icon: <Megaphone  size={16} className="text-[#EC4899]" /> },  // 마케팅
+  5: { icon: <Users      size={16} className="text-[#8B5CF6]" /> },  // 인사/HR
+  1: { icon: <Code2      size={16} className="text-[#059669]" /> },  // IT/개발
 };
 
-function getCategoryIcon(name: string) {
-  return CATEGORY_ICON[name]?.icon ?? <MoreHorizontal size={16} className="text-[#9CA3AF]" />;
+function getCategoryIcon(id: number) {
+  return CATEGORY_ICON[id]?.icon ?? <MoreHorizontal size={16} className="text-[#9CA3AF]" />;
 }
 
 interface CategoryProps {
@@ -87,7 +80,7 @@ export function JobCategorySelector({
             >
               {selected ? (
                 <span className="flex items-center gap-2 text-[#0A0A0A]">
-                  {getCategoryIcon(selected.name)}
+                  {getCategoryIcon(selected.id)}
                   {selected.name}
                 </span>
               ) : (
@@ -115,7 +108,7 @@ export function JobCategorySelector({
                           : "text-[#374151] hover:bg-[#F9FAFB]"
                       }`}
                     >
-                      <span className="flex-shrink-0">{getCategoryIcon(cat.name)}</span>
+                      <span className="flex-shrink-0">{getCategoryIcon(cat.id)}</span>
                       <span className="flex-1">{cat.name}</span>
                       {isSelected && <Check size={14} className="text-[#0991B2] flex-shrink-0" />}
                     </button>
