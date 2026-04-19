@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState, useEffect } from "react";
+import { Calendar } from "lucide-react";
 
 const MONTH_SHORT = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const CELL_GAP    = 3;
@@ -144,7 +145,9 @@ export function StreakCalendar({
       style={{ transitionDelay: "80ms" }}
     >
       <div className="flex items-center gap-2 mb-4">
-        <span className="w-7 h-7 rounded-lg bg-[#E6F7FA] flex items-center justify-center text-sm">📅</span>
+        <span className="w-7 h-7 rounded-lg bg-[#E6F7FA] flex items-center justify-center">
+          <Calendar size={14} className="text-[#0991B2]" />
+        </span>
         <h3 className="text-[14px] font-bold text-[#0A0A0A]">참여 기록</h3>
         <span className="text-[11px] text-[#9CA3AF] font-medium ml-auto">
           {visibleWeeks < MAX_WEEKS ? `최근 ${visibleWeeks}주` : "최근 52주"} ·{" "}

@@ -98,6 +98,14 @@ export interface HomeData {
 }
 
 // Mock data fallback
+function labelToIconKey(label: string): string {
+  if (label.includes("면접")) return "target";
+  if (label.includes("점수")) return "trending-up";
+  if (label.includes("스트릭")) return "flame";
+  if (label.includes("시간")) return "timer";
+  return "bar-chart";
+}
+
 const MOCK_DATA: HomeData = {
   user: {
     name: "김현준",
@@ -105,10 +113,10 @@ const MOCK_DATA: HomeData = {
     lastInterviewDaysAgo: 2,
   },
   stats: [
-    { icon: "🎯", value: 24,           label: "총 면접 횟수",    delta: "↑ 이번 주 +3",     deltaType: "up" },
-    { icon: "📈", value: 82, unit: "점", label: "평균 점수",      delta: "↑ 지난주 대비 +7", deltaType: "up" },
-    { icon: "🔥", value: 12, unit: "일", label: "현재 스트릭",    delta: "🏆 최장 기록!",     deltaType: "neutral" },
-    { icon: "⏱️", value: 8,  unit: "h", label: "총 연습 시간",   delta: "↓ 목표 -2h",        deltaType: "down" },
+    { icon: "target",      value: 24,            label: "총 면접 횟수",  delta: "↑ 이번 주 +3",     deltaType: "up" },
+    { icon: "trending-up", value: 82, unit: "점", label: "평균 점수",     delta: "↑ 지난주 대비 +7", deltaType: "up" },
+    { icon: "flame",       value: 12, unit: "일", label: "현재 스트릭",   delta: "🏆 최장 기록!",     deltaType: "neutral" },
+    { icon: "timer",       value: 8,  unit: "h",  label: "총 연습 시간",  delta: "↓ 목표 -2h",        deltaType: "down" },
   ],
   recentSessions: [
     { id: "s1", icon: "🏦", company: "카카오뱅크", badgeLabel: "꼬리질문",    badgeType: "accent",  role: "백엔드 개발자",    round: "1차 면접", date: "어제 오후 3:24",    score: 88 },
@@ -167,7 +175,7 @@ export async function fetchHomeDataApi(): Promise<{ success: boolean; data?: Hom
           lastInterviewDaysAgo: data.user?.last_interview_days_ago ?? 0,
         },
         stats: (data.stats || []).map((stat) => ({
-          icon: stat.icon || "📊",
+          icon: labelToIconKey(stat.label || ""),
           value: stat.value ?? 0,
           unit: stat.unit,
           label: stat.label || "",
