@@ -90,7 +90,7 @@ mkdir -p "$OUT_DIR"
 
 LAMBDA_ENV="Variables={VIDEO_BUCKET=$VIDEO_BUCKET,SCALED_VIDEO_BUCKET=$SCALED_VIDEO_BUCKET,FRAME_BUCKET=$FRAME_BUCKET,AUDIO_BUCKET=$AUDIO_BUCKET,SCALED_AUDIO_BUCKET=$SCALED_AUDIO_BUCKET,STEP_COMPLETE_SQS_URL=$STEP_COMPLETE_QUEUE_URL,REGION=$REGION,FFMPEG_PATH=/opt/ffmpeg-bin/ffmpeg}"
 
-FUNCTIONS="video_converter frame_extractor audio_extractor audio_scaler"
+FUNCTIONS="video_converter frame_extractor audio_extractor"
 
 for FUNC in $FUNCTIONS; do
   TMPDIR=$(mktemp -d)
@@ -175,19 +175,7 @@ add_s3_lambda_trigger() {
     2>/dev/null || true
 }
 
-awslocal s3api put-bucket-notification-configuration \
-  --bucket "$AUDIO_BUCKET" \
-  --notification-configuration '{
-    "LambdaFunctionConfigurations": [
-      {
-        "LambdaFunctionArn": "arn:aws:lambda:'"$REGION"':'"$ACCOUNT_ID"':function:mefit-audio-scaler",
-        "Events": ["s3:ObjectCreated:*"],
-        "Filter": {"Key": {"FilterRules": [{"Name": "suffix", "Value": ".wav"}]}}
-      }
-    ]
-  }'
-add_s3_lambda_trigger "$AUDIO_BUCKET" "mefit-audio-scaler"
-echo "  [OK] $AUDIO_BUCKET (.wav) → Lambda: audio-scaler"
+
 
 
 
@@ -216,11 +204,10 @@ echo "========================================="
 echo "  Init complete!"
 echo ""
 echo "  S3 Buckets:        5 (CORS enabled)"
-echo "  Lambda:            5 (4 pipeline + 1 voice-analyzer)"
+echo "  Lambda:            4 (3 pipeline + 1 voice-analyzer)"
 echo "  SNS Topics:        1 (video-uploaded)"
 echo "  SQS Queues:        4 (3 fan-out + step-complete)"
 echo "  Event Sources:     3 (SQS→Lambda fan-out)"
-echo "  S3→Lambda Direct:  1 (audio-scaler)"
 echo ""
 echo "  Flow: S3 .webm → SNS → 3×SQS → 3×Lambda"
 echo "  Endpoint: http://localhost:4566"

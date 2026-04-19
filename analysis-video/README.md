@@ -11,9 +11,7 @@ pj-kmucd1-04-mefit-video-files (원본 .webm 업로드)
     │
     └─ S3 이벤트 → SNS (video-uploaded) ─┬→ video-converter  → scaled-video-files (.mp4)
                                          ├→ frame-extractor  → video-frame-files (.jpg)
-                                         └→ audio-extractor  → audio-files (.wav)
-                                                                    │
-                                                                    └─ audio-scaler → scaled-audio-files (.wav)
+                                         └→ audio-extractor  → scaled-audio-files (.wav, 16kHz mono)
 
 각 Lambda 완료 시 → SQS (step-complete) → Django Celery Worker
 ```
@@ -36,8 +34,7 @@ analysis-video/
 ├── functions/                              # Lambda 핸들러
 │   ├── video_converter/       # WebM → MP4 (H.264, max 720p)
 │   ├── frame_extractor/       # 1FPS JPEG 프레임 추출
-│   ├── audio_extractor/       # 영상 → WAV 음성 분리
-│   ├── audio_scaler/          # WAV → 16kHz mono 다운샘플링
+│   ├── audio_extractor/       # 영상 → WAV (16kHz mono) 추출+다운샘플링
 │   └── voice_analyzer/         # 음성 분석 (pydub, 온디맨드)
 │
 ├── local/                                  # 로컬 개발 환경
@@ -56,8 +53,7 @@ analysis-video/
 |------|--------|------|------|----------|--------|
 | `video-converter` | SNS: video-uploaded | 원본 WebM | MP4 (720p H.264) | 5분 | 1024MB |
 | `frame-extractor` | SNS: video-uploaded | 원본 WebM | JPEG 프레임 (1FPS) | 3분 | 512MB |
-| `audio-extractor` | SNS: video-uploaded | 원본 WebM | WAV (44.1kHz) | 2분 | 512MB |
-| `audio-scaler` | S3: audio-files `.wav` | WAV | WAV (16kHz mono) | 2분 | 512MB |
+| `audio-extractor` | SNS: video-uploaded | 원본 WebM | WAV (16kHz mono) | 2분 | 512MB |
 | `voice-analyzer` | 온디맨드 (boto3.invoke) | WAV (scaled-audio) | JSON (summary + timeline) | 2분 | 1024MB |
 
 ## S3 버킷

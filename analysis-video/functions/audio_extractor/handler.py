@@ -1,6 +1,6 @@
 import os
 
-from mefit_video_common.config import AUDIO_BUCKET
+from mefit_video_common.config import SCALED_AUDIO_BUCKET
 from mefit_video_common.event_parser import parse_s3_records
 from mefit_video_common.ffmpeg_runner import run_ffmpeg
 from mefit_video_common.s3_client import download_to_tmp, upload_from_tmp
@@ -20,14 +20,16 @@ def handler(event, context):
                 "-acodec",
                 "pcm_s16le",
                 "-ar",
-                "44100",
+                "16000",
+                "-ac",
+                "1",
                 output_path,
             ],
-            description=f"extract audio {key}",
+            description=f"extract+scale audio {key}",
         )
 
         output_key = key.rsplit(".", 1)[0] + ".wav"
-        upload_from_tmp(output_path, AUDIO_BUCKET, output_key, "audio/wav")
+        upload_from_tmp(output_path, SCALED_AUDIO_BUCKET, output_key, "audio/wav")
 
         parts = key.split("/")
         if len(parts) >= 2:
@@ -35,7 +37,7 @@ def handler(event, context):
                 session_uuid=parts[0],
                 turn_id=parts[1],
                 step="audio_extractor",
-                output_bucket=AUDIO_BUCKET,
+                output_bucket=SCALED_AUDIO_BUCKET,
                 output_key=output_key,
             )
 
