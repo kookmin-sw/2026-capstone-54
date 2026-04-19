@@ -1,3 +1,5 @@
+import { Target, Gift } from "lucide-react";
+
 interface NextRewardData {
   targetDays: number;
   daysRemaining: number;
@@ -21,7 +23,9 @@ export function NextReward({ nextReward, currentStreak, revealed }: NextRewardPr
       style={{ transitionDelay: "100ms" }}
     >
       <div className="flex items-center gap-2 mb-4">
-        <span className="w-7 h-7 rounded-lg bg-[#E6F7FA] flex items-center justify-center text-sm">🎯</span>
+        <span className="w-7 h-7 rounded-lg bg-[#E6F7FA] flex items-center justify-center">
+          <Target size={14} className="text-[#0991B2]" />
+        </span>
         <h3 className="text-[14px] font-bold text-[#0A0A0A]">다음 목표</h3>
       </div>
 
@@ -43,8 +47,9 @@ export function NextReward({ nextReward, currentStreak, revealed }: NextRewardPr
         <span className="text-[11px] text-[#9CA3AF] font-medium">
           {currentStreak} / {nextReward.targetDays}일
         </span>
-        <span className="text-[11px] font-bold text-[#0991B2] bg-[#E6F7FA] py-[3px] px-2 rounded-full">
-          🎁 {nextReward.reward}
+        <span className="text-[11px] font-bold text-[#0991B2] bg-[#E6F7FA] py-[3px] px-2 rounded-full flex items-center gap-1">
+          <Gift size={10} className="text-[#0991B2]" />
+          {nextReward.reward}
         </span>
       </div>
 

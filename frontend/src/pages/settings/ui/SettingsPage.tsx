@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { Archive, ClipboardList, Eye, FileText, Flame, Gem, KeyRound, Lock, Megaphone, ShieldCheck, Star, TriangleAlert, UserCircle, Zap } from "lucide-react";
 import { useSettingsStore } from "@/features/settings";
+import { useSubscriptionStore } from "@/features/subscription";
+import { TicketPolicyInfo } from "@/features/subscription/ui/TicketPolicyInfo";
+import { JobCategorySelector } from "./JobCategorySelector";
 import type { SettingsPanel } from "@/features/settings";
 
 /* ── Password strength helper ── */
@@ -41,6 +45,11 @@ export function SettingsPage() {
     clearMessage,
   } = useSettingsStore();
 
+  const {
+    status: subStatus,
+    fetchStatus: fetchSubStatus,
+  } = useSubscriptionStore();
+
   const [searchParams] = useSearchParams();
   const [deleteConfirm, setDeleteConfirm] = useState<"data" | "account" | null>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
@@ -54,7 +63,8 @@ export function SettingsPage() {
   useEffect(() => {
     fetchSettings();
     loadJobCategories();
-  }, [fetchSettings, loadJobCategories]);
+    fetchSubStatus();
+  }, [fetchSettings, loadJobCategories, fetchSubStatus]);
 
   useEffect(() => {
     if (saveMessage) {
@@ -79,7 +89,6 @@ export function SettingsPage() {
   };
 
   const inputClass = "font-plex-sans-kr text-[14px] text-[#0A0A0A] bg-white border-[1.5px] border-[#E5E7EB] rounded-lg px-[14px] py-[10px] outline-none transition-[border-color,box-shadow] duration-[180ms] w-full placeholder-[#9CA3AF] focus:border-[#0991B2] focus:shadow-[0_0_0_3px_rgba(9,145,178,0.1)] read-only:opacity-50 read-only:cursor-not-allowed read-only:bg-[#F9FAFB]";
-  const selectClass = "font-plex-sans-kr text-[14px] text-[#0A0A0A] bg-white border-[1.5px] border-[#E5E7EB] rounded-lg px-[14px] py-[10px] outline-none appearance-none cursor-pointer w-full transition-[border-color] duration-[180ms] focus:border-[#0991B2] focus:shadow-[0_0_0_3px_rgba(9,145,178,0.1)]";
 
   return (
     <>
@@ -104,7 +113,9 @@ export function SettingsPage() {
                   </div>
 
                   <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl px-7 py-7 shadow-[var(--sc)] mb-4 max-[640px]:px-[18px]">
-                    <div className="font-plex-sans-kr text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">👤 프로필 사진</div>
+                    <div className="font-plex-sans-kr text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">
+                      <UserCircle size={15} className="text-[#0991B2]" /> 프로필 사진
+                    </div>
                     <div className="flex items-center gap-4 mb-5">
                       {data.profile.avatarUrl ? (
                         <img src={data.profile.avatarUrl} alt="프로필" className="w-16 h-16 rounded-full object-cover shadow-[0_2px_8px_rgba(9,145,178,0.3)] shrink-0" />
@@ -124,7 +135,9 @@ export function SettingsPage() {
                   </div>
 
                   <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl px-7 py-7 shadow-[var(--sc)] mb-4 max-[640px]:px-[18px]">
-                    <div className="font-plex-sans-kr text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">📝 기본 정보</div>
+                    <div className="font-plex-sans-kr text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">
+                      <ClipboardList size={15} className="text-[#059669]" /> 기본 정보
+                    </div>
                     <div className="flex flex-col gap-4">
                       <div className="flex flex-col gap-[5px]">
                         <label className="font-plex-sans-kr text-[12px] font-bold text-[#0A0A0A] tracking-[0.1px] flex items-center gap-1">
@@ -146,65 +159,20 @@ export function SettingsPage() {
                         <p className="text-[11px] text-[#6B7280] leading-[1.45]">이메일 주소는 변경할 수 없습니다. 고객센터로 문의해주세요.</p>
                       </div>
                       <div className="flex flex-col gap-4">
-                        {/* 직군 선택 */}
-                        <div className="flex flex-col gap-[5px]">
-                          <label className="font-plex-sans-kr text-[12px] font-bold text-[#0A0A0A] tracking-[0.1px] flex items-center gap-1">
-                            희망 직군 <span className="text-[#EF4444] text-[10px]">*</span>
-                          </label>
-                          {jobCategoriesLoading ? (
-                            <div className="text-[12px] text-[#9CA3AF] py-2">직군 목록 불러오는 중...</div>
-                          ) : (
-                            <select
-                              className={selectClass}
-                              value={profileDraft.jobCategoryId ?? ""}
-                              onChange={(e) => {
-                                const id = e.target.value ? Number(e.target.value) : null;
-                                setProfileDraftField("jobCategoryId", id);
-                              }}
-                            >
-                              <option value="">직군을 선택하세요</option>
-                              {jobCategories.map((cat) => (
-                                <option key={cat.id} value={cat.id}>
-                                  {cat.emoji} {cat.name}
-                                </option>
-                              ))}
-                            </select>
-                          )}
-                          <p className="text-[11px] text-[#6B7280] leading-[1.45]">면접 질문 생성에 반영됩니다</p>
-                        </div>
-
-                        {/* 직업 다중 선택 */}
-                        {profileDraft.jobCategoryId && (
-                          <div className="flex flex-col gap-[5px]">
-                            <label className="font-plex-sans-kr text-[12px] font-bold text-[#0A0A0A] tracking-[0.1px]">
-                              직업 선택 <span className="text-[11px] font-normal text-[#6B7280]">(복수 선택 가능)</span>
-                            </label>
-                            {availableJobsLoading ? (
-                              <div className="text-[12px] text-[#9CA3AF]">직업 목록 불러오는 중...</div>
-                            ) : (
-                              <div className="grid grid-cols-2 gap-2 max-[640px]:grid-cols-1">
-                                {availableJobs.map((job) => {
-                                  const isSelected = profileDraft.jobIds.includes(job.id);
-                                  return (
-                                    <button
-                                      key={job.id}
-                                      type="button"
-                                      onClick={() => toggleJobId(job.id)}
-                                      className={`text-left text-[12px] font-semibold px-3 py-2 rounded-lg border-[1.5px] transition-all ${
-                                        isSelected
-                                          ? "border-[#0991B2] bg-[#E6F7FA] text-[#0991B2]"
-                                          : "border-[#E5E7EB] bg-[#F9FAFB] text-[#374151] hover:border-[#0991B2]"
-                                      }`}
-                                    >
-                                      {isSelected ? "✓ " : ""}{job.name}
-                                    </button>
-                                  );
-                                })}
-                              </div>
-                            )}
-                            <p className="text-[11px] text-[#6B7280] leading-[1.45]">면접 맥락 설정에 활용됩니다</p>
-                          </div>
-                        )}
+                        <JobCategorySelector
+                          categoryProps={{
+                            categories: jobCategories,
+                            loading: jobCategoriesLoading,
+                            selectedId: profileDraft.jobCategoryId,
+                            onSelect: (id) => setProfileDraftField("jobCategoryId", id),
+                          }}
+                          jobProps={{
+                            jobs: availableJobs,
+                            loading: availableJobsLoading,
+                            selectedIds: profileDraft.jobIds,
+                            onToggle: toggleJobId,
+                          }}
+                        />
                       </div>
                     </div>
                   </div>
@@ -225,7 +193,9 @@ export function SettingsPage() {
                   </div>
 
                   <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl px-7 py-7 shadow-[var(--sc)] mb-4 max-[640px]:px-[18px]">
-                    <div className="font-plex-sans-kr text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">🔑 비밀번호 변경</div>
+                    <div className="font-plex-sans-kr text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">
+                      <KeyRound size={15} className="text-[#F59E0B]" /> 비밀번호 변경
+                    </div>
                     <div className="flex flex-col gap-4">
                       <div className="flex flex-col gap-[5px]">
                         <label className="font-plex-sans-kr text-[12px] font-bold text-[#0A0A0A] tracking-[0.1px] flex items-center gap-1">현재 비밀번호 <span className="text-[#EF4444] text-[10px]">*</span></label>
@@ -253,7 +223,7 @@ export function SettingsPage() {
 
                   <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl px-7 py-7 shadow-[var(--sc)] mb-4 max-[640px]:px-[18px]" style={{ background: "rgba(9,145,178,.03)", borderColor: "rgba(9,145,178,.12)" }}>
                     <p style={{ fontSize: 13, color: "#6B7280", lineHeight: 1.7 }}>
-                      🔒 비밀번호는 암호화되어 저장됩니다.<br />
+                      <Lock size={13} className="text-[#0991B2] inline-block mr-1 align-text-bottom" /> 비밀번호는 암호화되어 저장됩니다.<br />
                       분실 시 로그인 화면에서 <strong style={{ color: "#0991B2" }}>비밀번호 찾기</strong>를 이용하세요.
                     </p>
                   </div>
@@ -280,7 +250,9 @@ export function SettingsPage() {
                   </div>
 
                   <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl px-7 py-7 shadow-[var(--sc)] mb-4 max-[640px]:px-[18px]">
-                    <div className="font-plex-sans-kr text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">🔥 스트릭 &amp; 면접</div>
+                    <div className="font-plex-sans-kr text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">
+                      <Flame size={15} className="text-[#F97316]" /> 스트릭 &amp; 면접
+                    </div>
                     {([
                       { key: "streakReminder" as const, title: "스트릭 리마인더", desc: "오늘 면접 연습을 아직 하지 않았을 때 저녁 8시에 알림" },
                       { key: "streakExpire" as const, title: "스트릭 만료 경고", desc: "자정 1시간 전, 오늘 스트릭이 만료될 예정일 때 알림" },
@@ -302,7 +274,9 @@ export function SettingsPage() {
                   </div>
 
                   <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl px-7 py-7 shadow-[var(--sc)] mb-4 max-[640px]:px-[18px]">
-                    <div className="font-plex-sans-kr text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">📢 서비스 &amp; 마케팅</div>
+                    <div className="font-plex-sans-kr text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">
+                      <Megaphone size={15} className="text-[#0991B2]" /> 서비스 &amp; 마케팅
+                    </div>
                     {([
                       { key: "serviceNotice" as const, title: "서비스 공지 및 업데이트", desc: "새 기능, 점검, 약관 변경 등 중요 서비스 소식" },
                       { key: "marketing" as const, title: "마케팅 정보 수신", desc: "할인, 프로모션, 이벤트 등 혜택 정보 이메일 발송" },
@@ -339,7 +313,9 @@ export function SettingsPage() {
                   </div>
 
                   <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl px-7 py-7 shadow-[var(--sc)] mb-4 max-[640px]:px-[18px]">
-                    <div className="font-plex-sans-kr text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">⭐ 현재 플랜</div>
+                    <div className="font-plex-sans-kr text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">
+                      <Star size={15} className="text-[#F59E0B]" /> 현재 플랜
+                    </div>
                     <div className="bg-[#0A0A0A] rounded-[10px] px-[22px] py-5 relative overflow-hidden">
                       <div className="flex items-center justify-between gap-3 max-[640px]:flex-col max-[640px]:items-start">
                         <div>
@@ -368,16 +344,18 @@ export function SettingsPage() {
                   </div>
 
                   <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl px-7 py-7 shadow-[var(--sc)] mb-4 max-[640px]:px-[18px]">
-                    <div className="font-plex-sans-kr text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">💎 Pro 플랜 혜택</div>
+                    <div className="font-plex-sans-kr text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">
+                      <Gem size={15} className="text-[#0991B2]" /> Pro 플랜 혜택
+                    </div>
                     <div className="grid grid-cols-2 gap-[10px] max-[640px]:grid-cols-1">
-                      {[
-                        { icon: "👁️", name: "시선 추적 분석", desc: "면접 중 시선 이탈 횟수 측정" },
-                        { icon: "⚡", name: "실전 모드", desc: "랜덤 대기 후 자동 시작" },
-                        { icon: "📄", name: "상세 리포트 PDF", desc: "면접 리포트 저장·공유" },
-                        { icon: "🗂️", name: "무제한 아카이브", desc: "전체 면접 세션 보관" },
-                      ].map((item) => (
+                      {([
+                        { icon: <Eye size={20} className="text-[#8B5CF6]" />, name: "시선 추적 분석", desc: "면접 중 시선 이탈 횟수 측정" },
+                        { icon: <Zap size={20} className="text-[#F59E0B]" />, name: "실전 모드", desc: "랜덤 대기 후 자동 시작" },
+                        { icon: <FileText size={20} className="text-[#0991B2]" />, name: "상세 리포트 PDF", desc: "면접 리포트 저장·공유" },
+                        { icon: <Archive size={20} className="text-[#059669]" />, name: "무제한 아카이브", desc: "전체 면접 세션 보관" },
+                      ] as const).map((item) => (
                         <div key={item.name} className="bg-white border border-[#E5E7EB] rounded-[10px] px-4 py-[14px] transition-all duration-150 hover:border-[rgba(9,145,178,0.3)] hover:shadow-[0_2px_8px_rgba(0,0,0,0.1),0_8px_24px_rgba(0,0,0,0.08)]">
-                          <div className="text-[20px] mb-[6px]">{item.icon}</div>
+                          <div className="mb-[8px]">{item.icon}</div>
                           <div className="font-plex-sans-kr text-[13px] font-bold text-[#0A0A0A] mb-0.5">{item.name}</div>
                           <div className="text-[11px] text-[#6B7280]">{item.desc}</div>
                         </div>
@@ -388,10 +366,12 @@ export function SettingsPage() {
                         className="font-plex-sans-kr text-[14px] font-bold text-white bg-[#0A0A0A] border-none rounded-lg py-[10px] cursor-pointer transition-all duration-150 flex items-center gap-[7px] hover:opacity-85 hover:-translate-y-px justify-center w-full"
                         style={{ borderRadius: 8 }}
                       >
-                        💎 Pro 업그레이드 — 첫 7일 무료
+                        <Gem size={15} className="text-[#06B6D4]" /> Pro 업그레이드 — 첫 7일 무료
                       </button>
                     </div>
                   </div>
+
+                  <TicketPolicyInfo currentPlan={subStatus?.currentPlan ?? "free"} />
                 </div>
 
                 {/* ─── CONSENT PANEL ─── */}
@@ -402,7 +382,9 @@ export function SettingsPage() {
                   </div>
 
                   <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl px-7 py-7 shadow-[var(--sc)] mb-4 max-[640px]:px-[18px]">
-                    <div className="font-plex-sans-kr text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">📋 약관 및 개인정보 동의</div>
+                    <div className="font-plex-sans-kr text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">
+                      <ShieldCheck size={15} className="text-[#0991B2]" /> 약관 및 개인정보 동의
+                    </div>
 
                     <div className="flex gap-3 px-4 py-[14px] bg-white border border-[#E5E7EB] rounded-[10px] mb-2 transition-all duration-150">
                       <button className="w-[22px] h-[22px] rounded-[6px] shrink-0 flex items-center justify-center text-[10px] font-extrabold cursor-not-allowed opacity-70 border-none bg-[#0991B2] text-white shadow-[0_2px_8px_rgba(9,145,178,0.3)] mt-0.5" disabled>✓</button>
@@ -455,13 +437,15 @@ export function SettingsPage() {
                         <p className="text-[12px] text-[#6B7280] leading-[1.55]">
                           면접 영상·음성 데이터를 AI 모델 개선에 활용하는 것에 동의합니다. 동의 시 서비스 품질 향상에 기여하며 추가 스트릭 보상을 받을 수 있어요.
                         </p>
-                        <div className="inline-flex items-center gap-1 text-[10px] font-bold text-white bg-[#0A0A0A] px-2 py-0.5 rounded-full mt-[5px]">⚠ v2025-03 업데이트 · 재동의 필요</div>
+                        <div className="inline-flex items-center gap-1 text-[10px] font-bold text-white bg-[#0A0A0A] px-2 py-0.5 rounded-full mt-[5px]"><TriangleAlert size={10} /> v2025-03 업데이트 · 재동의 필요</div>
                       </div>
                     </div>
                   </div>
 
                   <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl px-7 py-7 shadow-[var(--sc)] mb-4 max-[640px]:px-[18px]">
-                    <div className="font-plex-sans-kr text-[14px] font-extrabold tracking-[-0.1px] mb-3 flex items-center gap-[7px] text-[#EF4444]">⚠ 위험 구역</div>
+                    <div className="font-plex-sans-kr text-[14px] font-extrabold tracking-[-0.1px] mb-3 flex items-center gap-[7px] text-[#EF4444]">
+                      <TriangleAlert size={15} className="text-[#EF4444]" /> 위험 구역
+                    </div>
                     <div className="bg-[rgba(239,68,68,0.03)] border border-[rgba(239,68,68,0.15)] rounded-[10px] px-5 py-[18px]">
                       <div className="flex items-center justify-between gap-3 flex-wrap py-[10px] border-b border-[rgba(239,68,68,0.08)] first:pt-0 last:border-b-0 last:pb-0">
                         <div>
