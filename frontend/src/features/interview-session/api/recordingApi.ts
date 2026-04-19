@@ -4,8 +4,6 @@ export interface InitiateRecordingResponse {
   recordingId: string;
   uploadId: string;
   s3Key: string;
-  presignedUrls: { partNumber: number; url: string }[];
-  singleUploadUrl: string;
 }
 
 export interface CompleteRecordingResponse {

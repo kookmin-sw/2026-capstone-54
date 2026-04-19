@@ -6,26 +6,17 @@ interface UseChunkUploaderOptions {
   retryBaseDelay?: number;
 }
 
-interface ChunkUploadState {
-  uploadedParts: { partNumber: number; etag: string }[];
-  currentPartNumber: number;
-  isUploading: boolean;
-  progress: number;
-  error: string | null;
-}
-
-interface PresignedUrl {
-  partNumber: number;
-  url: string;
-}
-
 export interface UploadedPart {
   partNumber: number;
   etag: string;
 }
 
-interface UseChunkUploaderReturn extends ChunkUploadState {
-  init: (presignedUrls: PresignedUrl[]) => void;
+interface UseChunkUploaderReturn {
+  uploadedParts: UploadedPart[];
+  isUploading: boolean;
+  progress: number;
+  error: string | null;
+  init: (recordingId: string) => void;
   uploadChunk: (blob: Blob) => Promise<UploadedPart | null>;
   reset: () => void;
 }
@@ -34,26 +25,26 @@ export function useChunkUploader({
   maxRetries = 3,
   retryBaseDelay = 1000,
 }: UseChunkUploaderOptions = {}): UseChunkUploaderReturn {
-  const [uploadedParts, setUploadedParts] = useState<{ partNumber: number; etag: string }[]>([]);
-  const [isUploading, setIsUploading] = useState<boolean>(false);
+  const [uploadedParts, setUploadedParts] = useState<UploadedPart[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const urlsRef = useRef<PresignedUrl[]>([]);
-  const partCounterRef = useRef<number>(1);
-  const uploadLockRef = useRef<boolean>(false);
+  const recordingIdRef = useRef<string | null>(null);
+  const partCounterRef = useRef(1);
+  const uploadLockRef = useRef(false);
 
-  const progress = urlsRef.current.length > 0 ? (uploadedParts.length / urlsRef.current.length) * 100 : 0;
+  const progress = uploadedParts.length > 0 ? uploadedParts.length * 5 : 0;
 
-  const init = useCallback((presignedUrls: PresignedUrl[]) => {
-    urlsRef.current = presignedUrls;
-    partCounterRef.current = presignedUrls.length > 0 ? Math.min(...presignedUrls.map(p => p.partNumber)) : 1;
+  const init = useCallback((recordingId: string) => {
+    recordingIdRef.current = recordingId;
+    partCounterRef.current = 1;
     setUploadedParts([]);
     setIsUploading(false);
     setError(null);
   }, []);
 
   const reset = useCallback(() => {
-    urlsRef.current = [];
+    recordingIdRef.current = null;
     partCounterRef.current = 1;
     setUploadedParts([]);
     setIsUploading(false);
@@ -71,17 +62,15 @@ export function useChunkUploader({
         setIsUploading(true);
         setError(null);
 
-        const currentPart = partCounterRef.current;
-        const targetUrlObj = urlsRef.current.find((u) => u.partNumber === currentPart);
-        if (!targetUrlObj) {
-          console.warn(`[ChunkUploader] No presigned URL for part ${currentPart}, urls count: ${urlsRef.current.length}`);
-          setError("No presigned URL found for current part.");
+        const id = recordingIdRef.current;
+        if (!id) {
+          setError("Recording not initialized.");
           setIsUploading(false);
           return null;
         }
 
-        const { url: rawUrl, partNumber } = targetUrlObj;
-        const fullUrl = rawUrl.startsWith("/") ? `${BASE_URL}${rawUrl}` : rawUrl;
+        const partNumber = partCounterRef.current;
+        const url = `${BASE_URL}/api/v1/interviews/recordings/${id}/parts/${partNumber}/`;
 
         let attempt = 0;
 
@@ -90,21 +79,18 @@ export function useChunkUploader({
             const formData = new FormData();
             formData.append("file", blob, "chunk.webm");
 
-            const response = await fetchWithAuth(fullUrl, {
-              method: "PUT",
-              body: formData,
-            });
+            const response = await fetchWithAuth(url, { method: "PUT", body: formData });
 
             if (!response.ok) {
               throw new Error(`Upload failed with status ${response.status}`);
             }
 
             const data = await response.json();
-            const etag = (data.etag ?? response.headers.get("ETag") ?? "").replace(/"/g, "");
+            const etag = (data.etag ?? "").replace(/"/g, "");
 
             const part: UploadedPart = { partNumber, etag };
             setUploadedParts((prev) => [...prev, part]);
-            partCounterRef.current = currentPart + 1;
+            partCounterRef.current = partNumber + 1;
             setIsUploading(false);
             return part;
           } catch (err) {
@@ -127,17 +113,8 @@ export function useChunkUploader({
         uploadLockRef.current = false;
       }
     },
-    [maxRetries, retryBaseDelay]
+    [maxRetries, retryBaseDelay],
   );
 
-  return {
-    uploadedParts,
-    currentPartNumber: partCounterRef.current,
-    isUploading,
-    progress,
-    error,
-    init,
-    uploadChunk,
-    reset,
-  };
+  return { uploadedParts, isUploading, progress, error, init, uploadChunk, reset };
 }

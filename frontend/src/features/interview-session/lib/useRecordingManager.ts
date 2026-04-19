@@ -30,7 +30,6 @@ export function useRecordingManager({
   const [managerError, setManagerError] = useState<string | null>(null);
 
   const recordingIdRef = useRef<string | null>(null);
-  const singleUploadUrlRef = useRef<string | null>(null);
   const startTimeRef = useRef<number | null>(null);
   const isInitializedRef = useRef(false);
   const collectedPartsRef = useRef<UploadedPart[]>([]);
@@ -68,7 +67,6 @@ export function useRecordingManager({
 
   const resetRefs = useCallback(() => {
     recordingIdRef.current = null;
-    singleUploadUrlRef.current = null;
     startTimeRef.current = null;
     isInitializedRef.current = false;
     collectedPartsRef.current = [];
@@ -91,8 +89,7 @@ export function useRecordingManager({
       try {
         const initRes = await recordingApi.initiate(sessionUuid, turnId, "video");
         recordingIdRef.current = initRes.recordingId;
-        singleUploadUrlRef.current = initRes.singleUploadUrl;
-        chunkUploader.init(initRes.presignedUrls);
+        chunkUploader.init(initRes.recordingId);
         preparedTurnIdRef.current = turnId;
         console.info("[RecordingManager] prepared for turnId=%d", turnId);
       } catch (err) {
@@ -114,8 +111,7 @@ export function useRecordingManager({
         if (preparedTurnIdRef.current !== turnId || !recordingIdRef.current) {
           const initRes = await recordingApi.initiate(sessionUuid, turnId, "video");
           recordingIdRef.current = initRes.recordingId;
-          singleUploadUrlRef.current = initRes.singleUploadUrl;
-          chunkUploader.init(initRes.presignedUrls);
+          chunkUploader.init(initRes.recordingId);
         }
         preparedTurnIdRef.current = null;
 
@@ -129,7 +125,6 @@ export function useRecordingManager({
           setRecordingEnabled(false);
           await recordingApi.abort(recordingIdRef.current).catch(() => {});
           recordingIdRef.current = null;
-          singleUploadUrlRef.current = null;
           throw innerErr;
         }
       } catch (err) {

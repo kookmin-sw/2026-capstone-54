@@ -49,8 +49,6 @@ const INIT_RESPONSE = {
   recordingId: "rec-123",
   uploadId: "upload-456",
   s3Key: "session/turn/test.webm",
-  presignedUrls: [{ partNumber: 1, url: "https://s3/part1" }],
-  singleUploadUrl: "https://s3/single-put",
 };
 
 describe("useRecordingManager", () => {
@@ -71,7 +69,7 @@ describe("useRecordingManager", () => {
     await act(async () => { await result.current.startRecording(10); });
 
     expect(mockInitiate).toHaveBeenCalledWith("sess-1", 10, "video");
-    expect(mockUploaderInit).toHaveBeenCalledWith(INIT_RESPONSE.presignedUrls);
+    expect(mockUploaderInit).toHaveBeenCalledWith(INIT_RESPONSE.recordingId);
     expect(mockMediaStart).toHaveBeenCalled();
   });
 
