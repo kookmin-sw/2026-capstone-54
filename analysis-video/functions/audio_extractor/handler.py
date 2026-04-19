@@ -41,10 +41,21 @@ def _process(bucket, key):
 
     parts = key.split("/")
     if len(parts) >= 2:
+        session_uuid = parts[0]
+        turn_id = parts[1]
+
         publish_step_complete(
-            session_uuid=parts[0],
-            turn_id=parts[1],
+            session_uuid=session_uuid,
+            turn_id=turn_id,
             step="audio_extractor",
+            output_bucket=AUDIO_BUCKET,
+            output_key=output_key,
+        )
+
+        publish_step_complete(
+            session_uuid=session_uuid,
+            turn_id=turn_id,
+            step="audio_scaler",
             output_bucket=SCALED_AUDIO_BUCKET,
             output_key=output_key,
         )
