@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { getAccessToken } from "@/shared/api/client";
+import { fetchWithAuth } from "@/shared/api/client";
 
 export const VOICE_API_BASE =
   import.meta.env.VITE_VOICE_API_BASE_URL || "https://mefit-voice.xn--hy1by51c.kr/voice-api/api/v1";
@@ -62,16 +62,12 @@ export function useTts(): UseTtsReturn {
       (async () => {
         try {
           setTtsPlaying(true);
-          const token = getAccessToken();
           const abort = new AbortController();
           abortRef.current = abort;
 
-          const res = await fetch(`${VOICE_API_BASE}/tts`, {
+          const res = await fetchWithAuth(`${VOICE_API_BASE}/tts`, {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               text,
               language: "ko",

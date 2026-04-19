@@ -14,6 +14,7 @@ export interface UseRecordingManagerReturn {
   isRecording: boolean;
   uploadProgress: number;
   error: string | null;
+  prepareRecording: (turnId: number) => Promise<void>;
   startRecording: (turnId: number) => Promise<void>;
   stopRecording: () => Promise<void>;
   abortRecording: () => Promise<void>;
@@ -33,6 +34,7 @@ export function useRecordingManager({
   const startTimeRef = useRef<number | null>(null);
   const isInitializedRef = useRef(false);
   const collectedPartsRef = useRef<UploadedPart[]>([]);
+  const preparedTurnIdRef = useRef<number | null>(null);
 
   const chunkUploader = useChunkUploader();
 
@@ -83,6 +85,24 @@ export function useRecordingManager({
     resetRefs();
   }, [mediaRecorder, resetRefs]);
 
+  const prepareRecording = useCallback(
+    async (turnId: number) => {
+      if (!recordingEnabled || preparedTurnIdRef.current === turnId) return;
+      try {
+        const initRes = await recordingApi.initiate(sessionUuid, turnId, "video");
+        recordingIdRef.current = initRes.recordingId;
+        singleUploadUrlRef.current = initRes.singleUploadUrl;
+        chunkUploader.init(initRes.presignedUrls);
+        preparedTurnIdRef.current = turnId;
+        console.info("[RecordingManager] prepared for turnId=%d", turnId);
+      } catch (err) {
+        console.warn("[RecordingManager] prepare failed, will init on startRecording:", err);
+        preparedTurnIdRef.current = null;
+      }
+    },
+    [sessionUuid, recordingEnabled, chunkUploader],
+  );
+
   const startRecording = useCallback(
     async (turnId: number) => {
       if (!recordingEnabled) return;
@@ -91,12 +111,15 @@ export function useRecordingManager({
       collectedPartsRef.current = [];
 
       try {
-        const initRes = await recordingApi.initiate(sessionUuid, turnId, "video");
-        recordingIdRef.current = initRes.recordingId;
-        singleUploadUrlRef.current = initRes.singleUploadUrl;
+        if (preparedTurnIdRef.current !== turnId || !recordingIdRef.current) {
+          const initRes = await recordingApi.initiate(sessionUuid, turnId, "video");
+          recordingIdRef.current = initRes.recordingId;
+          singleUploadUrlRef.current = initRes.singleUploadUrl;
+          chunkUploader.init(initRes.presignedUrls);
+        }
+        preparedTurnIdRef.current = null;
 
         try {
-          chunkUploader.init(initRes.presignedUrls);
           await mediaRecorder.start();
           startTimeRef.current = Date.now();
           isInitializedRef.current = true;
@@ -192,6 +215,7 @@ export function useRecordingManager({
     isRecording: mediaRecorder.isRecording,
     uploadProgress: chunkUploader.progress,
     error: combinedError,
+    prepareRecording,
     startRecording,
     stopRecording,
     abortRecording,
