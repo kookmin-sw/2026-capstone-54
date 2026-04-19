@@ -88,7 +88,7 @@ function DbfsAreaChart({
 interface InteractiveTimelineProps {
   recordingId?: string;
   mediaType?: string;
-  speechData: NonNullable<BehaviorAnalysis["speechData"]>;
+  speechData: BehaviorAnalysis["speechData"] | null;
   speechSegments: SpeechSegment[];
 }
 
@@ -118,8 +118,12 @@ export function InteractiveTimeline({
     }).catch(() => {});
   }, [recordingId]);
 
+  if (!speechData?.summary || !speechData?.timeline) return null;
+
   const { summary, timeline } = speechData;
   const { totalDurationMs } = summary;
+
+  if (totalDurationMs <= 0 || timeline.length === 0) return null;
 
   const handleTimeUpdate = () => {
     if (mediaRef.current) {

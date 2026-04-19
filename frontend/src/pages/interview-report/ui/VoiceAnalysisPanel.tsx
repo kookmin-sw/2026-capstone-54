@@ -12,10 +12,12 @@ function formatDuration(ms: number) {
 }
 
 export function VoiceAnalysisPanel({ analysis }: VoiceAnalysisPanelProps) {
-  if (!analysis.speechData) return null;
+  if (!analysis.speechData?.summary || !analysis.speechData?.timeline) return null;
 
   const { summary, timeline } = analysis.speechData;
   const { totalDurationMs } = summary;
+
+  if (totalDurationMs <= 0 || timeline.length === 0) return null;
 
   const getDbfsColor = (dbfs: number | null) => {
     if (dbfs === null) return "bg-[#E5E7EB]";

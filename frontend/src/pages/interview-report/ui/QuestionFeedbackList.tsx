@@ -44,16 +44,12 @@ export function QuestionFeedbackList({
                 </div>
               )}
 
-              {behaviorAnalysis?.speechData && (
-                <div className="mb-3">
-                  <InteractiveTimeline
-                    recordingId={recording?.recordingId}
-                    mediaType={recording?.mediaType}
-                    speechData={behaviorAnalysis.speechData}
-                    speechSegments={speechSegments}
-                  />
-                </div>
-              )}
+              <InteractiveTimeline
+                recordingId={recording?.recordingId}
+                mediaType={recording?.mediaType}
+                speechData={behaviorAnalysis?.speechData ?? null}
+                speechSegments={speechSegments}
+              />
 
               <div className="grid grid-cols-2 gap-3 mb-3 max-sm:grid-cols-1">
                 <div className="bg-[#F0FDF4] rounded-xl p-3">
