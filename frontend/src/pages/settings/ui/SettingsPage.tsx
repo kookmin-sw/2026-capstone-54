@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Archive, Eye, FileText, Gem, Star, Zap } from "lucide-react";
+import { Archive, Eye, FileText, Gem, ShieldCheck, Star, TriangleAlert, Zap } from "lucide-react";
 import { useSettingsStore } from "@/features/settings";
 import { useSubscriptionStore } from "@/features/subscription";
 import { TicketPolicyInfo } from "@/features/subscription/ui/TicketPolicyInfo";
@@ -417,7 +417,9 @@ export function SettingsPage() {
                   </div>
 
                   <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl px-7 py-7 shadow-[var(--sc)] mb-4 max-[640px]:px-[18px]">
-                    <div className="font-plex-sans-kr text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">📋 약관 및 개인정보 동의</div>
+                    <div className="font-plex-sans-kr text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">
+                      <ShieldCheck size={15} className="text-[#0991B2]" /> 약관 및 개인정보 동의
+                    </div>
 
                     <div className="flex gap-3 px-4 py-[14px] bg-white border border-[#E5E7EB] rounded-[10px] mb-2 transition-all duration-150">
                       <button className="w-[22px] h-[22px] rounded-[6px] shrink-0 flex items-center justify-center text-[10px] font-extrabold cursor-not-allowed opacity-70 border-none bg-[#0991B2] text-white shadow-[0_2px_8px_rgba(9,145,178,0.3)] mt-0.5" disabled>✓</button>
@@ -470,13 +472,15 @@ export function SettingsPage() {
                         <p className="text-[12px] text-[#6B7280] leading-[1.55]">
                           면접 영상·음성 데이터를 AI 모델 개선에 활용하는 것에 동의합니다. 동의 시 서비스 품질 향상에 기여하며 추가 스트릭 보상을 받을 수 있어요.
                         </p>
-                        <div className="inline-flex items-center gap-1 text-[10px] font-bold text-white bg-[#0A0A0A] px-2 py-0.5 rounded-full mt-[5px]">⚠ v2025-03 업데이트 · 재동의 필요</div>
+                        <div className="inline-flex items-center gap-1 text-[10px] font-bold text-white bg-[#0A0A0A] px-2 py-0.5 rounded-full mt-[5px]"><TriangleAlert size={10} /> v2025-03 업데이트 · 재동의 필요</div>
                       </div>
                     </div>
                   </div>
 
                   <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl px-7 py-7 shadow-[var(--sc)] mb-4 max-[640px]:px-[18px]">
-                    <div className="font-plex-sans-kr text-[14px] font-extrabold tracking-[-0.1px] mb-3 flex items-center gap-[7px] text-[#EF4444]">⚠ 위험 구역</div>
+                    <div className="font-plex-sans-kr text-[14px] font-extrabold tracking-[-0.1px] mb-3 flex items-center gap-[7px] text-[#EF4444]">
+                      <TriangleAlert size={15} className="text-[#EF4444]" /> 위험 구역
+                    </div>
                     <div className="bg-[rgba(239,68,68,0.03)] border border-[rgba(239,68,68,0.15)] rounded-[10px] px-5 py-[18px]">
                       <div className="flex items-center justify-between gap-3 flex-wrap py-[10px] border-b border-[rgba(239,68,68,0.08)] first:pt-0 last:border-b-0 last:pb-0">
                         <div>
