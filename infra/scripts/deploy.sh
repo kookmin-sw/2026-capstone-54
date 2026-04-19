@@ -30,6 +30,7 @@ ALL_DEPLOYMENTS=(
   "mefit-production-api"
   "mefit-production-celery-worker"
   "mefit-production-celery-beat"
+  "mefit-production-sqs-celery-worker"
 )
 
 COMMAND="${1:?사용법: $0 <이미지태그|migrate|rollback|status|history> [타겟] [리비전]}"
@@ -142,7 +143,7 @@ fi
 IMAGE_TAG="$COMMAND"
 TARGET="${2:-all}"
 
-VALID_TARGETS=("all" "api" "celery-worker" "celery-beat")
+VALID_TARGETS=("all" "api" "celery-worker" "celery-beat" "sqs-celery-worker")
 if [[ ! " ${VALID_TARGETS[*]} " =~ " ${TARGET} " ]]; then
   echo "❌ 유효하지 않은 타겟: $TARGET (사용 가능: ${VALID_TARGETS[*]})"
   exit 1
@@ -159,9 +160,10 @@ deploy_target() {
   local container_name
 
   case "$1" in
-    api)            container_name="django" ;;
-    celery-worker)  container_name="celery-worker" ;;
-    celery-beat)    container_name="celery-beat" ;;
+    api)                container_name="django" ;;
+    celery-worker)      container_name="celery-worker" ;;
+    celery-beat)        container_name="celery-beat" ;;
+    sqs-celery-worker)  container_name="sqs-celery-worker" ;;
   esac
 
   echo "▶ ${deploy_name} 이미지 업데이트 중..."

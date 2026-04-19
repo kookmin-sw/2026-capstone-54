@@ -9,6 +9,16 @@ data:
   REDIS_PORT: "6379"
   CELERY_BROKER_URL: "redis://mefit-production-redis:6379/0"
   CELERY_RESULT_BACKEND: "django-db"
+  VIDEO_S3_BUCKET: "pj-kmucd1-04-mefit-video-files"
+  SCALED_VIDEO_S3_BUCKET: "pj-kmucd1-04-mefit-scaled-video-files"
+  FRAME_S3_BUCKET: "pj-kmucd1-04-mefit-video-frame-files"
+  AUDIO_S3_BUCKET: "pj-kmucd1-04-mefit-audio-files"
+  SCALED_AUDIO_S3_BUCKET: "pj-kmucd1-04-mefit-scaled-audio-files"
+  VIDEO_PRESIGNED_URL_EXPIRY: "3600"
+  VIDEO_STEP_COMPLETE_SQS_URL: "https://sqs.us-east-1.amazonaws.com/730335373015/pj-kmucd1-04-mefit-video-step-complete"
+  CELERY_SQS_BROKER_URL: "sqs://"
+  AWS_S3_REGION_NAME: "us-east-1"
   # 아래 값들은 모두 GitHub Environment secrets로 주입됩니다.
   # ALLOWED_HOSTS, SECRET_KEY, DEBUG, PORT, BASE_URL
   # DATABASE_*, EMAIL_* 등
+  # AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY (SQS 접근용)
