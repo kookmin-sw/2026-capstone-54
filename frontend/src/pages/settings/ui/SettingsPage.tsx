@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Archive, Eye, FileText, Gem, ShieldCheck, Star, TriangleAlert, Zap } from "lucide-react";
+import { Archive, Eye, FileText, Flame, Gem, Megaphone, ShieldCheck, Star, TriangleAlert, Zap } from "lucide-react";
 import { useSettingsStore } from "@/features/settings";
 import { useSubscriptionStore } from "@/features/subscription";
 import { TicketPolicyInfo } from "@/features/subscription/ui/TicketPolicyInfo";
@@ -289,7 +289,9 @@ export function SettingsPage() {
                   </div>
 
                   <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl px-7 py-7 shadow-[var(--sc)] mb-4 max-[640px]:px-[18px]">
-                    <div className="font-plex-sans-kr text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">🔥 스트릭 &amp; 면접</div>
+                    <div className="font-plex-sans-kr text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">
+                      <Flame size={15} className="text-[#F97316]" /> 스트릭 &amp; 면접
+                    </div>
                     {([
                       { key: "streakReminder" as const, title: "스트릭 리마인더", desc: "오늘 면접 연습을 아직 하지 않았을 때 저녁 8시에 알림" },
                       { key: "streakExpire" as const, title: "스트릭 만료 경고", desc: "자정 1시간 전, 오늘 스트릭이 만료될 예정일 때 알림" },
@@ -311,7 +313,9 @@ export function SettingsPage() {
                   </div>
 
                   <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl px-7 py-7 shadow-[var(--sc)] mb-4 max-[640px]:px-[18px]">
-                    <div className="font-plex-sans-kr text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">📢 서비스 &amp; 마케팅</div>
+                    <div className="font-plex-sans-kr text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">
+                      <Megaphone size={15} className="text-[#0991B2]" /> 서비스 &amp; 마케팅
+                    </div>
                     {([
                       { key: "serviceNotice" as const, title: "서비스 공지 및 업데이트", desc: "새 기능, 점검, 약관 변경 등 중요 서비스 소식" },
                       { key: "marketing" as const, title: "마케팅 정보 수신", desc: "할인, 프로모션, 이벤트 등 혜택 정보 이메일 발송" },
