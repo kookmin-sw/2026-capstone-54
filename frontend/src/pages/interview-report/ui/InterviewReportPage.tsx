@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Loader2, ArrowLeft } from "lucide-react";
-import { useInterviewSessionStore, recordingApi } from "@/features/interview-session";
-import type { RecordingItem } from "@/features/interview-session";
+import { useInterviewSessionStore, recordingApi, interviewApi } from "@/features/interview-session";
+import type { RecordingItem, BehaviorAnalysis } from "@/features/interview-session";
 import { RadarChart } from "./RadarChart";
 import { ScoreGauge } from "./ScoreGauge";
 import { StrengthsImprovements } from "./StrengthsImprovements";
@@ -20,6 +20,7 @@ const GRADE_KO: Record<string, string> = {
 export function InterviewReportPage() {
   const { interviewSessionUuid } = useParams<{ interviewSessionUuid: string }>();
   const [recordings, setRecordings] = useState<RecordingItem[]>([]);
+  const [behaviorAnalyses, setBehaviorAnalyses] = useState<BehaviorAnalysis[]>([]);
 
   const {
     interviewSession, interviewTurns, interviewAnalysisReport, isReportPolling,
@@ -33,6 +34,7 @@ export function InterviewReportPage() {
     loadInterviewTurns(interviewSessionUuid);
     startReportPolling(interviewSessionUuid);
     recordingApi.list(interviewSessionUuid).then(setRecordings).catch(() => {});
+    interviewApi.getBehaviorAnalyses(interviewSessionUuid).then(setBehaviorAnalyses).catch(() => {});
   }, [interviewSessionUuid]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const turnAnswerMap = Object.fromEntries(interviewTurns.map((t) => [t.id, t.answer]));
@@ -43,7 +45,6 @@ export function InterviewReportPage() {
 
   return (
     <div className="min-h-screen bg-[#F9FAFB]">
-      {/* Nav */}
       <nav className="sticky top-0 z-[200] bg-white/[.92] backdrop-blur-[20px] border-b border-[#E5E7EB] h-[60px] flex items-center px-6 gap-3">
         <Link to="/interview/results" className="flex items-center gap-1.5 text-sm font-medium text-[#6B7280] hover:text-[#0A0A0A] no-underline">
           <ArrowLeft size={16} /> 면접 결과
@@ -55,7 +56,6 @@ export function InterviewReportPage() {
       </nav>
 
       <div className="max-w-3xl mx-auto px-6 pt-8 pb-16">
-        {/* Header */}
         <div className="mb-6">
           <div className="text-[11px] font-bold tracking-[.1em] uppercase text-[#0991B2] mb-2">AI 면접 분석 리포트</div>
           <h1 className="text-[clamp(22px,3vw,32px)] font-black tracking-[-0.5px]">면접 분석 리포트</h1>
@@ -68,7 +68,6 @@ export function InterviewReportPage() {
           )}
         </div>
 
-        {/* Pending */}
         {isPending && (
           <div className="bg-white border border-[#E5E7EB] rounded-2xl p-10 text-center shadow-sm mb-6">
             <Loader2 className="w-12 h-12 animate-spin text-[#0991B2] mx-auto mb-4" />
@@ -78,7 +77,6 @@ export function InterviewReportPage() {
           </div>
         )}
 
-        {/* Failed */}
         {isFailed && (
           <div className="bg-red-50 border border-red-200 rounded-2xl p-8 text-center mb-6">
             <p className="text-red-600 font-bold mb-2">리포트 생성에 실패했습니다</p>
@@ -86,10 +84,8 @@ export function InterviewReportPage() {
           </div>
         )}
 
-        {/* Completed */}
         {isCompleted && report && (
           <>
-            {/* Overall score */}
             <div className="bg-white border border-[#E5E7EB] rounded-2xl p-6 shadow-sm mb-4 flex flex-col sm:flex-row items-center gap-6">
               <div className="shrink-0 w-40"><ScoreGauge score={report.overallScore ?? 0} /></div>
               <div className="flex-1 text-center sm:text-left">
@@ -100,7 +96,6 @@ export function InterviewReportPage() {
               </div>
             </div>
 
-            {/* Category scores */}
             {report.categoryScores.length > 0 && (
               <div className="bg-white border border-[#E5E7EB] rounded-2xl p-6 shadow-sm mb-4">
                 <h2 className="text-[13px] font-bold mb-4">카테고리별 점수</h2>
@@ -126,9 +121,14 @@ export function InterviewReportPage() {
             )}
 
             <StrengthsImprovements strengths={report.strengths} improvements={report.improvementAreas} />
-            <QuestionFeedbackList feedbacks={report.questionFeedbacks} turnAnswerMap={turnAnswerMap} recordings={recordings} />
+            <QuestionFeedbackList 
+              feedbacks={report.questionFeedbacks} 
+              turnAnswerMap={turnAnswerMap} 
+              recordings={recordings} 
+              behaviorAnalyses={behaviorAnalyses}
+              interviewTurns={interviewTurns}
+            />
 
-            {/* CTA */}
             <div className="flex gap-3 justify-center flex-wrap">
               <Link to="/interview/setup" className="inline-flex items-center gap-2 text-sm font-bold text-white bg-[#0A0A0A] rounded-xl py-3 px-8 no-underline hover:opacity-85">다시 면접하기 →</Link>
               <Link to="/interview/results" className="inline-flex items-center gap-2 text-sm font-bold text-[#374151] border border-[#E5E7EB] bg-white rounded-xl py-3 px-8 no-underline hover:bg-[#F9FAFB]">← 면접 결과 목록</Link>
@@ -139,3 +139,4 @@ export function InterviewReportPage() {
     </div>
   );
 }
+

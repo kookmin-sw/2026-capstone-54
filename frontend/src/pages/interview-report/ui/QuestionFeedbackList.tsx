@@ -1,16 +1,26 @@
-import type { InterviewQuestionFeedback, RecordingItem } from "@/features/interview-session";
-import { MediaPlayer } from "@/features/interview-session";
+import type { InterviewQuestionFeedback, RecordingItem, BehaviorAnalysis, InterviewTurn } from "@/features/interview-session";
+import { InteractiveTimeline } from "./InteractiveTimeline";
 
 interface QuestionFeedbackListProps {
   feedbacks: InterviewQuestionFeedback[];
   turnAnswerMap: Record<number, string>;
   recordings?: RecordingItem[];
+  behaviorAnalyses?: BehaviorAnalysis[];
+  interviewTurns?: InterviewTurn[];
 }
 
-export function QuestionFeedbackList({ feedbacks, turnAnswerMap, recordings = [] }: QuestionFeedbackListProps) {
+export function QuestionFeedbackList({
+  feedbacks,
+  turnAnswerMap,
+  recordings = [],
+  behaviorAnalyses = [],
+  interviewTurns = [],
+}: QuestionFeedbackListProps) {
   if (feedbacks.length === 0) return null;
 
   const recordingsByTurnId = Object.fromEntries(recordings.map((r) => [r.turnId, r]));
+  const behaviorByTurnId = Object.fromEntries(behaviorAnalyses.map((ba) => [ba.interviewTurn, ba]));
+  const segmentsByTurnId = Object.fromEntries(interviewTurns.map((t) => [t.id, t.speechSegments || []]));
 
   return (
     <div className="bg-white border border-[#E5E7EB] rounded-2xl p-6 shadow-sm mb-6">
@@ -18,6 +28,8 @@ export function QuestionFeedbackList({ feedbacks, turnAnswerMap, recordings = []
       <div className="flex flex-col gap-6">
         {feedbacks.map((qf, i) => {
           const recording = recordingsByTurnId[qf.turnId];
+          const behaviorAnalysis = behaviorByTurnId[qf.turnId];
+          const speechSegments = segmentsByTurnId[qf.turnId] || [];
 
           return (
             <div key={qf.turnId ?? i} className="border-b border-[#F3F4F6] pb-6 last:border-b-0 last:pb-0">
@@ -25,14 +37,21 @@ export function QuestionFeedbackList({ feedbacks, turnAnswerMap, recordings = []
                 <span className="text-[#0991B2] mr-1">Q{i + 1}.</span>{qf.question}
               </p>
 
-              {recording && (
-                <MediaPlayer recordingId={recording.recordingId} mediaType={recording.mediaType} className="mb-3" />
-              )}
-
               {turnAnswerMap[qf.turnId] && (
                 <div className="bg-[#F0F9FF] border border-[#BAE6FD] rounded-xl p-3 mb-3">
                   <p className="text-[10px] font-bold text-[#0369A1] uppercase tracking-wide mb-1">내 답변</p>
                   <p className="text-[12px] text-[#374151] leading-relaxed">{turnAnswerMap[qf.turnId]}</p>
+                </div>
+              )}
+
+              {behaviorAnalysis?.speechData && (
+                <div className="mb-3">
+                  <InteractiveTimeline
+                    recordingId={recording?.recordingId}
+                    mediaType={recording?.mediaType}
+                    speechData={behaviorAnalysis.speechData}
+                    speechSegments={speechSegments}
+                  />
                 </div>
               )}
 
@@ -72,3 +91,5 @@ export function QuestionFeedbackList({ feedbacks, turnAnswerMap, recordings = []
     </div>
   );
 }
+
+
