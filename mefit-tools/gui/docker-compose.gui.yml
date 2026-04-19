@@ -24,6 +24,7 @@ services:
       - DOCKER_HOST=unix:///var/run/docker.sock
       - IN_DOCKER=1
       - PROJECT_ROOT=${HOST_PROJECT_ROOT}
+      - LOCALSTACK_AUTH_TOKEN=${LOCALSTACK_AUTH_TOKEN:-}
     ports:
       - "8501:8501"
     networks:
