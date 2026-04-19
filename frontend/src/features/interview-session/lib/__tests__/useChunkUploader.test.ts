@@ -1,4 +1,9 @@
 import { renderHook, act } from "@testing-library/react";
+
+jest.mock("@/shared/api/client", () => ({
+  fetchWithAuth: (...args: unknown[]) => globalThis.fetch(...(args as [RequestInfo, RequestInit?])),
+}));
+
 import { useChunkUploader } from "../useChunkUploader";
 
 const URLS = [
@@ -18,6 +23,7 @@ describe("useChunkUploader", () => {
     globalThis.fetch = jest.fn().mockResolvedValue({
       ok: true,
       headers: new Headers({ ETag: '"abc123"' }),
+      json: () => Promise.resolve({ etag: "abc123" }),
     }) as jest.Mock;
 
     const { result } = renderHook(() => useChunkUploader());
@@ -38,9 +44,9 @@ describe("useChunkUploader", () => {
 
   it("연속 uploadChunk 호출 시 partNumber가 순차 증가한다", async () => {
     globalThis.fetch = jest.fn()
-      .mockResolvedValueOnce({ ok: true, headers: new Headers({ ETag: '"e1"' }) })
-      .mockResolvedValueOnce({ ok: true, headers: new Headers({ ETag: '"e2"' }) })
-      .mockResolvedValueOnce({ ok: true, headers: new Headers({ ETag: '"e3"' }) }) as jest.Mock;
+      .mockResolvedValueOnce({ ok: true, headers: new Headers({ ETag: '"e1"' }), json: () => Promise.resolve({ etag: "e1" }) })
+      .mockResolvedValueOnce({ ok: true, headers: new Headers({ ETag: '"e2"' }), json: () => Promise.resolve({ etag: "e2" }) })
+      .mockResolvedValueOnce({ ok: true, headers: new Headers({ ETag: '"e3"' }), json: () => Promise.resolve({ etag: "e3" }) }) as jest.Mock;
 
     const { result } = renderHook(() => useChunkUploader());
     act(() => { result.current.init(URLS); });
@@ -91,6 +97,7 @@ describe("useChunkUploader", () => {
     globalThis.fetch = jest.fn().mockResolvedValue({
       ok: true,
       headers: new Headers({ ETag: '"e1"' }),
+      json: () => Promise.resolve({ etag: "e1" }),
     }) as jest.Mock;
 
     const { result } = renderHook(() => useChunkUploader());

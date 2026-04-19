@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef } from "react";
+import { fetchWithAuth } from "@/shared/api/client";
 
 interface UseChunkUploaderOptions {
   maxRetries?: number;
@@ -85,17 +86,20 @@ export function useChunkUploader({
 
         while (attempt <= maxRetries) {
           try {
-            const response = await fetch(url, {
+            const formData = new FormData();
+            formData.append("file", blob, "chunk.webm");
+
+            const response = await fetchWithAuth(url, {
               method: "PUT",
-              body: blob,
+              body: formData,
             });
 
             if (!response.ok) {
               throw new Error(`Upload failed with status ${response.status}`);
             }
 
-            let etag = response.headers.get("ETag") ?? "";
-            etag = etag.replace(/"/g, "");
+            const data = await response.json();
+            const etag = (data.etag ?? response.headers.get("ETag") ?? "").replace(/"/g, "");
 
             const part: UploadedPart = { partNumber, etag };
             setUploadedParts((prev) => [...prev, part]);
