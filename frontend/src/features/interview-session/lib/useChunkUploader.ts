@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from "react";
-import { fetchWithAuth } from "@/shared/api/client";
+import { fetchWithAuth, BASE_URL } from "@/shared/api/client";
 
 interface UseChunkUploaderOptions {
   maxRetries?: number;
@@ -80,7 +80,8 @@ export function useChunkUploader({
           return null;
         }
 
-        const { url, partNumber } = targetUrlObj;
+        const { url: rawUrl, partNumber } = targetUrlObj;
+        const fullUrl = rawUrl.startsWith("/") ? `${BASE_URL}${rawUrl}` : rawUrl;
 
         let attempt = 0;
 
@@ -89,7 +90,7 @@ export function useChunkUploader({
             const formData = new FormData();
             formData.append("file", blob, "chunk.webm");
 
-            const response = await fetchWithAuth(url, {
+            const response = await fetchWithAuth(fullUrl, {
               method: "PUT",
               body: formData,
             });
