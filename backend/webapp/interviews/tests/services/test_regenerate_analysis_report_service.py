@@ -1,4 +1,4 @@
-from unittest.mock import patch
+from unittest.mock import ANY, patch
 
 from django.test import TestCase
 from interviews.enums import InterviewAnalysisReportStatus
@@ -15,7 +15,10 @@ class RegenerateAnalysisReportServiceTests(TestCase):
     report = InterviewAnalysisReportFactory(interview_analysis_report_status=InterviewAnalysisReportStatus.FAILED)
     regenerate_analysis_report(report)
     report.refresh_from_db()
-    self.assertEqual(report.interview_analysis_report_status, InterviewAnalysisReportStatus.PENDING)
+    self.assertEqual(
+      report.interview_analysis_report_status,
+      InterviewAnalysisReportStatus.PENDING,
+    )
 
   @patch("interviews.services.regenerate_analysis_report_service.current_app")
   def test_clears_error_message(self, mock_celery):
@@ -45,7 +48,12 @@ class RegenerateAnalysisReportServiceTests(TestCase):
     report.question_feedbacks = [{"q": "질문", "feedback": "좋아요"}]
     report.strengths = ["강점1"]
     report.improvement_areas = ["개선1"]
-    report.save(update_fields=["category_scores", "question_feedbacks", "strengths", "improvement_areas"])
+    report.save(update_fields=[
+      "category_scores",
+      "question_feedbacks",
+      "strengths",
+      "improvement_areas",
+    ])
 
     regenerate_analysis_report(report)
     report.refresh_from_db()
@@ -63,6 +71,7 @@ class RegenerateAnalysisReportServiceTests(TestCase):
     mock_celery.send_task.assert_called_once_with(
       "analysis.tasks.generate_report.generate_analysis_report",
       args=[report.pk],
+      kwargs=ANY,
       queue="analysis",
     )
 
@@ -76,7 +85,10 @@ class RegenerateAnalysisReportServiceTests(TestCase):
     original_save = InterviewAnalysisReport.save
 
     with patch.object(InterviewAnalysisReport, "save") as mock_save:
-      mock_save.side_effect = lambda *a, **kw: (call_order.append("save"), original_save(report, *a, **kw))
+      mock_save.side_effect = lambda *a, **kw: (
+        call_order.append("save"),
+        original_save(report, *a, **kw),
+      )
       mock_celery.send_task.side_effect = lambda *a, **kw: call_order.append("celery")
       regenerate_analysis_report(report)
 

@@ -55,7 +55,7 @@ class InitiateRecordingService(BaseService):
 
     presign_s3 = get_video_s3_presign_client()
     presigned_urls = []
-    for part_number in range(1, 21):
+    for part_number in range(1, 101):
       url = presign_s3.generate_presigned_url(
         "upload_part",
         Params={

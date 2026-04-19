@@ -32,7 +32,7 @@ class UpdateRecordingStepService(BaseService):
       raise NotFoundException("해당 녹화 레코드를 찾을 수 없습니다.")
 
   def execute(self):
-    recording = self._recording
+    recording = InterviewRecording.objects.select_for_update().get(pk=self._recording.pk)
     field_name = self.kwargs["field_name"]
     output_key = self.kwargs["output_key"]
 

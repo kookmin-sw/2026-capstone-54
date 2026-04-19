@@ -51,6 +51,15 @@ class CompleteRecordingService(BaseService):
           } for p in normalized_parts],
         },
       )
+    else:
+      try:
+        s3.abort_multipart_upload(
+          Bucket=recording.s3_bucket,
+          Key=recording.s3_key,
+          UploadId=recording.upload_id,
+        )
+      except Exception:
+        pass
 
     recording.status = RecordingStatus.COMPLETED
     recording.end_timestamp = end_timestamp
