@@ -94,6 +94,19 @@ services:
         condition: service_healthy
     command: celery -A config beat -l INFO
 
+  sqs-celery-worker:
+    <<: *celery-base
+    container_name: mefit-sqs-celery-worker
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: celery -A config.celery_sqs worker -Q mefit-video-step-complete -l INFO -c 2
+    networks:
+      - default
+      - mefit-local
+    profiles:
+      - sqs
+
   s3mock:
     image: adobe/s3mock:latest
     container_name: mefit-s3mock
