@@ -20,7 +20,6 @@ from interviews.tasks.cleanup_stale_recordings_task import CleanupStaleRecording
 from users.factories import UserFactory
 
 MOCK_INITIATE_S3 = "interviews.services.initiate_recording_service.get_video_s3_client"
-MOCK_INITIATE_PRESIGN = ("interviews.services.initiate_recording_service.get_video_s3_presign_client")
 MOCK_COMPLETE_S3 = "interviews.services.complete_recording_service.get_video_s3_client"
 MOCK_ABORT_S3 = "interviews.services.abort_recording_service.get_video_s3_client"
 
@@ -41,14 +40,12 @@ class RecordingSafetyGuardScenarioTests(TestCase):
     mock_s3.generate_presigned_url.return_value = "https://presigned.example.com"
     return mock_s3
 
-  # ── Scenario 1: Normal flow ──
+    # ── Scenario 1: Normal flow ──
 
   @patch(MOCK_COMPLETE_S3)
-  @patch(MOCK_INITIATE_PRESIGN)
   @patch(MOCK_INITIATE_S3)
-  def test_scenario_normal_answer_submit(self, mock_s3, mock_presign, mock_complete):
+  def test_scenario_normal_answer_submit(self, mock_s3, mock_complete):
     mock_s3.return_value = self._create_mock_s3()
-    mock_presign.return_value = self._create_mock_s3()
     mock_complete.return_value = MagicMock()
 
     result = InitiateRecordingService(
@@ -75,14 +72,12 @@ class RecordingSafetyGuardScenarioTests(TestCase):
     recording.refresh_from_db()
     self.assertEqual(recording.status, RecordingStatus.COMPLETED)
 
-  # ── Scenario 2: Browser close with successful abort ──
+    # ── Scenario 2: Browser close with successful abort ──
 
   @patch(MOCK_ABORT_S3)
-  @patch(MOCK_INITIATE_PRESIGN)
   @patch(MOCK_INITIATE_S3)
-  def test_scenario_browser_close_abort_success(self, mock_s3, mock_presign, mock_abort):
+  def test_scenario_browser_close_abort_success(self, mock_s3, mock_abort):
     mock_s3.return_value = self._create_mock_s3()
-    mock_presign.return_value = self._create_mock_s3()
     mock_abort.return_value = MagicMock()
 
     result = InitiateRecordingService(
@@ -98,13 +93,11 @@ class RecordingSafetyGuardScenarioTests(TestCase):
     recording.refresh_from_db()
     self.assertEqual(recording.status, RecordingStatus.FAILED)
 
-  # ── Scenario 3: Reconnect — same turn re-initiate marks previous ABANDONED ──
+    # ── Scenario 3: Reconnect — same turn re-initiate marks previous ABANDONED ──
 
-  @patch(MOCK_INITIATE_PRESIGN)
   @patch(MOCK_INITIATE_S3)
-  def test_scenario_reconnect_same_turn_abandons_previous(self, mock_s3, mock_presign):
+  def test_scenario_reconnect_same_turn_abandons_previous(self, mock_s3):
     mock_s3.return_value = self._create_mock_s3()
-    mock_presign.return_value = self._create_mock_s3()
 
     first_result = InitiateRecordingService(
       interview_session=self.session,
@@ -129,11 +122,9 @@ class RecordingSafetyGuardScenarioTests(TestCase):
     self.assertEqual(second_recording.status, RecordingStatus.INITIATED)
     self.assertNotEqual(first_id, second_id)
 
-  @patch(MOCK_INITIATE_PRESIGN)
   @patch(MOCK_INITIATE_S3)
-  def test_scenario_reconnect_does_not_abandon_completed_recording(self, mock_s3, mock_presign):
+  def test_scenario_reconnect_does_not_abandon_completed_recording(self, mock_s3):
     mock_s3.return_value = self._create_mock_s3()
-    mock_presign.return_value = self._create_mock_s3()
 
     completed_recording = InterviewRecordingFactory(
       interview_session=self.session,
@@ -152,11 +143,9 @@ class RecordingSafetyGuardScenarioTests(TestCase):
     completed_recording.refresh_from_db()
     self.assertEqual(completed_recording.status, RecordingStatus.COMPLETED)
 
-  @patch(MOCK_INITIATE_PRESIGN)
   @patch(MOCK_INITIATE_S3)
-  def test_scenario_reconnect_abandons_multiple_stale_recordings(self, mock_s3, mock_presign):
+  def test_scenario_reconnect_abandons_multiple_stale_recordings(self, mock_s3):
     mock_s3.return_value = self._create_mock_s3()
-    mock_presign.return_value = self._create_mock_s3()
 
     stale1 = InterviewRecordingFactory(
       interview_session=self.session,
@@ -183,7 +172,7 @@ class RecordingSafetyGuardScenarioTests(TestCase):
     self.assertEqual(stale1.status, RecordingStatus.ABANDONED)
     self.assertEqual(stale2.status, RecordingStatus.ABANDONED)
 
-  # ── Scenario 4: Cleanup task ──
+    # ── Scenario 4: Cleanup task ──
 
   def test_scenario_cleanup_task_marks_stale_as_abandoned(self):
     """정리 태스크: 1시간 이상 INITIATED/UPLOADING 상태 녹화가 ABANDONED로 전환된다."""
@@ -233,72 +222,70 @@ class RecordingSafetyGuardScenarioTests(TestCase):
     self.assertEqual(completed_recording.status, RecordingStatus.COMPLETED)
     self.assertEqual(result["abandoned_count"], 0)
 
-  # ── Scenario 5: Abort rejects completed/ready recordings ──
+    # ── Scenario 5: Abort rejects completed/ready recordings ──
 
-  @patch("interviews.services.abort_recording_service.get_video_s3_client")
-  def test_scenario_abort_rejects_completed(self, mock_s3):
-    """COMPLETED 상태 녹화에 대한 abort 요청은 ConflictException을 발생시킨다."""
-    recording = InterviewRecordingFactory(
-      interview_session=self.session,
-      interview_turn=self.turn,
-      user=self.user,
-      status=RecordingStatus.COMPLETED,
-    )
-    with self.assertRaises(ConflictException):
-      AbortRecordingService(recording=recording).perform()
+    @patch("interviews.services.abort_recording_service.get_video_s3_client")
+    def test_scenario_abort_rejects_completed(self, mock_s3):
+      """COMPLETED 상태 녹화에 대한 abort 요청은 ConflictException을 발생시킨다."""
+      recording = InterviewRecordingFactory(
+        interview_session=self.session,
+        interview_turn=self.turn,
+        user=self.user,
+        status=RecordingStatus.COMPLETED,
+      )
+      with self.assertRaises(ConflictException):
+        AbortRecordingService(recording=recording).perform()
 
-  @patch("interviews.services.abort_recording_service.get_video_s3_client")
-  def test_scenario_abort_rejects_ready(self, mock_s3):
-    """READY 상태 녹화에 대한 abort 요청은 ConflictException을 발생시킨다."""
-    recording = InterviewRecordingFactory(
-      interview_session=self.session,
-      interview_turn=self.turn,
-      user=self.user,
-      status=RecordingStatus.READY,
-    )
-    with self.assertRaises(ConflictException):
-      AbortRecordingService(recording=recording).perform()
+    @patch("interviews.services.abort_recording_service.get_video_s3_client")
+    def test_scenario_abort_rejects_ready(self, mock_s3):
+      """READY 상태 녹화에 대한 abort 요청은 ConflictException을 발생시킨다."""
+      recording = InterviewRecordingFactory(
+        interview_session=self.session,
+        interview_turn=self.turn,
+        user=self.user,
+        status=RecordingStatus.READY,
+      )
+      with self.assertRaises(ConflictException):
+        AbortRecordingService(recording=recording).perform()
 
-  # ── Scenario 6: Recording list excludes abandoned ──
+    # ── Scenario 6: Recording list excludes abandoned ──
 
-  def test_scenario_list_excludes_abandoned_recordings(self):
-    """녹화 목록 조회 시 ABANDONED 상태 녹화가 제외된다."""
-    InterviewRecordingFactory(
-      interview_session=self.session,
-      interview_turn=self.turn,
-      user=self.user,
-      status=RecordingStatus.COMPLETED,
-    )
-    InterviewRecordingFactory(
-      interview_session=self.session,
-      interview_turn=self.turn,
-      user=self.user,
-      status=RecordingStatus.ABANDONED,
-    )
-    InterviewRecordingFactory(
-      interview_session=self.session,
-      interview_turn=self.turn,
-      user=self.user,
-      status=RecordingStatus.FAILED,
-    )
+    def test_scenario_list_excludes_abandoned_recordings(self):
+      """녹화 목록 조회 시 ABANDONED 상태 녹화가 제외된다."""
+      InterviewRecordingFactory(
+        interview_session=self.session,
+        interview_turn=self.turn,
+        user=self.user,
+        status=RecordingStatus.COMPLETED,
+      )
+      InterviewRecordingFactory(
+        interview_session=self.session,
+        interview_turn=self.turn,
+        user=self.user,
+        status=RecordingStatus.ABANDONED,
+      )
+      InterviewRecordingFactory(
+        interview_session=self.session,
+        interview_turn=self.turn,
+        user=self.user,
+        status=RecordingStatus.FAILED,
+      )
 
-    visible = InterviewRecording.objects.filter(
-      interview_session=self.session,
-      user=self.user,
-    ).exclude(status=RecordingStatus.ABANDONED)
+      visible = InterviewRecording.objects.filter(
+        interview_session=self.session,
+        user=self.user,
+      ).exclude(status=RecordingStatus.ABANDONED)
 
-    self.assertEqual(visible.count(), 2)
-    statuses = set(visible.values_list("status", flat=True))
-    self.assertNotIn(RecordingStatus.ABANDONED, statuses)
+      self.assertEqual(visible.count(), 2)
+      statuses = set(visible.values_list("status", flat=True))
+      self.assertNotIn(RecordingStatus.ABANDONED, statuses)
 
-  # ── Scenario 7: Full lifecycle — answer, leave, reconnect, answer again ──
+    # ── Scenario 7: Full lifecycle — answer, leave, reconnect, answer again ──
 
   @patch(MOCK_COMPLETE_S3)
-  @patch(MOCK_INITIATE_PRESIGN)
   @patch(MOCK_INITIATE_S3)
-  def test_scenario_full_lifecycle_leave_and_reconnect(self, mock_s3, mock_presign, mock_complete):
+  def test_scenario_full_lifecycle_leave_and_reconnect(self, mock_s3, mock_complete):
     mock_s3.return_value = self._create_mock_s3()
-    mock_presign.return_value = self._create_mock_s3()
     mock_complete.return_value = MagicMock()
 
     first_result = InitiateRecordingService(

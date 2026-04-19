@@ -23,33 +23,31 @@ class RecordingServicesTests(TestCase):
   def setUp(self):
     self.user = UserFactory()
     self.other_user = UserFactory()
-    self.session = InterviewSessionFactory(user=self.user, interview_session_status=InterviewSessionStatus.IN_PROGRESS)
+    self.session = InterviewSessionFactory(
+      user=self.user,
+      interview_session_status=InterviewSessionStatus.IN_PROGRESS,
+    )
     self.turn = InterviewTurnFactory(interview_session=self.session)
 
-    @patch("interviews.services.initiate_recording_service.get_video_s3_presign_client")
-    @patch("interviews.services.initiate_recording_service.get_video_s3_client")
-    def test_initiate_recording_creates_record_and_multipart_upload(self, mock_get_client, mock_get_presign):
-      """정상적인 녹화 시작 요청 시 레코드를 생성하고 멀티파트 업로드를 초기화한다."""
-      mock_s3 = MagicMock()
-      mock_get_client.return_value = mock_s3
-      mock_s3.create_multipart_upload.return_value = {"UploadId": "test-upload-id"}
+  @patch("interviews.services.initiate_recording_service.get_video_s3_client")
+  def test_initiate_creates_recording(self, mock_get_client):
+    """정상적인 녹화 시작 요청 시 레코드를 생성하고 멀티파트 업로드를 초기화한다."""
+    mock_s3 = MagicMock()
+    mock_get_client.return_value = mock_s3
+    mock_s3.create_multipart_upload.return_value = {"UploadId": "test-upload-id"}
 
-      mock_presign = MagicMock()
-      mock_get_presign.return_value = mock_presign
-      mock_presign.generate_presigned_url.return_value = ("https://presigned-url.example.com")
+    result = InitiateRecordingService(
+      interview_session=self.session,
+      interview_turn=self.turn,
+      user=self.user,
+      media_type="video",
+    ).perform()
 
-      result = InitiateRecordingService(
-        interview_session=self.session,
-        interview_turn=self.turn,
-        user=self.user,
-        media_type="video",
-      ).perform()
-
-      self.assertIn("recordingId", result)
-      self.assertIn("singleUploadUrl", result)
-      self.assertEqual(result["uploadId"], "test-upload-id")
-      self.assertEqual(len(result["presignedUrls"]), 20)
-      mock_s3.create_multipart_upload.assert_called_once()
+    self.assertIn("recordingId", result)
+    self.assertIn("uploadId", result)
+    self.assertIn("s3Key", result)
+    self.assertEqual(result["uploadId"], "test-upload-id")
+    mock_s3.create_multipart_upload.assert_called_once()
 
   @patch("interviews.services.initiate_recording_service.get_video_s3_client")
   def test_initiate_recording_rejects_non_in_progress_session(self, mock_get_client):
@@ -201,28 +199,6 @@ class RecordingServicesTests(TestCase):
         user=self.other_user,
       ).perform()
     mock_get_client.assert_not_called()
-
-  @patch("interviews.services.initiate_recording_service.get_video_s3_presign_client")
-  @patch("interviews.services.initiate_recording_service.get_video_s3_client")
-  def test_initiate_returns_single_upload_url(self, mock_get_client, mock_get_presign):
-    """initiate 응답에 singleUploadUrl이 포함된다."""
-    mock_s3 = MagicMock()
-    mock_get_client.return_value = mock_s3
-    mock_s3.create_multipart_upload.return_value = {"UploadId": "test-upload-id"}
-
-    mock_presign = MagicMock()
-    mock_get_presign.return_value = mock_presign
-    mock_presign.generate_presigned_url.return_value = ("https://presigned.example.com")
-
-    result = InitiateRecordingService(
-      interview_session=self.session,
-      interview_turn=self.turn,
-      user=self.user,
-      media_type="video",
-    ).perform()
-
-    self.assertIn("singleUploadUrl", result)
-    self.assertEqual(result["singleUploadUrl"], "https://presigned.example.com")
 
   def test_complete_single_upload_skips_s3_operations(self):
     """단일 업로드 모드에서는 S3 multipart 작업 없이 상태만 COMPLETED로 변경한다."""
