@@ -1,5 +1,6 @@
 import { useRef, useState, useCallback } from "react";
 import { WebSpeechSTTProvider } from "@/shared/lib/stt/WebSpeechSTTProvider";
+import type { STTSegment } from "@/shared/lib/stt/types";
 
 /**
  * Manages camera/mic stream, audio level metering, and STT provider.
@@ -20,6 +21,8 @@ export function useMediaSetup() {
   const [interimText, setInterimText] = useState("");
   const [audioLevel, setAudioLevel] = useState(0);
   const [mediaReady, setMediaReady] = useState(false);
+  const [sttSegments, setSttSegments] = useState<STTSegment[]>([]);
+  const lastFinalTimestampRef = useRef(0);
 
   const setupMedia = useCallback(async () => {
     try {
@@ -47,8 +50,16 @@ export function useMediaSetup() {
 
     sttRef.current = new WebSpeechSTTProvider();
     sttRef.current.onResult((result) => {
-      if (result.isFinal) { setFinalText((prev) => prev + (prev ? " " : "") + result.text); setInterimText(""); }
-      else setInterimText(result.text);
+      if (result.isFinal) {
+        const startMs = lastFinalTimestampRef.current;
+        const endMs = result.timestampMs;
+        lastFinalTimestampRef.current = endMs;
+        setSttSegments((prev) => [...prev, { text: result.text, startMs, endMs }]);
+        setFinalText((prev) => prev + (prev ? " " : "") + result.text);
+        setInterimText("");
+      } else {
+        setInterimText(result.text);
+      }
     });
     sttRef.current.onError((e) => console.warn("STT 오류:", e));
     setMediaReady(true);
@@ -78,6 +89,8 @@ export function useMediaSetup() {
   const resetText = useCallback(() => {
     setFinalText("");
     setInterimText("");
+    setSttSegments([]);
+    lastFinalTimestampRef.current = 0;
   }, []);
 
   return {
@@ -90,6 +103,7 @@ export function useMediaSetup() {
     interimText,
     audioLevel,
     mediaReady,
+    sttSegments,
     // Setters
     setIsListening,
     setFinalText,
