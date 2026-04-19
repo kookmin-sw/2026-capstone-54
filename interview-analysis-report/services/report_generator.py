@@ -60,7 +60,10 @@ class ReportGeneratorService:
             turns = (
                 session.query(InterviewTurnTable)
                 .filter(InterviewTurnTable.interview_session_id == session_id)
-                .order_by(InterviewTurnTable.turn_number)
+                .order_by(
+                    InterviewTurnTable.turn_number,
+                    InterviewTurnTable.followup_order,
+                )
                 .all()
             )
 

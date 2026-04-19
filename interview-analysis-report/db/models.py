@@ -43,6 +43,8 @@ class InterviewTurnTable(Base):
     interview_session_id = Column(UUID(as_uuid=False), nullable=False)
     turn_type = Column(String(10))
     turn_number = Column(Integer)
+    followup_order = Column(Integer, nullable=True)
+    anchor_turn_id = Column(Integer, nullable=True)
     question = Column(Text)
     answer = Column(Text)
     question_source = Column(String(20), default="")
