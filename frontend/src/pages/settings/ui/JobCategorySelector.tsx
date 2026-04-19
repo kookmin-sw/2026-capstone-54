@@ -25,27 +25,31 @@ function getCategoryIcon(name: string) {
   return CATEGORY_ICON[name]?.icon ?? <MoreHorizontal size={16} className="text-[#9CA3AF]" />;
 }
 
-interface JobCategorySelectorProps {
+interface CategoryProps {
   categories: JobCategory[];
-  categoriesLoading: boolean;
-  selectedCategoryId: number | null;
-  availableJobs: Job[];
-  jobsLoading: boolean;
-  selectedJobIds: number[];
-  onSelectCategory: (id: number) => void;
-  onToggleJob: (id: number) => void;
+  loading: boolean;
+  selectedId: number | null;
+  onSelect: (id: number) => void;
+}
+
+interface JobProps {
+  jobs: Job[];
+  loading: boolean;
+  selectedIds: number[];
+  onToggle: (id: number) => void;
+}
+
+interface JobCategorySelectorProps {
+  categoryProps: CategoryProps;
+  jobProps: JobProps;
 }
 
 export function JobCategorySelector({
-  categories,
-  categoriesLoading,
-  selectedCategoryId,
-  availableJobs,
-  jobsLoading,
-  selectedJobIds,
-  onSelectCategory,
-  onToggleJob,
+  categoryProps,
+  jobProps,
 }: JobCategorySelectorProps) {
+  const { categories, loading: categoriesLoading, selectedId: selectedCategoryId, onSelect: onSelectCategory } = categoryProps;
+  const { jobs: availableJobs, loading: jobsLoading, selectedIds: selectedJobIds, onToggle: onToggleJob } = jobProps;
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -97,7 +101,7 @@ export function JobCategorySelector({
 
             {/* 드롭다운 목록 */}
             {open && (
-              <div className="absolute z-50 top-[calc(100%+4px)] left-0 right-0 bg-white border border-[#E5E7EB] rounded-xl shadow-[0_8px_24px_rgba(0,0,0,0.1)] overflow-hidden">
+              <div className="absolute z-50 top-[calc(100%+4px)] left-0 right-0 bg-white border border-[#E5E7EB] rounded-xl shadow-[0_8px_24px_rgba(0,0,0,0.1)] overflow-hidden max-h-[300px] overflow-y-auto">
                 {categories.map((cat) => {
                   const isSelected = cat.id === selectedCategoryId;
                   return (

@@ -160,14 +160,18 @@ export function SettingsPage() {
                       </div>
                       <div className="flex flex-col gap-4">
                         <JobCategorySelector
-                          categories={jobCategories}
-                          categoriesLoading={jobCategoriesLoading}
-                          selectedCategoryId={profileDraft.jobCategoryId}
-                          availableJobs={availableJobs}
-                          jobsLoading={availableJobsLoading}
-                          selectedJobIds={profileDraft.jobIds}
-                          onSelectCategory={(id) => setProfileDraftField("jobCategoryId", id)}
-                          onToggleJob={toggleJobId}
+                          categoryProps={{
+                            categories: jobCategories,
+                            loading: jobCategoriesLoading,
+                            selectedId: profileDraft.jobCategoryId,
+                            onSelect: (id) => setProfileDraftField("jobCategoryId", id),
+                          }}
+                          jobProps={{
+                            jobs: availableJobs,
+                            loading: availableJobsLoading,
+                            selectedIds: profileDraft.jobIds,
+                            onToggle: toggleJobId,
+                          }}
                         />
                       </div>
                     </div>
