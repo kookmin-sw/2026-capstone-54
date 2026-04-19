@@ -7,6 +7,7 @@ import type {
   SubmitAnswerResponse,
   PaginatedResponse,
   InterviewSessionListItem,
+  BehaviorAnalysis,
 } from "./types";
 
 const BASE = "/api/v1/interviews/interview-sessions";
@@ -31,10 +32,15 @@ export const interviewApi = {
   getInterviewTurns: (interviewSessionUuid: string) =>
     apiRequest<InterviewTurn[]>(`${BASE}/${interviewSessionUuid}/turns/`, { auth: true }),
 
-  submitAnswer: (interviewSessionUuid: string, turnPk: number, answer: string) =>
+  submitAnswer: (
+    interviewSessionUuid: string,
+    turnPk: number,
+    answer: string,
+    speechSegments?: { text: string; startMs: number; endMs: number }[],
+  ) =>
     apiRequest<SubmitAnswerResponse>(
       `${BASE}/${interviewSessionUuid}/turns/${turnPk}/answer/`,
-      { method: "POST", body: JSON.stringify({ answer }), auth: true },
+      { method: "POST", body: JSON.stringify({ answer, speech_segments: speechSegments ?? [] }), auth: true },
     ),
 
   finishInterview: (interviewSessionUuid: string) =>
@@ -56,4 +62,8 @@ export const interviewApi = {
       method: "POST",
       auth: true,
     }),
+
+  getBehaviorAnalyses: (interviewSessionUuid: string) =>
+    apiRequest<{ results: BehaviorAnalysis[] }>(`${BASE}/${interviewSessionUuid}/behavior-analyses/`, { auth: true })
+      .then((res) => res.results),
 };
