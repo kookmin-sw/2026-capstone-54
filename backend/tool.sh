@@ -65,6 +65,9 @@ friendly_label() {
     13-db-exec)
       echo "SQL 명령어 실행 (db-exec)"
       ;;
+    14-sqs-worker-start)
+      echo "SQS Celery Worker 시작 (sqs-worker)"
+      ;;
     *)
       echo "$base ($base)"
       ;;
@@ -110,7 +113,7 @@ run_script() {
 
   local prompt_for_args=true
   case "$base" in
-    04-logs|09-docker-build-start|10-docker-start|11-docker-stop|12-db-console)
+    04-logs|09-docker-build-start|10-docker-start|11-docker-stop|12-db-console|14-sqs-worker-start)
       prompt_for_args=false
       ;;
   esac

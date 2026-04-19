@@ -23,5 +23,5 @@ def notify_interview_report_completed(sender, instance, update_fields, **kwargs)
     user=user,
     message="면접 리포트가 발행되었습니다. 결과를 확인해 보세요.",
     category="interview",
-    notifiable=instance,
+    notifiable=session,
   ).perform()

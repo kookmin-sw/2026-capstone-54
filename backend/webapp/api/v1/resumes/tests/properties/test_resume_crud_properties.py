@@ -47,8 +47,8 @@ class Property1ReadRoundTripTests(TestCase):
   def test_read_round_trip(self, title):
     """Feature: resume-crud-api, Property: 이력서 조회 round-trip
 
-    **Validates: Requirements 1.1**
-    """
+        **Validates: Requirements 1.1**
+        """
     user = _verified_user()
     client = _make_auth_client(user)
     resume = TextResumeFactory(user=user, title=title)
@@ -72,8 +72,8 @@ class Property2OwnershipTests(TestCase):
   def test_other_user_cannot_access(self, title):
     """Feature: resume-crud-api, Property: 소유권 검증 — 타인 이력서 접근 불가
 
-    **Validates: Requirements 1.2, 2.5, 3.5, 4.4**
-    """
+        **Validates: Requirements 1.2, 2.5, 3.5, 4.4**
+        """
     user_a = _verified_user()
     user_b = _verified_user()
     client_b = _make_auth_client(user_b)
@@ -83,8 +83,18 @@ class Property2OwnershipTests(TestCase):
     url = reverse("resume-detail", kwargs={"uuid": resume.pk})
 
     self.assertEqual(client_b.get(url).status_code, status.HTTP_404_NOT_FOUND)
-    self.assertEqual(client_b.put(url, {"title": "hack"}, format="json").status_code, status.HTTP_404_NOT_FOUND)
-    self.assertEqual(client_b.patch(url, {"title": "hack"}, format="json").status_code, status.HTTP_404_NOT_FOUND)
+    self.assertEqual(
+      client_b.put(url, {
+        "title": "hack"
+      }, format="json").status_code,
+      status.HTTP_404_NOT_FOUND,
+    )
+    self.assertEqual(
+      client_b.patch(url, {
+        "title": "hack"
+      }, format="json").status_code,
+      status.HTTP_404_NOT_FOUND,
+    )
     self.assertEqual(client_b.delete(url).status_code, status.HTTP_404_NOT_FOUND)
 
 
@@ -98,8 +108,8 @@ class Property3TextUpdateRoundTripTests(TestCase):
   def test_text_update_round_trip(self, mock_send_task, new_title, new_content):
     """Feature: resume-crud-api, Property: 텍스트 이력서 수정 round-trip
 
-    **Validates: Requirements 2.1, 2.4**
-    """
+        **Validates: Requirements 2.1, 2.4**
+        """
     user = _verified_user()
     client = _make_auth_client(user)
     resume = TextResumeFactory(user=user, title="original title")
@@ -132,11 +142,13 @@ class Property6SoftDeleteTests(TestCase):
   def test_soft_delete_behavior(self, title):
     """Feature: resume-crud-api, Property: Soft delete 동작
 
-    **Validates: Requirements 4.1, 4.2, 4.3, 8.1, 8.2, 8.3**
-    """
+        **Validates: Requirements 4.1, 4.2, 4.3, 8.1, 8.2, 8.3**
+        """
     user = _verified_user()
     client = _make_auth_client(user)
     resume = TextResumeFactory(user=user, title=title)
+    resume.analysis_status = AnalysisStatus.COMPLETED
+    resume.save(update_fields=["analysis_status"])
     ResumeTextContent.objects.create(user=user, resume=resume, content="content")
     resume_pk = resume.pk
 
@@ -162,13 +174,14 @@ class Property7UnifiedCreateTypeTests(TestCase):
   @settings(max_examples=5, deadline=None)
   @patch("resumes.services.mixins.resume_pipeline_mixin.current_app.send_task")
   @patch(
-    "resumes.services.mixins.file_resume_pipeline_mixin.default_storage.save", return_value="resumes/test/path.pdf"
+    "resumes.services.mixins.file_resume_pipeline_mixin.default_storage.save",
+    return_value="resumes/test/path.pdf",
   )
   def test_unified_create_type_dispatch(self, mock_storage_save, mock_send_task, resume_type, title, content):
     """Feature: resume-crud-api, Property: 통합 생성 타입 분기
 
-    **Validates: Requirements 5.1, 5.2, 5.3, 9.7**
-    """
+        **Validates: Requirements 5.1, 5.2, 5.3, 9.7**
+        """
     user = _verified_user()
     client = _make_auth_client(user)
     url = reverse("resume-list")

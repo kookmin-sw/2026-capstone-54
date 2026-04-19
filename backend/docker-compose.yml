@@ -94,11 +94,24 @@ services:
         condition: service_healthy
     command: celery -A config beat -l INFO
 
+  sqs-celery-worker:
+    <<: *celery-base
+    container_name: mefit-sqs-celery-worker
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: celery -A config.celery_sqs worker -Q mefit-video-step-complete -l INFO -c 2
+    networks:
+      - default
+      - mefit-local
+    profiles:
+      - sqs
+
   s3mock:
     image: adobe/s3mock:latest
     container_name: mefit-s3mock
     environment:
-      - COM_ADOBE_TESTING_S3MOCK_STORE_INITIAL_BUCKETS=${AWS_STORAGE_BUCKET_NAME:-mefit-files}
+      - COM_ADOBE_TESTING_S3MOCK_STORE_INITIAL_BUCKETS=${AWS_STORAGE_BUCKET_NAME:-mefit-files},pj-kmucd1-04-mefit-video-files,pj-kmucd1-04-mefit-scaled-video-files,pj-kmucd1-04-mefit-video-frame-files,pj-kmucd1-04-mefit-audio-files,pj-kmucd1-04-mefit-scaled-audio-files
       - COM_ADOBE_TESTING_S3MOCK_STORE_ROOT=containers3root
       - COM_ADOBE_TESTING_S3MOCK_STORE_RETAIN_FILES_ON_EXIT=true
       - debug=false
