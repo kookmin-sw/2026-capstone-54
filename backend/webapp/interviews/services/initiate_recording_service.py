@@ -64,18 +64,8 @@ class InitiateRecordingService(BaseService):
       upload_id=upload_id,
     )
 
-    recording_id = str(recording.pk)
-    part_urls = [
-      {
-        "partNumber": n,
-        "url": f"/api/v1/interviews/recordings/{recording_id}/parts/{n}/",
-      } for n in range(1, 101)
-    ]
-
     return {
-      "recordingId": recording_id,
+      "recordingId": str(recording.pk),
       "uploadId": upload_id,
       "s3Key": s3_key,
-      "presignedUrls": part_urls,
-      "singleUploadUrl": "",
     }
