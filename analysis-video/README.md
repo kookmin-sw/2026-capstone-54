@@ -9,14 +9,17 @@ MeFit 면접 영상·음성 후처리 AWS Lambda 함수 모음.
 ```
 pj-kmucd1-04-mefit-video-files (원본 .webm 업로드)
     │
-    ├─ video-converter  → pj-kmucd1-04-mefit-scaled-video-files (.mp4)
-    ├─ frame-extractor  → pj-kmucd1-04-mefit-video-frame-files (.jpg)
-    └─ audio-extractor  → pj-kmucd1-04-mefit-audio-files (.wav)
-                              │
-                              └─ audio-scaler → pj-kmucd1-04-mefit-scaled-audio-files (.wav)
+    └─ S3 이벤트 → SNS (video-uploaded) ─┬→ video-converter  → scaled-video-files (.mp4)
+                                         ├→ frame-extractor  → video-frame-files (.jpg)
+                                         └→ audio-extractor  → audio-files (.wav)
+                                                                    │
+                                                                    └─ audio-scaler → scaled-audio-files (.wav)
 
-모든 출력 완료 시 → processing-notifier → SNS → Django backend
+scaled-video-files 출력 완료 시 → processing-notifier → SNS → Django backend
 ```
+
+S3 이벤트 알림은 동일 버킷·이벤트 유형·접미사에 대해 여러 대상을 지정할 수 없으므로
+SNS fan-out 패턴으로 3개 Lambda를 동시에 호출한다.
 
 ## 프로젝트 구조
 
@@ -27,7 +30,8 @@ analysis-video/
 │       ├── config.py          # 환경변수 (S3 버킷명, SNS ARN 등)
 │       ├── s3_client.py       # boto3 S3 헬퍼 (download/upload)
 │       ├── ffmpeg_runner.py   # ffmpeg subprocess 래퍼
-│       └── logger.py          # 구조화 JSON 로거
+│       ├── logger.py          # 구조화 JSON 로거
+│       └── event_parser.py    # SNS→S3 이벤트 파서
 │
 ├── functions/                              # Lambda 핸들러
 │   ├── video_converter/       # WebM → MP4 (H.264, max 720p)
@@ -52,9 +56,9 @@ analysis-video/
 
 | 함수 | 트리거 | 입력 | 출력 | 타임아웃 | 메모리 |
 |------|--------|------|------|----------|--------|
-| `video-converter` | S3: video-files `.webm` | 원본 WebM | MP4 (720p H.264) | 5분 | 1024MB |
-| `frame-extractor` | S3: video-files `.webm` | 원본 WebM | JPEG 프레임 (1FPS) | 3분 | 512MB |
-| `audio-extractor` | S3: video-files `.webm` | 원본 WebM | WAV (44.1kHz) | 2분 | 512MB |
+| `video-converter` | SNS: video-uploaded | 원본 WebM | MP4 (720p H.264) | 5분 | 1024MB |
+| `frame-extractor` | SNS: video-uploaded | 원본 WebM | JPEG 프레임 (1FPS) | 3분 | 512MB |
+| `audio-extractor` | SNS: video-uploaded | 원본 WebM | WAV (44.1kHz) | 2분 | 512MB |
 | `audio-scaler` | S3: audio-files `.wav` | WAV | WAV (16kHz mono) | 2분 | 512MB |
 | `processing-notifier` | S3: 출력 버킷 | — | SNS 메시지 | 30초 | 256MB |
 | `expression-analyzer` | S3: frame-files `.jpg` | JPEG 프레임 | SNS 분석 결과 | 5분 | 2048MB |
@@ -128,6 +132,7 @@ python local/invoke_local.py processing_notifier pj-kmucd1-04-mefit-scaled-video
 - `s3_client.py` — `download_to_tmp()`, `upload_from_tmp()`, `get_s3_client()`
 - `ffmpeg_runner.py` — `run_ffmpeg(args, description)` — subprocess 래퍼, 타임아웃 280초
 - `logger.py` — `get_logger(name)` — 구조화 JSON 로깅
+- `event_parser.py` — `parse_s3_records(event)` — SNS 래핑/직접 S3 이벤트 자동 판별 파서
 
 ### mefit-ffmpeg-binary
 

@@ -36,7 +36,7 @@ for BUCKET in $VIDEO_BUCKET $SCALED_VIDEO_BUCKET $FRAME_BUCKET $AUDIO_BUCKET $SC
 done
 
 echo ""
-echo "=== 2. SNS Topic + SQS Queue ==="
+echo "=== 2. SNS Topics + SQS Queues ==="
 TOPIC_ARN=$(awslocal sns create-topic --name mefit-video-processing-complete --query 'TopicArn' --output text)
 echo "  [OK] SNS Topic: $TOPIC_ARN"
 
@@ -44,6 +44,12 @@ QUEUE_URL=$(awslocal sqs create-queue --queue-name mefit-video-processing-queue 
 QUEUE_ARN=$(awslocal sqs get-queue-attributes --queue-url "$QUEUE_URL" --attribute-names QueueArn --query 'Attributes.QueueArn' --output text)
 awslocal sns subscribe --topic-arn "$TOPIC_ARN" --protocol sqs --notification-endpoint "$QUEUE_ARN" > /dev/null
 echo "  [OK] SQS Queue: $QUEUE_URL (subscribed to SNS)"
+
+STEP_COMPLETE_QUEUE_URL=$(awslocal sqs create-queue --queue-name mefit-video-step-complete --query 'QueueUrl' --output text)
+echo "  [OK] SQS Queue (step-complete): $STEP_COMPLETE_QUEUE_URL"
+
+UPLOAD_SNS_ARN=$(awslocal sns create-topic --name mefit-video-uploaded --query 'TopicArn' --output text)
+echo "  [OK] SNS Topic (fan-out): $UPLOAD_SNS_ARN"
 
 echo ""
 echo "=== 3. Install ffmpeg (static build for Lambda) ==="
@@ -69,7 +75,7 @@ LAYERS_DIR="/opt/mefit/layers/common/python"
 OUT_DIR="/tmp/lambda-packages"
 mkdir -p "$OUT_DIR"
 
-LAMBDA_ENV="Variables={VIDEO_BUCKET=$VIDEO_BUCKET,SCALED_VIDEO_BUCKET=$SCALED_VIDEO_BUCKET,FRAME_BUCKET=$FRAME_BUCKET,AUDIO_BUCKET=$AUDIO_BUCKET,SCALED_AUDIO_BUCKET=$SCALED_AUDIO_BUCKET,SNS_TOPIC_ARN=$TOPIC_ARN,REGION=$REGION,FFMPEG_PATH=/opt/ffmpeg-bin/ffmpeg}"
+LAMBDA_ENV="Variables={VIDEO_BUCKET=$VIDEO_BUCKET,SCALED_VIDEO_BUCKET=$SCALED_VIDEO_BUCKET,FRAME_BUCKET=$FRAME_BUCKET,AUDIO_BUCKET=$AUDIO_BUCKET,SCALED_AUDIO_BUCKET=$SCALED_AUDIO_BUCKET,SNS_TOPIC_ARN=$TOPIC_ARN,STEP_COMPLETE_SQS_URL=$STEP_COMPLETE_QUEUE_URL,REGION=$REGION,FFMPEG_PATH=/opt/ffmpeg-bin/ffmpeg}"
 
 FUNCTIONS="video_converter frame_extractor audio_extractor audio_scaler processing_notifier"
 
@@ -99,6 +105,34 @@ for FUNC in $FUNCTIONS; do
   awslocal lambda wait function-active-v2 --function-name "mefit-${FUNC_DASH}" 2>/dev/null || sleep 5
   echo "  [OK] Lambda: mefit-${FUNC_DASH}"
 done
+
+echo ""
+echo "=== 4b. voice-analyzer Lambda (on-demand, with pydub) ==="
+AUDIO_LAYERS_DIR="/opt/mefit/layers/audio-analysis"
+VA_TMPDIR=$(mktemp -d)
+cp "$FUNCTIONS_DIR/voice_analyzer/handler.py" "$VA_TMPDIR/"
+cp -r "$LAYERS_DIR/mefit_video_common" "$VA_TMPDIR/"
+pip install -q pydub numpy -t "$VA_TMPDIR/" --platform manylinux2014_x86_64 --python-version 3.12 --only-binary=:all: --implementation cp 2>/dev/null
+(cd "$VA_TMPDIR" && zip -qr "$OUT_DIR/voice_analyzer.zip" .)
+rm -rf "$VA_TMPDIR"
+
+VA_ENV="Variables={REGION=$REGION,SILENCE_THRESH_DBFS=-40,MIN_SILENCE_LEN_MS=500,SEEK_STEP_MS=10,FFMPEG_PATH=/opt/ffmpeg-bin/ffmpeg,PYDUB_FFMPEG=/opt/ffmpeg-bin/ffmpeg,PYDUB_FFPROBE=/opt/ffmpeg-bin/ffprobe,S3_ENDPOINT_URL=http://host.docker.internal:4566}"
+
+awslocal lambda delete-function --function-name "pj-kmucd1-04-mefit-voice-analyzer" 2>/dev/null || true
+awslocal lambda create-function \
+  --function-name "pj-kmucd1-04-mefit-voice-analyzer" \
+  --runtime python3.12 \
+  --handler handler.handler \
+  --zip-file "fileb://${OUT_DIR}/voice_analyzer.zip" \
+  --role "$LAMBDA_ROLE" \
+  --timeout 120 \
+  --memory-size 1024 \
+  --environment "$VA_ENV" \
+  > /dev/null
+
+echo "  [..] Lambda: pj-kmucd1-04-mefit-voice-analyzer (waiting for Active...)"
+awslocal lambda wait function-active-v2 --function-name "pj-kmucd1-04-mefit-voice-analyzer" 2>/dev/null || sleep 5
+echo "  [OK] Lambda: pj-kmucd1-04-mefit-voice-analyzer"
 
 echo ""
 echo "=== 5. S3 Event Notifications → Lambda ==="
@@ -175,9 +209,11 @@ echo "========================================="
 echo "  Init complete!"
 echo ""
 echo "  S3 Buckets:     5 (CORS enabled)"
-echo "  Lambda:         5 (layer code + ffmpeg bundled)"
+echo "  Lambda:         6 (5 video pipeline + 1 voice-analyzer)"
 echo "  S3 Triggers:    5"
-echo "  SNS → SQS:      1"
+echo "  SNS Topics:     2 (processing-complete, video-uploaded)"
+echo "  SQS Queues:     2 (processing-queue, step-complete)"
 echo ""
 echo "  Endpoint: http://localhost:4566"
+echo "  Step-Complete SQS: $STEP_COMPLETE_QUEUE_URL"
 echo "========================================="
