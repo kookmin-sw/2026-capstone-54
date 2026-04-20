@@ -10,9 +10,7 @@ import {
 import type { UserMe } from "../api/authApi";
 import {
   getAccessToken,
-  getRefreshToken,
   refreshAccessToken,
-  USE_COOKIE_AUTH,
 } from "@/shared/api/client";
 
 interface LoginResult {
@@ -114,31 +112,18 @@ export const useAuthStore = create<AuthState>()((set) => ({
   },
 
   initAuth: async () => {
-    if (USE_COOKIE_AUTH) {
+    // 메모리 access token이 없으면 refresh(cookie) 기반 갱신부터 시도
+    if (!getAccessToken()) {
       const refreshed = await refreshAccessToken();
       if (!refreshed) {
         set({ authReady: true });
         return;
       }
-
-      const me = await getMeApi({ noRetry: true });
-      set({ user: me ?? null, authReady: true });
-      return;
     }
 
-    // access token도 없고 refresh token도 없으면 로그인 상태 아님
-    if (!getAccessToken() && !getRefreshToken()) {
+    if (!getAccessToken()) {
       set({ authReady: true });
       return;
-    }
-
-    // access token이 없지만 refresh token이 있으면 먼저 갱신 시도
-    if (!getAccessToken() && getRefreshToken()) {
-      const refreshed = await refreshAccessToken();
-      if (!refreshed) {
-        set({ authReady: true });
-        return;
-      }
     }
 
     const me = await getMeApi({ noRetry: true });

@@ -1,25 +1,23 @@
 export const BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://mefit.xn--hy1by51c.kr";
-export const USE_COOKIE_AUTH = (import.meta.env.VITE_USE_COOKIE_AUTH || "false") === "true";
+
+// 단일 인증 전략: access token(in-memory) + refresh token(HttpOnly cookie)
 
 /* ── Token helpers ── */
 export function getAccessToken(): string | null {
-  if (USE_COOKIE_AUTH) return null;
-  return localStorage.getItem("mefit_access");
+  return _accessToken;
 }
 export function getRefreshToken(): string | null {
-  if (USE_COOKIE_AUTH) return null;
-  return localStorage.getItem("mefit_refresh");
+  return null;
 }
 export function setTokens(access: string, refresh: string): void {
-  if (USE_COOKIE_AUTH) return;
-  localStorage.setItem("mefit_access", access);
-  localStorage.setItem("mefit_refresh", refresh);
+  void refresh; // refresh 토큰은 HttpOnly cookie로만 관리
+  _accessToken = access;
 }
 export function clearTokens(): void {
-  if (USE_COOKIE_AUTH) return;
-  localStorage.removeItem("mefit_access");
-  localStorage.removeItem("mefit_refresh");
+  _accessToken = null;
 }
+
+let _accessToken: string | null = null;
 
 /* ── Paginated Response ── */
 export interface PaginatedResponse<T> {
@@ -106,7 +104,7 @@ async function _request<T>(
   const res = await fetch(endpoint.toString(), {
     ...fetchOptions,
     headers,
-    ...(USE_COOKIE_AUTH ? { credentials: "include" as RequestCredentials } : {}),
+    credentials: "include",
   });
 
   // No-content responses
@@ -144,26 +142,26 @@ export async function fetchWithAuth(
   url: string | URL,
   options: RequestInit = {},
 ): Promise<Response> {
-  const token = USE_COOKIE_AUTH ? getCookieAccessToken() : getAccessToken();
+  const token = getAccessToken();
   const headers = new Headers(options.headers);
   if (token) headers.set("Authorization", `Bearer ${token}`);
 
   const res = await fetch(url, {
     ...options,
     headers,
-    ...(USE_COOKIE_AUTH ? { credentials: "include" as RequestCredentials } : {}),
+    credentials: "include",
   });
 
   if (res.status === 401) {
     const refreshed = await refreshAccessToken();
     if (refreshed) {
-      const newToken = USE_COOKIE_AUTH ? getCookieAccessToken() : getAccessToken();
+      const newToken = getAccessToken();
       const retryHeaders = new Headers(options.headers);
       if (newToken) retryHeaders.set("Authorization", `Bearer ${newToken}`);
       return fetch(url, {
         ...options,
         headers: retryHeaders,
-        ...(USE_COOKIE_AUTH ? { credentials: "include" as RequestCredentials } : {}),
+        credentials: "include",
       });
     }
   }
@@ -191,31 +189,6 @@ export function refreshAccessToken(): Promise<boolean> {
 }
 
 async function _doRefresh(): Promise<boolean> {
-  if (!USE_COOKIE_AUTH) {
-    const refresh = getRefreshToken();
-    if (!refresh) return false;
-
-    try {
-      const res = await fetch(new URL("/api/v1/users/tokens/refresh/", BASE_URL).toString(), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refresh }),
-      });
-      if (!res.ok) {
-        clearTokens();
-        _onRefreshFailed?.();
-        return false;
-      }
-      const data = await res.json() as { access: string; refresh?: string };
-      setTokens(data.access, data.refresh ?? refresh);
-      return true;
-    } catch {
-      clearTokens();
-      _onRefreshFailed?.();
-      return false;
-    }
-  }
-
   try {
     const res = await fetch(new URL("/api/v1/users/tokens/refresh/", BASE_URL).toString(), {
       method: "POST",
@@ -223,24 +196,16 @@ async function _doRefresh(): Promise<boolean> {
       credentials: "include",
     });
     if (!res.ok) {
+      clearTokens();
       _onRefreshFailed?.();
       return false;
     }
     const data = await res.json() as { access: string };
-    setCookieAccessToken(data.access);
+    setTokens(data.access, "");
     return true;
   } catch {
+    clearTokens();
     _onRefreshFailed?.();
     return false;
   }
-}
-
-let _cookieAccessToken: string | null = null;
-
-export function getCookieAccessToken(): string | null {
-  return _cookieAccessToken;
-}
-
-export function setCookieAccessToken(access: string | null): void {
-  _cookieAccessToken = access;
 }

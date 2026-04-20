@@ -1,7 +1,6 @@
 import {
   apiRequest,
   BASE_URL,
-  USE_COOKIE_AUTH,
 } from "./client";
 
 /* ── WebSocket 티켓 발급 ── */
@@ -20,7 +19,6 @@ async function fetchWsTicket(): Promise<string | null> {
 /* ── WebSocket URL 생성 (https → wss) ── */
 function buildWsUrl(ticket: string): string {
   const wsBase = BASE_URL.replace(/^https/, "wss").replace(/^http/, "ws");
-  if (USE_COOKIE_AUTH) return `${wsBase}/ws/notifications/`;
   return `${wsBase}/ws/notifications/?ticket=${ticket}`;
 }
 

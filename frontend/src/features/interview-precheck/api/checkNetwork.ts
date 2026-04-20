@@ -1,8 +1,6 @@
 import {
   BASE_URL,
   getAccessToken,
-  USE_COOKIE_AUTH,
-  getCookieAccessToken,
 } from "@/shared/api/client";
 
 const PING_ROUNDS = 3;
@@ -16,7 +14,7 @@ export async function checkNetworkApi(
 ): Promise<{ ok: boolean; speedMbps: number; latencyMs: number }> {
   try {
     onProgress(10);
-    const token = USE_COOKIE_AUTH ? getCookieAccessToken() : getAccessToken();
+    const token = getAccessToken();
     const authHeaders: Record<string, string> = {
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     };
@@ -30,7 +28,7 @@ export async function checkNetworkApi(
           method: "GET",
           cache: "no-store",
           headers: authHeaders,
-          ...(USE_COOKIE_AUTH ? { credentials: "include" as RequestCredentials } : {}),
+          credentials: "include",
           signal: AbortSignal.timeout(5000),
         });
       } catch {
@@ -54,7 +52,7 @@ export async function checkNetworkApi(
         method: "GET",
         cache: "no-store",
         headers: { ...authHeaders, Accept: "application/json" },
-        ...(USE_COOKIE_AUTH ? { credentials: "include" as RequestCredentials } : {}),
+        credentials: "include",
         signal: AbortSignal.timeout(5000),
       });
       const blob = await res.blob();

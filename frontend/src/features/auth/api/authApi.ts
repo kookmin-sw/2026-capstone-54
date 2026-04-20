@@ -2,9 +2,6 @@ import {
   apiRequest,
   setTokens,
   clearTokens,
-  getRefreshToken,
-  setCookieAccessToken,
-  USE_COOKIE_AUTH,
 } from "@/shared/api/client";
 import { getTermsDocumentsApi, postTermsConsentsApi } from "./termsApi";
 
@@ -56,8 +53,7 @@ export async function signUpApi(payload: SignUpPayload): Promise<SignUpResult> {
         password2: payload.password,
       }),
     });
-    if (USE_COOKIE_AUTH) setCookieAccessToken(res.access);
-    else setTokens(res.access, "");
+    setTokens(res.access, "");
 
     // 3. 약관 일괄 동의 (토큰 세팅 후 auth 요청)
     if (terms.length > 0) {
@@ -94,8 +90,7 @@ export async function loginApi(payload: LoginPayload): Promise<LoginResult> {
       method: "POST",
       body: JSON.stringify({ email: payload.email, password: payload.password }),
     });
-    if (USE_COOKIE_AUTH) setCookieAccessToken(res.access);
-    else setTokens(res.access, "");
+    setTokens(res.access, "");
     return {
       success: true,
       message: "로그인 성공",
@@ -112,16 +107,13 @@ export async function loginApi(payload: LoginPayload): Promise<LoginResult> {
 
 /* ── Sign Out ── */
 export async function signOutApi(): Promise<void> {
-  const refresh = USE_COOKIE_AUTH ? null : getRefreshToken();
   try {
     await apiRequest("/api/v1/users/sign-out/", {
       method: "POST",
       auth: true,
-      ...(refresh ? { body: JSON.stringify({ refresh }) } : {}),
     });
   } finally {
     clearTokens();
-    setCookieAccessToken(null);
   }
 }
 
@@ -216,7 +208,6 @@ export async function unregisterApi(): Promise<UnregisterResult> {
       auth: true,
     });
     clearTokens();
-    setCookieAccessToken(null);
     return { success: true, message: "회원탈퇴가 완료되었습니다." };
   } catch (err: unknown) {
     return { success: false, message: parseApiError(err, "회원탈퇴에 실패했습니다.") };
