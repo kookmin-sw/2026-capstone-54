@@ -1,4 +1,10 @@
 export const BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://mefit.xn--hy1by51c.kr";
+const VOICE_API_BASE_URL =
+  import.meta.env.VITE_VOICE_API_BASE_URL || "https://mefit-voice.xn--hy1by51c.kr/voice-api/api/v1";
+const TRUSTED_FETCH_ORIGINS = new Set([
+  new URL(BASE_URL).origin,
+  new URL(VOICE_API_BASE_URL).origin,
+]);
 
 // 단일 인증 전략: access token(in-memory) + refresh token(HttpOnly cookie)
 
@@ -142,11 +148,12 @@ export async function fetchWithAuth(
   url: string | URL,
   options: RequestInit = {},
 ): Promise<Response> {
+  const trustedUrl = normalizeTrustedFetchUrl(url);
   const token = getAccessToken();
   const headers = new Headers(options.headers);
   if (token) headers.set("Authorization", `Bearer ${token}`);
 
-  const res = await fetch(url, {
+  const res = await fetch(trustedUrl, {
     ...options,
     headers,
     credentials: "include",
@@ -158,7 +165,7 @@ export async function fetchWithAuth(
       const newToken = getAccessToken();
       const retryHeaders = new Headers(options.headers);
       if (newToken) retryHeaders.set("Authorization", `Bearer ${newToken}`);
-      return fetch(url, {
+      return fetch(trustedUrl, {
         ...options,
         headers: retryHeaders,
         credentials: "include",
@@ -167,6 +174,14 @@ export async function fetchWithAuth(
   }
 
   return res;
+}
+
+function normalizeTrustedFetchUrl(input: string | URL): string {
+  const target = new URL(input.toString(), BASE_URL);
+  if (!TRUSTED_FETCH_ORIGINS.has(target.origin)) {
+    throw new Error(`Untrusted fetch URL origin: ${target.origin}`);
+  }
+  return target.toString();
 }
 
 /* ── Token refresh helper ── */
