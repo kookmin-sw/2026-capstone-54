@@ -1,12 +1,12 @@
 from api.v1.profiles.serializers import JobSerializer
 from common.filters import TrigramSearchFilter
-from common.views import BaseListAPIView
+from common.views import PublicBaseListAPIView
 from drf_spectacular.utils import extend_schema
 from profiles.models import Job
 
 
 @extend_schema(tags=["직업"])
-class JobListView(BaseListAPIView):
+class JobListView(PublicBaseListAPIView):
   """직군별 직업 목록 조회 뷰 (공개)"""
 
   serializer_class = JobSerializer
