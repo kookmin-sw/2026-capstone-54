@@ -24,10 +24,12 @@ class TokenRefreshAPIViewPropertyTests(TestCase):
     """유효한 refresh 토큰을 전달하면 새로운 access 토큰이 포함된 200 응답이 반환된다."""
     refresh = RefreshToken.for_user(self.user)
 
-    response = self.client.post(self.url, {"refresh": str(refresh)}, format="json")
+    self.client.cookies["mefit_refresh"] = str(refresh)
+    response = self.client.post(self.url, {}, format="json")
 
     self.assertEqual(response.status_code, status.HTTP_200_OK)
     self.assertIn("access", response.data)
+    self.assertIn("mefit_refresh", response.cookies)
 
   @given(invalid_token=st.text(min_size=10, max_size=100).filter(lambda t: "." not in t or len(t.split(".")) != 3), )
   @settings(max_examples=50, deadline=None)
@@ -35,7 +37,10 @@ class TokenRefreshAPIViewPropertyTests(TestCase):
     """유효하지 않은 refresh 토큰을 전달하면 400 또는 401 에러 응답이 반환된다."""
     response = self.client.post(self.url, {"refresh": invalid_token}, format="json")
 
-    self.assertIn(response.status_code, [status.HTTP_400_BAD_REQUEST, status.HTTP_401_UNAUTHORIZED])
+    self.assertIn(
+      response.status_code,
+      [status.HTTP_400_BAD_REQUEST, status.HTTP_401_UNAUTHORIZED],
+    )
 
   @given(st.just(None))
   @settings(max_examples=10, deadline=None)

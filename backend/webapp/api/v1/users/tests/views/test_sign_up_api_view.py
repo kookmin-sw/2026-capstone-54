@@ -25,6 +25,7 @@ class SignUpAPIViewPropertyTests(TestCase):
   def test_sign_up_success_creates_user_and_returns_full_response(self, email):
     """유효한 name/email/password로 회원가입하면 201, User 생성, 완전한 응답 반환, EmailVerificationCode 생성된다."""
     from django.contrib.auth.models import BaseUserManager
+
     normalized_email = BaseUserManager.normalize_email(email)
     User.objects.filter(email=normalized_email).delete()
 
@@ -43,9 +44,9 @@ class SignUpAPIViewPropertyTests(TestCase):
 
     # 응답에 access, refresh, is_email_confirmed, is_profile_completed 필드가 포함되어야 한다
     self.assertIn("access", response.data)
-    self.assertIn("refresh", response.data)
     self.assertIn("is_email_confirmed", response.data)
     self.assertIn("is_profile_completed", response.data)
+    self.assertIn("mefit_refresh", response.cookies)
 
     # is_email_confirmed, is_profile_completed은 False여야 한다
     self.assertFalse(response.data["is_email_confirmed"])
@@ -56,13 +57,22 @@ class SignUpAPIViewPropertyTests(TestCase):
     self.assertTrue(EmailVerificationCode.objects.filter(user=user).exists())
 
   @given(
-    password1=st.text(min_size=8, max_size=20, alphabet=st.characters(whitelist_categories=("Lu", "Ll", "Nd"))),
-    password2=st.text(min_size=8, max_size=20, alphabet=st.characters(whitelist_categories=("Lu", "Ll", "Nd"))),
+    password1=st.text(
+      min_size=8,
+      max_size=20,
+      alphabet=st.characters(whitelist_categories=("Lu", "Ll", "Nd")),
+    ),
+    password2=st.text(
+      min_size=8,
+      max_size=20,
+      alphabet=st.characters(whitelist_categories=("Lu", "Ll", "Nd")),
+    ),
   )
   @settings(max_examples=10, deadline=None)
   def test_sign_up_fails_when_passwords_do_not_match(self, password1, password2):
     """password1 ≠ password2이면 400 에러가 반환되고 User가 생성되지 않는다."""
     from hypothesis import assume
+
     assume(password1 != password2)
 
     email = "mismatch_test@example.com"
@@ -85,6 +95,7 @@ class SignUpAPIViewPropertyTests(TestCase):
   def test_sign_up_fails_with_duplicate_email(self, email):
     """이미 등록된 이메일로 회원가입을 시도하면 4xx 에러가 반환되고 새로운 User가 생성되지 않는다."""
     from django.contrib.auth.models import BaseUserManager
+
     normalized_email = BaseUserManager.normalize_email(email)
     User.objects.filter(email=normalized_email).delete()
 
@@ -105,6 +116,9 @@ class SignUpAPIViewPropertyTests(TestCase):
     second_response = self.client.post(self.url, data, format="json")
 
     # 중복 이메일은 400(serializer validation) 또는 409(DB unique constraint)를 반환한다
-    self.assertIn(second_response.status_code, [status.HTTP_400_BAD_REQUEST, status.HTTP_409_CONFLICT])
+    self.assertIn(
+      second_response.status_code,
+      [status.HTTP_400_BAD_REQUEST, status.HTTP_409_CONFLICT],
+    )
     # 새로운 User가 생성되지 않아야 한다
     self.assertEqual(User.objects.filter(email=normalized_email).count(), user_count_after_first)

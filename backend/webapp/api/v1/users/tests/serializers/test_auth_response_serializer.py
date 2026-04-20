@@ -9,7 +9,6 @@ class AuthResponseSerializerTests(TestCase):
     """유효한 데이터를 직렬화한다"""
     data = {
       "access": "access-token",
-      "refresh": "refresh-token",
       "is_email_confirmed": True,
       "is_profile_completed": False,
     }
