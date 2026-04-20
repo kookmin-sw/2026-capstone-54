@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useInterviewSetupStore } from "@/features/interview-setup";
 import { StepLayout } from "@/shared/ui/StepLayout";
 import { ResumeSection } from "./ResumeSection";
@@ -14,6 +15,8 @@ const nextCls = `${navBtnCls} text-white bg-[#0A0A0A] border-none shadow-[0_4px_
 
 export function InterviewSetupPage() {
   const [step, setStep] = useState<SetupStep>(1);
+  const [searchParams] = useSearchParams();
+  const preferredJdId = useMemo(() => searchParams.get("jd"), [searchParams]);
   const {
     jdList, jdListLoading, selectedJdId,
     interviewMode, practiceMode, interviewDifficultyLevel,
@@ -25,10 +28,10 @@ export function InterviewSetupPage() {
   } = useInterviewSetupStore();
 
   useEffect(() => {
-    loadJdList();
+    loadJdList(preferredJdId);
     fetchResumes();
     resetSetup();
-  }, [loadJdList, fetchResumes, resetSetup]);
+  }, [loadJdList, fetchResumes, resetSetup, preferredJdId]);
 
   const handleStartInterview = async () => {
     const session = await createSession();

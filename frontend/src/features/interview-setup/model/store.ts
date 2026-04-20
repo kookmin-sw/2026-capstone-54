@@ -34,7 +34,7 @@ interface InterviewSetupState {
   createError: string | null;
   createdSessionUuid: string | null;
 
-  loadJdList: () => Promise<void>;
+  loadJdList: (preferredJdId?: string | null) => Promise<void>;
   selectJd: (uuid: string | null) => void;
   setInterviewMode: (mode: InterviewMode) => void;
   setPracticeMode: (mode: PracticeMode) => void;
@@ -80,11 +80,15 @@ export const useInterviewSetupStore = create<InterviewSetupState>()((set, get) =
   createError: null,
   createdSessionUuid: null,
 
-  loadJdList: async () => {
+  loadJdList: async (preferredJdId) => {
     set({ jdListLoading: true });
     try {
       const list = await fetchSetupJdListApi();
       set((s) => {
+        const preferredEnabled = preferredJdId
+          ? list.some((jd) => jd.uuid === preferredJdId && !jd.disabled)
+          : false;
+
         // 기존 선택값이 여전히 선택 가능한 상태면 유지, 아니면 수집 완료된 첫 항목으로 변경.
         const stillValid = list.some(
           (jd) => jd.uuid === s.selectedJdId && !jd.disabled,
@@ -93,7 +97,11 @@ export const useInterviewSetupStore = create<InterviewSetupState>()((set, get) =
         return {
           jdList: list,
           jdListLoading: false,
-          selectedJdId: stillValid ? s.selectedJdId : firstEnabled,
+          selectedJdId: preferredEnabled
+            ? preferredJdId
+            : stillValid
+              ? s.selectedJdId
+              : firstEnabled,
         };
       });
     } catch {

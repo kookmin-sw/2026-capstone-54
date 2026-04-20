@@ -155,7 +155,10 @@ function JdCard({ item }: { item: JdListItem }) {
         ) : (
           <button
             className="text-[12px] font-bold text-[#0991B2] bg-[#E6F7FA] border-none rounded-lg py-[7px] px-3.5 cursor-pointer transition-all hover:bg-[#cceef6] hover:-translate-y-px"
-            onClick={(e) => { e.stopPropagation(); navigate("/interview"); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/interview/setup?jd=${encodeURIComponent(item.uuid)}`);
+            }}
           >
             면접 시작
           </button>
