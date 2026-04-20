@@ -1,5 +1,8 @@
+import traceback
+
 from common.exceptions import ConflictException, PermissionDeniedException
 from common.services import BaseService
+from common.tasks import RegisteredSendErrorAlertTask
 from interviews.enums import RecordingStatus
 
 from .get_s3_client import get_video_s3_client
@@ -58,8 +61,14 @@ class CompleteRecordingService(BaseService):
           Key=recording.s3_key,
           UploadId=recording.upload_id,
         )
-      except Exception:
-        pass
+      except Exception as exc:
+        RegisteredSendErrorAlertTask.delay(
+          error_type=type(exc).__name__,
+          error_message=str(exc),
+          path="interviews.services.complete_recording_service.abort_multipart_upload",
+          method="SERVICE",
+          traceback=traceback.format_exc(),
+        )
 
     recording.status = RecordingStatus.COMPLETED
     recording.end_timestamp = end_timestamp
