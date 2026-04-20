@@ -1,4 +1,7 @@
+from unittest.mock import patch
+
 from django.contrib.admin.sites import AdminSite
+from django.db.models import Q
 from django.test import TestCase
 from django.utils import timezone
 from subscriptions.admin import SubscriptionAdmin
@@ -31,14 +34,16 @@ class SubscriptionAdminActionTests(TestCase):
     )
 
     queryset = Subscription.objects.filter(user=user)
-    self.admin.set_selected_users_to_free(self.request, queryset)
+    with patch("subscriptions.admin.subscription_admin.timezone.now", return_value=now):
+      self.admin.set_selected_users_to_free(self.request, queryset)
 
-    active_pro = Subscription.objects.filter(
-      user=user,
-      plan_type=PlanType.PRO,
-      started_at__lte=now,
-      expires_at__gt=now,
-    ).exists()
+    active_pro = (
+      Subscription.objects.filter(
+        user=user,
+        plan_type=PlanType.PRO,
+        started_at__lte=now,
+      ).filter(Q(expires_at__isnull=True) | Q(expires_at__gt=now)).exists()
+    )
     self.assertFalse(active_pro)
 
     active_free = Subscription.objects.filter(

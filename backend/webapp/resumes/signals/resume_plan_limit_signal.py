@@ -1,7 +1,7 @@
 from common.exceptions import ValidationException
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
-from resumes.models import Resume
+from resumes.models import FileResume, Resume, TextResume
 from subscriptions.enums import PlanType
 from subscriptions.services import (
   GetCurrentSubscriptionService,
@@ -10,6 +10,8 @@ from subscriptions.services import (
 
 
 @receiver(pre_save, sender=Resume)
+@receiver(pre_save, sender=TextResume)
+@receiver(pre_save, sender=FileResume)
 def validate_resume_plan_limit_on_create(sender, instance: Resume, **kwargs):
   """이력서 신규 생성 시 플랜 한도를 검증한다.
 
@@ -17,8 +19,8 @@ def validate_resume_plan_limit_on_create(sender, instance: Resume, **kwargs):
     Resume 모델 pre_save 시점에서 신규 생성만 검사한다.
     """
 
-  # 기존 수정/업데이트는 제한 대상이 아니다.
-  if instance.pk:
+  # UUID PK는 생성 전에도 값이 존재할 수 있으므로 _state.adding으로 신규 여부를 판단한다.
+  if not instance._state.adding:
     return
 
   if not instance.user_id:

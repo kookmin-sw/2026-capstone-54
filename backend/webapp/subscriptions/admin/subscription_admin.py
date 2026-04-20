@@ -81,7 +81,8 @@ class SubscriptionAdmin(ModelAdmin):
     now = timezone.now()
     # 이미 취소되지 않은 것만 처리
     updated = queryset.filter(cancelled_at__isnull=True).update(cancelled_at=now)
-    self.message_user(request, f"{updated}개 구독이 취소 처리되었습니다.")
+    if hasattr(request, "_messages"):
+      self.message_user(request, f"{updated}개 구독이 취소 처리되었습니다.")
 
   @admin.action(description="선택한 사용자 무료 플랜 전환")
   def set_selected_users_to_free(self, request, queryset):
@@ -118,10 +119,11 @@ class SubscriptionAdmin(ModelAdmin):
       )
       created_count += 1
 
-    self.message_user(
-      request,
-      f"{len(user_ids)}명 대상 무료 플랜 전환 처리 완료 (신규 free 생성: {created_count}건)",
-    )
+    if hasattr(request, "_messages"):
+      self.message_user(
+        request,
+        f"{len(user_ids)}명 대상 무료 플랜 전환 처리 완료 (신규 free 생성: {created_count}건)",
+      )
 
   @admin.action(description="선택한 사용자 Pro 플랜(1년) 설정")
   def set_selected_users_to_pro_for_one_year(self, request, queryset):
@@ -148,7 +150,8 @@ class SubscriptionAdmin(ModelAdmin):
       )
       created_count += 1
 
-    self.message_user(
-      request,
-      f"{len(user_ids)}명 대상 Pro 1년 구독 설정 완료 (신규 pro 생성: {created_count}건)",
-    )
+    if hasattr(request, "_messages"):
+      self.message_user(
+        request,
+        f"{len(user_ids)}명 대상 Pro 1년 구독 설정 완료 (신규 pro 생성: {created_count}건)",
+      )
