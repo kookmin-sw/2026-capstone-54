@@ -1,6 +1,12 @@
 /** JWT 인증 SSE 스트림 — 401 자동 refresh, 예상치 못한 종료/네트워크 오류 시 지수 백오프 재연결. */
 
-import { BASE_URL, getAccessToken, refreshAccessToken } from "./client";
+import {
+  BASE_URL,
+  getAccessToken,
+  refreshAccessToken,
+  USE_COOKIE_AUTH,
+  getCookieAccessToken,
+} from "./client";
 
 type SseEventHandler = (event: string, data: unknown) => void;
 
@@ -137,10 +143,11 @@ async function fetchWithAuthRetry(path: string, signal: AbortSignal): Promise<Re
         Accept: "text/event-stream",
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
+      ...(USE_COOKIE_AUTH ? { credentials: "include" as RequestCredentials } : {}),
       signal,
     });
 
-  let res = await doFetch(getAccessToken());
+  let res = await doFetch(USE_COOKIE_AUTH ? getCookieAccessToken() : getAccessToken());
   if (res.status === 401) {
     // 기존 응답 body 는 해제 (누수 방지)
     try { await res.body?.cancel(); } catch { /* noop */ }
@@ -148,7 +155,7 @@ async function fetchWithAuthRetry(path: string, signal: AbortSignal): Promise<Re
     if (!ok) {
       return res;
     }
-    res = await doFetch(getAccessToken());
+    res = await doFetch(USE_COOKIE_AUTH ? getCookieAccessToken() : getAccessToken());
   }
   return res;
 }

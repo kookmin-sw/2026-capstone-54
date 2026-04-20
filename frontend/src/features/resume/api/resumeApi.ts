@@ -1,4 +1,10 @@
-import { apiRequest, BASE_URL, getAccessToken } from "@/shared/api/client";
+import {
+  apiRequest,
+  BASE_URL,
+  getAccessToken,
+  USE_COOKIE_AUTH,
+  getCookieAccessToken,
+} from "@/shared/api/client";
 import type {
   PaginatedResponse,
   ParsedData,
@@ -49,7 +55,7 @@ export const resumeApi = {
     onProgress?: (pct: number) => void,
   ): Promise<ResumeListItem> => {
     return new Promise((resolve, reject) => {
-      const token = getAccessToken();
+      const token = USE_COOKIE_AUTH ? getCookieAccessToken() : getAccessToken();
       const form = new FormData();
       form.append("type", "file");
       form.append("title", title);
@@ -57,6 +63,7 @@ export const resumeApi = {
 
       const xhr = new XMLHttpRequest();
       xhr.open("POST", `${BASE_URL}${BASE}/`);
+      if (USE_COOKIE_AUTH) xhr.withCredentials = true;
       if (token) xhr.setRequestHeader("Authorization", `Bearer ${token}`);
 
       xhr.upload.onprogress = (e) => {
@@ -91,13 +98,14 @@ export const resumeApi = {
     onProgress?: (pct: number) => void,
   ): Promise<ResumeDetail> => {
     return new Promise((resolve, reject) => {
-      const token = getAccessToken();
+      const token = USE_COOKIE_AUTH ? getCookieAccessToken() : getAccessToken();
       const form = new FormData();
       if (patch.title !== undefined) form.append("title", patch.title);
       if (patch.file) form.append("file", patch.file);
 
       const xhr = new XMLHttpRequest();
       xhr.open("PATCH", `${BASE_URL}${BASE}/${uuid}/`);
+      if (USE_COOKIE_AUTH) xhr.withCredentials = true;
       if (token) xhr.setRequestHeader("Authorization", `Bearer ${token}`);
 
       xhr.upload.onprogress = (e) => {

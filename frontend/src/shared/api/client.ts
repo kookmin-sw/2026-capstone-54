@@ -1,17 +1,22 @@
 export const BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://mefit.xn--hy1by51c.kr";
+export const USE_COOKIE_AUTH = (import.meta.env.VITE_USE_COOKIE_AUTH || "false") === "true";
 
 /* ── Token helpers ── */
 export function getAccessToken(): string | null {
+  if (USE_COOKIE_AUTH) return null;
   return localStorage.getItem("mefit_access");
 }
 export function getRefreshToken(): string | null {
+  if (USE_COOKIE_AUTH) return null;
   return localStorage.getItem("mefit_refresh");
 }
 export function setTokens(access: string, refresh: string): void {
+  if (USE_COOKIE_AUTH) return;
   localStorage.setItem("mefit_access", access);
   localStorage.setItem("mefit_refresh", refresh);
 }
 export function clearTokens(): void {
+  if (USE_COOKIE_AUTH) return;
   localStorage.removeItem("mefit_access");
   localStorage.removeItem("mefit_refresh");
 }
@@ -43,7 +48,7 @@ export async function apiRequest<T>(
   path: string,
   options: RequestInit & { auth?: boolean; noRetry?: boolean } = {}
 ): Promise<T> {
-  return _request<T>(path, options, options.noRetry ?? false);
+  return _request<T>(path, options, false, options.noRetry ?? false);
 }
 
 /* ── Path validation ── */
@@ -72,7 +77,8 @@ function validateApiPath(path: string): { pathname: string; search: string } {
 async function _request<T>(
   path: string,
   options: RequestInit & { auth?: boolean },
-  isRetry: boolean
+  isRetry: boolean,
+  noRetry: boolean,
 ): Promise<T> {
   const { auth = false, ...fetchOptions } = options as RequestInit & { auth?: boolean; noRetry?: boolean };
   delete (fetchOptions as Record<string, unknown>).noRetry;
@@ -97,7 +103,11 @@ async function _request<T>(
   endpoint.pathname = pathname;
   endpoint.search = search;
 
-  const res = await fetch(endpoint.toString(), { ...fetchOptions, headers });
+  const res = await fetch(endpoint.toString(), {
+    ...fetchOptions,
+    headers,
+    ...(USE_COOKIE_AUTH ? { credentials: "include" as RequestCredentials } : {}),
+  });
 
   // No-content responses
   if (res.status === 204 || res.status === 205) return undefined as T;
@@ -111,10 +121,10 @@ async function _request<T>(
 
   if (!res.ok) {
     // 401 on authenticated request → try token refresh once, then retry
-    if (res.status === 401 && auth && !isRetry) {
+    if (res.status === 401 && auth && !isRetry && !noRetry) {
       const refreshed = await refreshAccessToken();
       if (refreshed) {
-        return _request<T>(path, options, true);
+        return _request<T>(path, options, true, noRetry);
       }
     }
 
@@ -134,19 +144,27 @@ export async function fetchWithAuth(
   url: string | URL,
   options: RequestInit = {},
 ): Promise<Response> {
-  const token = getAccessToken();
+  const token = USE_COOKIE_AUTH ? getCookieAccessToken() : getAccessToken();
   const headers = new Headers(options.headers);
   if (token) headers.set("Authorization", `Bearer ${token}`);
 
-  const res = await fetch(url, { ...options, headers });
+  const res = await fetch(url, {
+    ...options,
+    headers,
+    ...(USE_COOKIE_AUTH ? { credentials: "include" as RequestCredentials } : {}),
+  });
 
   if (res.status === 401) {
     const refreshed = await refreshAccessToken();
     if (refreshed) {
-      const newToken = getAccessToken();
+      const newToken = USE_COOKIE_AUTH ? getCookieAccessToken() : getAccessToken();
       const retryHeaders = new Headers(options.headers);
       if (newToken) retryHeaders.set("Authorization", `Bearer ${newToken}`);
-      return fetch(url, { ...options, headers: retryHeaders });
+      return fetch(url, {
+        ...options,
+        headers: retryHeaders,
+        ...(USE_COOKIE_AUTH ? { credentials: "include" as RequestCredentials } : {}),
+      });
     }
   }
 
@@ -173,25 +191,56 @@ export function refreshAccessToken(): Promise<boolean> {
 }
 
 async function _doRefresh(): Promise<boolean> {
-  const refresh = getRefreshToken();
-  if (!refresh) return false;
-  try {
-    const res = await fetch(new URL("/api/v1/users/tokens/refresh/", BASE_URL).toString(), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ refresh }),
-    });
-    if (!res.ok) {
+  if (!USE_COOKIE_AUTH) {
+    const refresh = getRefreshToken();
+    if (!refresh) return false;
+
+    try {
+      const res = await fetch(new URL("/api/v1/users/tokens/refresh/", BASE_URL).toString(), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refresh }),
+      });
+      if (!res.ok) {
+        clearTokens();
+        _onRefreshFailed?.();
+        return false;
+      }
+      const data = await res.json() as { access: string; refresh?: string };
+      setTokens(data.access, data.refresh ?? refresh);
+      return true;
+    } catch {
       clearTokens();
       _onRefreshFailed?.();
       return false;
     }
-    const data = await res.json() as { access: string; refresh?: string };
-    setTokens(data.access, data.refresh ?? refresh);
+  }
+
+  try {
+    const res = await fetch(new URL("/api/v1/users/tokens/refresh/", BASE_URL).toString(), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+    });
+    if (!res.ok) {
+      _onRefreshFailed?.();
+      return false;
+    }
+    const data = await res.json() as { access: string };
+    setCookieAccessToken(data.access);
     return true;
   } catch {
-    clearTokens();
     _onRefreshFailed?.();
     return false;
   }
+}
+
+let _cookieAccessToken: string | null = null;
+
+export function getCookieAccessToken(): string | null {
+  return _cookieAccessToken;
+}
+
+export function setCookieAccessToken(access: string | null): void {
+  _cookieAccessToken = access;
 }

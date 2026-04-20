@@ -8,7 +8,12 @@ import {
   getMeApi,
 } from "../api/authApi";
 import type { UserMe } from "../api/authApi";
-import { getAccessToken, getRefreshToken, refreshAccessToken } from "@/shared/api/client";
+import {
+  getAccessToken,
+  getRefreshToken,
+  refreshAccessToken,
+  USE_COOKIE_AUTH,
+} from "@/shared/api/client";
 
 interface LoginResult {
   success: boolean;
@@ -109,6 +114,18 @@ export const useAuthStore = create<AuthState>()((set) => ({
   },
 
   initAuth: async () => {
+    if (USE_COOKIE_AUTH) {
+      const refreshed = await refreshAccessToken();
+      if (!refreshed) {
+        set({ authReady: true });
+        return;
+      }
+
+      const me = await getMeApi({ noRetry: true });
+      set({ user: me ?? null, authReady: true });
+      return;
+    }
+
     // access token도 없고 refresh token도 없으면 로그인 상태 아님
     if (!getAccessToken() && !getRefreshToken()) {
       set({ authReady: true });
