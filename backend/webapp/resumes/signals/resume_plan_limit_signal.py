@@ -1,4 +1,4 @@
-from django.core.exceptions import ValidationError
+from common.exceptions import ValidationException
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from resumes.models import Resume
@@ -33,4 +33,4 @@ def validate_resume_plan_limit_on_create(sender, instance: Resume, **kwargs):
 
   active_resume_count = Resume.objects.filter(user=instance.user).count()
   if active_resume_count >= max_active_resumes:
-    raise ValidationError({"resume": [f"무료 플랜은 최대 {max_active_resumes}개의 이력서만 등록할 수 있습니다."]})
+    raise ValidationException(field_errors={"resume": [f"무료 플랜은 최대 {max_active_resumes}개의 이력서만 등록할 수 있습니다."]})

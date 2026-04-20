@@ -12,7 +12,6 @@ class InterviewSessionListSerializer(serializers.ModelSerializer):
   job_description_label = serializers.SerializerMethodField()
   anchor_questions = serializers.SerializerMethodField()
   report_status = serializers.SerializerMethodField()
-  hidden_by_plan = serializers.SerializerMethodField()
 
   class Meta:
     model = InterviewSession
@@ -28,7 +27,6 @@ class InterviewSessionListSerializer(serializers.ModelSerializer):
       "job_description_label",
       "anchor_questions",
       "report_status",
-      "hidden_by_plan",
     )
     read_only_fields = fields
 
@@ -58,6 +56,3 @@ class InterviewSessionListSerializer(serializers.ModelSerializer):
       return obj.analysis_report.interview_analysis_report_status
     except Exception:
       return None
-
-  def get_hidden_by_plan(self, _obj: InterviewSession) -> bool:
-    return False

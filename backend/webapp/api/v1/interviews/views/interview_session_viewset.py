@@ -16,7 +16,7 @@ from django.utils import timezone
 from drf_spectacular.utils import extend_schema
 from interviews.enums import InterviewExchangeType
 from interviews.models import InterviewSession, InterviewTurn
-from interviews.services import create_interview_session, get_interview_session_for_user
+from interviews.services import create_interview_session
 from job_descriptions.enums import CollectionStatus
 from job_descriptions.models import UserJobDescription
 from rest_framework import status
@@ -122,5 +122,5 @@ class InterviewSessionViewSet(
 
   @extend_schema(summary="면접 세션 조회")
   def retrieve(self, request, *args, **kwargs):
-    session = get_interview_session_for_user(self.kwargs["pk"], self.current_user)
+    session = self.get_object()
     return Response(InterviewSessionSerializer(session).data)

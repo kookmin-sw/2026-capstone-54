@@ -29,6 +29,7 @@ from interviews.services.get_s3_client import get_video_s3_client
 from rest_framework import status
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
+from subscriptions.enums import PlanType
 from subscriptions.services import (
   GetCurrentSubscriptionService,
   PlanFeaturePolicyService,
@@ -230,7 +231,7 @@ class PlaybackUrlView(BaseAPIView):
       raise ConflictException("중단된 녹화는 재생할 수 없습니다.")
 
     subscription = GetCurrentSubscriptionService(user=self.current_user).perform()
-    plan_type = subscription.plan_type if subscription else "free"
+    plan_type = subscription.plan_type if subscription else PlanType.FREE
     if not PlanFeaturePolicyService.can_use_feature(
       plan_type,
       PlanFeaturePolicyService.FEATURE_REPORT_RECORDING_PLAYBACK,
