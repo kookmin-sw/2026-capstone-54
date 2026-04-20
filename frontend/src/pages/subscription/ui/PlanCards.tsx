@@ -2,14 +2,18 @@ import { forwardRef } from "react";
 
 interface PlanCardsProps {
   isPro: boolean;
-  isYearly: boolean;
-  monthlyPrice: string;
-  originalPrice: string;
-  periodText: string;
-  proNote: string;
-  proBtnText: string;
+  proCtaText: string;
+  policy: {
+    maxActiveResumes: number | null;
+    maxActiveJobDescriptions: number | null;
+    fullProcessInterview: boolean;
+    realModeInterview: boolean;
+    eyeTrackingAnalysis: boolean;
+    reportRecordingPlayback: boolean;
+    interviewSessionHistoryDays: number | null;
+  };
   processing: boolean;
-  nextBillingDate?: string;
+  expiresAt?: string | null;
   onCheckout: () => void;
   onCancel: () => void;
 }
@@ -18,14 +22,10 @@ export const PlanCards = forwardRef<HTMLDivElement, PlanCardsProps>(
   (
     {
       isPro,
-      isYearly,
-      monthlyPrice,
-      originalPrice,
-      periodText,
-      proNote,
-      proBtnText,
+      proCtaText,
+      policy,
       processing,
-      nextBillingDate,
+      expiresAt,
       onCheckout,
       onCancel,
     },
@@ -51,13 +51,13 @@ export const PlanCards = forwardRef<HTMLDivElement, PlanCardsProps>(
             {[
               [true, "꼬리질문 방식 면접"],
               [true, "기본 AI 리뷰 리포트"],
-              [true, "이력서 최대 3개"],
-              [true, "채용공고 최대 5개"],
+              [true, `이력서 최대 ${policy.maxActiveResumes ?? "무제한"}${policy.maxActiveResumes ? "개" : ""}`],
+              [true, `채용공고 최대 ${policy.maxActiveJobDescriptions ?? "무제한"}${policy.maxActiveJobDescriptions ? "개" : ""}`],
               [true, "스트릭 적립 & 보상 수령"],
-              [false, "전체 프로세스 방식 면접"],
-              [false, "시선 추적 분석"],
-              [false, "실전 모드"],
-              [false, "상세 리포트 PDF 저장"],
+              [policy.fullProcessInterview, "전체 프로세스 방식 면접"],
+              [policy.eyeTrackingAnalysis, "시선 추적 분석"],
+              [policy.realModeInterview, "실전 모드"],
+              [policy.reportRecordingPlayback, "분석 리포트 녹화 영상 확인"],
             ].map(([on, label], i) => (
               <li key={i} className={`flex items-start gap-[9px] text-[13px] text-[#374151] leading-[1.4] ${!on ? "opacity-35" : ""}`}>
                 <span className={`w-[18px] h-[18px] rounded-full flex-shrink-0 flex items-center justify-center text-[8px] font-extrabold mt-[1px] ${on ? "bg-[#059669] text-white" : "bg-[#E5E7EB] text-[#9CA3AF]"}`}>
@@ -96,21 +96,18 @@ export const PlanCards = forwardRef<HTMLDivElement, PlanCardsProps>(
             )}
           </div>
           <div className="flex items-end gap-1 mb-1">
-            <span className="text-[56px] font-black tracking-[-3px] leading-none text-white">{monthlyPrice}</span>
+            <span className="text-[56px] font-black tracking-[-3px] leading-none text-white">₩9,900</span>
             <span className="text-[15px] font-bold text-[rgba(255,255,255,.35)] pb-2">/월</span>
-            {isYearly && (
-              <span className="text-[13px] font-semibold text-[#9CA3AF] line-through pb-2 ml-[2px]">{originalPrice}</span>
-            )}
           </div>
-          <p className="text-xs text-[rgba(255,255,255,.3)] mb-7 min-h-[18px]">{periodText}</p>
+          <p className="text-xs text-[rgba(255,255,255,.3)] mb-7 min-h-[18px]">월간 결제 · 언제든 취소 가능</p>
           <ul className="list-none flex flex-col gap-[10px] mb-7">
             {[
               "Free의 모든 기능 포함",
               "이력서·채용공고 무제한",
               "전체 프로세스 방식 면접",
-              "시선 추적 분석 (분당 이탈 횟수)",
+              "시선 추적 분석",
               "실전 모드 (긴장감 업)",
-              "상세 리포트 PDF 저장",
+              "분석 리포트 녹화 영상 확인",
               "침묵 감지 상세 분석",
               "면접 세션 전체 아카이브",
               "우선 고객 지원",
@@ -134,13 +131,13 @@ export const PlanCards = forwardRef<HTMLDivElement, PlanCardsProps>(
               "구독 취소"
             ) : (
               <>
-                <span>{proBtnText}</span>
+                <span>{proCtaText}</span>
                 <span>→</span>
               </>
             )}
           </button>
           <p className="text-[11px] text-[rgba(255,255,255,.25)] mt-2 text-center min-h-[16px]">
-            {isPro ? (nextBillingDate ? `다음 결제일: ${nextBillingDate}` : "다음 결제일") : proNote}
+            {isPro ? (expiresAt ? `만료 예정일: ${new Date(expiresAt).toLocaleDateString("ko-KR")}` : "현재 PRO 이용 중") : "PRO 기능 즉시 활성화"}
           </p>
         </div>
       </div>

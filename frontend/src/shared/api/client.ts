@@ -22,6 +22,7 @@ export interface PaginatedResponse<T> {
   totalPagesCount: number;
   nextPage: number | null;
   previousPage: number | null;
+  hasHiddenOlderSessions?: boolean;
   results: T[];
 }
 
