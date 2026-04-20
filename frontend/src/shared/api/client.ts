@@ -1,10 +1,4 @@
 export const BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://mefit.xn--hy1by51c.kr";
-const VOICE_API_BASE_URL =
-  import.meta.env.VITE_VOICE_API_BASE_URL || "https://mefit-voice.xn--hy1by51c.kr/voice-api/api/v1";
-const TRUSTED_FETCH_ORIGINS = new Set([
-  new URL(BASE_URL).origin,
-  new URL(VOICE_API_BASE_URL).origin,
-]);
 
 // 단일 인증 전략: access token(in-memory) + refresh token(HttpOnly cookie)
 
@@ -78,6 +72,25 @@ function validateApiPath(path: string): { pathname: string; search: string } {
   return { pathname: safePath, search };
 }
 
+function validateTrustedPath(path: string): { pathname: string; search: string } {
+  const parsed = new URL(path, "http://dummy");
+  const pathname = parsed.pathname;
+  const search = parsed.search;
+
+  const isApiPath = pathname.startsWith("/api/");
+  const isVoiceApiPath = pathname.startsWith("/voice-api/api/v1/");
+  if (!isApiPath && !isVoiceApiPath) {
+    throw new Error(`Invalid trusted path: ${path}`);
+  }
+
+  const safePath = pathname.replace(/[^/a-zA-Z0-9._~:-]/g, "");
+  if (safePath.includes("..") || safePath.includes("//")) {
+    throw new Error("Invalid trusted path: path traversal detected");
+  }
+
+  return { pathname: safePath, search };
+}
+
 async function _request<T>(
   path: string,
   options: RequestInit & { auth?: boolean },
@@ -145,15 +158,19 @@ async function _request<T>(
 /* ── Authenticated fetch with 401 retry (for raw fetch calls outside apiRequest) ── */
 
 export async function fetchWithAuth(
-  url: string | URL,
+  path: string,
   options: RequestInit = {},
 ): Promise<Response> {
-  const trustedUrl = normalizeTrustedFetchUrl(url);
+  const { pathname, search } = validateTrustedPath(path);
+  const endpoint = new URL(BASE_URL);
+  endpoint.pathname = pathname;
+  endpoint.search = search;
+
   const token = getAccessToken();
   const headers = new Headers(options.headers);
   if (token) headers.set("Authorization", `Bearer ${token}`);
 
-  const res = await fetch(trustedUrl, {
+  const res = await fetch(endpoint.toString(), {
     ...options,
     headers,
     credentials: "include",
@@ -165,7 +182,7 @@ export async function fetchWithAuth(
       const newToken = getAccessToken();
       const retryHeaders = new Headers(options.headers);
       if (newToken) retryHeaders.set("Authorization", `Bearer ${newToken}`);
-      return fetch(trustedUrl, {
+      return fetch(endpoint.toString(), {
         ...options,
         headers: retryHeaders,
         credentials: "include",
@@ -174,14 +191,6 @@ export async function fetchWithAuth(
   }
 
   return res;
-}
-
-function normalizeTrustedFetchUrl(input: string | URL): string {
-  const target = new URL(input.toString(), BASE_URL);
-  if (!TRUSTED_FETCH_ORIGINS.has(target.origin)) {
-    throw new Error(`Untrusted fetch URL origin: ${target.origin}`);
-  }
-  return target.toString();
 }
 
 /* ── Token refresh helper ── */

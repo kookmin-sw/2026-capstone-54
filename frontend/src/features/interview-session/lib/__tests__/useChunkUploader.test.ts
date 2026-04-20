@@ -2,7 +2,6 @@ import { renderHook, act } from "@testing-library/react";
 
 jest.mock("@/shared/api/client", () => ({
   fetchWithAuth: (...args: unknown[]) => globalThis.fetch(...(args as [RequestInfo, RequestInit?])),
-  BASE_URL: "http://localhost:8000",
 }));
 
 import { useChunkUploader } from "../useChunkUploader";
@@ -33,7 +32,7 @@ describe("useChunkUploader", () => {
 
     expect(part).toEqual({ partNumber: 1, etag: "abc123" });
     expect(globalThis.fetch).toHaveBeenCalledWith(
-      `http://localhost:8000/api/v1/interviews/recordings/${RECORDING_ID}/parts/1/`,
+      `/api/v1/interviews/recordings/${RECORDING_ID}/parts/1/`,
       expect.objectContaining({ method: "PUT" }),
     );
   });
