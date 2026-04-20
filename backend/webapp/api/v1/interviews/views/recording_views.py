@@ -9,6 +9,7 @@ from botocore.exceptions import BotoCoreError, ClientError
 from common.exceptions import (
   ConflictException,
   NotFoundException,
+  PermissionDeniedException,
   ServiceUnavailableException,
   ValidationException,
 )
@@ -28,6 +29,10 @@ from interviews.services.get_s3_client import get_video_s3_client
 from rest_framework import status
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
+from subscriptions.services import (
+  GetCurrentSubscriptionService,
+  PlanFeaturePolicyService,
+)
 
 
 @extend_schema(tags=["면접 녹화"])
@@ -223,6 +228,14 @@ class PlaybackUrlView(BaseAPIView):
 
     if recording.status == RecordingStatus.ABANDONED:
       raise ConflictException("중단된 녹화는 재생할 수 없습니다.")
+
+    subscription = GetCurrentSubscriptionService(user=self.current_user).perform()
+    plan_type = subscription.plan_type if subscription else "free"
+    if not PlanFeaturePolicyService.can_use_feature(
+      plan_type,
+      PlanFeaturePolicyService.FEATURE_REPORT_RECORDING_PLAYBACK,
+    ):
+      raise PermissionDeniedException("녹화 영상 조회는 PRO 요금제에서만 사용 가능합니다.")
 
     try:
       result = GeneratePlaybackUrlService(

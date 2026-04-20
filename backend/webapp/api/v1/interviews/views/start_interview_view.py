@@ -14,6 +14,10 @@ from interviews.services import (
 from rest_framework import status
 from rest_framework.response import Response
 from subscriptions.enums import PlanType
+from subscriptions.services import (
+  GetCurrentSubscriptionService,
+  PlanFeaturePolicyService,
+)
 from tickets.services import UseTicketsService
 
 
@@ -46,8 +50,14 @@ class StartInterviewView(BaseAPIView):
     raise ValidationException("알 수 없는 면접 타입입니다.")
 
   def _validate_and_use_tickets(self, interview_session, ticket_cost):
+    subscription = GetCurrentSubscriptionService(user=self.current_user).perform()
+    plan_type = subscription.plan_type if subscription else PlanType.FREE
+
     if (interview_session.interview_session_type == InterviewSessionType.FULL_PROCESS):
-      self._validate_pro_plan()
+      self._validate_full_process_plan(plan_type)
+
+    if interview_session.interview_practice_mode == "real":
+      self._validate_real_mode_plan(plan_type)
 
     reason = f"{interview_session.interview_session_type} 면접 시작"
     try:
@@ -55,7 +65,16 @@ class StartInterviewView(BaseAPIView):
     except ValueError as e:
       raise ValidationException(str(e))
 
-  def _validate_pro_plan(self):
-    subscription = getattr(self.current_user, "subscription", None)
-    if not subscription or subscription.plan_type != PlanType.PRO:
+  def _validate_full_process_plan(self, plan_type: str):
+    if not PlanFeaturePolicyService.can_use_feature(
+      plan_type,
+      PlanFeaturePolicyService.FEATURE_FULL_PROCESS_INTERVIEW,
+    ):
       raise PermissionDeniedException("전체 프로세스 면접은 PRO 요금제에서만 사용 가능합니다.")
+
+  def _validate_real_mode_plan(self, plan_type: str):
+    if not PlanFeaturePolicyService.can_use_feature(
+      plan_type,
+      PlanFeaturePolicyService.FEATURE_REAL_MODE_INTERVIEW,
+    ):
+      raise PermissionDeniedException("실전 모드는 PRO 요금제에서만 사용 가능합니다.")
