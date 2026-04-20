@@ -14,6 +14,7 @@ from resumes.models import (
   ResumeExperience,
   ResumeSkill,
 )
+from subscriptions.factories import SubscriptionFactory
 from users.factories import UserFactory
 
 # 구조화 요청 payload — drf-writable-nested 가 처리할 nested 구조 그대로 전송
@@ -101,6 +102,46 @@ class ResumeStructuredFlowTests(TestCase):
       },
       format="json",
     )
+    self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+
+  @patch("resumes.services.upload_resume_bundle_service.default_storage")
+  @patch("resumes.services.mixins.resume_pipeline_mixin.current_app.send_task")
+  def test_structured_resume_free_plan_limit_reached_returns_400(self, _mock_send_task, _mock_storage):
+    """무료 플랜은 구조화 이력서도 최대 3개까지만 생성할 수 있다."""
+    ResumeFactory.create_batch(3, user=self.user)
+
+    response = self.client.post(
+      reverse("resume-list"),
+      data={
+        "type": "structured",
+        "title": "한도 초과 구조화 이력서",
+      },
+      format="json",
+    )
+
+    self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+    self.assertIn("최대 3개의 이력서", str(response.data))
+
+  @patch("resumes.services.upload_resume_bundle_service.default_storage")
+  @patch("resumes.services.mixins.resume_pipeline_mixin.current_app.send_task")
+  def test_structured_resume_pro_plan_over_limit_is_allowed(self, _mock_send_task, mock_storage):
+    """Pro 플랜은 구조화 이력서 생성 한도가 없다."""
+    SubscriptionFactory.create(user=self.user, pro=True)
+    ResumeFactory.create_batch(3, user=self.user)
+
+    mock_storage.exists.return_value = False
+    mock_storage.save.return_value = "resume_bundles/test.json"
+    mock_storage.url.return_value = "http://s3mock/resume_bundles/test.json"
+
+    response = self.client.post(
+      reverse("resume-list"),
+      data={
+        "type": "structured",
+        "title": "Pro 구조화 이력서",
+      },
+      format="json",
+    )
+
     self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
 
   @patch("resumes.services.upload_resume_bundle_service.default_storage")
