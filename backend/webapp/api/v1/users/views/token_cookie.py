@@ -8,7 +8,7 @@ REFRESH_COOKIE_PATH = "/api/v1/users/"
 def _is_secure_cookie() -> bool:
   # Django test client는 secure cookie를 HTTP에서 전송하지 않으므로
   # 테스트 환경에서는 secure=False로 설정해 쿠키 기반 인증 흐름을 검증한다.
-  if "test" in settings.ENVIRONMENT:
+  if "test" in getattr(settings, "ENVIRONMENT", ""):
     return False
   return not settings.DEBUG
 

@@ -4,6 +4,7 @@ from hypothesis import strategies as st
 from hypothesis.extra.django import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
+from rest_framework_simplejwt.settings import api_settings as simplejwt_api_settings
 from rest_framework_simplejwt.tokens import RefreshToken
 from users.factories import UserFactory
 from users.models import User
@@ -23,13 +24,18 @@ class TokenRefreshAPIViewPropertyTests(TestCase):
   def test_refresh_with_valid_refresh_token_returns_new_access_token(self, _):
     """유효한 refresh 토큰을 전달하면 새로운 access 토큰이 포함된 200 응답이 반환된다."""
     refresh = RefreshToken.for_user(self.user)
+    refresh_str = str(refresh)
 
-    self.client.cookies["mefit_refresh"] = str(refresh)
+    self.client.cookies["mefit_refresh"] = refresh_str
     response = self.client.post(self.url, {}, format="json")
 
     self.assertEqual(response.status_code, status.HTTP_200_OK)
     self.assertIn("access", response.data)
     self.assertIn("mefit_refresh", response.cookies)
+    if simplejwt_api_settings.ROTATE_REFRESH_TOKENS:
+      self.assertNotEqual(response.cookies["mefit_refresh"].value, refresh_str)
+    else:
+      self.assertEqual(response.cookies["mefit_refresh"].value, refresh_str)
 
   @given(invalid_token=st.text(min_size=10, max_size=100).filter(lambda t: "." not in t or len(t.split(".")) != 3), )
   @settings(max_examples=50, deadline=None)
@@ -49,3 +55,20 @@ class TokenRefreshAPIViewPropertyTests(TestCase):
     response = self.client.post(self.url, {}, format="json")
 
     self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+  @given(st.just(None))
+  @settings(max_examples=1, deadline=None)
+  def test_refresh_rotation_returns_new_cookie_when_enabled(self, _):
+    """ROTATE_REFRESH_TOKENS 활성 시 응답 쿠키의 refresh 토큰이 교체된다."""
+    if not simplejwt_api_settings.ROTATE_REFRESH_TOKENS:
+      self.skipTest("rotation disabled")
+
+    refresh = RefreshToken.for_user(self.user)
+    old_refresh = str(refresh)
+
+    self.client.cookies["mefit_refresh"] = old_refresh
+    response = self.client.post(self.url, {}, format="json")
+
+    self.assertEqual(response.status_code, status.HTTP_200_OK)
+    self.assertIn("mefit_refresh", response.cookies)
+    self.assertNotEqual(response.cookies["mefit_refresh"].value, old_refresh)

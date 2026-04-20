@@ -5,7 +5,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import AuthenticationFailed, ValidationError
 from rest_framework.response import Response
 from rest_framework_simplejwt.exceptions import TokenError
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 
 from .token_cookie import REFRESH_COOKIE_NAME, set_refresh_cookie
 
@@ -39,10 +39,15 @@ class TokenRefreshAPIView(BaseAPIView):
       raise ValidationError({"refresh": ["이 필드는 필수입니다."]})
 
     try:
-      refresh = RefreshToken(refresh_raw)
-      access = str(refresh.access_token)
+      simplejwt_serializer = TokenRefreshSerializer(data={"refresh": refresh_raw})
+      simplejwt_serializer.is_valid(raise_exception=True)
+      validated = simplejwt_serializer.validated_data
+
+      access = validated["access"]
+      rotated_refresh = validated.get("refresh", refresh_raw)
+
       response = Response({"access": access})
-      set_refresh_cookie(response, str(refresh))
+      set_refresh_cookie(response, rotated_refresh)
       return response
     except TokenError as exc:
       raise AuthenticationFailed(str(exc))
