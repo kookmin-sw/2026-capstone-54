@@ -62,13 +62,17 @@ class CompleteRecordingService(BaseService):
           UploadId=recording.upload_id,
         )
       except Exception as exc:
-        RegisteredSendErrorAlertTask.delay(
-          error_type=type(exc).__name__,
-          error_message=str(exc),
-          path="interviews.services.complete_recording_service.abort_multipart_upload",
-          method="SERVICE",
-          traceback=traceback.format_exc(),
-        )
+        try:
+          RegisteredSendErrorAlertTask.delay(
+            error_type=type(exc).__name__,
+            error_message=str(exc),
+            path="interviews.services.complete_recording_service.CompleteRecordingService.execute",
+            method="SERVICE",
+            traceback=traceback.format_exc(),
+          )
+        except Exception:
+          # 알림 태스크 전송 실패는 녹화 완료 처리 흐름을 막지 않는다.
+          pass
 
     recording.status = RecordingStatus.COMPLETED
     recording.end_timestamp = end_timestamp
