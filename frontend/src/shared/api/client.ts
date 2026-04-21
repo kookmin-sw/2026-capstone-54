@@ -91,6 +91,10 @@ function validateTrustedPath(path: string): { pathname: string; search: string }
   return { pathname: safePath, search };
 }
 
+function isAuthRetryExcludedPath(pathname: string): boolean {
+  return pathname === "/api/v1/users/tokens/refresh/" || pathname === "/api/v1/users/sign-out/";
+}
+
 async function _request<T>(
   path: string,
   options: RequestInit & { auth?: boolean },
@@ -138,7 +142,13 @@ async function _request<T>(
 
   if (!res.ok) {
     // 401 on authenticated request → try token refresh once, then retry
-    if (res.status === 401 && auth && !isRetry && !noRetry) {
+    if (
+      res.status === 401
+      && auth
+      && !isRetry
+      && !noRetry
+      && !isAuthRetryExcludedPath(pathname)
+    ) {
       const refreshed = await refreshAccessToken();
       if (refreshed) {
         return _request<T>(path, options, true, noRetry);
@@ -176,7 +186,7 @@ export async function fetchWithAuth(
     credentials: "include",
   });
 
-  if (res.status === 401) {
+  if (res.status === 401 && !isAuthRetryExcludedPath(pathname)) {
     const refreshed = await refreshAccessToken();
     if (refreshed) {
       const newToken = getAccessToken();
@@ -213,6 +223,7 @@ export function refreshAccessToken(): Promise<boolean> {
 }
 
 async function _doRefresh(): Promise<boolean> {
+  const onRefreshFailed = _onRefreshFailed;
   try {
     const res = await fetch(new URL("/api/v1/users/tokens/refresh/", BASE_URL).toString(), {
       method: "POST",
@@ -221,7 +232,7 @@ async function _doRefresh(): Promise<boolean> {
     });
     if (!res.ok) {
       clearTokens();
-      _onRefreshFailed?.();
+      onRefreshFailed?.();
       return false;
     }
     const data = await res.json() as { access: string };
@@ -229,7 +240,7 @@ async function _doRefresh(): Promise<boolean> {
     return true;
   } catch {
     clearTokens();
-    _onRefreshFailed?.();
+    onRefreshFailed?.();
     return false;
   }
 }

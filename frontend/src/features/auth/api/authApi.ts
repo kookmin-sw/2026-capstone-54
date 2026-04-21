@@ -111,6 +111,7 @@ export async function signOutApi(): Promise<void> {
     await apiRequest("/api/v1/users/sign-out/", {
       method: "POST",
       auth: true,
+      noRetry: true,
     });
   } finally {
     clearTokens();
