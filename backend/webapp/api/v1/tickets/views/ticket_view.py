@@ -1,7 +1,7 @@
 """티켓 현황 및 정책 조회 뷰."""
 
 from api.v1.tickets.serializers import TicketPolicySerializer, UserTicketSerializer
-from common.permissions import IsEmailVerified
+from common.permissions import AllowAny, IsEmailVerified
 from common.views import BaseAPIView
 from drf_spectacular.utils import extend_schema
 from rest_framework.response import Response
@@ -28,7 +28,7 @@ class UserTicketView(BaseAPIView):
 class TicketPolicyView(BaseAPIView):
   """티켓 정책 상수 조회 (비인증)."""
 
-  permission_classes = []  # 비인증 허용
+  permission_classes = [AllowAny]
 
   @extend_schema(
     summary="티켓 정책 조회",
