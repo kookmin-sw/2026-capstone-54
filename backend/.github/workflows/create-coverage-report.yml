@@ -2,8 +2,6 @@ name: Create Coverage Report
 
 on:
   push:
-    branches:
-      - '**'
     branches-ignore:
       - 'coverage-docs'
   delete:
@@ -97,18 +95,31 @@ jobs:
           BRANCH_DIR_ESCAPED="${BRANCH_NAME//\//_}"
           BRANCH_DIR_ESCAPED="${BRANCH_DIR_ESCAPED//./_}"
 
-          git fetch origin coverage-docs:coverage-docs 2>/dev/null || true
-          git checkout coverage-docs 2>/dev/null || git checkout --orphan coverage-docs
+          # Debug: check if htmlcov exists
+          echo "=== Debug: Checking htmlcov ==="
+          ls -la webapp/htmlcov/ 2>/dev/null || echo "htmlcov not found!"
+          echo "BRANCH_NAME=$BRANCH_NAME"
+          echo "BRANCH_DIR_ESCAPED=$BRANCH_DIR_ESCAPED"
 
-          rm -rf .[^.]* * 2>/dev/null || true
-
-          if [ -d "$BRANCH_DIR_ESCAPED" ]; then
-            rm -rf "$BRANCH_DIR_ESCAPED"
+          # Try to fetch existing coverage-docs branch
+          if git fetch origin coverage-docs 2>/dev/null; then
+            # Branch exists - checkout
+            git checkout coverage-docs
+          else
+            # Branch doesn't exist - create fresh orphan branch
+            git checkout --orphan coverage-docs
+            git rm -rf . 2>/dev/null || true
           fi
 
+          # Create branch directory and copy ONLY htmlcov content
           mkdir -p "$BRANCH_DIR_ESCAPED"
-          cp -r webapp/htmlcov/* "$BRANCH_DIR_ESCAPED/" 2>/dev/null || true
 
+          # Debug: verify copy
+          echo "=== Debug: Copying htmlcov ==="
+          cp -r webapp/htmlcov/* "$BRANCH_DIR_ESCAPED/" || echo "Copy failed!"
+          ls -la "$BRANCH_DIR_ESCAPED/" || echo "Directory not created!"
+
+          # Generate index.html with links to all branch reports
           TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
 
           {
@@ -135,6 +146,7 @@ jobs:
             for dir in */; do
               if [ -f "$dir/index.html" ]; then
                 branch="${dir%/}"
+                # Show original branch name in text, use escaped name in href
                 original_branch="${branch//_/\/}"
                 echo "    <li><a href=\"$branch/index.html\">$original_branch</a></li>"
               fi
@@ -145,6 +157,7 @@ jobs:
             echo '</html>'
           } > index.html
 
+          # Clean pyc files anywhere
           find . -name "*.pyc" -delete 2>/dev/null || true
           find . -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
 
@@ -182,10 +195,24 @@ jobs:
     if: github.event_name == 'delete'
     steps:
       - name: Checkout coverage-docs branch
-        uses: actions/checkout@v6
-        with:
-          ref: coverage-docs
-          fetch-depth: 1
+        run: |
+          # Check if coverage-docs branch exists
+          if git ls-remote --heads origin coverage-docs &>/dev/null; then
+            if git fetch origin coverage-docs && git checkout coverage-docs 2>/dev/null; then
+              : # Success
+            else
+              echo "Failed to checkout coverage-docs"
+              exit 1
+            fi
+          else
+            echo "No coverage-docs branch exists yet. Nothing to delete."
+            exit 0
+          fi
+
+          # Clean up any accidentally committed project files
+          for item in * .[^.]*; do
+            [ "$item" != ".git" ] && rm -rf "$item" 2>/dev/null || true
+          done
 
       - name: Delete coverage report for deleted branch
         run: |
