@@ -48,3 +48,25 @@ export async function fetchSetupJdListApi(): Promise<SetupJdItem[]> {
     };
   });
 }
+
+export async function fetchSetupJdByUuidApi(uuid: string): Promise<SetupJdItem | null> {
+  try {
+    const item = await userJobDescriptionApi.retrieve(uuid);
+    const jd = item.jobDescription;
+    const isReady = jd.collectionStatus === "done";
+    const isFailed = jd.collectionStatus === "error";
+
+    return {
+      uuid: item.uuid,
+      icon: pickIcon(jd.platform || "", jd.title || ""),
+      company: jd.company || "수집 중",
+      role: jd.title || "채용공고",
+      stage: jd.location || jd.workType || jd.platform || "",
+      badgeLabel: isReady ? "수집 완료" : isFailed ? "수집 실패" : "수집 중",
+      badgeType: isReady ? "green" : "accent",
+      disabled: !isReady,
+    };
+  } catch {
+    return null;
+  }
+}

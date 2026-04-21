@@ -15,9 +15,26 @@ import type { CreatedUserJobDescription, UserJobDescription } from "./types";
 const BASE = "/api/v1/user-job-descriptions";
 
 export const userJobDescriptionApi = {
-  list: () =>
-    apiRequest<PaginatedResponse<UserJobDescription>>(`${BASE}/`, { auth: true })
-      .then((res) => res.results),
+  listPage: (page = 1) =>
+    apiRequest<PaginatedResponse<UserJobDescription>>(`${BASE}/?page=${page}`, { auth: true }),
+
+  list: async () => {
+    let page = 1;
+    let hasNext = true;
+    const all: UserJobDescription[] = [];
+
+    while (hasNext) {
+      const res = await userJobDescriptionApi.listPage(page);
+      all.push(...res.results);
+      if (res.nextPage == null) {
+        hasNext = false;
+      } else {
+        page = res.nextPage;
+      }
+    }
+
+    return all;
+  },
 
   retrieve: (uuid: string) =>
     apiRequest<UserJobDescription>(`${BASE}/${uuid}/`, { auth: true }),

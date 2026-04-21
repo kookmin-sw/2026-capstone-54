@@ -1,5 +1,8 @@
 import { create } from "zustand";
-import { fetchSetupJdListApi } from "../api/setupApi";
+import {
+  fetchSetupJdByUuidApi,
+  fetchSetupJdListApi,
+} from "../api/setupApi";
 import type { SetupJdItem } from "../api/setupApi";
 import { interviewSetupApi } from "../api/interviewSetupApi";
 import type { ResumeOption, CreatedInterviewSession } from "../api/interviewSetupApi";
@@ -11,6 +14,7 @@ import { buildSummary } from "../lib/buildSummary";
 interface InterviewSetupState {
   jdList: SetupJdItem[];
   jdListLoading: boolean;
+  preferredJdNotice: string | null;
 
   /** 선택된 UserJobDescription.uuid. 없으면 null. */
   selectedJdId: string | null;
@@ -34,7 +38,7 @@ interface InterviewSetupState {
   createError: string | null;
   createdSessionUuid: string | null;
 
-  loadJdList: () => Promise<void>;
+  loadJdList: (preferredJdId?: string | null) => Promise<void>;
   selectJd: (uuid: string | null) => void;
   setInterviewMode: (mode: InterviewMode) => void;
   setPracticeMode: (mode: PracticeMode) => void;
@@ -61,6 +65,7 @@ interface InterviewSetupState {
 export const useInterviewSetupStore = create<InterviewSetupState>()((set, get) => ({
   jdList: [],
   jdListLoading: false,
+  preferredJdNotice: null,
 
   selectedJdId: null,
 
@@ -80,11 +85,32 @@ export const useInterviewSetupStore = create<InterviewSetupState>()((set, get) =
   createError: null,
   createdSessionUuid: null,
 
-  loadJdList: async () => {
+  loadJdList: async (preferredJdId) => {
     set({ jdListLoading: true });
     try {
-      const list = await fetchSetupJdListApi();
+      let list = await fetchSetupJdListApi();
+
+      // 전달된 jd가 목록에 없다면(페이지네이션/필터 영향), 단건 조회로 보강한다.
+      if (preferredJdId && !list.some((jd) => jd.uuid === preferredJdId)) {
+        const preferred = await fetchSetupJdByUuidApi(preferredJdId);
+        if (preferred) {
+          list = [preferred, ...list.filter((jd) => jd.uuid !== preferred.uuid)];
+        }
+      }
+
       set((s) => {
+        const preferredItem = preferredJdId
+          ? list.find((jd) => jd.uuid === preferredJdId) ?? null
+          : null;
+        const preferredEnabled = Boolean(preferredItem && !preferredItem.disabled);
+        const preferredJdNotice = preferredJdId
+          ? !preferredItem
+            ? "요청한 채용공고를 찾을 수 없어 선택 가능한 공고로 대체했습니다."
+            : preferredItem.disabled
+              ? "요청한 채용공고는 아직 수집이 완료되지 않아 선택할 수 없습니다."
+              : null
+          : null;
+
         // 기존 선택값이 여전히 선택 가능한 상태면 유지, 아니면 수집 완료된 첫 항목으로 변경.
         const stillValid = list.some(
           (jd) => jd.uuid === s.selectedJdId && !jd.disabled,
@@ -93,11 +119,16 @@ export const useInterviewSetupStore = create<InterviewSetupState>()((set, get) =
         return {
           jdList: list,
           jdListLoading: false,
-          selectedJdId: stillValid ? s.selectedJdId : firstEnabled,
+          selectedJdId: preferredEnabled
+            ? preferredJdId
+            : stillValid
+              ? s.selectedJdId
+              : firstEnabled,
+          preferredJdNotice,
         };
       });
     } catch {
-      set({ jdListLoading: false });
+      set({ jdListLoading: false, preferredJdNotice: "채용공고 목록을 불러오지 못했습니다." });
     }
   },
 

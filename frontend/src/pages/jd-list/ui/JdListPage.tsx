@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useJdListStore, type JdListItem } from "@/features/jd";
 import { useUserJobDescriptionScrapingSse } from "@/features/user-job-description";
@@ -155,7 +155,10 @@ function JdCard({ item }: { item: JdListItem }) {
         ) : (
           <button
             className="text-[12px] font-bold text-[#0991B2] bg-[#E6F7FA] border-none rounded-lg py-[7px] px-3.5 cursor-pointer transition-all hover:bg-[#cceef6] hover:-translate-y-px"
-            onClick={(e) => { e.stopPropagation(); navigate("/interview"); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/interview/setup?jd=${encodeURIComponent(item.uuid)}`);
+            }}
           >
             면접 시작
           </button>
@@ -169,13 +172,44 @@ function JdCard({ item }: { item: JdListItem }) {
 export function JdListPage() {
   const {
     stats, filtered, searchQuery, activeFilter,
-    isLoading,
-    fetchList, setSearch, setFilter,
+    isLoading, isLoadingMore, hasNext,
+    fetchList, loadMore, setSearch, setFilter,
   } = useJdListStore();
+  const observerRef = useRef<IntersectionObserver | null>(null);
+
+  const setSentinelNode = useCallback((node: HTMLDivElement | null) => {
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+      observerRef.current = null;
+    }
+    if (!node) {
+      return;
+    }
+
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          void loadMore();
+        }
+      },
+      { rootMargin: "200px" },
+    );
+
+    observerRef.current.observe(node);
+  }, [loadMore]);
 
   useEffect(() => {
     fetchList();
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+        observerRef.current = null;
+      }
+    };
   }, []);
 
   const FILTER_PILLS: { key: FilterKey; label: string; count: number }[] = [
@@ -290,11 +324,19 @@ export function JdListPage() {
             )}
           </div>
         ) : (
-          <div className="grid gap-[18px]" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))" }}>
-            {filtered.map((item) => (
-              <JdCard key={item.uuid} item={item} />
-            ))}
-          </div>
+          <>
+            <div className="grid gap-[18px]" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))" }}>
+              {filtered.map((item) => (
+                <JdCard key={item.uuid} item={item} />
+              ))}
+            </div>
+
+            {isLoadingMore && (
+              <div className="flex justify-center py-6 text-[13px] text-[#6B7280]">다음 공고를 불러오는 중...</div>
+            )}
+
+            {hasNext && <div ref={setSentinelNode} className="h-4" />}
+          </>
         )}
 
       </div>

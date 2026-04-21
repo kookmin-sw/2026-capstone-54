@@ -62,10 +62,14 @@ interface JdListState {
   searchQuery: string;
   activeFilter: FilterKey;
   isLoading: boolean;
+   isLoadingMore: boolean;
+   hasNext: boolean;
+   nextPage: number | null;
   error: string | null;
   filtered: JdListItem[];
 
   fetchList: () => Promise<void>;
+   loadMore: () => Promise<void>;
   setSearch: (q: string) => void;
   setFilter: (f: FilterKey) => void;
 }
@@ -134,13 +138,17 @@ export const useJdListStore = create<JdListState>()((set, get) => ({
   searchQuery: "",
   activeFilter: "all",
   isLoading: false,
+   isLoadingMore: false,
+   hasNext: false,
+   nextPage: null,
   error: null,
   filtered: [],
 
   fetchList: async () => {
     set({ isLoading: true, error: null });
     try {
-      const raw = await userJobDescriptionApi.list();
+      const page1 = await userJobDescriptionApi.listPage(1);
+      const raw = page1.results;
       const items = raw.map(transform);
       const { searchQuery, activeFilter } = get();
       set({
@@ -148,11 +156,43 @@ export const useJdListStore = create<JdListState>()((set, get) => ({
         items,
         stats: calcStats(items),
         filtered: applyFilter(items, searchQuery, activeFilter),
+        nextPage: page1.nextPage,
+        hasNext: page1.nextPage != null,
       });
     } catch (e) {
       set({
         isLoading: false,
         error: e instanceof Error ? e.message : "목록을 불러오지 못했습니다.",
+      });
+    }
+  },
+
+   loadMore: async () => {
+    const { nextPage, isLoading, isLoadingMore, hasNext } = get();
+    if (isLoading || isLoadingMore || !hasNext || nextPage == null) {
+      return;
+    }
+
+    set({ isLoadingMore: true, error: null });
+    try {
+      const page = await userJobDescriptionApi.listPage(nextPage);
+      const newItems = page.results.map(transform);
+
+      set((state) => {
+        const mergedItems = [...state.items, ...newItems];
+        return {
+          isLoadingMore: false,
+          items: mergedItems,
+          stats: calcStats(mergedItems),
+          filtered: applyFilter(mergedItems, state.searchQuery, state.activeFilter),
+          nextPage: page.nextPage,
+          hasNext: page.nextPage != null,
+        };
+      });
+    } catch (e) {
+      set({
+        isLoadingMore: false,
+        error: e instanceof Error ? e.message : "다음 목록을 불러오지 못했습니다.",
       });
     }
   },
