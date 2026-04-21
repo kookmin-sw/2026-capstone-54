@@ -14,6 +14,7 @@ import { buildSummary } from "../lib/buildSummary";
 interface InterviewSetupState {
   jdList: SetupJdItem[];
   jdListLoading: boolean;
+  preferredJdNotice: string | null;
 
   /** 선택된 UserJobDescription.uuid. 없으면 null. */
   selectedJdId: string | null;
@@ -64,6 +65,7 @@ interface InterviewSetupState {
 export const useInterviewSetupStore = create<InterviewSetupState>()((set, get) => ({
   jdList: [],
   jdListLoading: false,
+  preferredJdNotice: null,
 
   selectedJdId: null,
 
@@ -97,9 +99,17 @@ export const useInterviewSetupStore = create<InterviewSetupState>()((set, get) =
       }
 
       set((s) => {
-        const preferredEnabled = preferredJdId
-          ? list.some((jd) => jd.uuid === preferredJdId && !jd.disabled)
-          : false;
+        const preferredItem = preferredJdId
+          ? list.find((jd) => jd.uuid === preferredJdId) ?? null
+          : null;
+        const preferredEnabled = Boolean(preferredItem && !preferredItem.disabled);
+        const preferredJdNotice = preferredJdId
+          ? !preferredItem
+            ? "요청한 채용공고를 찾을 수 없어 선택 가능한 공고로 대체했습니다."
+            : preferredItem.disabled
+              ? "요청한 채용공고는 아직 수집이 완료되지 않아 선택할 수 없습니다."
+              : null
+          : null;
 
         // 기존 선택값이 여전히 선택 가능한 상태면 유지, 아니면 수집 완료된 첫 항목으로 변경.
         const stillValid = list.some(
@@ -114,10 +124,11 @@ export const useInterviewSetupStore = create<InterviewSetupState>()((set, get) =
             : stillValid
               ? s.selectedJdId
               : firstEnabled,
+          preferredJdNotice,
         };
       });
     } catch {
-      set({ jdListLoading: false });
+      set({ jdListLoading: false, preferredJdNotice: "채용공고 목록을 불러오지 못했습니다." });
     }
   },
 
