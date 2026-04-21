@@ -1,6 +1,8 @@
 /** 면접관 TTS 음성 테스트 카드 (다크 테마). */
 import { useEffect, useRef, useState } from "react";
-import { getAccessToken } from "@/shared/api/client";
+import {
+  getAccessToken,
+} from "@/shared/api/client";
 import { VOICE_API_BASE, TTS_DEFAULT_VOICE } from "@/shared/lib/tts/useTts";
 
 export function TtsTestCard() {
@@ -19,6 +21,7 @@ export function TtsTestCard() {
       const res = await fetch(`${VOICE_API_BASE}/tts`, {
         method: "POST",
         headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        credentials: "include",
         body: JSON.stringify({ text: "안녕하세요, 저는 AI 면접관입니다. 오늘 면접에서 좋은 결과 있으시길 바랍니다.", language: "ko", voice: TTS_DEFAULT_VOICE, rate: "+0%", volume: "+0%", pitch: "+0Hz" }),
       });
       if (!res.ok) throw new Error(`TTS ${res.status}`);

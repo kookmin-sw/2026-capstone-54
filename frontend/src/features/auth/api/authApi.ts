@@ -1,4 +1,8 @@
-import { apiRequest, setTokens, clearTokens, getRefreshToken } from "@/shared/api/client";
+import {
+  apiRequest,
+  setTokens,
+  clearTokens,
+} from "@/shared/api/client";
 import { getTermsDocumentsApi, postTermsConsentsApi } from "./termsApi";
 
 function parseApiError(err: unknown, fallback: string): string {
@@ -10,7 +14,6 @@ function parseApiError(err: unknown, fallback: string): string {
 /* ── Response types ── */
 export interface AuthResponse {
   access: string;
-  refresh: string;
   isEmailConfirmed?: boolean;
 }
 
@@ -50,7 +53,7 @@ export async function signUpApi(payload: SignUpPayload): Promise<SignUpResult> {
         password2: payload.password,
       }),
     });
-    setTokens(res.access, res.refresh);
+    setTokens(res.access, "");
 
     // 3. 약관 일괄 동의 (토큰 세팅 후 auth 요청)
     if (terms.length > 0) {
@@ -87,7 +90,7 @@ export async function loginApi(payload: LoginPayload): Promise<LoginResult> {
       method: "POST",
       body: JSON.stringify({ email: payload.email, password: payload.password }),
     });
-    setTokens(res.access, res.refresh);
+    setTokens(res.access, "");
     return {
       success: true,
       message: "로그인 성공",
@@ -104,12 +107,11 @@ export async function loginApi(payload: LoginPayload): Promise<LoginResult> {
 
 /* ── Sign Out ── */
 export async function signOutApi(): Promise<void> {
-  const refresh = getRefreshToken();
   try {
     await apiRequest("/api/v1/users/sign-out/", {
       method: "POST",
       auth: true,
-      body: JSON.stringify({ refresh: refresh ?? "" }),
+      noRetry: true,
     });
   } finally {
     clearTokens();

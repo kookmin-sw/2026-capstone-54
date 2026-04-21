@@ -1,20 +1,23 @@
 export const BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://mefit.xn--hy1by51c.kr";
 
+// 단일 인증 전략: access token(in-memory) + refresh token(HttpOnly cookie)
+
 /* ── Token helpers ── */
 export function getAccessToken(): string | null {
-  return localStorage.getItem("mefit_access");
+  return _accessToken;
 }
 export function getRefreshToken(): string | null {
-  return localStorage.getItem("mefit_refresh");
+  return null;
 }
 export function setTokens(access: string, refresh: string): void {
-  localStorage.setItem("mefit_access", access);
-  localStorage.setItem("mefit_refresh", refresh);
+  void refresh; // refresh 토큰은 HttpOnly cookie로만 관리
+  _accessToken = access;
 }
 export function clearTokens(): void {
-  localStorage.removeItem("mefit_access");
-  localStorage.removeItem("mefit_refresh");
+  _accessToken = null;
 }
+
+let _accessToken: string | null = null;
 
 /* ── Paginated Response ── */
 export interface PaginatedResponse<T> {
@@ -43,7 +46,7 @@ export async function apiRequest<T>(
   path: string,
   options: RequestInit & { auth?: boolean; noRetry?: boolean } = {}
 ): Promise<T> {
-  return _request<T>(path, options, options.noRetry ?? false);
+  return _request<T>(path, options, false, options.noRetry ?? false);
 }
 
 /* ── Path validation ── */
@@ -69,10 +72,34 @@ function validateApiPath(path: string): { pathname: string; search: string } {
   return { pathname: safePath, search };
 }
 
+function validateTrustedPath(path: string): { pathname: string; search: string } {
+  const parsed = new URL(path, "http://dummy");
+  const pathname = parsed.pathname;
+  const search = parsed.search;
+
+  const isApiPath = pathname.startsWith("/api/");
+  const isVoiceApiPath = pathname.startsWith("/voice-api/api/v1/");
+  if (!isApiPath && !isVoiceApiPath) {
+    throw new Error(`Invalid trusted path: ${path}`);
+  }
+
+  const safePath = pathname.replace(/[^/a-zA-Z0-9._~:-]/g, "");
+  if (safePath.includes("..") || safePath.includes("//")) {
+    throw new Error("Invalid trusted path: path traversal detected");
+  }
+
+  return { pathname: safePath, search };
+}
+
+function isAuthRetryExcludedPath(pathname: string): boolean {
+  return pathname === "/api/v1/users/tokens/refresh/" || pathname === "/api/v1/users/sign-out/";
+}
+
 async function _request<T>(
   path: string,
   options: RequestInit & { auth?: boolean },
-  isRetry: boolean
+  isRetry: boolean,
+  noRetry: boolean,
 ): Promise<T> {
   const { auth = false, ...fetchOptions } = options as RequestInit & { auth?: boolean; noRetry?: boolean };
   delete (fetchOptions as Record<string, unknown>).noRetry;
@@ -97,7 +124,11 @@ async function _request<T>(
   endpoint.pathname = pathname;
   endpoint.search = search;
 
-  const res = await fetch(endpoint.toString(), { ...fetchOptions, headers });
+  const res = await fetch(endpoint.toString(), {
+    ...fetchOptions,
+    headers,
+    credentials: "include",
+  });
 
   // No-content responses
   if (res.status === 204 || res.status === 205) return undefined as T;
@@ -111,10 +142,16 @@ async function _request<T>(
 
   if (!res.ok) {
     // 401 on authenticated request → try token refresh once, then retry
-    if (res.status === 401 && auth && !isRetry) {
+    if (
+      res.status === 401
+      && auth
+      && !isRetry
+      && !noRetry
+      && !isAuthRetryExcludedPath(pathname)
+    ) {
       const refreshed = await refreshAccessToken();
       if (refreshed) {
-        return _request<T>(path, options, true);
+        return _request<T>(path, options, true, noRetry);
       }
     }
 
@@ -131,22 +168,35 @@ async function _request<T>(
 /* ── Authenticated fetch with 401 retry (for raw fetch calls outside apiRequest) ── */
 
 export async function fetchWithAuth(
-  url: string | URL,
+  path: string,
   options: RequestInit = {},
 ): Promise<Response> {
+  const { pathname, search } = validateTrustedPath(path);
+  const endpoint = new URL(BASE_URL);
+  endpoint.pathname = pathname;
+  endpoint.search = search;
+
   const token = getAccessToken();
   const headers = new Headers(options.headers);
   if (token) headers.set("Authorization", `Bearer ${token}`);
 
-  const res = await fetch(url, { ...options, headers });
+  const res = await fetch(endpoint.toString(), {
+    ...options,
+    headers,
+    credentials: "include",
+  });
 
-  if (res.status === 401) {
+  if (res.status === 401 && !isAuthRetryExcludedPath(pathname)) {
     const refreshed = await refreshAccessToken();
     if (refreshed) {
       const newToken = getAccessToken();
       const retryHeaders = new Headers(options.headers);
       if (newToken) retryHeaders.set("Authorization", `Bearer ${newToken}`);
-      return fetch(url, { ...options, headers: retryHeaders });
+      return fetch(endpoint.toString(), {
+        ...options,
+        headers: retryHeaders,
+        credentials: "include",
+      });
     }
   }
 
@@ -173,25 +223,24 @@ export function refreshAccessToken(): Promise<boolean> {
 }
 
 async function _doRefresh(): Promise<boolean> {
-  const refresh = getRefreshToken();
-  if (!refresh) return false;
+  const onRefreshFailed = _onRefreshFailed;
   try {
     const res = await fetch(new URL("/api/v1/users/tokens/refresh/", BASE_URL).toString(), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ refresh }),
+      credentials: "include",
     });
     if (!res.ok) {
       clearTokens();
-      _onRefreshFailed?.();
+      onRefreshFailed?.();
       return false;
     }
-    const data = await res.json() as { access: string; refresh?: string };
-    setTokens(data.access, data.refresh ?? refresh);
+    const data = await res.json() as { access: string };
+    setTokens(data.access, "");
     return true;
   } catch {
     clearTokens();
-    _onRefreshFailed?.();
+    onRefreshFailed?.();
     return false;
   }
 }

@@ -1,4 +1,8 @@
-import { apiRequest, BASE_URL, getAccessToken } from "@/shared/api/client";
+import {
+  apiRequest,
+  BASE_URL,
+  getAccessToken,
+} from "@/shared/api/client";
 import type {
   PaginatedResponse,
   ParsedData,
@@ -57,6 +61,7 @@ export const resumeApi = {
 
       const xhr = new XMLHttpRequest();
       xhr.open("POST", `${BASE_URL}${BASE}/`);
+      xhr.withCredentials = true;
       if (token) xhr.setRequestHeader("Authorization", `Bearer ${token}`);
 
       xhr.upload.onprogress = (e) => {
@@ -98,6 +103,7 @@ export const resumeApi = {
 
       const xhr = new XMLHttpRequest();
       xhr.open("PATCH", `${BASE_URL}${BASE}/${uuid}/`);
+      xhr.withCredentials = true;
       if (token) xhr.setRequestHeader("Authorization", `Bearer ${token}`);
 
       xhr.upload.onprogress = (e) => {
