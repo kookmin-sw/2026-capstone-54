@@ -4,12 +4,14 @@ from django.db import models
 from django.test import TestCase
 from rest_framework import serializers, status
 from rest_framework.test import APIRequestFactory
+from users.factories import UserFactory
 
 factory = APIRequestFactory()
 
 
 class ReadOnlyTestModel(BaseModel):
   """테스트용 구체 모델"""
+
   name = models.CharField(max_length=100)
 
   class Meta(BaseModel.Meta):
@@ -32,19 +34,42 @@ class BaseReadOnlyViewSetTest(TestCase):
   """BaseReadOnlyViewSet 테스트"""
 
   def setUp(self):
+    self.user = UserFactory()
     self.obj = ReadOnlyTestModel.objects.create(name="test")
     self.list_view = DummyReadOnlyViewSet.as_view({"get": "list"})
     self.detail_view = DummyReadOnlyViewSet.as_view({"get": "retrieve"})
 
-  def test_unauthenticated_list_returns_200(self):
-    """비인증 list 요청 시 200 반환 확인"""
+  def test_unauthenticated_list_returns_401_or_403(self):
+    """비인증 list 요청 시 401 또는 403 반환 확인"""
     request = factory.get("/test/")
+    response = self.list_view(request)
+    self.assertIn(
+      response.status_code,
+      [status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN],
+    )
+
+  def test_unauthenticated_retrieve_returns_401_or_403(self):
+    """비인증 retrieve 요청 시 401 또는 403 반환 확인"""
+    request = factory.get(f"/test/{self.obj.pk}/")
+    response = self.detail_view(request, pk=self.obj.pk)
+    self.assertIn(
+      response.status_code,
+      [status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN],
+    )
+
+  def test_authenticated_list_returns_200(self):
+    """인증된 list 요청 시 200 반환 확인"""
+    request = factory.get("/test/")
+    request.user = self.user
+    request._dont_enforce_csrf_checks = True
     response = self.list_view(request)
     self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-  def test_unauthenticated_retrieve_returns_200(self):
-    """비인증 retrieve 요청 시 200 반환 확인"""
+  def test_authenticated_retrieve_returns_200(self):
+    """인증된 retrieve 요청 시 200 반환 확인"""
     request = factory.get(f"/test/{self.obj.pk}/")
+    request.user = self.user
+    request._dont_enforce_csrf_checks = True
     response = self.detail_view(request, pk=self.obj.pk)
     self.assertEqual(response.status_code, status.HTTP_200_OK)
 

@@ -1,15 +1,13 @@
 from api.v1.profiles.serializers import JobCategorySerializer
-from common.views import BaseReadOnlyViewSet
+from common.views import PublicBaseReadOnlyViewSet
 from drf_spectacular.utils import extend_schema
 from profiles.models import JobCategory
-from rest_framework.permissions import AllowAny
 
 
 @extend_schema(tags=["직군"])
-class JobCategoryViewSet(BaseReadOnlyViewSet):
+class JobCategoryViewSet(PublicBaseReadOnlyViewSet):
   """직군 목록 조회 ViewSet (공개)"""
 
-  permission_classes = [AllowAny]
   serializer_class = JobCategorySerializer
   queryset = JobCategory.objects.opened()
 
