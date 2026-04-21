@@ -1,5 +1,8 @@
+import traceback
+
 from common.exceptions import ConflictException, PermissionDeniedException
 from common.services import BaseService
+from common.tasks import RegisteredSendErrorAlertTask
 from interviews.enums import RecordingStatus
 
 from .get_s3_client import get_video_s3_client
@@ -58,8 +61,18 @@ class CompleteRecordingService(BaseService):
           Key=recording.s3_key,
           UploadId=recording.upload_id,
         )
-      except Exception:
-        pass
+      except Exception as exc:
+        try:
+          RegisteredSendErrorAlertTask.delay(
+            error_type=type(exc).__name__,
+            error_message=str(exc),
+            path="interviews.services.complete_recording_service.CompleteRecordingService.execute",
+            method="SERVICE",
+            traceback=traceback.format_exc(),
+          )
+        except Exception:
+          # 알림 태스크 전송 실패는 녹화 완료 처리 흐름을 막지 않는다.
+          pass
 
     recording.status = RecordingStatus.COMPLETED
     recording.end_timestamp = end_timestamp
