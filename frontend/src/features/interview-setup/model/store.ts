@@ -1,5 +1,8 @@
 import { create } from "zustand";
-import { fetchSetupJdListApi } from "../api/setupApi";
+import {
+  fetchSetupJdByUuidApi,
+  fetchSetupJdListApi,
+} from "../api/setupApi";
 import type { SetupJdItem } from "../api/setupApi";
 import { interviewSetupApi } from "../api/interviewSetupApi";
 import type { ResumeOption, CreatedInterviewSession } from "../api/interviewSetupApi";
@@ -83,7 +86,16 @@ export const useInterviewSetupStore = create<InterviewSetupState>()((set, get) =
   loadJdList: async (preferredJdId) => {
     set({ jdListLoading: true });
     try {
-      const list = await fetchSetupJdListApi();
+      let list = await fetchSetupJdListApi();
+
+      // 전달된 jd가 목록에 없다면(페이지네이션/필터 영향), 단건 조회로 보강한다.
+      if (preferredJdId && !list.some((jd) => jd.uuid === preferredJdId)) {
+        const preferred = await fetchSetupJdByUuidApi(preferredJdId);
+        if (preferred) {
+          list = [preferred, ...list.filter((jd) => jd.uuid !== preferred.uuid)];
+        }
+      }
+
       set((s) => {
         const preferredEnabled = preferredJdId
           ? list.some((jd) => jd.uuid === preferredJdId && !jd.disabled)
