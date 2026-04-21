@@ -18,6 +18,7 @@ from rest_framework import status
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
 from resumes.factories import ResumeFactory
+from subscriptions.factories import SubscriptionFactory
 from users.factories import UserFactory
 
 
@@ -71,6 +72,38 @@ class InterviewSessionListTests(_AuthenticatedTestCase):
     response = self.client.get(self.url)
     self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
+  def test_free_plan_hides_sessions_older_than_7_days(self):
+    old_session = InterviewSessionFactory(user=self.user)
+    InterviewSession.objects.filter(pk=old_session.pk).update(
+      created_at=timezone.now() - timezone.timedelta(days=8),
+      updated_at=timezone.now() - timezone.timedelta(days=8),
+    )
+    recent_session = InterviewSessionFactory(user=self.user)
+
+    response = self.client.get(self.url)
+
+    self.assertEqual(response.status_code, status.HTTP_200_OK)
+    self.assertEqual(len(response.data["results"]), 1)
+    self.assertEqual(response.data["results"][0]["uuid"], str(recent_session.pk))
+    self.assertTrue(response.data["has_hidden_older_sessions"])
+
+  def test_pro_plan_returns_all_sessions_without_hidden_flag(self):
+    SubscriptionFactory.create(user=self.user, pro=True)
+    old_session = InterviewSessionFactory(user=self.user)
+    InterviewSession.objects.filter(pk=old_session.pk).update(
+      created_at=timezone.now() - timezone.timedelta(days=8),
+      updated_at=timezone.now() - timezone.timedelta(days=8),
+    )
+    recent_session = InterviewSessionFactory(user=self.user)
+
+    response = self.client.get(self.url)
+
+    self.assertEqual(response.status_code, status.HTTP_200_OK)
+    self.assertEqual(len(response.data["results"]), 2)
+    self.assertFalse(response.data["has_hidden_older_sessions"])
+    returned_ids = {item["uuid"] for item in response.data["results"]}
+    self.assertEqual(returned_ids, {str(old_session.pk), str(recent_session.pk)})
+
 
 # ── CREATE (POST /interview-sessions/) ──────────────────────────────────
 
@@ -119,22 +152,35 @@ class InterviewSessionCreateTests(_AuthenticatedTestCase):
 
   def test_default_status_is_in_progress(self):
     response = self.client.post(self.url, data=self._payload(), format="json")
-    self.assertEqual(response.data["interview_session_status"], InterviewSessionStatus.IN_PROGRESS)
+    self.assertEqual(
+      response.data["interview_session_status"],
+      InterviewSessionStatus.IN_PROGRESS,
+    )
 
   def test_other_users_resume_returns_404(self):
     other_resume = ResumeFactory()
-    response = self.client.post(self.url, data=self._payload(resume_uuid=str(other_resume.pk)), format="json")
+    response = self.client.post(
+      self.url,
+      data=self._payload(resume_uuid=str(other_resume.pk)),
+      format="json",
+    )
     self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
   def test_other_users_ujd_returns_404(self):
     other_ujd = UserJobDescriptionFactory()
     response = self.client.post(
-      self.url, data=self._payload(user_job_description_uuid=str(other_ujd.pk)), format="json"
+      self.url,
+      data=self._payload(user_job_description_uuid=str(other_ujd.pk)),
+      format="json",
     )
     self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
   def test_invalid_session_type_returns_400(self):
-    response = self.client.post(self.url, data=self._payload(interview_session_type="invalid"), format="json")
+    response = self.client.post(
+      self.url,
+      data=self._payload(interview_session_type="invalid"),
+      format="json",
+    )
     self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
   def test_missing_required_fields_returns_400(self):

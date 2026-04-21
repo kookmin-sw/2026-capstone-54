@@ -17,6 +17,7 @@ from resumes.models import ResumeEmbedding, ResumeFileContent, ResumeTextContent
 from resumes.models.file_resume import FileResume
 from resumes.models.text_resume import TextResume
 from resumes.services import UpdateFileResumeService, UpdateTextResumeService
+from subscriptions.factories import SubscriptionFactory
 from users.factories import UserFactory
 
 safe_text = st.text(
@@ -40,8 +41,8 @@ class Property4ContentUpdateClearsEmbeddingsTests(TestCase):
   def test_content_update_clears_embeddings(self, mock_send_task, n_embeddings, new_content):
     """Feature: resume-crud-api, Property: 내용 수정 시 임베딩 정리 및 상태 초기화
 
-    **Validates: Requirements 2.2, 2.3, 3.2, 3.3, 7.1, 7.2**
-    """
+        **Validates: Requirements 2.2, 2.3, 3.2, 3.3, 7.1, 7.2**
+        """
     user = _verified_user()
     resume = TextResumeFactory(user=user, title="test")
     ResumeTextContent.objects.create(user=user, resume=resume, content="old content")
@@ -77,8 +78,8 @@ class Property5TitleOnlyUpdatePreservesEmbeddingsTests(TestCase):
   def test_title_only_update_preserves_embeddings(self, mock_send_task, n_embeddings, new_title):
     """Feature: resume-crud-api, Property: 제목만 수정 시 임베딩 유지
 
-    **Validates: Requirements 3.4, 7.3**
-    """
+        **Validates: Requirements 3.4, 7.3**
+        """
     user = _verified_user()
     resume = TextResumeFactory(user=user, title="original")
     ResumeTextContent.objects.create(user=user, resume=resume, content="content")
@@ -111,14 +112,18 @@ class Property5TitleOnlyUpdatePreservesEmbeddingsTests(TestCase):
 class Property8ProxyModelFilteringTests(TestCase):
   """Property: 프록시 모델 타입 필터링."""
 
-  @given(n_text=st.integers(min_value=0, max_value=3), n_file=st.integers(min_value=0, max_value=3))
+  @given(
+    n_text=st.integers(min_value=0, max_value=3),
+    n_file=st.integers(min_value=0, max_value=3),
+  )
   @settings(max_examples=5, deadline=None)
   def test_proxy_model_filtering(self, n_text, n_file):
     """Feature: resume-crud-api, Property: 프록시 모델 타입 필터링
 
-    **Validates: Requirement 9.2**
-    """
+        **Validates: Requirement 9.2**
+        """
     user = _verified_user()
+    SubscriptionFactory.create(user=user, pro=True)
     for _ in range(n_text):
       TextResumeFactory(user=user)
     for _ in range(n_file):
@@ -140,19 +145,24 @@ class Property9FileResumeContentUpdateTests(TestCase):
   """Property: 파일 이력서 수정 시 ResumeFileContent 업데이트."""
 
   @given(
-    new_filename=st.text(min_size=1, max_size=50, alphabet=st.characters(whitelist_categories=("Lu", "Ll", "Nd"))),
+    new_filename=st.text(
+      min_size=1,
+      max_size=50,
+      alphabet=st.characters(whitelist_categories=("Lu", "Ll", "Nd")),
+    ),
     file_size=st.integers(min_value=1, max_value=10_000_000),
   )
   @settings(max_examples=5, deadline=None)
   @patch("resumes.services.mixins.resume_pipeline_mixin.current_app.send_task")
   @patch(
-    "resumes.services.mixins.file_resume_pipeline_mixin.default_storage.save", return_value="resumes/test/path.pdf"
+    "resumes.services.mixins.file_resume_pipeline_mixin.default_storage.save",
+    return_value="resumes/test/path.pdf",
   )
   def test_file_resume_content_update(self, mock_storage_save, mock_send_task, new_filename, file_size):
     """Feature: resume-crud-api, Property: 파일 이력서 수정 시 ResumeFileContent 업데이트
 
-    **Validates: Requirement 3.1**
-    """
+        **Validates: Requirement 3.1**
+        """
     user = _verified_user()
     resume = FileResumeFactory(user=user, title="file resume")
     ResumeFileContent.objects.create(
