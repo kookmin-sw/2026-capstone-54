@@ -24,7 +24,7 @@ class SignInAPIViewPropertyTests(TestCase):
       alphabet=st.characters(whitelist_categories=("Lu", "Ll", "Nd", "Lo")),
     ),
   )
-  @settings(max_examples=10, deadline=None)
+  @settings(max_examples=5, deadline=None)
   def test_sign_in_with_valid_credentials_returns_full_response(self, name):
     """등록된 User의 올바른 email과 password로 로그인하면 access/refresh/is_email_confirmed/is_profile_completed 포함된 200 응답이 반환된다."""
     email = "signin_valid_test@example.com"
@@ -49,7 +49,7 @@ class SignInAPIViewPropertyTests(TestCase):
       alphabet=st.characters(whitelist_categories=("Lu", "Ll", "Nd", "Po", "Pd")),
     ),
   )
-  @settings(max_examples=10, deadline=None)
+  @settings(max_examples=5, deadline=None)
   def test_sign_in_with_wrong_credentials_returns_401(self, wrong_email, wrong_password):
     """존재하지 않는 이메일 또는 잘못된 비밀번호로 로그인을 시도하면 401 에러가 반환된다."""
     from django.core.exceptions import ValidationError

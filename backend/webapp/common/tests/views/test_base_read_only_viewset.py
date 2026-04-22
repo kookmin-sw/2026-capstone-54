@@ -3,7 +3,7 @@ from common.views import BaseReadOnlyViewSet
 from django.db import models
 from django.test import TestCase
 from rest_framework import serializers, status
-from rest_framework.test import APIRequestFactory
+from rest_framework.test import APIRequestFactory, force_authenticate
 from users.factories import UserFactory
 
 factory = APIRequestFactory()
@@ -60,16 +60,14 @@ class BaseReadOnlyViewSetTest(TestCase):
   def test_authenticated_list_returns_200(self):
     """인증된 list 요청 시 200 반환 확인"""
     request = factory.get("/test/")
-    request.user = self.user
-    request._dont_enforce_csrf_checks = True
+    force_authenticate(request, user=self.user)
     response = self.list_view(request)
     self.assertEqual(response.status_code, status.HTTP_200_OK)
 
   def test_authenticated_retrieve_returns_200(self):
     """인증된 retrieve 요청 시 200 반환 확인"""
     request = factory.get(f"/test/{self.obj.pk}/")
-    request.user = self.user
-    request._dont_enforce_csrf_checks = True
+    force_authenticate(request, user=self.user)
     response = self.detail_view(request, pk=self.obj.pk)
     self.assertEqual(response.status_code, status.HTTP_200_OK)
 

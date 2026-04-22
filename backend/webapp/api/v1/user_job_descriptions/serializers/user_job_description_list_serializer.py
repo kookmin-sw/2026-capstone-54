@@ -33,7 +33,7 @@ class JobDescriptionSerializer(serializers.ModelSerializer):
 class UserJobDescriptionListSerializer(serializers.ModelSerializer):
   """사용자 채용공고 목록 응답 직렬화."""
 
-  job_description = JobDescriptionSerializer(read_only=True)
+  job_description = JobDescriptionSerializer(read_only=True)  # 중첩 시리얼라이저
 
   class Meta:
     model = UserJobDescription

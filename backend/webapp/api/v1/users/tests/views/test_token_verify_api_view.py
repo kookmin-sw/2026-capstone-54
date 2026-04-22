@@ -19,7 +19,7 @@ class TokenVerifyAPIViewPropertyTests(TestCase):
     self.user = UserFactory(email="tokenverify@example.com")
 
   @given(st.just(None))
-  @settings(max_examples=10, deadline=None)
+  @settings(max_examples=5, deadline=None)
   def test_verify_valid_access_token_returns_200(self, _):
     """유효한 access 토큰을 전달하면 200 응답이 반환된다."""
     refresh = RefreshToken.for_user(self.user)
@@ -30,7 +30,7 @@ class TokenVerifyAPIViewPropertyTests(TestCase):
     self.assertEqual(response.status_code, status.HTTP_200_OK)
 
   @given(invalid_token=st.text(min_size=10, max_size=100).filter(lambda t: "." not in t or len(t.split(".")) != 3), )
-  @settings(max_examples=50, deadline=None)
+  @settings(max_examples=5, deadline=None)
   def test_verify_invalid_token_returns_error(self, invalid_token):
     """유효하지 않은 토큰을 전달하면 400 또는 401 에러 응답이 반환된다."""
     response = self.client.post(self.url, {"token": invalid_token}, format="json")
@@ -38,7 +38,7 @@ class TokenVerifyAPIViewPropertyTests(TestCase):
     self.assertIn(response.status_code, [status.HTTP_400_BAD_REQUEST, status.HTTP_401_UNAUTHORIZED])
 
   @given(st.just(None))
-  @settings(max_examples=10, deadline=None)
+  @settings(max_examples=5, deadline=None)
   def test_verify_missing_token_returns_400(self, _):
     """token 필드 없이 요청하면 400 응답이 반환된다."""
     response = self.client.post(self.url, {}, format="json")

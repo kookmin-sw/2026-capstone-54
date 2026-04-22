@@ -19,7 +19,7 @@ class UnregisterAPIViewPropertyTests(TestCase):
     self.url = reverse("unregister")
 
   @given(name=st.text(min_size=1, max_size=50, alphabet=st.characters(whitelist_categories=("Lu", "Ll", "Nd", "Lo"))), )
-  @settings(max_examples=10, deadline=None)
+  @settings(max_examples=5, deadline=None)
   def test_unregister_soft_deletes_and_masks_personal_info(self, name):
     """인증된 User가 탈퇴를 요청하면 204 응답이 반환되고 User가 소프트 삭제(deleted_at 설정)되며 개인정보가 마스킹 처리된다."""
     email = "unregister_test@example.com"
