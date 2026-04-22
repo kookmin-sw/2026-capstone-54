@@ -9,7 +9,8 @@ import { userJobDescriptionApi } from "@/features/user-job-description";
 export interface SetupJdItem {
   /** UserJobDescription.uuid — 인터뷰 세션 생성 시 이 값을 그대로 사용. */
   uuid: string;
-  icon: string;
+  /** lucide-react 아이콘 선택을 위한 platform 문자열 */
+  platform: string;
   company: string;
   role: string;
   stage: string;
@@ -17,16 +18,6 @@ export interface SetupJdItem {
   badgeType: "green" | "accent";
   /** 수집이 완료되지 않은 항목은 선택 불가. */
   disabled: boolean;
-}
-
-function pickIcon(platform: string, title: string): string {
-  const source = `${platform} ${title}`.toLowerCase();
-  if (source.includes("bank")) return "🏦";
-  if (source.includes("pay") || source.includes("toss")) return "💳";
-  if (source.includes("naver")) return "🟢";
-  if (source.includes("kakao")) return "🟡";
-  if (source.includes("design") || source.includes("디자인")) return "🎨";
-  return "🏢";
 }
 
 export async function fetchSetupJdListApi(): Promise<SetupJdItem[]> {
@@ -37,7 +28,7 @@ export async function fetchSetupJdListApi(): Promise<SetupJdItem[]> {
     const isFailed = jd.collectionStatus === "error";
     return {
       uuid: item.uuid,
-      icon: pickIcon(jd.platform || "", jd.title || ""),
+      platform: jd.platform || "",
       company: jd.company || "수집 중",
       role: jd.title || "채용공고",
       stage: jd.location || jd.workType || jd.platform || "",
@@ -58,7 +49,7 @@ export async function fetchSetupJdByUuidApi(uuid: string): Promise<SetupJdItem |
 
     return {
       uuid: item.uuid,
-      icon: pickIcon(jd.platform || "", jd.title || ""),
+      platform: jd.platform || "",
       company: jd.company || "수집 중",
       role: jd.title || "채용공고",
       stage: jd.location || jd.workType || jd.platform || "",
