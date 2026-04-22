@@ -3,6 +3,8 @@ from rest_framework_simplejwt.views import TokenVerifyView
 
 from .views import (
   ChangePasswordAPIView,
+  ConfirmPasswordResetAPIView,
+  RequestPasswordResetAPIView,
   ResendVerifyEmailAPIView,
   SignInAPIView,
   SignOutAPIView,
@@ -19,6 +21,8 @@ urlpatterns = [
   path("sign-out/", SignOutAPIView.as_view(), name="sign-out"),
   path("me/", UserMeAPIView.as_view(), name="user-me"),
   path("change-password/", ChangePasswordAPIView.as_view(), name="change-password"),
+  path("password-reset/", RequestPasswordResetAPIView.as_view(), name="password-reset"),
+  path("password-reset/confirm/", ConfirmPasswordResetAPIView.as_view(), name="password-reset-confirm"),
   path("verify-email/", VerifyEmailAPIView.as_view(), name="verify-email"),
   path(
     "resend-verify-email/",
