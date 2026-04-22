@@ -136,9 +136,10 @@ export function InterviewSessionPage() {
   const [speechMetrics, setSpeechMetrics] = useState({ wpm: 0, fillerCount: 0, badWordCount: 0, pauseWarnings: 0, highlightedHtml: "" });
   const [showCoachMarks, setShowCoachMarks] = useState(false);
   const [coachMarksStep, setCoachMarksStep] = useState(0);
+  const [coachMarksCompleted, setCoachMarksCompleted] = useState(false);
 
   const isFirstQuestion = currentInterviewTurnIndex === 0;
-  const shouldShowCoachMarksGuide = shouldShowCoachMarks(INTERVIEW_COACH_MARKS_KEY) && isFirstQuestion;
+  const shouldShowCoachMarksGuide = shouldShowCoachMarks(INTERVIEW_COACH_MARKS_KEY) && isFirstQuestion && !coachMarksCompleted;
 
   const permissionError = usePermissionMonitor(hasStarted && !isFinished);
 
@@ -298,6 +299,11 @@ export function InterviewSessionPage() {
           steps={interviewCoachMarksSteps}
           open={showCoachMarks}
           onClose={() => {
+            setShowCoachMarks(false);
+            markCoachMarksShown(INTERVIEW_COACH_MARKS_KEY);
+          }}
+          onComplete={() => {
+            setCoachMarksCompleted(true);
             setShowCoachMarks(false);
             markCoachMarksShown(INTERVIEW_COACH_MARKS_KEY);
           }}
