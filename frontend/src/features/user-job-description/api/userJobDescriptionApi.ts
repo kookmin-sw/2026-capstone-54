@@ -62,4 +62,7 @@ export const userJobDescriptionApi = {
 
   remove: (uuid: string) =>
     apiRequest<void>(`${BASE}/${uuid}/`, { method: "DELETE", auth: true }),
+
+  getStats: () =>
+    apiRequest<{ total: number; planned: number; saved: number; applied: number }>(`${BASE}/stats/count/`, { auth: true }),
 };

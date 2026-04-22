@@ -9,11 +9,7 @@
  */
 
 import { create } from "zustand";
-import {
-  userJobDescriptionApi,
-  type JobDescriptionCollectionStatus,
-  type UserJobDescription,
-} from "@/features/user-job-description";
+import { userJobDescriptionApi, type JobDescriptionCollectionStatus, type UserJobDescription } from "@/features/user-job-description";
 import {
   getCompanyColor,
   getCompanyInitial,
@@ -103,15 +99,6 @@ function transform(item: UserJobDescription): JdListItem {
   };
 }
 
-function calcStats(items: JdListItem[]): JdListStats {
-  return {
-    total: items.filter((i) => i.status !== "analyzing").length,
-    planned: items.filter((i) => i.status === "planned").length,
-    applied: items.filter((i) => i.status === "applied").length,
-    saved: items.filter((i) => i.status === "saved").length,
-  };
-}
-
 function applyFilter(items: JdListItem[], query: string, filter: FilterKey): JdListItem[] {
   let result = items;
 
@@ -147,14 +134,17 @@ export const useJdListStore = create<JdListState>()((set, get) => ({
   fetchList: async () => {
     set({ isLoading: true, error: null });
     try {
-      const page1 = await userJobDescriptionApi.listPage(1);
+      const [page1, statsData] = await Promise.all([
+        userJobDescriptionApi.listPage(1),
+        userJobDescriptionApi.getStats(),
+      ]);
       const raw = page1.results;
       const items = raw.map(transform);
       const { searchQuery, activeFilter } = get();
       set({
         isLoading: false,
         items,
-        stats: calcStats(items),
+        stats: statsData,
         filtered: applyFilter(items, searchQuery, activeFilter),
         nextPage: page1.nextPage,
         hasNext: page1.nextPage != null,
@@ -183,7 +173,6 @@ export const useJdListStore = create<JdListState>()((set, get) => ({
         return {
           isLoadingMore: false,
           items: mergedItems,
-          stats: calcStats(mergedItems),
           filtered: applyFilter(mergedItems, state.searchQuery, state.activeFilter),
           nextPage: page.nextPage,
           hasNext: page.nextPage != null,
