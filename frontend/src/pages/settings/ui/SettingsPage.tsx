@@ -379,9 +379,9 @@ export function SettingsPage() {
       {/* Account Unregister Confirm Modal */}
       <ConfirmModal
         open={deleteConfirm === "account"}
-        title="정말로 회원탈퇴하시겠습니까?"
-        description="계정과 연결된 모든 데이터가 즉시 삭제됩니다. 한번 탈퇴 진행시 데이터가 복구되지 않습니다."
-        confirmLabel="회원탈퇴"
+        title="정말로 회원 탈퇴하시나요?"
+        description="계정과 연결된 모든 데이터가 삭제 처리돼요. 탈퇴 진행 후, 데이터는 복구되지 않아요."
+        confirmLabel="탈퇴하기"
         cancelLabel="취소"
         destructive
         onConfirm={handleDeleteConfirm}
