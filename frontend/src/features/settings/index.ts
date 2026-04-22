@@ -12,4 +12,5 @@ export {
   NotificationToggle,
   ConsentItem,
   DangerZoneSection,
+  AccountUnregisterSection,
 } from "./ui";

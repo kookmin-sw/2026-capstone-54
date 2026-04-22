@@ -5,7 +5,7 @@ import { ConfirmModal } from "@/shared/ui";
 import { useSettingsStore } from "@/features/settings";
 import { useSubscriptionStore } from "@/features/subscription";
 import { TicketPolicyInfo } from "@/features/subscription/ui/TicketPolicyInfo";
-import { PasswordChangeForm, NotificationToggle, ConsentItem, DangerZoneSection } from "@/features/settings";
+import { PasswordChangeForm, NotificationToggle, ConsentItem, DangerZoneSection, AccountUnregisterSection } from "@/features/settings";
 import { JobCategorySelector } from "./JobCategorySelector";
 import { JOB_STATUS_OPTIONS } from "@/features/onboarding";
 import type { SettingsPanel } from "@/features/settings";
@@ -203,6 +203,11 @@ export function SettingsPage() {
                     error={error}
                     saveMessage={saveMessage}
                   />
+
+                  {/* 계정 탈퇴 */}
+                  <AccountUnregisterSection
+                    onDeleteAccount={() => setDeleteConfirm("account")}
+                  />
                 </div>
 
                 {/* ─── NOTIFICATIONS PANEL ─── */}
@@ -361,7 +366,6 @@ export function SettingsPage() {
 
                   <DangerZoneSection
                     onDeleteData={() => setDeleteConfirm("data")}
-                    onDeleteAccount={() => setDeleteConfirm("account")}
                   />
 
                   <div className="flex items-center justify-end gap-[10px] pt-5 border-t border-[#E5E7EB] mt-1 max-[640px]:flex-col-reverse max-[640px]:items-stretch">
