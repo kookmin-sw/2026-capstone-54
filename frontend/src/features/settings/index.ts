@@ -7,3 +7,9 @@ export type {
   SettingsSubscription,
   SettingsConsents,
 } from "./api/settingsApi";
+export {
+  PasswordChangeForm,
+  NotificationToggle,
+  ConsentItem,
+  DangerZoneSection,
+} from "./ui";
