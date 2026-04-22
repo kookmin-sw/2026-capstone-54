@@ -195,10 +195,8 @@ export function SettingsPage() {
                     inputClass={inputClass}
                     saving={saving}
                     onSetPassword={setPasswordDraft}
-                    onSave={savePassword}
-                    onReset={resetPasswordDraft}
-                    error={error}
-                    saveMessage={saveMessage}
+                    callbacks={{ onSave: savePassword, onReset: resetPasswordDraft }}
+                    messages={{ error, saveMessage }}
                   />
 
                   {/* 계정 탈퇴 */}

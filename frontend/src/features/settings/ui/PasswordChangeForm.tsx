@@ -7,10 +7,14 @@ interface PasswordChangeFormProps {
   inputClass: string;
   saving: boolean;
   onSetPassword: (field: "currentPassword" | "newPassword" | "confirmPassword", value: string) => void;
-  onSave: () => void;
-  onReset: () => void;
-  error: string | null;
-  saveMessage: string | null;
+  callbacks: {
+    onSave: () => void;
+    onReset: () => void;
+  };
+  messages: {
+    error: string | null;
+    saveMessage: string | null;
+  };
 }
 
 export function PasswordChangeForm({
@@ -20,11 +24,12 @@ export function PasswordChangeForm({
   inputClass,
   saving,
   onSetPassword,
-  onSave,
-  onReset,
-  error,
-  saveMessage,
+  callbacks,
+  messages,
 }: PasswordChangeFormProps) {
+  const { onSave, onReset } = callbacks;
+  const { error, saveMessage } = messages;
+
   return (
     <>
       <div className="mb-7">
