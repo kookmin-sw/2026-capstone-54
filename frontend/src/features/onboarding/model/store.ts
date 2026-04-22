@@ -103,12 +103,16 @@ export const useOnboardingStore = create<OnboardingState>()((set, get) => ({
       set({ error: "희망 직업을 1개 이상 선택해주세요." });
       return false;
     }
+    if (!careerStage) {
+      set({ error: "현재 직업 상태를 선택해주세요." });
+      return false;
+    }
     set({ isLoading: true, error: null });
     try {
       await submitOnboardingProfileApi({
         jobCategoryId: selectedJobCategoryId,
         jobIds: selectedJobIds,
-        careerStage: careerStage || undefined,
+        careerStage,
       });
       set({ isLoading: false });
       return true;
