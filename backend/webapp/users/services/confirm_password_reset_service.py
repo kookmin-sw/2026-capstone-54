@@ -10,33 +10,34 @@ class ConfirmPasswordResetService(BaseService):
 
   required_value_kwargs = ["token", "new_password"]
 
-  def validate(self):
-    from users.models import (
-      PasswordResetToken,  # 같은 앱(users) 내에서 모델 ↔ 서비스가 서로 참조할 가능성, 순환 임포트(circular import) 를 피하기 위한 패턴
+  def assign_attributes(self):
+    self.token_uuid = self.kwargs["token"]
+
+  def assign_attributes_with_lock(self):
+    from users.models import PasswordResetToken
+
+    self.password_reset_token = self.get_or_404(
+      PasswordResetToken.objects.select_related("user").select_for_update(),
+      token=self.token_uuid,
     )
 
-    token_uuid = self.kwargs["token"]
-
+  def validate(self):
+    """비밀번호 유효성만 사전 검증한다. 토큰 검증은 execute()에서 select_for_update()와 함께 수행."""
     try:
-      self._token = PasswordResetToken.objects.select_related("user").get(token=token_uuid)
-    except PasswordResetToken.DoesNotExist:
-      raise ValidationException(field_errors={"token": ["유효하지 않은 토큰입니다."]})
-
-    if self._token.is_used:
-      raise ValidationException(field_errors={"token": ["이미 사용된 토큰입니다."]})
-
-    if self._token.is_expired:
-      raise ValidationException(field_errors={"token": ["만료된 토큰입니다."]})
-
-    try:
-      validate_password(self.kwargs["new_password"], user=self._token.user)
+      validate_password(self.kwargs["new_password"])
     except DjangoValidationError as e:
       raise ValidationException(field_errors={"new_password": list(e.messages)})
 
+    if self.password_reset_token.is_used:
+      raise ValidationException(field_errors={"token": ["이미 사용된 토큰입니다."]})
+
+    if self.password_reset_token.is_expired:
+      raise ValidationException(field_errors={"token": ["만료된 토큰입니다."]})
+
   def execute(self):
-    user = self._token.user
+    user = self.password_reset_token.user
     user.set_password(self.kwargs["new_password"])
     user.save(update_fields=["password"])
 
-    self._token.used_at = timezone.now()
-    self._token.save(update_fields=["used_at"])
+    self.password_reset_token.used_at = timezone.now()
+    self.password_reset_token.save(update_fields=["used_at"])

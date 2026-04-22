@@ -10,29 +10,24 @@ class RequestPasswordResetService(BaseService):
 
   required_value_kwargs = ["email"]
 
-  def execute(self):
-    from users.models import PasswordResetToken, User
-    from users.tasks import RegisteredSendPasswordResetEmailTask
+  def assign_attributes(self):
+    from users.models import User
 
     email = self.kwargs["email"]
+    self.user = self.get_or_404(User, email=email)
 
-    try:
-      user = User.objects.get(email=email)
-    except User.DoesNotExist:
-      return  # 보안: 이메일 존재 여부를 노출하지 않는다
+  def execute(self):
+    from users.models import PasswordResetToken
+    from users.tasks import RegisteredSendPasswordResetEmailTask
 
     # 기존 active 토큰 일괄 무효화
-    PasswordResetToken.objects.active(user).update(used_at=timezone.now())
-
+    PasswordResetToken.objects.active(self.user).update(used_at=timezone.now())
     # 새 토큰 생성
-    expiry_minutes = getattr(settings, "PASSWORD_RESET_TOKEN_EXPIRY_MINUTES", 15)
-    token = PasswordResetToken.objects.create(
-      user=user,
-      expires_at=timezone.now() + timedelta(minutes=expiry_minutes),
-    )
+    expires_at = timezone.now() + timedelta(minutes=settings.PASSWORD_RESET_TOKEN_EXPIRY_MINUTES)
+    token = PasswordResetToken.objects.create(user=self.user, expires_at=expires_at)
 
     # Celery 태스크로 이메일 발송 위임
     RegisteredSendPasswordResetEmailTask.delay(
-      user_id=user.id,
+      user_id=self.user.id,
       token_uuid=str(token.token),
     )
