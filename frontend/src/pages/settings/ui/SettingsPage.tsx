@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Archive, ClipboardList, Eye, FileText, Flame, Gem, KeyRound, Lock, Megaphone, ShieldCheck, Star, TriangleAlert, UserCircle, Zap } from "lucide-react";
+import { ConfirmModal } from "@/shared/ui";
 import { useSettingsStore } from "@/features/settings";
 import { useSubscriptionStore } from "@/features/subscription";
 import { TicketPolicyInfo } from "@/features/subscription/ui/TicketPolicyInfo";
@@ -498,27 +499,29 @@ export function SettingsPage() {
         </div>
       </div>
 
-      {/* Delete Confirm Modal */}
-      {deleteConfirm && (
-        <div className="fixed inset-0 z-[300] bg-black/50 flex items-center justify-center p-5" onClick={() => setDeleteConfirm(null)}>
-          <div className="bg-white rounded-xl px-7 py-7 max-w-[400px] w-full shadow-[0_4px_24px_rgba(0,0,0,0.15)]" onClick={(e) => e.stopPropagation()}>
-            <div className="font-plex-sans-kr text-[16px] font-extrabold text-[#0A0A0A] mb-2">
-              {deleteConfirm === "data" ? "면접 데이터를 삭제하시겠습니까?" : "정말로 계정을 탈퇴하시겠습니까?"}
-            </div>
-            <p className="text-[13px] text-[#6B7280] leading-[1.6] mb-5">
-              {deleteConfirm === "data"
-                ? "저장된 모든 면접 세션, 리포트, 답변 내역이 영구적으로 삭제됩니다. 이 작업은 되돌릴 수 없습니다."
-                : "계정과 연결된 모든 데이터가 즉시 삭제됩니다. 탈퇴 후에는 복구가 불가능합니다."}
-            </p>
-            <div className="flex gap-[10px] justify-end">
-              <button className="font-plex-sans-kr text-[14px] font-semibold text-[#6B7280] bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg px-[18px] py-[9px] cursor-pointer" onClick={() => setDeleteConfirm(null)}>취소</button>
-              <button className="font-plex-sans-kr text-[14px] font-bold text-white bg-[#EF4444] border-none rounded-lg px-[18px] py-[9px] cursor-pointer" onClick={handleDeleteConfirm} disabled={saving}>
-                {saving ? "처리 중..." : deleteConfirm === "data" ? "삭제하기" : "탈퇴하기"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Data Delete Confirm Modal */}
+      <ConfirmModal
+        open={deleteConfirm === "data"}
+        title="면접 데이터를 삭제하시겠습니까?"
+        description="저장된 모든 면접 세션, 리포트, 답변 내역이 영구적으로 삭제됩니다. 이 작업은 되돌릴 수 없습니다."
+        confirmLabel="삭제하기"
+        cancelLabel="취소"
+        destructive
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setDeleteConfirm(null)}
+      />
+
+      {/* Account Unregister Confirm Modal */}
+      <ConfirmModal
+        open={deleteConfirm === "account"}
+        title="정말로 회원탈퇴하시겠습니까?"
+        description="계정과 연결된 모든 데이터가 즉시 삭제됩니다. 한번 탈퇴 진행시 데이터가 복구되지 않습니다."
+        confirmLabel="회원탈퇴"
+        cancelLabel="취소"
+        destructive
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setDeleteConfirm(null)}
+      />
     </>
   );
 }
