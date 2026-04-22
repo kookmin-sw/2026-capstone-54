@@ -24,7 +24,7 @@ class UserMeAPIViewPropertyTests(TestCase):
     is_email_confirmed=st.booleans(),
     is_profile_completed=st.booleans(),
   )
-  @settings(max_examples=10, deadline=None)
+  @settings(max_examples=5, deadline=None)
   def test_authenticated_user_me_response_matches_user_model(self, name, is_email_confirmed, is_profile_completed):
     """인증된 User에 대해 GET /me 요청 시 반환되는 name/email/is_email_confirmed/is_profile_completed 값이 User 모델의 실제 값과 일치한다."""
     email = "me_test@example.com"

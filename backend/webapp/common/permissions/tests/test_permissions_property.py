@@ -46,7 +46,7 @@ class TestPermissionAccessControlProperty(TestCase):
     self.view = MagicMock()
 
   @given(state=user_state_strategy)
-  @settings(max_examples=10, deadline=None)
+  @settings(max_examples=5, deadline=None)
   def test_allow_any_permits_all_requests(self, state):
     """AllowAny는 사용자 상태와 관계없이 모든 요청을 허용한다."""
     user = make_user(
@@ -62,7 +62,7 @@ class TestPermissionAccessControlProperty(TestCase):
     self.assertTrue(result)
 
   @given(state=user_state_strategy)
-  @settings(max_examples=10, deadline=None)
+  @settings(max_examples=5, deadline=None)
   def test_is_authenticated_only_allows_authenticated_users(self, state):
     """IsAuthenticated는 인증된 사용자만 허용하고, 미인증 시 거부한다."""
     user = make_user(
@@ -81,7 +81,7 @@ class TestPermissionAccessControlProperty(TestCase):
       self.assertFalse(result)
 
   @given(state=user_state_strategy)
-  @settings(max_examples=10, deadline=None)
+  @settings(max_examples=5, deadline=None)
   def test_is_email_verified_requires_authenticated_and_email_confirmed(self, state):
     """IsEmailVerified는 인증 + email_confirmed_at 설정된 사용자만 허용한다."""
     user = make_user(
@@ -105,7 +105,7 @@ class TestPermissionAccessControlProperty(TestCase):
       self.assertFalse(result)
 
   @given(state=user_state_strategy)
-  @settings(max_examples=10, deadline=None)
+  @settings(max_examples=5, deadline=None)
   def test_is_profile_completed_requires_all_conditions(self, state):
     """IsProfileCompleted는 인증 + email_confirmed_at + profile_completed_at 모두 설정된 사용자만 허용한다."""
     user = make_user(

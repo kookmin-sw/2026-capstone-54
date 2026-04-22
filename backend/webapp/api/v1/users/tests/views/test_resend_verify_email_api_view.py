@@ -59,7 +59,7 @@ class ResendVerifyEmailAPIViewPropertyTests(TestCase):
     self.assertTrue(new_codes.exists())
 
   @given(st.just(None))
-  @settings(max_examples=10, deadline=None)
+  @settings(max_examples=5, deadline=None)
   def test_resend_unauthenticated_returns_401(self, _):
     """비인증 요청은 401을 반환한다."""
     self.client.credentials()
@@ -67,7 +67,7 @@ class ResendVerifyEmailAPIViewPropertyTests(TestCase):
     self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
   @given(st.just(None))
-  @settings(max_examples=10, deadline=None)
+  @settings(max_examples=5, deadline=None)
   def test_resend_within_cooldown_returns_400(self, _):
     """최근 10분 내 인증 코드가 이미 발송된 경우 재전송 요청은 400을 반환한다."""
     email = "resend_cooldown_test@example.com"

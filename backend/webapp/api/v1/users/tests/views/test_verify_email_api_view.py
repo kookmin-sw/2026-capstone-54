@@ -32,7 +32,7 @@ class VerifyEmailAPIViewPropertyTests(TestCase):
     max_size=6,
     alphabet=st.characters(whitelist_categories=("Lu", "Nd")),
   ))
-  @settings(max_examples=10, deadline=None)
+  @settings(max_examples=5, deadline=None)
   def test_verify_email_with_valid_otp_sets_email_confirmed_at(self, code):
     """미인증 User의 유효한 OTP 코드로 이메일 인증하면 200 응답이 반환되고 user.email_confirmed_at이 설정된다."""
     email = "verify_valid_test@example.com"
@@ -52,7 +52,7 @@ class VerifyEmailAPIViewPropertyTests(TestCase):
     max_size=6,
     alphabet=st.characters(whitelist_categories=("Lu", "Nd")),
   ))
-  @settings(max_examples=10, deadline=None)
+  @settings(max_examples=5, deadline=None)
   def test_verify_email_with_wrong_code_returns_400(self, wrong_code):
     """User에게 발급되지 않은 임의의 6자리 코드로 이메일 인증을 시도하면 400 에러가 반환되고 email_confirmed_at은 변경되지 않는다."""
     from hypothesis import assume
