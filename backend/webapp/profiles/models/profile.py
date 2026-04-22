@@ -3,6 +3,7 @@ import uuid
 from common.models import BaseModelWithSoftDelete
 from django.conf import settings
 from django.db import models
+from profiles.enums import CareerStage
 
 
 def avatar_upload_to(instance, filename):
@@ -20,6 +21,7 @@ class Profile(BaseModelWithSoftDelete):
 
   user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profile")
   job_category = models.ForeignKey("JobCategory", on_delete=models.PROTECT, related_name="profiles")
+  career_stage = models.CharField(max_length=20, choices=CareerStage.choices, default=CareerStage.OTHER)
   jobs = models.ManyToManyField("Job", related_name="profiles")
   avatar = models.ImageField(
     upload_to=avatar_upload_to,
