@@ -15,9 +15,9 @@ from drf_spectacular.views import (
 )
 
 urlpatterns = [
-  path('admin/flower/', csrf_exempt(admin.site.admin_view(flower_proxy)), {'path': ''}),
-  path('admin/flower/<path:path>', csrf_exempt(admin.site.admin_view(flower_proxy))),
-  path('admin/', admin.site.urls),
+  path("admin/flower/", csrf_exempt(admin.site.admin_view(flower_proxy)), {"path": ""}),
+  path("admin/flower/<path:path>", csrf_exempt(admin.site.admin_view(flower_proxy))),
+  path("admin/", admin.site.urls),
   path("", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
   path("redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
   path("schema/", SpectacularAPIView.as_view(), name="schema"),

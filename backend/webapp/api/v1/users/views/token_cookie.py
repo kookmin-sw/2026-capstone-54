@@ -15,20 +15,23 @@ def _is_secure_cookie() -> bool:
 
 def set_refresh_cookie(response: Response, refresh_token: str) -> None:
   max_age = int(settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"].total_seconds())
+  samesite_value = "Lax" if settings.DEBUG else "None"
+
   response.set_cookie(
     key=REFRESH_COOKIE_NAME,
     value=refresh_token,
     max_age=max_age,
     httponly=True,
     secure=_is_secure_cookie(),
-    samesite="None",
+    samesite=samesite_value,
     path=REFRESH_COOKIE_PATH,
   )
 
 
 def clear_refresh_cookie(response: Response) -> None:
+  samesite_value = "Lax" if settings.DEBUG else "None"
   response.delete_cookie(
     key=REFRESH_COOKIE_NAME,
     path=REFRESH_COOKIE_PATH,
-    samesite="None",
+    samesite=samesite_value,
   )
