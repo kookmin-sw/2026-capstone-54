@@ -4,7 +4,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   AlignLeft, Briefcase, Building2, Calendar, Check, CheckCircle2,
   CheckSquare, ClipboardList, Clock, ExternalLink, Info, Loader2,
-  MapPin, Mic, Pin, Star, Trash2, Zap,
+  MapPin, Pin, Star, Trash2, Zap,
 } from "lucide-react";
 import { useJdDetailStore, type JdStatus } from "@/features/jd";
 import { CompanyIcon } from "@/shared/ui/CompanyIcon";
@@ -164,7 +164,7 @@ export function JdDetailPage() {
               </div>
 
               <div className="flex gap-2.5 mt-5 relative flex-wrap">
-                <Link to="/interview" className="inline-flex items-center gap-2 text-[13px] font-bold text-white bg-[#0A0A0A] border-none cursor-pointer py-3 px-5 rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.1)] transition-opacity hover:opacity-85 no-underline whitespace-nowrap">
+                <Link to="/interview/setup" className="inline-flex items-center gap-2 text-[13px] font-bold text-white bg-[#0A0A0A] border-none cursor-pointer py-3 px-5 rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.1)] transition-opacity hover:opacity-85 no-underline whitespace-nowrap">
                   <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                     <path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
@@ -298,17 +298,7 @@ export function JdDetailPage() {
                 <span className="w-7 h-7 rounded-lg bg-[#FFFBEB] flex items-center justify-center shrink-0"><Zap size={14} className="text-[#F59E0B]" /></span> 빠른 액션
               </div>
               <div className="flex flex-col gap-2">
-                <Link to="/interview" className="flex items-center gap-2.5 p-[12px_14px] rounded-lg border border-[#E5E7EB] bg-white cursor-pointer text-[13px] font-semibold text-[#0A0A0A] transition-all no-underline hover:bg-[#F9FAFB] hover:-translate-y-px hover:shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)]">
-                  <div className="w-8 h-8 rounded-lg bg-[#E6F7FA] flex items-center justify-center shrink-0">
-                    <Mic size={16} className="text-[#0991B2]" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-[13px] font-extrabold">꼬리질문 면접</div>
-                    <div className="text-[11px] font-normal text-[#6B7280] mt-px">심화 질문 집중 연습</div>
-                  </div>
-                  <span className="text-[#9CA3AF] text-base">›</span>
-                </Link>
-                <Link to="/interview" className="flex items-center gap-2.5 p-[12px_14px] rounded-lg border border-[#E5E7EB] bg-white cursor-pointer text-[13px] font-semibold text-[#0A0A0A] transition-all no-underline hover:bg-[#F9FAFB] hover:-translate-y-px hover:shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)]">
+<Link to="/interview/setup" className="flex items-center gap-2.5 p-[12px_14px] rounded-lg border border-[#E5E7EB] bg-white cursor-pointer text-[13px] font-semibold text-[#0A0A0A] transition-all no-underline hover:bg-[#F9FAFB] hover:-translate-y-px hover:shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)]">
                   <div className="w-8 h-8 rounded-lg bg-[#ECFDF5] flex items-center justify-center shrink-0">
                     <ClipboardList size={16} className="text-[#059669]" />
                   </div>
