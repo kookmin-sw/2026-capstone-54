@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { fetchAchievementsApi, claimAchievementApi } from "../api/achievementsApi";
 import type { Achievement } from "./types";
+import { useTicketStore } from "@/shared/store/ticketStore";
 
 interface AchievementsState {
   data: Achievement[] | null;
@@ -50,6 +51,12 @@ export const useAchievementsStore = create<AchievementsState>()((set, get) => ({
               ? { ...a, rewardClaimedAt: res.data!.rewardClaimedAt, canClaimReward: false }
               : a
           );
+          
+          // 티켓 정보 새로고침 트리거 - 보상 수령 시 티켓이 증가할 수 있음
+          setTimeout(() => {
+            useTicketStore.getState()._forceRefresh();
+          }, 100);
+          
         return { data: updatedData, claimingCodes: nextClaiming };
       }
 
