@@ -5,7 +5,7 @@ import { ConfirmModal } from "@/shared/ui";
 import { useSettingsStore } from "@/features/settings";
 import { useSubscriptionStore } from "@/features/subscription";
 import { TicketPolicyInfo } from "@/features/subscription/ui/TicketPolicyInfo";
-import { PasswordChangeForm, NotificationToggle, ConsentItem, DangerZoneSection, AccountUnregisterSection } from "@/features/settings";
+import { PasswordChangeForm, NotificationToggle, ConsentItem, AccountUnregisterSection } from "@/features/settings";
 import { JobCategorySelector } from "./JobCategorySelector";
 import { JOB_STATUS_OPTIONS } from "@/features/onboarding";
 import type { SettingsPanel } from "@/features/settings";
@@ -46,7 +46,7 @@ export function SettingsPage() {
     setPasswordDraft, savePassword, resetPasswordDraft,
     toggleNotification, saveNotifications, resetNotificationsDraft,
     setAiDataDraft, saveConsents,
-    deleteInterviewData, deleteAccount,
+    deleteAccount,
     clearMessage,
   } = useSettingsStore();
 
@@ -56,7 +56,7 @@ export function SettingsPage() {
   } = useSubscriptionStore();
 
   const [searchParams] = useSearchParams();
-  const [deleteConfirm, setDeleteConfirm] = useState<"data" | "account" | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<"account" | null>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
   // URL 쿼리로 패널 초기화 (?panel=notifications)
@@ -84,11 +84,8 @@ export function SettingsPage() {
     : null;
 
   const handleDeleteConfirm = async () => {
-    if (deleteConfirm === "data") await deleteInterviewData();
-    if (deleteConfirm === "account") {
-      await deleteAccount();
-      navigate("/");
-    }
+    await deleteAccount();
+    navigate("/");
     setDeleteConfirm(null);
   };
 
@@ -364,10 +361,6 @@ export function SettingsPage() {
                     />
                   </div>
 
-                  <DangerZoneSection
-                    onDeleteData={() => setDeleteConfirm("data")}
-                  />
-
                   <div className="flex items-center justify-end gap-[10px] pt-5 border-t border-[#E5E7EB] mt-1 max-[640px]:flex-col-reverse max-[640px]:items-stretch">
                     {saveMessage && activePanel === "consent" && <span className="text-[12px] font-bold text-[#059669] mr-auto animate-[spFadeUp_0.3s_ease]">✓ {saveMessage}</span>}
                     {error && activePanel === "consent" && <span className="text-[12px] font-bold text-[#EF4444] mr-auto animate-[spFadeUp_0.3s_ease]">✕ {error}</span>}
@@ -382,18 +375,6 @@ export function SettingsPage() {
           </main>
         </div>
       </div>
-
-      {/* Data Delete Confirm Modal */}
-      <ConfirmModal
-        open={deleteConfirm === "data"}
-        title="면접 데이터를 삭제하시겠습니까?"
-        description="저장된 모든 면접 세션, 리포트, 답변 내역이 영구적으로 삭제됩니다. 이 작업은 되돌릴 수 없습니다."
-        confirmLabel="삭제하기"
-        cancelLabel="취소"
-        destructive
-        onConfirm={handleDeleteConfirm}
-        onCancel={() => setDeleteConfirm(null)}
-      />
 
       {/* Account Unregister Confirm Modal */}
       <ConfirmModal

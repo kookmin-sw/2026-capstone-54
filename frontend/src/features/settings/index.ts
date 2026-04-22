@@ -11,6 +11,5 @@ export {
   PasswordChangeForm,
   NotificationToggle,
   ConsentItem,
-  DangerZoneSection,
   AccountUnregisterSection,
 } from "./ui";
