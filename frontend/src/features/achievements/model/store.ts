@@ -31,7 +31,7 @@ export const useAchievementsStore = create<AchievementsState>()((set, get) => ({
   },
 
   claimAchievement: async (code: string) => {
-    if (get().claimingCodes.has(code)) return; // 더블클릭 방지
+    if (get().claimingCodes.has(code)) return;
 
     set((state) => ({
       claimingCodes: new Set(state.claimingCodes).add(code),
@@ -40,30 +40,18 @@ export const useAchievementsStore = create<AchievementsState>()((set, get) => ({
 
     const res = await claimAchievementApi(code);
 
-    set((state) => {
-      const nextClaiming = new Set(state.claimingCodes);
+    if (res.success && res.data && get().data) {
+      const updatedData = get().data!.map((a) =>
+        a.code === code
+          ? { ...a, rewardClaimedAt: res.data!.rewardClaimedAt, canClaimReward: false }
+          : a
+      );
+      set({ data: updatedData, claimingCodes: new Set(get().claimingCodes) });
+      useTicketStore.getState().refetch();
+    } else {
+      const nextClaiming = new Set(get().claimingCodes);
       nextClaiming.delete(code);
-
-        if (res.success && res.data && state.data) {
-          // 로컬 상태 업데이트: 해당 achievement의 rewardClaimedAt 갱신
-          const updatedData = state.data.map((a) =>
-            a.code === code
-              ? { ...a, rewardClaimedAt: res.data!.rewardClaimedAt, canClaimReward: false }
-              : a
-          );
-          
-          // 티켓 정보 새로고침 트리거 - 보상 수령 시 티켓이 증가할 수 있음
-          setTimeout(() => {
-            useTicketStore.getState()._forceRefresh();
-          }, 100);
-          
-        return { data: updatedData, claimingCodes: nextClaiming };
-      }
-
-      return {
-        claimingCodes: nextClaiming,
-        claimError: res.error ?? "보상 수령에 실패했습니다.",
-      };
-    });
+      set({ claimingCodes: nextClaiming, claimError: res.error ?? "보상 수령에 실패했습니다." });
+    }
   },
 }));
