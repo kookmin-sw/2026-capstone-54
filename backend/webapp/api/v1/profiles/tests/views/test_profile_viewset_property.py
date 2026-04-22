@@ -5,7 +5,7 @@ from hypothesis import strategies as st
 from hypothesis.extra.django import TestCase
 from profiles.factories import JobCategoryFactory, JobFactory
 from profiles.models import Profile
-from rest_framework.test import APIRequestFactory
+from rest_framework.test import APIRequestFactory, force_authenticate
 from users.factories import UserFactory
 
 
@@ -17,16 +17,16 @@ class ProfileMeViewPropertyTests(TestCase):
     category_name=st.text(
       min_size=1,
       max_size=100,
-      alphabet=st.characters(min_codepoint=32, max_codepoint=126, blacklist_characters="\x00")
+      alphabet=st.characters(min_codepoint=32, max_codepoint=126, blacklist_characters="\x00"),
     ),
     job_names=st.lists(
       st.text(
         min_size=1,
         max_size=100,
-        alphabet=st.characters(min_codepoint=32, max_codepoint=126, blacklist_characters="\x00")
+        alphabet=st.characters(min_codepoint=32, max_codepoint=126, blacklist_characters="\x00"),
       ),
       min_size=1,
-      max_size=5
+      max_size=5,
     ),
   )
   @settings(max_examples=5, deadline=None)
@@ -45,7 +45,7 @@ class ProfileMeViewPropertyTests(TestCase):
 
     factory = APIRequestFactory()
     request = factory.post("/api/v1/profiles/me/", {"job_category_id": category.id, "job_ids": job_ids})
-    request.user = user
+    force_authenticate(request, user=user)
 
     view = ProfileMeView.as_view()
     response = view(request)
@@ -71,12 +71,18 @@ class ProfileMeViewPropertyTests(TestCase):
     user.profile_completed_at = None
     user.save()
 
-    category = JobCategoryFactory(emoji="💻", name=f"Cat-{email}")
+    category = JobCategoryFactory(emoji="💻", name=f"Cat-{email[:50]}")
     job = JobFactory(name="Developer", category=category)
 
     factory = APIRequestFactory()
-    request = factory.post("/api/v1/profiles/me/", {"job_category_id": category.id, "job_ids": [job.id]})
-    request.user = user
+    request = factory.post(
+      "/api/v1/profiles/me/",
+      {
+        "job_category_id": category.id,
+        "job_ids": [job.id]
+      },
+    )
+    force_authenticate(request, user=user)
 
     view = ProfileMeView.as_view()
     response = view(request)
@@ -87,8 +93,16 @@ class ProfileMeViewPropertyTests(TestCase):
     self.assertIsNotNone(user.profile_completed_at)
 
   @given(
-    email_local=st.text(min_size=1, max_size=20, alphabet=st.characters(min_codepoint=97, max_codepoint=122)),
-    email_domain=st.text(min_size=1, max_size=20, alphabet=st.characters(min_codepoint=97, max_codepoint=122)),
+    email_local=st.text(
+      min_size=1,
+      max_size=20,
+      alphabet=st.characters(min_codepoint=97, max_codepoint=122),
+    ),
+    email_domain=st.text(
+      min_size=1,
+      max_size=20,
+      alphabet=st.characters(min_codepoint=97, max_codepoint=122),
+    ),
   )
   @settings(max_examples=5, deadline=None)
   def test_profile_completion_timestamp_preserved_on_update(self, email_local, email_domain):
@@ -114,12 +128,13 @@ class ProfileMeViewPropertyTests(TestCase):
 
     factory = APIRequestFactory()
     request = factory.post(
-      "/api/v1/profiles/me/", {
+      "/api/v1/profiles/me/",
+      {
         "job_category_id": updated_category.id,
         "job_ids": [updated_job.id]
-      }
+      },
     )
-    request.user = user
+    force_authenticate(request, user=user)
 
     view = ProfileMeView.as_view()
     response = view(request)

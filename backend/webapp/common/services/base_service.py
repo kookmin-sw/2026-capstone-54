@@ -47,9 +47,18 @@ class BaseService(ABC):
   def perform(self):
     """validate → execute 순서로 트랜잭션 내에서 실행한다."""
     self._validate_kwargs()
-    self.validate()
+    self.assign_attributes()
+
     with transaction.atomic():
+      self.assign_attributes_with_lock()
+      self.validate()
       return self.execute()
+
+  def assign_attributes(self):
+    pass
+
+  def assign_attributes_with_lock(self):
+    pass
 
   def validate(self):
     """비즈니스 규칙 검증. 필요 시 오버라이드한다."""

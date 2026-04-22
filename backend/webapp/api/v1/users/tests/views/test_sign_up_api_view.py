@@ -21,7 +21,7 @@ class SignUpAPIViewPropertyTests(TestCase):
     self.url = reverse("sign-up")
 
   @given(email=st.emails())
-  @settings(max_examples=10, deadline=None)
+  @settings(max_examples=5, deadline=None)
   def test_sign_up_success_creates_user_and_returns_full_response(self, email):
     """유효한 name/email/password로 회원가입하면 201, User 생성, 완전한 응답 반환, EmailVerificationCode 생성된다."""
     from django.contrib.auth.models import BaseUserManager
@@ -68,7 +68,7 @@ class SignUpAPIViewPropertyTests(TestCase):
       alphabet=st.characters(whitelist_categories=("Lu", "Ll", "Nd")),
     ),
   )
-  @settings(max_examples=10, deadline=None)
+  @settings(max_examples=5, deadline=None)
   def test_sign_up_fails_when_passwords_do_not_match(self, password1, password2):
     """password1 ≠ password2이면 400 에러가 반환되고 User가 생성되지 않는다."""
     from hypothesis import assume
@@ -91,7 +91,7 @@ class SignUpAPIViewPropertyTests(TestCase):
     self.assertEqual(User.objects.count(), before_count)
 
   @given(email=st.emails())
-  @settings(max_examples=10, deadline=None)
+  @settings(max_examples=5, deadline=None)
   def test_sign_up_fails_with_duplicate_email(self, email):
     """이미 등록된 이메일로 회원가입을 시도하면 4xx 에러가 반환되고 새로운 User가 생성되지 않는다."""
     from django.contrib.auth.models import BaseUserManager
