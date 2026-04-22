@@ -33,19 +33,27 @@ export function CoachMarks(props: CoachMarksProps) {
     open,
     onClose,
     onComplete,
-    controlledStep,
+    currentStep: controlledStep,
     onStepChange,
     dismissOnBackdrop = true,
     dismissOnEsc = true,
   } = props;
 
   const [internalStep, setInternalStep] = useState(0);
-  const currentStep = controlledStep !== undefined ? controlledStep : internalStep;
-  const currentStepData = steps[currentStep];
+  const currentStepValue = controlledStep !== undefined ? controlledStep : internalStep;
+  const currentStepData = steps[currentStepValue];
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
+  const [tooltipHeight, setTooltipHeight] = useState(200);
+  const tooltipRef = useRef<HTMLDivElement>(null);
   const coachMarksRef = useRef<HTMLDivElement>(null);
 
   const isControlled = controlledStep !== undefined;
+
+  useEffect(() => {
+    if (tooltipRef.current) {
+      setTooltipHeight(tooltipRef.current.offsetHeight);
+    }
+  }, [currentStepValue]);
 
   useEffect(() => {
     if (!open) return;
@@ -64,30 +72,47 @@ export function CoachMarks(props: CoachMarksProps) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setTargetRect(element.getBoundingClientRect());
     }
-  }, [open, currentStep, currentStepData?.targetSelector]);
+  }, [open, currentStepValue, currentStepData?.targetSelector]);
+
+  useEffect(() => {
+    if (!open) return;
+    
+    const handleResize = () => {
+      if (currentStepData?.targetSelector) {
+        const element = document.querySelector<HTMLElement>(currentStepData.targetSelector);
+        if (element) {
+           
+          setTargetRect(element.getBoundingClientRect());
+        }
+      }
+    };
+    
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [open, currentStepData?.targetSelector]);
 
   const handleNext = useCallback(() => {
-    if (currentStep < steps.length - 1) {
+    if (currentStepValue < steps.length - 1) {
       if (isControlled) {
-        onStepChange?.(currentStep + 1);
+        onStepChange?.(currentStepValue + 1);
       } else {
-        setInternalStep(currentStep + 1);
+        setInternalStep(currentStepValue + 1);
       }
     } else {
       onComplete?.();
       onClose();
     }
-  }, [currentStep, steps.length, isControlled, onStepChange, onComplete, onClose]);
+  }, [currentStepValue, steps.length, isControlled, onStepChange, onComplete, onClose]);
 
   const handlePrevious = useCallback(() => {
-    if (currentStep > 0) {
+    if (currentStepValue > 0) {
       if (isControlled) {
-        onStepChange?.(currentStep - 1);
+        onStepChange?.(currentStepValue - 1);
       } else {
-        setInternalStep(currentStep - 1);
+        setInternalStep(currentStepValue - 1);
       }
     }
-  }, [currentStep, isControlled, onStepChange]);
+  }, [currentStepValue, isControlled, onStepChange]);
 
   const handleSkip = useCallback(() => {
     onComplete?.();
@@ -150,8 +175,6 @@ export function CoachMarks(props: CoachMarksProps) {
     
     const windowWidth = window.innerWidth;
     const windowHeight = window.innerHeight;
-    const scrollX = window.scrollX || window.pageXOffset;
-    const scrollY = window.scrollY || window.pageYOffset;
     
     let proposedTop: number;
     let proposedLeft: number;
@@ -159,24 +182,24 @@ export function CoachMarks(props: CoachMarksProps) {
     
     switch (position) {
       case "top":
-        proposedTop = targetRect.top + scrollY - TOOLTIP_PADDING;
-        proposedLeft = getAlignPosition(targetRect.left + scrollX, targetRect.width, align);
+        proposedTop = targetRect.top - TOOLTIP_PADDING;
+        proposedLeft = getAlignPosition(targetRect.left, targetRect.width, align);
         break;
       case "bottom":
-        proposedTop = targetRect.bottom + scrollY + TOOLTIP_PADDING;
-        proposedLeft = getAlignPosition(targetRect.left + scrollX, targetRect.width, align);
+        proposedTop = targetRect.bottom + TOOLTIP_PADDING;
+        proposedLeft = getAlignPosition(targetRect.left, targetRect.width, align);
         break;
       case "left":
-        proposedTop = getAlignPosition(targetRect.top + scrollY, targetRect.height, align);
-        proposedLeft = targetRect.left + scrollX - TOOLTIP_WIDTH - TOOLTIP_PADDING;
+        proposedTop = getAlignPosition(targetRect.top, targetRect.height, align);
+        proposedLeft = targetRect.left - TOOLTIP_WIDTH - TOOLTIP_PADDING;
         break;
       case "right":
-        proposedTop = getAlignPosition(targetRect.top + scrollY, targetRect.height, align);
-        proposedLeft = targetRect.right + scrollX + TOOLTIP_PADDING;
+        proposedTop = getAlignPosition(targetRect.top, targetRect.height, align);
+        proposedLeft = targetRect.right + TOOLTIP_PADDING;
         break;
       default:
-        proposedTop = targetRect.bottom + scrollY + TOOLTIP_PADDING;
-        proposedLeft = getAlignPosition(targetRect.left + scrollX, targetRect.width, align);
+        proposedTop = targetRect.bottom + TOOLTIP_PADDING;
+        proposedLeft = getAlignPosition(targetRect.left, targetRect.width, align);
     }
     
     let finalTop = proposedTop;
@@ -190,16 +213,16 @@ export function CoachMarks(props: CoachMarksProps) {
     
     if (proposedTop < TOOLTIP_PADDING) {
       finalTop = TOOLTIP_PADDING;
-      if (targetRect.bottom + scrollY + TOOLTIP_PADDING < windowHeight - TOOLTIP_PADDING) {
-        finalTop = targetRect.bottom + scrollY + TOOLTIP_PADDING;
+      if (targetRect.bottom + TOOLTIP_PADDING < windowHeight - TOOLTIP_PADDING) {
+        finalTop = targetRect.bottom + TOOLTIP_PADDING;
         proposedPosition = "bottom";
       }
-    } else if (proposedTop + 200 > windowHeight - TOOLTIP_PADDING) {
-      if (targetRect.top + scrollY - TOOLTIP_PADDING > TOOLTIP_PADDING) {
-        finalTop = targetRect.top + scrollY - TOOLTIP_PADDING - 200;
+    } else if (proposedTop + tooltipHeight > windowHeight - TOOLTIP_PADDING) {
+      if (targetRect.top - TOOLTIP_PADDING > TOOLTIP_PADDING) {
+        finalTop = targetRect.top - TOOLTIP_PADDING - tooltipHeight;
         proposedPosition = "top";
       } else {
-        finalTop = windowHeight - 200 - TOOLTIP_PADDING;
+        finalTop = windowHeight - tooltipHeight - TOOLTIP_PADDING;
       }
     }
     
@@ -226,8 +249,8 @@ export function CoachMarks(props: CoachMarksProps) {
             <rect x="0" y="0" width="100%" height="100%" fill="white" />
             {spotlightRect && (
               <rect
-                x={spotlightRect.x + (window.scrollX || window.pageXOffset)}
-                y={spotlightRect.y + (window.scrollY || window.pageYOffset)}
+                x={spotlightRect.x}
+                y={spotlightRect.y}
                 width={spotlightRect.width}
                 height={spotlightRect.height}
                 rx={8}
@@ -247,6 +270,7 @@ export function CoachMarks(props: CoachMarksProps) {
       </svg>
 
       <div
+        ref={tooltipRef}
         className="absolute bg-white rounded-2xl shadow-2xl p-6 text-left z-10 transition-all duration-200"
         style={{
           top: tooltipStyle.top,
@@ -272,11 +296,11 @@ export function CoachMarks(props: CoachMarksProps) {
 
         <div className="flex justify-between items-center">
           <div className="text-xs text-gray-500">
-            {currentStep + 1} / {steps.length}
+            {currentStepValue + 1} / {steps.length}
           </div>
 
           <div className="flex gap-2">
-            {currentStep > 0 && (
+            {currentStepValue > 0 && (
               <Button
                 variant="outline"
                 size="sm"
@@ -286,7 +310,7 @@ export function CoachMarks(props: CoachMarksProps) {
               </Button>
             )}
 
-            {currentStep < steps.length - 1 ? (
+            {currentStepValue < steps.length - 1 ? (
               <Button
                 variant="primary"
                 size="sm"
