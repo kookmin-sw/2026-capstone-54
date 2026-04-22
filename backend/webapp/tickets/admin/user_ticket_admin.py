@@ -173,7 +173,7 @@ class UserTicketAdmin(ModelAdmin):
       ),
       path(
         "autocomplete/",
-        self.admin_site.admin_view(UserAutocompleteView.as_view(model_admin=self)),
+        self.admin_site.admin_view(UserAutocompleteView.as_view()),
         name="tickets_userticket_autocomplete",
       ),
     ]
