@@ -105,7 +105,7 @@ export function PasswordChangeForm({
         <button
           className="font-plex-sans-kr text-[14px] font-bold text-white bg-[#0A0A0A] border-none rounded-lg px-6 py-[10px] cursor-pointer transition-all duration-150 flex items-center gap-[7px] hover:opacity-85 hover:-translate-y-px disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0 max-[640px]:justify-center"
           onClick={onSave}
-          disabled={saving || !passwordDraft.currentPassword || !passwordDraft.newPassword || pwdMatch === false}
+          disabled={saving || !passwordDraft.currentPassword || !passwordDraft.newPassword || pwdMatch !== true}
         >
           {saving ? <span className="w-[14px] h-[14px] border-2 border-white/40 border-t-white rounded-full animate-[spSpin_0.6s_linear_infinite]" /> : <span>변경하기</span>}
         </button>
