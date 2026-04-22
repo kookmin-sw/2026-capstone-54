@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { useJdDetailStore, type JdStatus } from "@/features/jd";
+import { CompanyIcon } from "@/shared/ui/CompanyIcon";
 import {
   useUserJobDescriptionScrapingSse,
   type JobDescriptionCollectionStatus,
@@ -138,11 +139,8 @@ export function JdDetailPage() {
             <div className={`${cardCls} p-[36px_32px] relative overflow-hidden max-sm:p-[24px_16px]`}>
               <div className="absolute inset-0 bg-gradient-to-br from-[rgba(9,145,178,0.05)] to-[rgba(6,182,212,0.03)] pointer-events-none" />
               <div className="flex items-center gap-3.5 mb-[18px] relative">
-                <div
-                  className="w-[54px] h-[54px] rounded-lg flex items-center justify-center text-[22px] font-black text-white shrink-0 shadow-[0_4px_12px_rgba(0,0,0,0.12)]"
-                  style={{ background: jd.companyColor }}
-                >
-                  {jd.companyInitial}
+                <div className="w-[54px] h-[54px] rounded-lg shrink-0 shadow-[0_4px_12px_rgba(0,0,0,0.12)] overflow-hidden">
+                  <CompanyIcon categoryId={jd.categoryId} size={24} />
                 </div>
                 <div>
                   <div className="text-[13px] text-[#6B7280] font-semibold mb-0.5">{jd.company} · {jd.source}</div>

@@ -6,7 +6,7 @@ interface JdItem {
   company: string;
   role: string;
   stage: string;
-  platform: string;
+  categoryId: number;
   badgeLabel: string;
   badgeType: string;
   disabled: boolean;
@@ -32,7 +32,7 @@ export function JdSavedTab({ jdList, jdListLoading, selectedJdId, onSelectJd }: 
           onClick={() => { if (!jd.disabled) onSelectJd(jd.uuid); }}
         >
           <div className="w-8 h-8 rounded-lg shrink-0 overflow-hidden">
-              <CompanyIcon platform={jd.platform} title={jd.role} size={16} />
+              <CompanyIcon categoryId={jd.categoryId} size={16} />
             </div>
           <div className="flex-1 min-w-0">
             <div className="text-[12px] font-bold">{jd.company}</div>

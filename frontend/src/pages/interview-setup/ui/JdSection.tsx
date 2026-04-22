@@ -6,7 +6,7 @@ interface JdItem {
   company: string;
   role: string;
   stage: string;
-  platform: string;
+  categoryId: number;
   badgeLabel: string;
   badgeType: string;
   disabled: boolean;

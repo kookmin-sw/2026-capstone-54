@@ -5,12 +5,12 @@
  */
 
 import { userJobDescriptionApi } from "@/features/user-job-description";
+import { inferCategoryId } from "@/shared/ui/inferCategoryId";
 
 export interface SetupJdItem {
   /** UserJobDescription.uuid — 인터뷰 세션 생성 시 이 값을 그대로 사용. */
   uuid: string;
-  /** lucide-react 아이콘 선택을 위한 platform 문자열 */
-  platform: string;
+  categoryId: number;
   company: string;
   role: string;
   stage: string;
@@ -26,11 +26,12 @@ export async function fetchSetupJdListApi(): Promise<SetupJdItem[]> {
     const jd = item.jobDescription;
     const isReady = jd.collectionStatus === "done";
     const isFailed = jd.collectionStatus === "error";
+    const role = jd.title || "채용공고";
     return {
       uuid: item.uuid,
-      platform: jd.platform || "",
+      categoryId: inferCategoryId(jd.platform || "", role),
       company: jd.company || "수집 중",
-      role: jd.title || "채용공고",
+      role,
       stage: jd.location || jd.workType || jd.platform || "",
       badgeLabel: isReady ? "수집 완료" : isFailed ? "수집 실패" : "수집 중",
       badgeType: isReady ? "green" : "accent",
@@ -47,11 +48,12 @@ export async function fetchSetupJdByUuidApi(uuid: string): Promise<SetupJdItem |
     const isReady = jd.collectionStatus === "done";
     const isFailed = jd.collectionStatus === "error";
 
+    const role = jd.title || "채용공고";
     return {
       uuid: item.uuid,
-      platform: jd.platform || "",
+      categoryId: inferCategoryId(jd.platform || "", role),
       company: jd.company || "수집 중",
-      role: jd.title || "채용공고",
+      role,
       stage: jd.location || jd.workType || jd.platform || "",
       badgeLabel: isReady ? "수집 완료" : isFailed ? "수집 실패" : "수집 중",
       badgeType: isReady ? "green" : "accent",
