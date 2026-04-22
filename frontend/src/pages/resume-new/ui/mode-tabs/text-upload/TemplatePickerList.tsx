@@ -2,6 +2,8 @@
 
 import { Loader2 } from "lucide-react";
 import { Alert, Button, Spinner } from "@/shared/ui";
+import { CompanyIcon } from "@/shared/ui/CompanyIcon";
+import { inferCategoryId } from "@/shared/ui/inferCategoryId";
 import type { ResumeTemplateListItem } from "@/features/resume";
 
 interface TemplatePickerListProps {
@@ -74,8 +76,8 @@ export function TemplatePickerList(props: TemplatePickerListProps) {
                   disabled={pickerLoadingUuid !== null}
                   className="flex items-start gap-3 p-3 rounded-lg border border-[#E5E7EB] bg-white text-left transition-all hover:border-[#0991B2] hover:bg-[#F0FDFE] disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-[#E6F7FA] flex items-center justify-center text-[14px] shrink-0">
-                    📄
+                  <div className="w-8 h-8 rounded-lg shrink-0 overflow-hidden">
+                    <CompanyIcon categoryId={inferCategoryId(category, t.job.name)} size={16} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-[13px] font-bold text-[#0A0A0A] truncate">{t.title}</div>

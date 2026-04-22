@@ -1,5 +1,13 @@
 /** platform·title 키워드 → 카테고리 id 추론 */
 export function inferCategoryId(platform: string, title: string): number {
+  // 그룹/카테고리명이 직접 넘어온 경우 우선 매핑 (키워드 오탐 방지)
+  const p = platform.toLowerCase();
+  if (p.includes("인사") || p.includes("hr")) return 5;
+  if (p.includes("영업") || p.includes("서비스")) return 4;
+  if (p.includes("금융") || p.includes("회계")) return 3;
+  if (p.includes("마케팅") || p.includes("광고")) return 2;
+  if (p.includes("it") || p.includes("개발")) return 1;
+
   const src = `${platform} ${title}`.toLowerCase();
 
   // IT/개발 (1)
