@@ -84,7 +84,7 @@ export function PasswordChangeForm({
             />
             {passwordDraft.confirmPassword && (
               <p className="text-[11px] leading-[1.45]" style={{ color: pwdMatch ? "#059669" : "#EF4444" }}>
-                {pwdMatch ? "✓ 비밀번호가 일치합니다" : "✕ 비밀번호가 ��치하지 않습니다"}
+                {pwdMatch ? "✓ 비밀번호가 일치합니다" : "✕ 비밀번호가 일치하지 않습니다"}
               </p>
             )}
           </div>
