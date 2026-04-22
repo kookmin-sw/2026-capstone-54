@@ -3,7 +3,7 @@ from rest_framework import serializers
 
 
 class UpdateUserJobDescriptionSerializer(serializers.Serializer):
-  title = serializers.CharField(max_length=255, required=False)
+  title = serializers.CharField(max_length=255, required=False, allow_blank=True)
   application_status = serializers.ChoiceField(
     choices=ApplicationStatus.choices,
     required=False,
