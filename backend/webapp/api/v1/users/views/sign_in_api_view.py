@@ -5,10 +5,13 @@ from drf_spectacular.utils import extend_schema
 from rest_framework.response import Response
 from users.services import SignInService
 
+from .token_cookie import set_refresh_cookie
+
 
 @extend_schema(tags=["사용자"])
 class SignInAPIView(BaseAPIView):
   """로그인. email, password를 받아 JWT 토큰을 발급한다."""
+
   permission_classes = [AllowAny]
   serializer_class = SignInSerializer
 
@@ -27,8 +30,9 @@ class SignInAPIView(BaseAPIView):
     ).perform()
     response_data = {
       "access": str(token.access_token),
-      "refresh": str(token),
       "is_email_confirmed": user.is_email_confirmed,
       "is_profile_completed": user.is_profile_completed,
     }
-    return Response(response_data)
+    response = Response(response_data)
+    set_refresh_cookie(response, str(token))
+    return response

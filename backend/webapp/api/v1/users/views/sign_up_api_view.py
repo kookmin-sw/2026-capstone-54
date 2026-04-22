@@ -8,10 +8,13 @@ from rest_framework.response import Response
 from terms_documents.services import AgreeToTermsDocumentService
 from users.services import SignUpService
 
+from .token_cookie import set_refresh_cookie
+
 
 @extend_schema(tags=["사용자"])
 class SignUpAPIView(BaseAPIView):
   """회원가입. email, password, name을 받아 User를 생성하고 JWT 토큰을 발급한다."""
+
   permission_classes = [AllowAny]
   serializer_class = SignUpSerializer
 
@@ -41,8 +44,9 @@ class SignUpAPIView(BaseAPIView):
 
     response_data = {
       "access": str(token.access_token),
-      "refresh": str(token),
       "is_email_confirmed": user.is_email_confirmed,
       "is_profile_completed": user.is_profile_completed,
     }
-    return Response(response_data, status=status.HTTP_201_CREATED)
+    response = Response(response_data, status=status.HTTP_201_CREATED)
+    set_refresh_cookie(response, str(token))
+    return response

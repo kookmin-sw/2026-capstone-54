@@ -2,8 +2,9 @@ name: Create Coverage Report
 
 on:
   push:
-    branches:
-      - '**'
+    branches-ignore:
+      - 'coverage-docs'
+  delete:
   workflow_dispatch:
 
 permissions:
@@ -25,7 +26,7 @@ env:
 jobs:
   generate-coverage:
     runs-on: ubuntu-latest
-
+    if: github.event_name != 'delete'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -85,118 +86,154 @@ jobs:
           uv run coverage html
 
       - name: Commit and push coverage report to coverage-docs branch
-        if: github.event.deleted != true
         run: |
+          set -e
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions@github.com"
 
-          # Fetch existing coverage-docs branch if it exists
-          git fetch origin coverage-docs:coverage-docs 2>/dev/null || true
+          BRANCH_NAME="${{ github.ref_name }}"
+          BRANCH_DIR_ESCAPED="${BRANCH_NAME//\//_}"
+          BRANCH_DIR_ESCAPED="${BRANCH_DIR_ESCAPED//./_}"
 
-          # Create orphan branch locally (does not affect remote yet)
-          git checkout --orphan coverage-docs-new
+          # Debug: check if htmlcov exists
+          echo "=== Debug: Checking htmlcov ==="
+          ls -la webapp/htmlcov/ 2>/dev/null || echo "htmlcov not found!"
+          echo "BRANCH_NAME=$BRANCH_NAME"
+          echo "BRANCH_DIR_ESCAPED=$BRANCH_DIR_ESCAPED"
 
-          # Stage only the htmlcov output
-          git rm -rf . 2>/dev/null || true
+          # Try to fetch existing coverage-docs branch
+          if git fetch origin coverage-docs 2>/dev/null; then
+            # Branch exists - checkout
+            git checkout coverage-docs
+          else
+            # Branch doesn't exist - create fresh orphan branch
+            git checkout --orphan coverage-docs
+            git rm -rf . 2>/dev/null || true
+          fi
 
-          # Create branch-specific directory
-          BRANCH_DIR="${{ github.ref_name }}"
-          mkdir -p "$BRANCH_DIR"
-          cp -r webapp/htmlcov/* "$BRANCH_DIR/"
+          # Create branch directory and copy ONLY htmlcov content
+          mkdir -p "$BRANCH_DIR_ESCAPED"
 
-          # Generate index.html with branch links
-          cat > index.html << 'EOF'
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <meta charset="utf-8">
-            <title>Coverage Reports</title>
-            <style>
-              body { font-family: -apple-system, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }
-              h1 { border-bottom: 2px solid #333; padding-bottom: 10px; }
-              .branch-list { list-style: none; padding: 0; }
-              .branch-list li { margin: 15px 0; }
-              .branch-list a { font-size: 18px; color: #0366d6; text-decoration: none; }
-              .branch-list a:hover { text-decoration: underline; }
-              .timestamp { color: #666; font-size: 14px; }
-            </style>
-          </head>
-          <body>
-            <h1>Coverage Reports</h1>
-            <p class="timestamp">Last updated: TIMESTAMP</p>
-            <ul class="branch-list">
-          EOF
+          # Debug: verify copy
+          echo "=== Debug: Copying htmlcov ==="
+          cp -r webapp/htmlcov/* "$BRANCH_DIR_ESCAPED/" || echo "Copy failed!"
+          ls -la "$BRANCH_DIR_ESCAPED/" || echo "Directory not created!"
 
-          # Add links to all existing branch directories
-          for dir in */; do
-            if [ -f "$dir/index.html" ] && [ "$dir" != "coverage/" ]; then
-              branch="${dir%/}"
-              echo "              <li><a href="$branch/index.html">$branch</a></li>" >> index.html
-            fi
-          done
+          # Generate index.html with links to all branch reports
+          TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
 
-          cat >> index.html << 'EOF'
-            </ul>
-          </body>
-          </html>
-          EOF
+          {
+            echo '<!DOCTYPE html>'
+            echo '<html>'
+            echo '<head>'
+            echo '  <meta charset="utf-8">'
+            echo '  <title>Coverage Reports</title>'
+            echo '  <style>'
+            echo '    body { font-family: -apple-system, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }'
+            echo '    h1 { border-bottom: 2px solid #333; padding-bottom: 10px; }'
+            echo '    .branch-list { list-style: none; padding: 0; }'
+            echo '    .branch-list li { margin: 15px 0; }'
+            echo '    .branch-list a { font-size: 18px; color: #0366d6; text-decoration: none; }'
+            echo '    .branch-list a:hover { text-decoration: underline; }'
+            echo '    .timestamp { color: #666; font-size: 14px; }'
+            echo '  </style>'
+            echo '</head>'
+            echo '<body>'
+            echo '  <h1>Coverage Reports</h1>'
+            echo "  <p class=\"timestamp\">Last updated: $TIMESTAMP</p>"
+            echo '  <ul class="branch-list">'
 
-          # Replace timestamp
-          sed -i "s/TIMESTAMP/$(date '+%Y-%m-%d %H:%M:%S')/" index.html
+            for dir in */; do
+              if [ -f "$dir/index.html" ]; then
+                branch="${dir%/}"
+                # Show original branch name in text, use escaped name in href
+                original_branch="${branch//_/\/}"
+                echo "    <li><a href=\"$branch/index.html\">$original_branch</a></li>"
+              fi
+            done
 
-          # Clean up unwanted files
-          find . -name "*.pyc" -delete
+            echo '  </ul>'
+            echo '</body>'
+            echo '</html>'
+          } > index.html
+
+          # Clean pyc files anywhere
+          find . -name "*.pyc" -delete 2>/dev/null || true
           find . -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
 
           git add .
 
           if git diff --cached --quiet; then
-            echo "✅ No changes in coverage report. Skipping commit & push."
+            echo "No changes in coverage report. Skipping commit & push."
             exit 0
           fi
 
           git commit -m "Coverage Report - ${{ github.ref_name }} - $(date '+%Y-%m-%d %H:%M:%S')"
-
-          # Force push to coverage-docs without deleting the branch first
-          # This preserves the GitHub Pages branch association
-          git push origin coverage-docs-new:coverage-docs --force
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-
-      - name: Delete coverage report for deleted branch
-        if: github.event.deleted == true
-        run: |
-          DELETED_BRANCH="${{ github.event.ref }}"
-          echo "Deleting coverage report for branch: $DELETED_BRANCH"
-
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions@github.com"
-
-          git fetch origin coverage-docs:coverage-docs 2>/dev/null || true
-          git checkout coverage-docs
-
-          if [ -d "$DELETED_BRANCH" ]; then
-            rm -rf "$DELETED_BRANCH"
-            git add -A
-            git commit -m "Remove coverage report for deleted branch: $DELETED_BRANCH"
-            git push origin coverage-docs
-            echo "✅ Deleted $DELETED_BRANCH"
-          else
-            echo "No coverage report found for branch: $DELETED_BRANCH"
-          fi
+          git push origin coverage-docs --force
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
 
       - name: Post coverage report link
-        if: github.event.deleted != true
         run: |
+          BRANCH_NAME="${{ github.ref_name }}"
+          BRANCH_DIR_ESCAPED="${BRANCH_NAME//\//_}"
+          BRANCH_DIR_ESCAPED="${BRANCH_DIR_ESCAPED//./_}"
+
           REPO_NAME="${{ github.repository }}"
           PAGES_URL="https://${REPO_NAME#*/}.github.io/$REPO_NAME"
-          BRANCH_REPORT_URL="${PAGES_URL}/${{ github.ref_name }}/index.html"
+          BRANCH_REPORT_URL="${PAGES_URL}/${BRANCH_DIR_ESCAPED}/index.html"
 
           echo "coverage_url=$BRANCH_REPORT_URL" >> $GITHUB_OUTPUT
 
           echo "## Coverage Report" >> $GITHUB_STEP_SUMMARY
-          echo "📊 $BRANCH_REPORT_URL" >> $GITHUB_STEP_SUMMARY
+          echo "$BRANCH_REPORT_URL" >> $GITHUB_STEP_SUMMARY
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+
+  delete-coverage:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'delete'
+    steps:
+      - name: Checkout coverage-docs branch
+        run: |
+          # Check if coverage-docs branch exists
+          if git ls-remote --heads origin coverage-docs &>/dev/null; then
+            if git fetch origin coverage-docs && git checkout coverage-docs 2>/dev/null; then
+              : # Success
+            else
+              echo "Failed to checkout coverage-docs"
+              exit 1
+            fi
+          else
+            echo "No coverage-docs branch exists yet. Nothing to delete."
+            exit 0
+          fi
+
+          # Clean up any accidentally committed project files
+          for item in * .[^.]*; do
+            [ "$item" != ".git" ] && rm -rf "$item" 2>/dev/null || true
+          done
+
+      - name: Delete coverage report for deleted branch
+        run: |
+          DELETED_BRANCH="${{ github.event.ref }}"
+          echo "Deleting coverage report for branch: $DELETED_BRANCH"
+
+          BRANCH_DIR_ESCAPED="${DELETED_BRANCH//\//_}"
+          BRANCH_DIR_ESCAPED="${BRANCH_DIR_ESCAPED//./_}"
+
+          if [ -d "$BRANCH_DIR_ESCAPED" ]; then
+            rm -rf "$BRANCH_DIR_ESCAPED"
+
+            git config --global user.name "github-actions[bot]"
+            git config --global user.email "github-actions@github.com"
+
+            git add -A
+            git commit -m "Remove coverage report for deleted branch: $DELETED_BRANCH" || exit 0
+            git push origin coverage-docs
+            echo "Deleted $BRANCH_DIR_ESCAPED"
+          else
+            echo "No coverage report found for branch: $DELETED_BRANCH (tried: $BRANCH_DIR_ESCAPED)"
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}

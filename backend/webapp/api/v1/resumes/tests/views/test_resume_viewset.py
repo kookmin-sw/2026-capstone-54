@@ -10,6 +10,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from resumes.enums import AnalysisStatus
 from resumes.factories import TextResumeFactory
 from resumes.models import Resume, ResumeTextContent
+from subscriptions.factories import SubscriptionFactory
 from users.factories import UserFactory
 
 
@@ -69,6 +70,47 @@ class ResumeViewSetTests(TestCase):
     data = {"type": "invalid", "title": "이력서", "content": "내용"}
     response = self.client.post(self.list_url, data, format="json")
     self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+  @patch("resumes.services.mixins.resume_pipeline_mixin.current_app.send_task")
+  @patch("resumes.signals.resume_plan_limit_signal.GetCurrentSubscriptionService.perform")
+  def test_free_plan_resume_limit_reached_returns_400(self, mock_get_subscription, _mock_send_task):
+    """무료 플랜은 활성 이력서 3개를 초과해 생성할 수 없다."""
+    mock_get_subscription.return_value = None
+    TextResumeFactory.create_batch(2, user=self.user)
+    self.assertEqual(Resume.objects.filter(user=self.user).count(), 3)
+
+    response = self.client.post(
+      self.list_url,
+      {
+        "type": "text",
+        "title": "한도초과",
+        "content": "내용"
+      },
+      format="json",
+    )
+
+    self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+    self.assertIn("최대 3개의 이력서", str(response.data))
+
+  @patch("resumes.services.mixins.resume_pipeline_mixin.current_app.send_task")
+  @patch("resumes.signals.resume_plan_limit_signal.GetCurrentSubscriptionService.perform")
+  def test_pro_plan_can_create_over_three_resumes(self, mock_get_subscription, _mock_send_task):
+    """PRO 플랜은 이력서 생성 한도가 없다."""
+    mock_get_subscription.return_value = SubscriptionFactory.create(user=self.user, pro=True)
+    TextResumeFactory.create_batch(2, user=self.user)
+    self.assertEqual(Resume.objects.filter(user=self.user).count(), 3)
+
+    response = self.client.post(
+      self.list_url,
+      {
+        "type": "text",
+        "title": "네번째",
+        "content": "내용"
+      },
+      format="json",
+    )
+
+    self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
 
   # ── retrieve ──
 

@@ -8,6 +8,7 @@ from interviews.factories import InterviewSessionFactory, InterviewTurnFactory
 from rest_framework import status
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
+from subscriptions.factories import SubscriptionFactory
 from tickets.factories import UserTicketFactory
 from users.factories import UserFactory
 
@@ -117,3 +118,27 @@ class StartInterviewViewTests(TestCase):
 
     self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
     self.assertIn("이미 시작된 면접입니다", str(response.data))
+
+  def test_real_mode_free_plan_returns_403(self):
+    """무료 플랜 사용자의 실전 모드 시작은 403을 반환한다."""
+    self.session.interview_practice_mode = "real"
+    self.session.save(update_fields=["interview_practice_mode"])
+
+    response = self.client.post(self.url)
+
+    self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+    self.assertIn("실전 모드는 PRO", str(response.data))
+
+  def test_real_mode_pro_plan_returns_201(self):
+    """PRO 플랜 사용자의 실전 모드 시작은 허용된다."""
+    self.session.interview_practice_mode = "real"
+    self.session.save(update_fields=["interview_practice_mode"])
+    SubscriptionFactory.create(user=self.user, pro=True)
+
+    with patch("api.v1.interviews.views.start_interview_view.GenerateInitialQuestionsService") as MockService:
+      turns = InterviewTurnFactory.create_batch(2, interview_session=self.session)
+      MockService.return_value.perform.return_value = turns
+
+      response = self.client.post(self.url)
+
+    self.assertEqual(response.status_code, status.HTTP_201_CREATED)

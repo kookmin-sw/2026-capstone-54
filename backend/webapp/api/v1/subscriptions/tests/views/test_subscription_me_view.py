@@ -61,7 +61,7 @@ class SubscriptionMeViewTest(TestCase):
     self.assertEqual(response.status_code, 403)
 
   def test_response_fields(self):
-    """응답 필드 확인 — status, is_cancelled 포함"""
+    """응답 필드 확인 — status, is_cancelled, policy 포함"""
     response = self.client.get("/api/v1/subscriptions/me/")
     self.assertEqual(response.status_code, 200)
     expected_fields = {
@@ -70,6 +70,7 @@ class SubscriptionMeViewTest(TestCase):
       "plan_type_display",
       "status",
       "is_cancelled",
+      "policy",
       "started_at",
       "expires_at",
       "cancelled_at",
@@ -77,3 +78,12 @@ class SubscriptionMeViewTest(TestCase):
       "updated_at",
     }
     self.assertEqual(set(response.data.keys()), expected_fields)
+
+  def test_policy_contains_features_and_limits(self):
+    response = self.client.get("/api/v1/subscriptions/me/")
+
+    self.assertEqual(response.status_code, 200)
+    self.assertIn("limits", response.data["policy"])
+    self.assertIn("features", response.data["policy"])
+    self.assertEqual(response.data["policy"]["limits"]["max_active_resumes"], 3)
+    self.assertFalse(response.data["policy"]["features"]["real_mode_interview"])

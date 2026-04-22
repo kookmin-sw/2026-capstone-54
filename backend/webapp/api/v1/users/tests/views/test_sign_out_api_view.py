@@ -28,14 +28,17 @@ class SignOutAPIViewPropertyTests(TestCase):
     refresh_str = str(token)
 
     self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {str(token.access_token)}")
-    response = self.client.post(self.url, {"refresh": refresh_str}, format="json")
+    self.client.cookies["mefit_refresh"] = refresh_str
+    response = self.client.post(self.url, {}, format="json")
 
     self.assertEqual(response.status_code, status.HTTP_205_RESET_CONTENT)
+    self.assertEqual(response.cookies["mefit_refresh"].value, "")
 
     # 동일 토큰으로 재사용 시도 — 블랙리스트에 등록되어 실패해야 한다
     token2 = RefreshToken.for_user(self.user)
     self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {str(token2.access_token)}")
-    second_response = self.client.post(self.url, {"refresh": refresh_str}, format="json")
+    self.client.cookies["mefit_refresh"] = refresh_str
+    second_response = self.client.post(self.url, {}, format="json")
 
     self.assertEqual(second_response.status_code, status.HTTP_400_BAD_REQUEST)
 

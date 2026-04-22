@@ -41,7 +41,7 @@ class InterviewSessionListSerializer(serializers.ModelSerializer):
       jd = ujd.job_description
       company = jd.company or ""
       title = jd.title or ""
-      return f"{company} — {title}".strip(" —") if (company or title) else "채용공고"
+      return (f"{company} — {title}".strip(" —") if (company or title) else "채용공고")
     return "삭제된 채용공고"
 
   def get_anchor_questions(self, obj: InterviewSession) -> list[dict]:
