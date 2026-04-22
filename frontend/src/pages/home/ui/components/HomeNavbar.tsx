@@ -76,9 +76,7 @@ export function HomeNavbar({ menuOpen, onMenuToggle }: HomeNavbarProps) {
               type="daily"
               dailyAmount={policy?.freeDailyTicketAmount}
             />
-            {tickets.purchasedCount > 0 && (
-              <TicketIcon count={tickets.purchasedCount} type="bonus" />
-            )}
+            <TicketIcon count={tickets.purchasedCount} type="bonus" />
           </>
         )}
       </div>
