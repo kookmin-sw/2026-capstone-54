@@ -5,6 +5,7 @@ import { useSettingsStore } from "@/features/settings";
 import { useSubscriptionStore } from "@/features/subscription";
 import { TicketPolicyInfo } from "@/features/subscription/ui/TicketPolicyInfo";
 import { JobCategorySelector } from "./JobCategorySelector";
+import { JOB_STATUS_OPTIONS } from "@/features/onboarding";
 import type { SettingsPanel } from "@/features/settings";
 
 /* ── Password strength helper ── */
@@ -173,6 +174,24 @@ export function SettingsPage() {
                             onToggle: toggleJobId,
                           }}
                         />
+                      </div>
+                      <div className="flex flex-col gap-[5px] mt-4">
+                        <label className="font-plex-sans-kr text-[12px] font-bold text-[#0A0A0A] tracking-[0.1px]">현재 직업 상태</label>
+                        <div className="relative">
+                          <select
+                            className={inputClass}
+                            value={profileDraft.careerStage}
+                            onChange={(e) => setProfileDraftField("careerStage", e.target.value)}
+                            aria-label="현재 직업 상태"
+                          >
+                            {JOB_STATUS_OPTIONS.map((opt) => (
+                              <option key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </option>
+                            ))}
+                          </select>
+                          <svg className="absolute right-[14px] top-1/2 -translate-y-1/2 pointer-events-none" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9" /></svg>
+                        </div>
                       </div>
                     </div>
                   </div>

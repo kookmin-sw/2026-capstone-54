@@ -10,13 +10,13 @@ import {
 
 export const JOB_STATUS_OPTIONS = [
   { value: "", label: "선택해 주세요" },
-  { value: "student", label: "대학생/대학원생" },
-  { value: "job-seeker", label: "취업 준비생" },
-  { value: "new-grad", label: "신입 (1년 미만)" },
-  { value: "junior", label: "주니어 (1~3년)" },
-  { value: "mid", label: "미드레벨 (3~7년)" },
-  { value: "senior", label: "시니어 (7년 이상)" },
-  { value: "career-change", label: "이직 준비 중" },
+  { value: "university_student", label: "대학생" },
+  { value: "graduate_student", label: "대학원생" },
+  { value: "lt_1_year", label: "1년 미만" },
+  { value: "1_3_years", label: "1-3년" },
+  { value: "3_7_years", label: "3-7년" },
+  { value: "over_7_years", label: "7년 이상" },
+  { value: "other", label: "기타" },
 ] as const;
 
 interface OnboardingState {
@@ -28,14 +28,14 @@ interface OnboardingState {
   availableJobsLoading: boolean;
   selectedJobIds: number[];
 
-  jobStatus: string; // 프론트 전용 (백엔드 미지원)
+  careerStage: string;
   isLoading: boolean;
   error: string | null;
 
   loadJobCategories: () => Promise<void>;
   selectJobCategory: (jobCategoryId: number) => Promise<void>;
   toggleJobId: (jobId: number) => void;
-  setJobStatus: (status: string) => void;
+  setCareerStage: (status: string) => void;
   submitProfile: () => Promise<boolean>;
   clearError: () => void;
 }
@@ -49,7 +49,7 @@ export const useOnboardingStore = create<OnboardingState>()((set, get) => ({
   availableJobsLoading: false,
   selectedJobIds: [],
 
-  jobStatus: "",
+  careerStage: "",
   isLoading: false,
   error: null,
 
@@ -91,10 +91,10 @@ export const useOnboardingStore = create<OnboardingState>()((set, get) => ({
       return { selectedJobIds: [...state.selectedJobIds, jobId] };
     }),
 
-  setJobStatus: (status) => set({ jobStatus: status }),
+  setCareerStage: (status) => set({ careerStage: status }),
 
   submitProfile: async () => {
-    const { selectedJobCategoryId, selectedJobIds } = get();
+    const { selectedJobCategoryId, selectedJobIds, careerStage } = get();
     if (!selectedJobCategoryId) {
       set({ error: "희망 직군을 선택해주세요." });
       return false;
@@ -108,6 +108,7 @@ export const useOnboardingStore = create<OnboardingState>()((set, get) => ({
       await submitOnboardingProfileApi({
         jobCategoryId: selectedJobCategoryId,
         jobIds: selectedJobIds,
+        careerStage: careerStage || undefined,
       });
       set({ isLoading: false });
       return true;

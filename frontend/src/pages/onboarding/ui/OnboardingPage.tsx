@@ -13,13 +13,13 @@ export function OnboardingPage() {
     availableJobs,
     availableJobsLoading,
     selectedJobIds,
-    jobStatus,
+    careerStage,
     isLoading,
     error,
     loadJobCategories,
     selectJobCategory,
     toggleJobId,
-    setJobStatus,
+    setCareerStage,
     submitProfile,
     clearError,
   } = useOnboardingStore();
@@ -269,8 +269,8 @@ export function OnboardingPage() {
             <div className="relative mb-6">
               <select
                 className="w-full py-[14px] pl-4 pr-10 font-plex-sans-kr text-[15px] text-[#0A0A0A] bg-white border border-[#E5E7EB] rounded-lg outline-none appearance-none cursor-pointer transition-[border-color] duration-200 focus:border-[#0991B2]"
-                value={jobStatus}
-                onChange={(e) => setJobStatus(e.target.value)}
+                value={careerStage}
+                onChange={(e) => setCareerStage(e.target.value)}
                 aria-label="현재 직업 상태"
               >
                 {JOB_STATUS_OPTIONS.map((opt) => (

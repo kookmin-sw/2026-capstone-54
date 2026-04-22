@@ -16,6 +16,7 @@ export interface SettingsProfile {
   jobCategory: JobCategory | null;
   jobIds: number[];
   jobs: Job[];
+  careerStage: string;
 }
 
 export interface SettingsNotifications {
@@ -101,6 +102,7 @@ export async function fetchSettingsApi(): Promise<{ success: boolean; data?: Set
       jobCategory: profileData?.jobCategory ?? null,
       jobIds: profileData?.jobs?.map((j) => j.id) ?? [],
       jobs: profileData?.jobs ?? [],
+      careerStage: profileData?.careerStage ?? "",
     };
 
     // my-consents에서 이용약관/개인정보처리방침 동의일 추출
@@ -152,9 +154,10 @@ export async function uploadAvatarApi(file: File): Promise<{ success: boolean; a
 export async function updateProfileApi(payload: {
   jobCategoryId: number;
   jobIds: number[];
+  careerStage?: string;
 }): Promise<ApiResult> {
   try {
-    await profileApi.saveMyProfile({ jobCategoryId: payload.jobCategoryId, jobIds: payload.jobIds });
+    await profileApi.saveMyProfile({ jobCategoryId: payload.jobCategoryId, jobIds: payload.jobIds, careerStage: payload.careerStage });
     return { success: true, message: "프로필이 저장되었습니다." };
   } catch {
     return { success: false, message: "저장에 실패했습니다." };
