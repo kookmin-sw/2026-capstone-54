@@ -21,6 +21,7 @@ type ActionMode =
   | "finished";
 
 interface SessionActionPanelProps {
+  className?: string;
   machinePhase: MachinePhase;
   isRealMode: boolean;
   countdown: number | null;
@@ -51,6 +52,7 @@ function deriveActionMode(machinePhase: MachinePhase, isRealMode: boolean): Acti
 }
 
 export function SessionActionPanel({
+  className,
   machinePhase, isRealMode, countdown, isModelLoading,
   interviewPhase, audioLevel, finalText, interimText,
   onStart, onPracticeStart, onSubmitAnswer,
@@ -83,7 +85,7 @@ export function SessionActionPanel({
   const showLoading = mode === "loading" || mode === "starting" || (mode === "not_started" && isModelLoading);
 
   return (
-    <div className="shrink-0 p-4 border-b border-white/10 flex flex-col gap-2">
+    <div className={`shrink-0 p-4 border-b border-white/10 flex flex-col gap-2 ${className || ""}`}>
       {(mode === "loading" || mode === "not_started" || mode === "starting") && (
         <button
           onClick={onStart}
