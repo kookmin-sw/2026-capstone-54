@@ -1,11 +1,12 @@
 /** label과 error 메시지를 포함하는 텍스트 입력 필드. */
+import type React from "react";
 import type { InputHTMLAttributes } from "react";
 
 interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "className"> {
   label?: string;
   error?: string;
   helperText?: string;
-  icon?: string;
+  icon?: React.ReactNode;
   required?: boolean;
   fullWidth?: boolean;
 }
@@ -33,7 +34,7 @@ export function Input({
       )}
       <div className="relative">
         {icon && (
-          <span className="absolute left-[14px] top-1/2 -translate-y-1/2 text-base pointer-events-none">
+          <span className="absolute left-[14px] top-1/2 -translate-y-1/2 pointer-events-none flex items-center text-[#9CA3AF]">
             {icon}
           </span>
         )}
