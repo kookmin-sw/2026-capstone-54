@@ -1,11 +1,12 @@
 import { SelectableCard } from "@/shared/ui/SelectableCard";
+import { CompanyIcon } from "@/shared/ui/CompanyIcon";
 
 interface JdItem {
   uuid: string;
   company: string;
   role: string;
   stage: string;
-  icon: string;
+  platform: string;
   badgeLabel: string;
   badgeType: string;
   disabled: boolean;
@@ -30,7 +31,9 @@ export function JdSavedTab({ jdList, jdListLoading, selectedJdId, onSelectJd }: 
           disabled={jd.disabled}
           onClick={() => { if (!jd.disabled) onSelectJd(jd.uuid); }}
         >
-          <div className="w-8 h-8 rounded-lg bg-white border border-[#E5E7EB] flex items-center justify-center text-sm shrink-0">{jd.icon}</div>
+          <div className="w-8 h-8 rounded-lg shrink-0 overflow-hidden">
+              <CompanyIcon platform={jd.platform} title={jd.role} size={16} />
+            </div>
           <div className="flex-1 min-w-0">
             <div className="text-[12px] font-bold">{jd.company}</div>
             <div className="text-[11px] text-[#6B7280] mt-px">{jd.role} · {jd.stage}</div>
