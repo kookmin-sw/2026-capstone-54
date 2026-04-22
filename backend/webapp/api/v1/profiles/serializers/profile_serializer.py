@@ -1,3 +1,4 @@
+from profiles.enums import CareerStage
 from profiles.models import Job, JobCategory, Profile
 from rest_framework import serializers
 
@@ -6,7 +7,7 @@ from .job_serializer import JobSerializer
 
 
 class ProfileSerializer(serializers.ModelSerializer):
-  """프로필 직렬화 (쓰기: job_category_id / job_ids, 읽기: 중첩 객체)"""
+  """프로필 직렬화 (쓰기: job_category_id / job_ids / career_stage, 읽기: 중첩 객체)"""
 
   job_category_id = serializers.PrimaryKeyRelatedField(
     queryset=JobCategory.objects.all(),
@@ -19,6 +20,10 @@ class ProfileSerializer(serializers.ModelSerializer):
     source="jobs",
     write_only=True,
   )
+  career_stage = serializers.ChoiceField(
+    choices=CareerStage.choices,
+    required=False,
+  )
 
   job_category = JobCategorySerializer(read_only=True)
   jobs = JobSerializer(many=True, read_only=True)
@@ -30,6 +35,7 @@ class ProfileSerializer(serializers.ModelSerializer):
       "user",
       "job_category_id",
       "job_ids",
+      "career_stage",
       "job_category",
       "jobs",
       "created_at",
@@ -57,7 +63,10 @@ class ProfileSerializer(serializers.ModelSerializer):
 
   def update(self, instance, validated_data):
     jobs = validated_data.pop("jobs", None)
+    career_stage = validated_data.pop("career_stage", None)
     instance.job_category = validated_data.get("job_category", instance.job_category)
+    if career_stage is not None:
+      instance.career_stage = career_stage
     instance.save()
     if jobs is not None:
       instance.jobs.set(jobs)

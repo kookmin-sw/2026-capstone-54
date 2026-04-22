@@ -3,7 +3,7 @@ from django.test import TestCase
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.test import APIRequestFactory
+from rest_framework.test import APIRequestFactory, force_authenticate
 from users.factories import UserFactory
 
 factory = APIRequestFactory()
@@ -36,8 +36,7 @@ class BaseGenericViewSetAuthTest(TestCase):
   def test_authenticated_request_returns_200(self):
     """인증된 요청 시 200 반환 확인"""
     request = factory.get("/test/ping/")
-    request.user = self.user
-    request._dont_enforce_csrf_checks = True
+    force_authenticate(request, user=self.user)
     response = self.ping_view(request)
     self.assertEqual(response.status_code, status.HTTP_200_OK)
     self.assertEqual(response.data["message"], "pong")

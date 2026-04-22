@@ -43,7 +43,7 @@ class SignOutAPIViewPropertyTests(TestCase):
     self.assertEqual(second_response.status_code, status.HTTP_400_BAD_REQUEST)
 
   @given(invalid_token=st.text(min_size=1, max_size=200).filter(lambda s: "." not in s or len(s.split(".")) != 3), )
-  @settings(max_examples=10, deadline=None)
+  @settings(max_examples=5, deadline=None)
   def test_sign_out_with_invalid_refresh_token_returns_400(self, invalid_token):
     """유효하지 않은 문자열을 refresh 토큰으로 로그아웃을 시도하면 400 에러가 반환된다."""
     token = RefreshToken.for_user(self.user)

@@ -3,7 +3,7 @@ from common.views import BaseViewSet
 from django.db import models
 from django.test import TestCase
 from rest_framework import serializers, status
-from rest_framework.test import APIRequestFactory
+from rest_framework.test import APIRequestFactory, force_authenticate
 from users.factories import UserFactory
 
 factory = APIRequestFactory()
@@ -11,6 +11,7 @@ factory = APIRequestFactory()
 
 class ViewSetTestModel(BaseModel):
   """테스트용 구체 모델"""
+
   name = models.CharField(max_length=100)
 
   class Meta(BaseModel.Meta):
@@ -49,16 +50,14 @@ class BaseViewSetAuthTest(TestCase):
   def test_authenticated_list_returns_200(self):
     """인증된 list 요청 시 200 반환 확인"""
     request = factory.get("/test/")
-    request.user = self.user
-    request._dont_enforce_csrf_checks = True
+    force_authenticate(request, user=self.user)
     response = self.list_view(request)
     self.assertEqual(response.status_code, status.HTTP_200_OK)
 
   def test_authenticated_create_returns_201(self):
     """인증된 create 요청 시 201 반환 확인"""
     request = factory.post("/test/", {"name": "new item"}, format="json")
-    request.user = self.user
-    request._dont_enforce_csrf_checks = True
+    force_authenticate(request, user=self.user)
     response = self.create_view(request)
     self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
