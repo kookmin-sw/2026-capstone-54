@@ -2,6 +2,7 @@ import { Square } from "lucide-react";
 import type { InterviewSession } from "@/features/interview-session";
 
 interface SessionHeaderProps {
+  className?: string;
   interviewSession: InterviewSession | null;
   currentInterviewTurnIndex: number;
   hasStarted: boolean;
@@ -12,11 +13,12 @@ interface SessionHeaderProps {
 }
 
 export function SessionHeader({
+  className,
   interviewSession, currentInterviewTurnIndex,
   hasStarted, isFinished, difficultyLabel, practiceModeLabel, onFinish,
 }: SessionHeaderProps) {
   return (
-    <header className="h-14 border-b border-white/10 flex items-center justify-between px-6 shrink-0 bg-[#0d1826]/80 backdrop-blur">
+    <header className={`h-14 border-b border-white/10 flex items-center justify-between px-6 shrink-0 bg-[#0d1826]/80 backdrop-blur ${className || ""}`}>
       <div className="flex items-center gap-3">
         <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse" />
         <span className="text-sm font-bold text-slate-300">

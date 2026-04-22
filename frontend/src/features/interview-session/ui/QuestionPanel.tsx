@@ -3,6 +3,7 @@ import type { InterviewTurn } from "../api/types";
 import type { InterviewPhase } from "../model/types";
 
 interface QuestionPanelProps {
+  className?: string;
   currentInterviewTurn: InterviewTurn | null;
   interviewPhase: InterviewPhase;
   currentTurnIndex: number;
@@ -17,6 +18,7 @@ interface QuestionPanelProps {
 }
 
 export function QuestionPanel({
+  className,
   currentInterviewTurn,
   interviewPhase,
   currentTurnIndex,
@@ -31,7 +33,7 @@ export function QuestionPanel({
   const isGenerating = interviewPhase === "generating_followup" || interviewPhase === "starting";
 
   return (
-    <div className="bg-slate-800/60 border border-white/10 rounded-2xl p-6 min-h-[260px] flex flex-col">
+    <div className={`bg-slate-800/60 border border-white/10 rounded-2xl p-6 min-h-[260px] flex flex-col ${className || ""}`}>
       {/* ── 상단: 라벨 + 카운터 + TTS 컨트롤 ── */}
       <div className="flex items-center gap-2 mb-3">
         <span className="text-[10px] font-bold tracking-widest uppercase text-indigo-400">
