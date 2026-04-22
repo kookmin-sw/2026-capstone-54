@@ -38,7 +38,6 @@ function App() {
       "/",
       "/login",
       "/sign-up",
-      "/verify-email",
     ]);
     return publicAuthPaths.has(window.location.pathname);
   };
@@ -75,9 +74,9 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/sign-up" element={<SignUpPage />} />
-        <Route path="/verify-email" element={<VerifyEmailPage />} />
 
         {/* ── 보호 라우트 (로그인 필요) ── */}
+        <Route path="/verify-email" element={<ProtectedRoute><VerifyEmailPage /></ProtectedRoute>} />
         <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
         <Route path="/jd/add" element={<ProtectedRoute><JdAddPage /></ProtectedRoute>} />
         <Route path="/jd/:uuid" element={<ProtectedRoute><JdDetailPage /></ProtectedRoute>} />

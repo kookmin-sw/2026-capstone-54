@@ -5,7 +5,7 @@ import { useOnboardingStore, JOB_STATUS_OPTIONS } from "@/features/onboarding";
 
 export function OnboardingPage() {
   const navigate = useNavigate();
-  const { pendingEmail } = useAuthStore();
+  const { user } = useAuthStore();
   const {
     jobCategories,
     jobCategoriesLoading,
@@ -24,7 +24,7 @@ export function OnboardingPage() {
     clearError,
   } = useOnboardingStore();
 
-  const email = pendingEmail || "hello@mefit.kr";
+  const email = user?.email ?? "hello@mefit.kr";
 
   // 자동완성 상태
   const [acOpen, setAcOpen] = useState(false);

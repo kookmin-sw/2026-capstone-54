@@ -57,7 +57,9 @@ export const useAuthStore = create<AuthState>()((set) => ({
       set({ isLoading: false, error: res.message });
       return false;
     }
-    set({ isLoading: false, pendingEmail: email });
+    // 회원가입 후 토큰이 설정되었으므로 사용자 정보 조회
+    const me = await getMeApi();
+    set({ isLoading: false, pendingEmail: email, user: me });
     return true;
   },
 
@@ -91,7 +93,9 @@ export const useAuthStore = create<AuthState>()((set) => ({
       set({ isVerifying: false, error: res.message });
       return false;
     }
-    set({ isVerifying: false });
+    // 인증된 사용자 -  최신 사용자 정보 업데이트
+    const me = await getMeApi();
+    set({ isVerifying: false, user: me });
     return true;
   },
 
