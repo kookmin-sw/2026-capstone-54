@@ -217,10 +217,10 @@ export async function deleteInterviewDataApi(): Promise<ApiResult> {
   }
 }
 
-/* ── Delete Account ── */
+/* ── Delete Account (unregister) ── */
 export async function deleteAccountApi(): Promise<ApiResult> {
   try {
-    await apiRequest("/api/v1/users/", { method: "DELETE", auth: true });
+    await apiRequest("/api/v1/users/unregister/", { method: "DELETE", auth: true });
     return { success: true, message: "계정이 탈퇴 처리되었습니다." };
   } catch {
     return { success: false, message: "탈퇴 처리에 실패했습니다." };
