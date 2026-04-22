@@ -10,7 +10,7 @@
 
 import { apiRequest } from "@/shared/api/client";
 import type { PaginatedResponse } from "@/shared/api";
-import type { CreatedUserJobDescription, UserJobDescription } from "./types";
+import type { CreatedUserJobDescription, UserJobDescription, UserJobDescriptionStats } from "./types";
 
 const BASE = "/api/v1/user-job-descriptions";
 
@@ -64,5 +64,5 @@ export const userJobDescriptionApi = {
     apiRequest<void>(`${BASE}/${uuid}/`, { method: "DELETE", auth: true }),
 
   getStats: () =>
-    apiRequest<{ total: number; planned: number; saved: number; applied: number }>(`${BASE}/stats/count/`, { auth: true }),
+    apiRequest<UserJobDescriptionStats>(`${BASE}/stats/count/`, { auth: true }),
 };

@@ -9,7 +9,7 @@
  */
 
 import { create } from "zustand";
-import { userJobDescriptionApi, type JobDescriptionCollectionStatus, type UserJobDescription } from "@/features/user-job-description";
+import { userJobDescriptionApi, type JobDescriptionCollectionStatus, type UserJobDescription, type UserJobDescriptionStats } from "@/features/user-job-description";
 import {
   getCompanyColor,
   getCompanyInitial,
@@ -43,14 +43,9 @@ export interface JdListItem {
   raw: UserJobDescription;
 }
 
-export interface JdListStats {
-  total: number;
-  planned: number;
-  applied: number;
-  saved: number;
-}
-
 export type FilterKey = "all" | "planned" | "applied" | "saved";
+
+export type JdListStats = UserJobDescriptionStats;
 
 interface JdListState {
   items: JdListItem[];
