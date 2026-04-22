@@ -4,12 +4,12 @@ import { Link, useNavigate } from "react-router-dom";
 
 export function VerifyEmailPage() {
   const navigate = useNavigate();
-  const { pendingEmail, isVerifying, isResending, error, resendVerification, verifyCode, logout, clearError } = useAuthStore();
+  const { user, isVerifying, isResending, error, resendVerification, verifyCode, logout, clearError } = useAuthStore();
   const [resent, setResent] = useState(false);
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  const email = pendingEmail || "hello@mefit.kr";
+  const email = user?.email ?? "hello@mefit.kr";
 
   const handleResend = async () => {
     setResent(false);

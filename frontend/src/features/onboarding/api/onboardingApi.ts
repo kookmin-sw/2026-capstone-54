@@ -16,6 +16,7 @@ export async function fetchJobsByCategoryApi(jobCategoryId: number): Promise<Job
 export async function submitOnboardingProfileApi(payload: {
   jobCategoryId: number;
   jobIds: number[];
+  careerStage?: string;
 }): Promise<void> {
   await profileApi.saveMyProfile(payload);
 }

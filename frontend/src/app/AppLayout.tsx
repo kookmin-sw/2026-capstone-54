@@ -12,7 +12,7 @@ interface AppLayoutProps {
 }
 
 /** Pages that use their own full-screen layout (no nav/sidebar) */
-const FULL_SCREEN_PREFIXES = ["/interview/session/", "/interview/precheck/"];
+const FULL_SCREEN_PREFIXES = ["/interview/session/", "/interview/precheck/", "/verify-email", "/onboarding"];
 
 export function AppLayout({ children }: AppLayoutProps) {
   useNotificationToast();

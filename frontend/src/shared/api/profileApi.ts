@@ -16,6 +16,7 @@ export interface UserProfile {
   user: number;
   jobCategory: JobCategory;
   jobs: Job[];
+  careerStage: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -23,6 +24,7 @@ export interface UserProfile {
 export interface SaveProfileParams {
   jobCategoryId: number;
   jobIds: number[];
+  careerStage?: string;
 }
 
 export interface PaginatedJobCategories {
@@ -51,7 +53,11 @@ export const profileApi = {
     apiRequest<UserProfile>("/api/v1/profiles/me/", {
       method: "POST",
       auth: true,
-      body: JSON.stringify({ jobCategoryId: params.jobCategoryId, jobIds: params.jobIds }),
+      body: JSON.stringify({
+        jobCategoryId: params.jobCategoryId,
+        jobIds: params.jobIds,
+        ...(params.careerStage && { career_stage: params.careerStage }),
+      }),
     }),
 
   getAvatar: () =>
