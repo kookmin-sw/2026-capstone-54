@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib import admin, messages
 from django.contrib.auth import get_user_model
+from django.db import transaction
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import path, reverse
@@ -72,7 +73,7 @@ class TicketActionAdminForm(forms.Form):
   )
   user = UnfoldAdminAutocompleteModelChoiceField(
     label="사용자",
-    queryset=User.objects.all(),
+    queryset=User.objects.filter(is_active=True),
     url_path="admin:tickets_userticket_autocomplete",
     help_text="작업할 사용자를 선택하세요.",
   )
@@ -102,6 +103,7 @@ class TicketActionAdminView(UnfoldModelAdminViewMixin, TemplateView):
     context.update({"form": form})
     return context
 
+  @transaction.atomic
   def post(self, request, *args, **kwargs):
     form = TicketActionAdminForm(request.POST)
     if not form.is_valid():
@@ -127,7 +129,7 @@ class TicketActionAdminView(UnfoldModelAdminViewMixin, TemplateView):
         request,
         f"{user.email}에게 {action_labels[action_type]} 완료 (수량: {amount})",
       )
-    except (ValueError, Exception) as e:
+    except ValueError as e:
       messages.error(request, f"오류: {e}")
       return self.get(request, *args, **kwargs)
 
@@ -166,12 +168,12 @@ class UserTicketAdmin(ModelAdmin):
     custom_urls = [
       path(
         "ticket-action/",
-        TicketActionAdminView.as_view(model_admin=self),
+        self.admin_site.admin_view(TicketActionAdminView.as_view(model_admin=self)),
         name="tickets_userticket_action_form",
       ),
       path(
         "autocomplete/",
-        UserAutocompleteView.as_view(),
+        self.admin_site.admin_view(UserAutocompleteView.as_view(model_admin=self)),
         name="tickets_userticket_autocomplete",
       ),
     ]
