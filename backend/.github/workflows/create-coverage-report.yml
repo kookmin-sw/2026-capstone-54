@@ -111,10 +111,8 @@ jobs:
             git rm -rf . 2>/dev/null || true
           fi
 
-          # Create branch directory and copy ONLY htmlcov content
           mkdir -p "$BRANCH_DIR_ESCAPED"
-
-          # Debug: verify copy
+          echo -n "$BRANCH_NAME" > "$BRANCH_DIR_ESCAPED/.branch-name"
           echo "=== Debug: Copying htmlcov ==="
           cp -r webapp/htmlcov/* "$BRANCH_DIR_ESCAPED/" || echo "Copy failed!"
           ls -la "$BRANCH_DIR_ESCAPED/" || echo "Directory not created!"
@@ -146,8 +144,13 @@ jobs:
             for dir in */; do
               if [ -f "$dir/index.html" ]; then
                 branch="${dir%/}"
-                # Show original branch name in text, use escaped name in href
-                original_branch="${branch//_/\/}"
+                # Read original branch name from .branch-name file if exists
+                if [ -f "$dir/.branch-name" ]; then
+                  original_branch="$(cat "$dir/.branch-name")"
+                else
+                  # Fallback: just show escaped name
+                  original_branch="$branch"
+                fi
                 echo "    <li><a href=\"$branch/index.html\">$original_branch</a></li>"
               fi
             done
@@ -233,9 +236,52 @@ jobs:
             git config --global user.name "github-actions[bot]"
             git config --global user.email "github-actions@github.com"
 
+            # Regenerate index.html
+            TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+            {
+              echo '<!DOCTYPE html>'
+              echo '<html>'
+              echo '<head>'
+              echo '  <meta charset="utf-8">'
+              echo '  <title>Coverage Reports</title>'
+              echo '  <style>'
+              echo '    body { font-family: -apple-system, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }'
+              echo '    h1 { border-bottom: 2px solid #333; padding-bottom: 10px; }'
+              echo '    .branch-list { list-style: none; padding: 0; }'
+              echo '    .branch-list li { margin: 15px 0; }'
+              echo '    .branch-list a { font-size: 18px; color: #0366d6; text-decoration: none; }'
+              echo '    .branch-list a:hover { text-decoration: underline; }'
+              echo '    .timestamp { color: #666; font-size: 14px; }'
+              echo '  </style>'
+              echo '</head>'
+              echo '<body>'
+              echo '  <h1>Coverage Reports</h1>'
+              echo "  <p class=\"timestamp\">Last updated: $TIMESTAMP</p>"
+              echo '  <ul class="branch-list">'
+
+              for dir in */; do
+                if [ -f "$dir/index.html" ]; then
+                  branch="${dir%/}"
+                  if [ -f "$dir/.branch-name" ]; then
+                    original_branch="$(cat "$dir/.branch-name")"
+                  else
+                    original_branch="$branch"
+                  fi
+                  echo "    <li><a href=\"$branch/index.html\">$original_branch</a></li>"
+                fi
+              done
+
+              echo '  </ul>'
+              echo '</body>'
+              echo '</html>'
+            } > index.html
+
             git add -A
-            git commit -m "Remove coverage report for deleted branch: $DELETED_BRANCH" || exit 0
-            git push origin coverage-docs
+            if git diff --cached --quiet; then
+              exit 0
+            fi
+            git commit -m "Remove coverage report for deleted branch: $DELETED_BRANCH"
+            git push origin coverage-docs --force
             echo "Deleted $BRANCH_DIR_ESCAPED"
           else
             echo "No coverage report found for branch: $DELETED_BRANCH (tried: $BRANCH_DIR_ESCAPED)"
