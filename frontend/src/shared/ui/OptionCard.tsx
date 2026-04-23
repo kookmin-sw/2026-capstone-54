@@ -5,7 +5,7 @@ interface OptionCardProps {
   selected: boolean;
   disabled?: boolean;
   onClick: () => void;
-  icon?: string;
+  icon?: ReactNode;
   title: string;
   description?: string;
   badge?: ReactNode;
@@ -33,7 +33,7 @@ export function OptionCard({
     >
       {(icon || badge) && (
         <div className="flex items-center justify-between mb-2">
-          {icon && <span className="text-xl">{icon}</span>}
+          {icon && <span className="flex items-center">{icon}</span>}
           {badge}
         </div>
       )}

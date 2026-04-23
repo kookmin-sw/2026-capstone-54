@@ -5,11 +5,12 @@
  */
 
 import { userJobDescriptionApi } from "@/features/user-job-description";
+import { inferCategoryId } from "@/shared/ui/inferCategoryId";
 
 export interface SetupJdItem {
   /** UserJobDescription.uuid — 인터뷰 세션 생성 시 이 값을 그대로 사용. */
   uuid: string;
-  icon: string;
+  categoryId: number;
   company: string;
   role: string;
   stage: string;
@@ -19,53 +20,37 @@ export interface SetupJdItem {
   disabled: boolean;
 }
 
-function pickIcon(platform: string, title: string): string {
-  const source = `${platform} ${title}`.toLowerCase();
-  if (source.includes("bank")) return "🏦";
-  if (source.includes("pay") || source.includes("toss")) return "💳";
-  if (source.includes("naver")) return "🟢";
-  if (source.includes("kakao")) return "🟡";
-  if (source.includes("design") || source.includes("디자인")) return "🎨";
-  return "🏢";
+function toBadgeLabel(isReady: boolean, isFailed: boolean): string {
+  if (isReady) return "수집 완료";
+  if (isFailed) return "수집 실패";
+  return "수집 중";
+}
+
+function toSetupJdItem(uuid: string, jd: { platform?: string; title?: string; company?: string; location?: string; workType?: string; collectionStatus?: string }): SetupJdItem {
+  const isReady = jd.collectionStatus === "done";
+  const isFailed = jd.collectionStatus === "error";
+  const role = jd.title || "채용공고";
+  return {
+    uuid,
+    categoryId: inferCategoryId(jd.platform || "", role),
+    company: jd.company || "수집 중",
+    role,
+    stage: jd.location || jd.workType || jd.platform || "",
+    badgeLabel: toBadgeLabel(isReady, isFailed),
+    badgeType: isReady ? "green" : "accent",
+    disabled: !isReady,
+  };
 }
 
 export async function fetchSetupJdListApi(): Promise<SetupJdItem[]> {
   const raw = await userJobDescriptionApi.list();
-  return raw.map((item) => {
-    const jd = item.jobDescription;
-    const isReady = jd.collectionStatus === "done";
-    const isFailed = jd.collectionStatus === "error";
-    return {
-      uuid: item.uuid,
-      icon: pickIcon(jd.platform || "", jd.title || ""),
-      company: jd.company || "수집 중",
-      role: jd.title || "채용공고",
-      stage: jd.location || jd.workType || jd.platform || "",
-      badgeLabel: isReady ? "수집 완료" : isFailed ? "수집 실패" : "수집 중",
-      badgeType: isReady ? "green" : "accent",
-      // 수집이 완료된 공고만 면접 선택 가능.
-      disabled: !isReady,
-    };
-  });
+  return raw.map((item) => toSetupJdItem(item.uuid, item.jobDescription));
 }
 
 export async function fetchSetupJdByUuidApi(uuid: string): Promise<SetupJdItem | null> {
   try {
     const item = await userJobDescriptionApi.retrieve(uuid);
-    const jd = item.jobDescription;
-    const isReady = jd.collectionStatus === "done";
-    const isFailed = jd.collectionStatus === "error";
-
-    return {
-      uuid: item.uuid,
-      icon: pickIcon(jd.platform || "", jd.title || ""),
-      company: jd.company || "수집 중",
-      role: jd.title || "채용공고",
-      stage: jd.location || jd.workType || jd.platform || "",
-      badgeLabel: isReady ? "수집 완료" : isFailed ? "수집 실패" : "수집 중",
-      badgeType: isReady ? "green" : "accent",
-      disabled: !isReady,
-    };
+    return toSetupJdItem(item.uuid, item.jobDescription);
   } catch {
     return null;
   }

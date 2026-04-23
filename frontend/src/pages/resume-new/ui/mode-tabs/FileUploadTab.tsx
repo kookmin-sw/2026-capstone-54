@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Loader2 } from "lucide-react";
+import { FileCheck, Loader2, Upload, XCircle } from "lucide-react";
 import { resumeApi } from "@/features/resume";
 
 export function FileUploadTab() {
@@ -84,7 +84,7 @@ export function FileUploadTab() {
           />
           {file ? (
             <>
-              <div className="w-12 h-12 rounded-xl bg-[#D1FAE5] flex items-center justify-center text-2xl">📄</div>
+              <div className="w-12 h-12 rounded-xl bg-[#D1FAE5] flex items-center justify-center"><FileCheck size={24} className="text-[#059669]" /></div>
               <div className="text-center">
                 <div className="text-[13px] font-extrabold text-[#059669]">{file.name}</div>
                 <div className="text-[11px] text-[#6B7280] mt-0.5">{(file.size / 1024 / 1024).toFixed(2)} MB</div>
@@ -99,7 +99,7 @@ export function FileUploadTab() {
             </>
           ) : (
             <>
-              <div className="w-12 h-12 rounded-xl bg-[#E6F7FA] flex items-center justify-center text-2xl">📎</div>
+              <div className="w-12 h-12 rounded-xl bg-[#E6F7FA] flex items-center justify-center"><Upload size={24} className="text-[#0991B2]" /></div>
               <div className="text-center">
                 <div className="text-[13px] font-extrabold text-[#0A0A0A]">PDF 파일을 드래그하거나 클릭해서 선택</div>
                 <div className="text-[11px] text-[#9CA3AF] mt-1">PDF 형식만 지원 · 최대 10MB</div>
@@ -128,7 +128,7 @@ export function FileUploadTab() {
       {/* 에러 */}
       {error && (
         <div className="flex items-center gap-2 text-[12px] font-semibold text-[#DC2626] bg-[#FEF2F2] border border-[#FECACA] rounded-lg px-3.5 py-2.5">
-          ✗ {error}
+          <XCircle size={14} className="shrink-0" /> {error}
         </div>
       )}
 

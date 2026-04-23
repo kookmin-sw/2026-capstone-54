@@ -2,7 +2,11 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Sparkles, Loader2, Plus, Trash2 } from "lucide-react";
+import {
+  AlignLeft, Award, Briefcase, Clock, Globe,
+  GraduationCap, Loader2, Plus, Search, Sparkles, Tag, Trash2,
+  Trophy, Upload, User, XCircle, Zap,
+} from "lucide-react";
 import {
   resumeApi,
   type ParsedData,
@@ -36,19 +40,25 @@ const JOB_CATEGORY_OPTIONS = [
   "인사", "기획", "CS", "디지털 마케팅", "기타",
 ];
 
-const SECTION_ICONS: Record<string, string> = {
-  "기본 정보": "👤",
-  "요약": "📝",
-  "총 경력": "⏱️",
-  "직군": "🏷️",
-  "스킬": "⚡",
-  "경력": "💼",
-  "학력": "🎓",
-  "자격증": "📜",
-  "수상 이력": "🏆",
-  "프로젝트": "🚀",
-  "구사 언어": "🌐",
-  "산업 도메인 / 키워드": "🔍",
+const ic = (Icon: React.ComponentType<{ size?: number; className?: string }>, color: string, bg: string) => (
+  <div className={`w-6 h-6 rounded-md flex items-center justify-center ${bg}`}>
+    <Icon size={13} className={color} />
+  </div>
+);
+
+const SECTION_ICONS: Record<string, React.ReactNode> = {
+  "기본 정보":              ic(User,          "text-[#0991B2]", "bg-[#E6F7FA]"),
+  "요약":                   ic(AlignLeft,     "text-[#6B7280]", "bg-[#F3F4F6]"),
+  "총 경력":                ic(Clock,         "text-[#D97706]", "bg-[#FFFBEB]"),
+  "직군":                   ic(Tag,           "text-[#8B5CF6]", "bg-[#F5F3FF]"),
+  "스킬":                   ic(Zap,           "text-[#D97706]", "bg-[#FFFBEB]"),
+  "경력":                   ic(Briefcase,     "text-[#0991B2]", "bg-[#E6F7FA]"),
+  "학력":                   ic(GraduationCap, "text-[#059669]", "bg-[#ECFDF5]"),
+  "자격증":                 ic(Award,         "text-[#0991B2]", "bg-[#E6F7FA]"),
+  "수상 이력":              ic(Trophy,        "text-[#D97706]", "bg-[#FFFBEB]"),
+  "프로젝트":               ic(Upload,        "text-[#8B5CF6]", "bg-[#F5F3FF]"),
+  "구사 언어":              ic(Globe,         "text-[#0991B2]", "bg-[#E6F7FA]"),
+  "산업 도메인 / 키워드":   ic(Search,        "text-[#6B7280]", "bg-[#F3F4F6]"),
 };
 
 const csvToList = (csv: string): string[] =>
@@ -310,7 +320,7 @@ export function StructuredFormTab() {
       {/* 에러 */}
       {error && (
         <div className="flex items-center gap-2 text-[12px] font-semibold text-[#DC2626] bg-[#FEF2F2] border border-[#FECACA] rounded-lg px-3.5 py-2.5">
-          ✗ {error}
+          <XCircle size={14} className="shrink-0" /> {error}
         </div>
       )}
 
@@ -337,14 +347,14 @@ function Section({
   title,
   children,
 }: {
-  icon?: string;
+  icon?: React.ReactNode;
   title: string;
   children: React.ReactNode;
 }) {
   return (
     <div className="border border-[#E5E7EB] rounded-xl bg-[#FAFAFA] overflow-hidden">
       <div className="flex items-center gap-2 px-4 py-3 border-b border-[#E5E7EB] bg-white">
-        {icon && <span className="text-base">{icon}</span>}
+        {icon}
         <span className="text-[12px] font-extrabold text-[#0A0A0A]">{title}</span>
       </div>
       <div className="p-4 flex flex-col gap-3">{children}</div>
@@ -408,7 +418,7 @@ function RepeaterSection<T extends RepeatableItem>({
   onChange,
   renderRow,
 }: {
-  icon?: string;
+  icon?: React.ReactNode;
   title: string;
   items: T[];
   empty: T;
@@ -427,7 +437,7 @@ function RepeaterSection<T extends RepeatableItem>({
     <div className="border border-[#E5E7EB] rounded-xl bg-[#FAFAFA] overflow-hidden">
       <div className="flex items-center justify-between px-4 py-3 border-b border-[#E5E7EB] bg-white">
         <div className="flex items-center gap-2">
-          {icon && <span className="text-base">{icon}</span>}
+          {icon}
           <span className="text-[12px] font-extrabold text-[#0A0A0A]">{title}</span>
           {items.length > 0 && (
             <span className="text-[10px] font-bold text-[#0991B2] bg-[#E6F7FA] px-2 py-0.5 rounded-full">

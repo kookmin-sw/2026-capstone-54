@@ -7,7 +7,7 @@
  */
 
 import { FileText, LayoutTemplate } from "lucide-react";
-import { Alert, Button, Input, Textarea } from "@/shared/ui";
+import { Alert, Button } from "@/shared/ui";
 import { TemplatePickerModal } from "./text-upload/TemplatePickerModal";
 import { useResumeTextForm } from "./text-upload/useResumeTextForm";
 import { useTemplatePicker } from "./text-upload/useTemplatePicker";
@@ -36,21 +36,26 @@ export function TextUploadTab() {
           </Button>
         </div>
 
-        <Input
-          label="제목"
-          value={form.title}
-          onChange={(e) => form.setTitle(e.target.value)}
-          placeholder="예: 2026 백엔드 개발자 이력서"
-        />
+        <label className="flex flex-col gap-1.5">
+          <span className="text-[12px] font-bold text-[#0A0A0A]">제목 <span className="text-[#DC2626]">*</span></span>
+          <input
+            value={form.title}
+            onChange={(e) => form.setTitle(e.target.value)}
+            placeholder="예: 2026 백엔드 개발자 이력서"
+            className="border border-[#E5E7EB] rounded-lg px-3.5 py-2.5 text-[13px] outline-none transition-[border-color,box-shadow] focus:border-[#0991B2] focus:shadow-[0_0_0_3px_rgba(9,145,178,0.1)] placeholder:text-[#9CA3AF]"
+          />
+        </label>
 
-        <Textarea
-          label="이력서 본문"
-          value={form.content}
-          onChange={(e) => form.setContent(e.target.value)}
-          rows={14}
-          placeholder="자유 형식 텍스트로 이력서 내용을 입력하세요. 분석 후 자동으로 정규화됩니다."
-          className="font-mono leading-[1.6]"
-        />
+        <label className="flex flex-col gap-1.5">
+          <span className="text-[12px] font-bold text-[#0A0A0A]">이력서 본문 <span className="text-[#DC2626]">*</span></span>
+          <textarea
+            value={form.content}
+            onChange={(e) => form.setContent(e.target.value)}
+            rows={14}
+            placeholder="자유 형식 텍스트로 이력서 내용을 입력하세요. 분석 후 자동으로 정규화됩니다."
+            className="border border-[#E5E7EB] rounded-lg px-3.5 py-2.5 text-[13px] outline-none transition-[border-color,box-shadow] focus:border-[#0991B2] focus:shadow-[0_0_0_3px_rgba(9,145,178,0.1)] placeholder:text-[#9CA3AF] resize-y"
+          />
+        </label>
 
         {form.error && <Alert variant="error">{form.error}</Alert>}
 

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, FileUp, FileText, Sparkles } from "lucide-react";
+import { ArrowLeft, FilePlus, FileUp, FileText, Sparkles } from "lucide-react";
 import { FileUploadTab } from "./mode-tabs/FileUploadTab";
 import { TextUploadTab } from "./mode-tabs/TextUploadTab";
 import { StructuredFormTab } from "./mode-tabs/StructuredFormTab";
@@ -25,7 +25,7 @@ export function ResumeNewPage() {
         {/* PAGE HEADER */}
         <div className="flex items-start justify-between mb-8 gap-4">
           <div>
-            <div className="inline-flex items-center gap-1.5 text-[11px] font-bold tracking-[1.4px] uppercase text-[#0991B2] bg-[#E6F7FA] py-1 px-3 rounded-full mb-2.5">+ 이력서 추가</div>
+            <div className="inline-flex items-center gap-1.5 text-[11px] font-bold tracking-[1.4px] uppercase text-[#0991B2] bg-[#E6F7FA] py-1 px-3 rounded-full mb-2.5"><FilePlus size={12} /> 이력서 추가</div>
             <h1 className="text-[clamp(24px,3vw,36px)] font-black tracking-[-0.8px] text-[#0A0A0A] leading-[1.1]">새 이력서</h1>
             <p className="text-sm text-[#6B7280] mt-1.5">작성 방식을 선택하세요. 어떤 방식이든 결과는 동일한 정규화 형식으로 저장됩니다.</p>
           </div>

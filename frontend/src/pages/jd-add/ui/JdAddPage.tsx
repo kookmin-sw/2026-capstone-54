@@ -1,4 +1,9 @@
+import type React from "react";
 import { Link, useNavigate } from "react-router-dom";
+import {
+  Building2, Calendar, CheckCircle2, ClipboardList,
+  Globe, Lightbulb, Link2, Loader2, MapPin, Star,
+} from "lucide-react";
 import { useJdAddStore, type JdStatus } from "@/features/jd";
 import {
   Card,
@@ -11,10 +16,10 @@ import {
   Badge,
 } from "@/shared/ui";
 
-const STATUS_OPTIONS: { value: JdStatus; icon: string; label: string; desc: string }[] = [
-  { value: "planned", icon: "📅", label: "지원 예정", desc: "곧 지원할 예정" },
-  { value: "saved", icon: "⭐", label: "관심 저장", desc: "관심만 저장" },
-  { value: "applied", icon: "✅", label: "지원 완료", desc: "이미 지원함" },
+const STATUS_OPTIONS: { value: JdStatus; icon: React.ReactNode; label: string; desc: string }[] = [
+  { value: "planned", icon: <Calendar size={22} className="text-[#0991B2]" />, label: "지원 예정", desc: "곧 지원할 예정" },
+  { value: "saved",   icon: <Star size={22} className="text-[#F59E0B]" />,    label: "관심 저장", desc: "관심만 저장" },
+  { value: "applied", icon: <CheckCircle2 size={22} className="text-[#059669]" />, label: "지원 완료", desc: "이미 지원함" },
 ];
 
 const PLATFORMS = [
@@ -68,7 +73,7 @@ export function JdAddPage() {
         {/* PAGE HEADER */}
         <div className="flex items-start justify-between mb-8 gap-4">
           <div>
-            <div className="inline-flex items-center gap-1.5 text-[11px] font-bold tracking-[1.4px] uppercase text-[#0991B2] bg-[#E6F7FA] py-1 px-3 rounded-full mb-2.5">+ 채용공고 추가</div>
+            <div className="inline-flex items-center gap-1.5 text-[11px] font-bold tracking-[1.4px] uppercase text-[#0991B2] bg-[#E6F7FA] py-1 px-3 rounded-lg mb-2.5"><ClipboardList size={12} /> 채용공고 추가</div>
             <h1 className="text-[clamp(24px,3vw,36px)] font-black tracking-[-0.8px] text-[#0A0A0A] leading-[1.1]">새 채용공고 등록</h1>
             <p className="text-sm text-[#6B7280] mt-1.5">URL만 붙여넣으면 AI가 나머지를 분석해 드려요</p>
           </div>
@@ -97,10 +102,9 @@ export function JdAddPage() {
               {/* URL 섹션 */}
               <section className="mb-8">
                 <SectionHeader
-                  icon="🔗"
+                  icon={<div className="w-8 h-8 rounded-lg bg-[#E6F7FA] flex items-center justify-center"><Link2 size={16} className="text-[#0991B2]" /></div>}
                   title="채용공고 URL"
-                  description="⚠️정확한 채용공고 페이지 URL을 입력해주세요."
-                  gradient="linear-gradient(135deg,#60A5FA,#2563EB)"
+                  description="정확한 채용공고 페이지 URL을 입력해주세요."
                 />
 
                 <div className="mb-5">
@@ -108,7 +112,7 @@ export function JdAddPage() {
                     label="URL"
                     required
                     helperText="사람인, 잡코리아, 원티드, 링크드인 등"
-                    icon="🔗"
+                    icon={<Link2 size={14} />}
                     type="url"
                     placeholder="https://www.saramin.co.kr/zf_user/jobs/relay/view?..."
                     value={url}
@@ -118,16 +122,16 @@ export function JdAddPage() {
 
                   {urlValidState !== "idle" && (
                     <div className={`flex items-center gap-1.5 text-[12px] font-semibold mt-1.5 ${fieldStatusCls()}`}>
-                      {urlValidState === "checking" && "⟳ URL 확인 중..."}
-                      {urlValidState === "ok" && "✓ 유효한 URL입니다"}
+                      {urlValidState === "checking" && <><Loader2 size={12} className="animate-spin" /> URL 확인 중...</>}
+                      {urlValidState === "ok" && <><CheckCircle2 size={12} /> 유효한 URL입니다</>}
                       {urlValidState === "error" && "✗ 올바른 URL을 입력해 주세요"}
                     </div>
                   )}
 
                   {urlValidState === "ok" && urlAnalysis && (
                     <div className="mt-3 py-[14px] px-4 bg-[#ECFDF5] rounded-lg border border-[#A7F3D0] flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-lg bg-[#D1FAE5] flex items-center justify-center text-base shrink-0">
-                        🏢
+                      <div className="w-9 h-9 rounded-lg bg-[#D1FAE5] flex items-center justify-center shrink-0">
+                        <Building2 size={18} className="text-[#059669]" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="text-[12px] font-semibold text-[#6B7280]">
@@ -157,10 +161,9 @@ export function JdAddPage() {
               {/* 지원 상태 */}
               <section className="mb-8">
                 <SectionHeader
-                  icon="📌"
+                  icon={<div className="w-8 h-8 rounded-lg bg-[#E6F7FA] flex items-center justify-center"><MapPin size={16} className="text-[#0991B2]" /></div>}
                   title="지원 상태"
                   description="현재 지원 진행 상태를 선택해 주세요"
-                  gradient="linear-gradient(135deg,#67E8F9,#0891B2)"
                 />
                 <StatusCard options={STATUS_OPTIONS} selected={status} onSelect={setStatus} />
               </section>
@@ -198,7 +201,7 @@ export function JdAddPage() {
           <div className="max-[900px]:grid max-[900px]:grid-cols-2 max-[900px]:gap-3.5 max-sm:grid-cols-1">
             <Card className="mb-[18px] max-[900px]:mb-0">
               <div className="text-sm font-black text-[#0A0A0A] mb-4 flex items-center gap-2">
-                <span style={{ fontSize: 18 }}>💡</span>
+                <Lightbulb size={16} className="text-[#F59E0B]" />
                 이렇게 활용해요
               </div>
               {[
@@ -221,7 +224,7 @@ export function JdAddPage() {
 
             <Card>
               <div className="text-sm font-black text-[#0A0A0A] mb-4 flex items-center gap-2">
-                <span style={{ fontSize: 18 }}>🌐</span>
+                <Globe size={16} className="text-[#0991B2]" />
                 지원 플랫폼
               </div>
               {PLATFORMS.map((p) => (

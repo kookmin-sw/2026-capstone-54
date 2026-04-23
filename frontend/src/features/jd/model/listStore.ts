@@ -16,6 +16,7 @@ import {
   getRelativeTime,
   getTagColor,
 } from "../api/jdListHelpers";
+import { inferCategoryId } from "@/shared/ui/inferCategoryId";
 
 /** 사용자 상태 (프론트 placeholder — 추후 backend 에 저장). */
 export type JdStatus = "planned" | "applied" | "saved";
@@ -34,6 +35,7 @@ export interface JdListItem {
   companyInitial: string;
   companyColor: string;
   title: string;
+  categoryId: number;
   status: JdListStatus;
   tags: JdTag[];
   registeredAt: string;
@@ -85,6 +87,7 @@ function transform(item: UserJobDescription): JdListItem {
     companyInitial: getCompanyInitial(company),
     companyColor: getCompanyColor(company),
     title,
+    categoryId: inferCategoryId(jd.platform || "", title),
     status,
     tags,
     registeredAt: getRelativeTime(item.createdAt),

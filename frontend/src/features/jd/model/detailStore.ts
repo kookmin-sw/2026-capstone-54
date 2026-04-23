@@ -12,11 +12,8 @@ import {
   type UserJobDescription,
   type JobDescriptionCollectionStatus,
 } from "@/features/user-job-description";
-import {
-  getCompanyColor,
-  getCompanyInitial,
-  getRelativeTime,
-} from "../api/jdListHelpers";
+import { getRelativeTime } from "../api/jdListHelpers";
+import { inferCategoryId } from "@/shared/ui/inferCategoryId";
 import type { JdStatus } from "./listStore";
 
 export interface JdRequirement {
@@ -27,8 +24,7 @@ export interface JdRequirement {
 export interface JdDetail {
   id: string; // UserJobDescription.uuid
   company: string;
-  companyInitial: string;
-  companyColor: string;
+  categoryId: number;
   title: string;
   source: string;
   location: string;
@@ -72,8 +68,7 @@ function toDetail(item: UserJobDescription): JdDetail {
   return {
     id: item.uuid,
     company,
-    companyInitial: getCompanyInitial(company),
-    companyColor: getCompanyColor(company),
+    categoryId: inferCategoryId(jd.platform || "", title),
     title,
     source: jd.platform || "",
     location: jd.location || "",

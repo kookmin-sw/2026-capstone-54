@@ -2,25 +2,17 @@
 import type { ReactNode } from "react";
 
 interface SectionHeaderProps {
-  icon?: string;
+  icon?: ReactNode;
   title: string;
   description?: string;
-  gradient?: string;
   children?: ReactNode;
 }
 
-export function SectionHeader({ icon, title, description, gradient, children }: SectionHeaderProps) {
+export function SectionHeader({ icon, title, description, children }: SectionHeaderProps) {
   return (
     <div className="mb-4">
       <div className="text-md font-extrabold text-mefit-black mb-1 flex items-center gap-2">
-        {icon && (
-          <span
-            className="w-7 h-7 rounded-lg flex items-center justify-center text-sm shrink-0"
-            style={gradient ? { background: gradient } : undefined}
-          >
-            {icon}
-          </span>
-        )}
+        {icon && <span className="shrink-0">{icon}</span>}
         {title}
       </div>
       {description && <p className="text-sm text-mefit-gray-500 mb-[18px] ml-9">{description}</p>}

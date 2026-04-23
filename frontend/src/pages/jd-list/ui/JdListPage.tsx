@@ -2,6 +2,8 @@ import { Fragment, useEffect, useRef, useState, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useJdListStore, type JdListItem } from "@/features/jd";
 import { useUserJobDescriptionScrapingSse } from "@/features/user-job-description";
+import { ClipboardList, Search } from "lucide-react";
+import { CompanyIcon } from "@/shared/ui/CompanyIcon";
 
 type FilterKey = "all" | "planned" | "applied" | "saved";
 
@@ -126,11 +128,8 @@ function JdCard({ item }: { item: JdListItem }) {
 
       {/* Company */}
       <div className="flex items-center gap-2.5 mb-2.5">
-        <div
-          className="w-[38px] h-[38px] rounded-lg flex items-center justify-center text-base font-black text-white shrink-0 shadow-[0_3px_8px_rgba(0,0,0,0.1)]"
-          style={{ background: item.companyColor }}
-        >
-          {item.companyInitial}
+        <div className="w-[38px] h-[38px] rounded-lg shrink-0 shadow-[0_3px_8px_rgba(0,0,0,0.06)] overflow-hidden">
+          <CompanyIcon categoryId={item.categoryId} size={18} />
         </div>
         <div className="text-[13px] text-[#6B7280] font-semibold">{item.company}</div>
       </div>
@@ -226,7 +225,7 @@ export function JdListPage() {
         {/* PAGE HEADER */}
         <div className="flex items-start justify-between mb-8 gap-4">
           <div>
-            <div className="inline-flex items-center gap-1.5 text-[11px] font-bold tracking-[1.4px] uppercase text-[#0991B2] bg-[#E6F7FA] py-1 px-3 rounded-full mb-2.5">📋 채용공고</div>
+            <div className="inline-flex items-center gap-1.5 text-[11px] font-bold tracking-[1.4px] uppercase text-[#0991B2] bg-[#E6F7FA] py-1 px-3 rounded-full mb-2.5"><ClipboardList size={12} />채용공고</div>
             <h1 className="text-[clamp(24px,3vw,36px)] font-black tracking-[-0.8px] text-[#0A0A0A] leading-[1.1]">내 채용공고</h1>
             <p className="text-sm text-[#6B7280] mt-1.5">지원할 채용공고를 등록하고 AI 면접 준비를 시작하세요</p>
           </div>
@@ -249,7 +248,7 @@ export function JdListPage() {
           const badges = [
             { dot: "#0EA5E9", text: `지원 예정 ${stats.planned}개` },
             { dot: "#10B981", text: `지원 완료 ${stats.applied}개` },
-            { dot: null,      text: `⭐ 관심 저장 ${stats.saved}개` },
+            { dot: "#ffff73ff", text: `관심 저장 ${stats.saved}개` },
           ];
           return (
             <div className="relative overflow-hidden bg-gradient-to-br from-[#065F79] to-[#0991B2] rounded-lg px-6 py-[22px] mb-7 shadow-[0_12px_32px_rgba(9,145,178,.35)] animate-[jdl-fadeUp_.5s_ease_.05s_both] flex items-center gap-[18px] flex-wrap before:content-[''] before:absolute before:top-[-40px] before:right-[-40px] before:w-[160px] before:h-[160px] before:rounded-full before:bg-[rgba(255,255,255,.07)] md:px-9 md:py-7 md:gap-8">
@@ -277,7 +276,7 @@ export function JdListPage() {
         {/* FILTER */}
         <div className="flex items-center gap-2.5 mb-6 flex-wrap max-sm:flex-col max-sm:items-stretch">
           <div className="flex-1 min-w-[220px] relative max-sm:min-w-0">
-            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-base pointer-events-none">🔍</span>
+            <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#9CA3AF] pointer-events-none" />
             <input
               type="text"
               className="w-full bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg py-3 pr-4 pl-11 text-sm font-medium text-[#0A0A0A] shadow-[0_1px_3px_rgba(0,0,0,0.08)] outline-none transition-[border-color] focus:border-[#0991B2] focus:shadow-[0_1px_3px_rgba(0,0,0,0.1)] placeholder:text-[#9CA3AF]"
