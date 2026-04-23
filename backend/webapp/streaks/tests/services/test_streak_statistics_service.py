@@ -17,21 +17,21 @@ class StreakStatisticsServiceTests(TestCase):
   def _record(self, user=None, today=None):
     target_user = user or self.user
     target_date = today or self.today
-    with patch("streaks.services.streak_statistics_service.timezone.localdate") as mock_localdate:
+    with patch("streaks.services.streak_expirer.timezone.localdate") as mock_localdate:
       mock_localdate.return_value = target_date
       return StreakStatisticsService(target_user).record_participation()
 
   def _recalculate(self, user=None, today=None):
     target_user = user or self.user
     target_date = today or self.today
-    with patch("streaks.services.streak_statistics_service.timezone.localdate") as mock_localdate:
+    with patch("streaks.services.streak_calculator.timezone.localdate") as mock_localdate:
       mock_localdate.return_value = target_date
       return StreakStatisticsService(target_user).recalculate()
 
   def _expire(self, user=None, today=None):
     target_user = user or self.user
     target_date = today or self.today
-    with patch("streaks.services.streak_statistics_service.timezone.localdate") as mock_localdate:
+    with patch("streaks.services.streak_expirer.timezone.localdate") as mock_localdate:
       mock_localdate.return_value = target_date
       return StreakStatisticsService(target_user).expire_streaks()
 

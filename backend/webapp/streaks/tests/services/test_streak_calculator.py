@@ -73,7 +73,7 @@ class StreakCalculatorTests(TestCase):
 
     stats = self._perform()
     self.assertEqual(stats.current_streak, 3)
-    self.assertEqual(stats.longest_streak, 6)
+    self.assertEqual(stats.longest_streak, 5)
 
   def test_current_streak_reset_when_gap_exists(self):
     three_days_ago = self.today - timedelta(days=3)

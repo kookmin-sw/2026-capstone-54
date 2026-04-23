@@ -1,11 +1,11 @@
 from datetime import date, timedelta
+from threading import Thread
 from unittest.mock import patch
 
 from django.test import TestCase
 from streaks.factories import StreakLogFactory
 from streaks.models import StreakLog
 from streaks.services import StreakLogManager
-from threads import Thread
 from users.factories import UserFactory
 
 

@@ -4,7 +4,6 @@ from config.settings.base import (
   TICKET_REWARD_PER_INTERVIEW_ORDER,
 )
 from django.db import transaction
-from streaks.models import StreakStatistics
 from streaks.signals import interview_completed, streak_expired
 
 
@@ -29,12 +28,9 @@ class StreakStatisticsService(BaseService):
     log_manager = StreakLogManager(self.user)
     streak_log = log_manager.increment()
 
-    if streak_log.interview_results_count >= 1:
-      calculator = StreakCalculator(self.user)
-      stats = calculator.calculate()
-      stats.save()
-    else:
-      stats, _ = StreakStatistics.objects.get_or_create(user=self.user)
+    calculator = StreakCalculator(self.user)
+    stats = calculator.calculate()
+    stats.save()
 
     if streak_log.interview_results_count <= MAX_REWARDED_INTERVIEWS_PER_DAY:
       reward = TICKET_REWARD_PER_INTERVIEW_ORDER[streak_log.interview_results_count]

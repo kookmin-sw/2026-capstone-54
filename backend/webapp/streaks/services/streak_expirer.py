@@ -24,8 +24,10 @@ class StreakExpirer:
       qs = qs.filter(user=self.user)
 
     stats_to_update = []
+    now = timezone.now()
     for stats in qs:
       stats.current_streak = 0
+      stats.updated_at = now
       stats_to_update.append(stats)
       self.expired_user_ids.append(stats.user_id)
 
