@@ -216,9 +216,14 @@ jobs:
 
       - name: Delete coverage report for deleted branch
         run: |
+          # github.event.ref returns "refs/heads/branch-name", need to extract just the branch name
           DELETED_BRANCH="${{ github.event.ref }}"
+          # Remove "refs/heads/" prefix
+          DELETED_BRANCH="${DELETED_BRANCH#refs/heads/}"
+
           echo "Deleting coverage report for branch: $DELETED_BRANCH"
 
+          # Escape branch name: / → _, . → _
           BRANCH_DIR_ESCAPED="${DELETED_BRANCH//\//_}"
           BRANCH_DIR_ESCAPED="${BRANCH_DIR_ESCAPED//./_}"
 
