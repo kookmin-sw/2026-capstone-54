@@ -3,6 +3,7 @@ import string
 from datetime import timedelta
 
 from common.services.base_send_email_service import BaseSendEmailService
+from django.conf import settings
 from django.utils import timezone
 
 
@@ -13,7 +14,7 @@ class SendVerificationEmailService(BaseSendEmailService):
     from users.models import EmailVerificationCode
 
     user = self.user
-    expiry_minutes = 10
+    expiry_minutes = settings.EMAIL_VERIFICATION_CODE_EXPIRY_MINUTES
     code = self._generate_code()
     expires_at = timezone.now() + timedelta(minutes=expiry_minutes)
     EmailVerificationCode.objects.create(user=user, code=code, expires_at=expires_at)
@@ -22,7 +23,7 @@ class SendVerificationEmailService(BaseSendEmailService):
       template_name="users/email/verification_code.html",
       context={
         "code": code,
-        "user_email": user.email
+        "user_email": user.email,
       },
       recipient_email=user.email,
     )

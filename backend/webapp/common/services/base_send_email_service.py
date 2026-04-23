@@ -18,7 +18,7 @@ class BaseSendEmailService(BaseService):
   def _get_html_message(self, template_name: str, context: dict) -> str:
     return render_to_string(template_name, context)
 
-  def _attach_file(self, filename: str, content_id: str) -> bytes | None:
+  def _attach_file(self, filename: str, content_id: str) -> MIMEImage | None:
     result = finders.find(filename)
     if result:
       with open(result, "rb") as f:
