@@ -5,7 +5,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from streaks.models import StreakStatistics
-from streaks.services import RecalculateStreakStatisticsService
+from streaks.services import StreakCalculator
 from unfold.admin import ModelAdmin
 from unfold.decorators import action
 from unfold.widgets import UnfoldAdminSelectMultipleWidget
@@ -21,7 +21,7 @@ class RecalculateStatisticsForm(forms.Form):
     queryset=User.objects.all().order_by("email"),
     required=True,
     widget=UnfoldAdminSelectMultipleWidget,
-    help_text="통계를 재계산할 사용자를 선택하세요. StreakStatistics가 없는 사용자는 자동으로 생성됩니다.",
+    help_text="통계를 재계산할 사용자를 선택하세요.",
   )
 
 
@@ -31,6 +31,7 @@ class StreakStatisticsAdmin(ModelAdmin):
     "user",
     "current_streak",
     "longest_streak",
+    "total_days",
     "last_participated_date",
     "updated_at",
   )
@@ -46,37 +47,47 @@ class StreakStatisticsAdmin(ModelAdmin):
   actions_list = ["recalculate_multiple_statistics"]
   actions_row = ["recalculate_statistics"]
 
-  # Django 기본 actions (checkbox 선택)
   @admin.action(description="선택한 사용자 통계 재계산")
   def recalculate_selected_statistics(self, request, queryset):
-    """선택한 사용자들의 스트릭 통계를 재계산한다"""
-    user_ids = list(queryset.values_list("user_id", flat=True))
+    success_count = 0
+    error_count = 0
 
-    result = RecalculateStreakStatisticsService(user_ids=user_ids).perform()
+    for stats in queryset:
+      try:
+        calculator = StreakCalculator(stats.user)
+        updated = calculator.calculate()
+        updated.save()
+        success_count += 1
+      except Exception:
+        error_count += 1
 
-    message = f"{result['success_count']}명의 사용자에 대해 스트릭 통계가 재계산되었습니다."
-    if result["error_count"] > 0:
-      message += f" ({result['error_count']}명 실패)"
+    message = f"{success_count}명의 사용자에 대해 스트릭 통계가 재계산되었습니다."
+    if error_count > 0:
+      message += f" ({error_count}명 실패)"
 
     self.message_user(request, message)
 
-  # Unfold changelist action (폼 사용)
   @action(description="통계 재계산 (다중)", url_path="recalculate-multiple")
   def recalculate_multiple_statistics(self, request: HttpRequest) -> HttpResponse:
-    """사용자를 선택하여 스트릭 통계를 재계산한다"""
     form = RecalculateStatisticsForm(request.POST or None)
 
     if request.method == "POST" and form.is_valid():
       selected_users = form.cleaned_data["users"]
+      success_count = 0
 
-      # User 객체를 직접 전달하여 중복 조회 방지
-      result = RecalculateStreakStatisticsService(users=list(selected_users)).perform()
+      for user in selected_users:
+        try:
+          calculator = StreakCalculator(user)
+          stats = calculator.calculate()
+          stats.save()
+          success_count += 1
+        except Exception:
+          continue
 
-      message = f"{result['success_count']}명의 사용자에 대해 스트릭 통계가 재계산되었습니다."
-      if result["error_count"] > 0:
-        message += f" ({result['error_count']}명 실패)"
-
-      self.message_user(request, message)
+      self.message_user(
+        request,
+        f"{success_count}명의 사용자에 대해 스트릭 통계가 재계산되었습니다.",
+      )
       return redirect(reverse_lazy("admin:streaks_streakstatistics_changelist"))
 
     return render(
@@ -89,26 +100,22 @@ class StreakStatisticsAdmin(ModelAdmin):
       },
     )
 
-  # Unfold row action
   @action(description="통계 재계산", url_path="recalculate")
   def recalculate_statistics(self, request: HttpRequest, object_id: int):
-    """StreakLog 데이터를 기반으로 스트릭 통계를 재계산한다"""
     statistics = StreakStatistics.objects.get(pk=object_id)
-    user = statistics.user
-
-    # 서비스를 통해 재계산
-    updated_statistics = RecalculateStreakStatisticsService(user=user).perform()
+    calculator = StreakCalculator(statistics.user)
+    updated = calculator.calculate()
+    updated.save()
 
     self.message_user(
-      request, f"'{user.email}' 사용자의 스트릭 통계가 재계산되었습니다. "
-      f"(현재: {updated_statistics.current_streak}일, 최장: {updated_statistics.longest_streak}일)"
+      request,
+      f"'{statistics.user.email}' 사용자의 스트릭 통계가 재계산되었습니다. "
+      f"(현재: {updated.current_streak}일, 최장: {updated.longest_streak}일, 총 {updated.total_days}일)",
     )
     return redirect(reverse_lazy("admin:streaks_streakstatistics_changelist"))
 
   def has_recalculate_statistics_permission(self, request: HttpRequest):
-    """통계 재계산 권한"""
     return request.user.is_staff
 
   def has_recalculate_multiple_statistics_permission(self, request: HttpRequest):
-    """다중 통계 재계산 권한"""
     return request.user.is_staff
