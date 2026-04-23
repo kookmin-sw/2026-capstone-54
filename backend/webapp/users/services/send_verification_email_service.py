@@ -1,10 +1,11 @@
+import os
 import secrets
 import string
 from datetime import timedelta
 
 from common.services import BaseService
 from django.conf import settings
-from django.core.mail import send_mail
+from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils import timezone
 
@@ -28,22 +29,35 @@ class SendVerificationEmailService(BaseService):
     return "".join(secrets.choice(charset) for _ in range(6))
 
   def _send_email(self, user, code):
-    # Only send emails in production environment
     environment = getattr(settings, "ENVIRONMENT", "development")
     if environment != "production":
       return
+
+    logo_path = os.path.join(settings.BASE_DIR, "webapp", "staticfiles", "email_images", "mefit-logo.png")
 
     html_message = render_to_string(
       "users/email/verification_code.html",
       {
         "code": code,
-        "user_email": user.email
+        "user_email": user.email,
       },
     )
-    send_mail(
+
+    email = EmailMultiAlternatives(
       subject="이메일 인증 코드",
-      message=f"인증 코드: {code}",
       from_email=settings.DEFAULT_FROM_EMAIL,
-      recipient_list=[user.email],
-      html_message=html_message,
+      to=[user.email],
     )
+    email.attach_alternative(html_message, "text/html")
+
+    if os.path.exists(logo_path):
+      with open(logo_path, "rb") as f:
+        logo_data = f.read()
+      email.attach(
+        "mefit-logo.png",
+        logo_data,
+        "image/png",
+        headers=[("Content-ID", "<mefit-logo>")],
+      )
+
+    email.send()

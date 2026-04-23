@@ -5,79 +5,65 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>이메일 인증 코드</title>
 </head>
-<body style="margin:0; padding:0; background-color:#F3F4F6; font-family:'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+<body style="margin:0; padding:0; background-color:#F3F4F6; font-family:'IBM Plex Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#F3F4F6; padding:40px 0;">
     <tr>
       <td align="center">
-        <table role="presentation" width="520" cellpadding="0" cellspacing="0" style="background-color:#FFFFFF; border-radius:8px; border:1px solid #E7E5E4; overflow:hidden;">
-          <!-- Header -->
+        <table role="presentation" width="520" cellpadding="0" cellspacing="0" style="background-color:#FFFFFF; border-radius:10px; border:1px solid #E5E7EB; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);">
           <tr>
-            <td style="background-color:#F97316; padding:32px 40px; text-align:center;">
-              <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;">
-                <tr>
-                  <td style="color:#FFFFFF; font-size:18px; font-weight:700; font-family:'Inter', sans-serif;">
-                    &#x25B6; MeFit
-                  </td>
-                </tr>
-              </table>
+            <td style="background-color:#FFFFFF; padding:24px 40px; text-align:center; border-bottom:1px solid #E5E7EB;">
+              <img src="cid:mefit-logo" alt="MeFit" width="120" height="auto" style="display:inline-block;">
             </td>
           </tr>
-          <!-- Body -->
           <tr>
             <td style="padding:40px; text-align:center;">
-              <!-- Mail Icon -->
               <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto 24px;">
                 <tr>
-                  <td style="background-color:#FED7AA; border-radius:32px; width:64px; height:64px; text-align:center; vertical-align:middle; font-size:28px;">
-                    &#x2709;
+                  <td style="background-color:#E6F7FA; border-radius:32px; width:64px; height:64px; text-align:center; vertical-align:middle;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none">
+                      <rect width="20" height="16" x="2" y="4" rx="2" fill="#0991B2"/>
+                      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" stroke="#FFFFFF" stroke-width="1.5" fill="none"/>
+                    </svg>
                   </td>
                 </tr>
               </table>
-              <!-- Title -->
-              <h1 style="margin:0 0 24px; color:#1C1917; font-size:22px; font-weight:700; font-family:'Inter', sans-serif;">
+              <h1 style="margin:0 0 20px; color:#0A0A0A; font-size:22px; font-weight:700; line-height:1.3;">
                 이메일 인증 코드
               </h1>
-              <!-- Description -->
-              <p style="margin:0 0 24px; color:#78716C; font-size:14px; line-height:1.7; font-family:'Inter', sans-serif;">
+              <p style="margin:0 0 24px; color:#6B7280; font-size:14px; line-height:1.7;">
                 안녕하세요!<br>
                 {{ user_email }}로 요청하신 이메일 인증 코드입니다.<br>
                 아래 코드를 입력하여 이메일 주소를 인증해 주세요.
               </p>
-              <!-- Divider -->
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
-                <tr><td style="border-top:1px solid #E7E5E4;"></td></tr>
+                <tr><td style="border-top:1px solid #E5E7EB;"></td></tr>
               </table>
-              <!-- OTP Code -->
               <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto 12px;">
                 <tr>
-                  <td style="background-color:#FFF7ED; border:2px solid #F97316; border-radius:12px; padding:20px 40px; text-align:center;">
-                    <span style="color:#F97316; font-size:40px; font-weight:700; font-family:'Inter', monospace; letter-spacing:8px;">
+                  <td style="background-color:#F9FAFB; border:2px solid #0991B2; border-radius:12px; padding:20px 40px; text-align:center;">
+                    <span style="color:#0991B2; font-size:36px; font-weight:700; letter-spacing:8px; font-family:'IBM Plex Sans KR', monospace;">
                       {{ code }}
                     </span>
                   </td>
                 </tr>
               </table>
-              <!-- Expiry Note -->
-              <p style="margin:0 0 24px; color:#A8A29E; font-size:12px; font-family:'Inter', sans-serif;">
+              <p style="margin:0 0 24px; color:#9CA3AF; font-size:12px;">
                 &#x23F0; 이 코드는 10분간 유효합니다
               </p>
-              <!-- Divider -->
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
-                <tr><td style="border-top:1px solid #E7E5E4;"></td></tr>
+                <tr><td style="border-top:1px solid #E5E7EB;"></td></tr>
               </table>
-              <!-- Security Note -->
-              <p style="margin:0; color:#A8A29E; font-size:12px; font-family:'Inter', sans-serif;">
+              <p style="margin:0; color:#9CA3AF; font-size:12px;">
                 본인이 요청하지 않으셨다면 이 이메일을 무시하셔도 됩니다.
               </p>
             </td>
           </tr>
-          <!-- Footer -->
           <tr>
-            <td style="background-color:#FFF7ED; padding:20px 40px; text-align:center;">
-              <p style="margin:0 0 6px; color:#A8A29E; font-size:11px; font-family:'Inter', sans-serif;">
+            <td style="background-color:#F9FAFB; padding:20px 40px; text-align:center; border-top:1px solid #E5E7EB;">
+              <p style="margin:0 0 6px; color:#9CA3AF; font-size:11px;">
                 본 이메일은 MeFit 이메일 인증 요청 시 자동 발송됩니다.
               </p>
-              <p style="margin:0; color:#A8A29E; font-size:11px; font-family:'Inter', sans-serif;">
+              <p style="margin:0; color:#9CA3AF; font-size:11px;">
                 가입을 요청하지 않으셨다면 이 이메일을 무시하셔도 됩니다.
               </p>
             </td>

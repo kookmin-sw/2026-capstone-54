@@ -1,7 +1,9 @@
+import os
+
 from common.services import BaseService
 from django.conf import settings
-from django.core.mail import send_mail  # Django 내장 이메일 발송 함수
-from django.template.loader import render_to_string  # HTML 템플릿을 문자열로 렌더링
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
 
 
 class SendPasswordResetEmailService(BaseService):
@@ -14,12 +16,12 @@ class SendPasswordResetEmailService(BaseService):
     token_uuid = self.kwargs["token_uuid"]
     frontend_url = getattr(settings, "FRONTEND_URL", "http://localhost:3000")
     reset_url = f"{frontend_url}/reset-password?token={token_uuid}"
-    # 사용자가 이 링크를 클릭하면 프론트엔드 비밀번호 재설정 페이지로 이동
 
-    # 프로덕션 환경에서만 실제 이메일 발송
     environment = getattr(settings, "ENVIRONMENT", "development")
     if environment != "production":
       return
+
+    logo_path = os.path.join(settings.BASE_DIR, "webapp", "staticfiles", "email_images", "mefit-logo.png")
 
     html_message = render_to_string(
       "users/email/password_reset.html",
@@ -28,10 +30,22 @@ class SendPasswordResetEmailService(BaseService):
         "reset_url": reset_url,
       },
     )
-    send_mail(
+
+    email = EmailMultiAlternatives(
       subject="비밀번호 재설정 안내",
-      message=f"비밀번호 재설정 링크: {reset_url}",
       from_email=settings.DEFAULT_FROM_EMAIL,
-      recipient_list=[user.email],
-      html_message=html_message,
+      to=[user.email],
     )
+    email.attach_alternative(html_message, "text/html")
+
+    if os.path.exists(logo_path):
+      with open(logo_path, "rb") as f:
+        logo_data = f.read()
+      email.attach(
+        "mefit-logo.png",
+        logo_data,
+        "image/png",
+        headers=[("Content-ID", "<mefit-logo>")],
+      )
+
+    email.send()
