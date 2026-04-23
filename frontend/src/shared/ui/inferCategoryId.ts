@@ -10,8 +10,7 @@ const PLATFORM_MAP: [string[], number][] = [
 
 const KEYWORD_MAP: [string[], number][] = [
   [["tech", "software", "개발", "engineer", "it", "dev",
-    "backend", "frontend", "fullstack", "data", "ai", "ml",
-    "naver", "kakao", "google", "meta", "nexon", "ncsoft"], 1],
+    "backend", "frontend", "fullstack", "data", "ai", "ml"], 1],
   [["market", "마케팅", "광고", "brand", "브랜드",
     "content", "콘텐츠", "design", "디자인"],              2],
   [["bank", "은행", "금융", "finance", "pay", "toss",
