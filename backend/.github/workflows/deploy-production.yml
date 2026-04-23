@@ -67,6 +67,10 @@ jobs:
               --from-literal=EMAIL_HOST_USER="${{ secrets.EMAIL_HOST_USER }}" \
               --from-literal=EMAIL_HOST_PASSWORD="${{ secrets.EMAIL_HOST_PASSWORD }}" \
               --from-literal=DEFAULT_FROM_EMAIL="${{ secrets.DEFAULT_FROM_EMAIL }}" \
+              --from-literal=SLACK_BOT_TOKEN="${{ secrets.SLACK_BOT_TOKEN }}" \
+              --from-literal=SLACK_CHANNEL_ERROR="${{ secrets.SLACK_CHANNEL_ERROR }}" \
+              --from-literal=SLACK_CHANNEL_EVENT="${{ secrets.SLACK_CHANNEL_EVENT }}" \
+              --from-literal=SLACK_CHANNEL_NPLUSONE="${{ secrets.SLACK_CHANNEL_NPLUSONE }}" \
               --from-literal=OPENAI_API_KEY="${{ secrets.BACKEND_OPENAI_API_KEY }}" \
               --from-literal=FRONTEND_URL="${{ secrets.FRONTEND_URL }}" \
               -n "${NS}" \
