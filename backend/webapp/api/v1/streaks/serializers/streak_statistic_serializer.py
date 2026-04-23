@@ -11,4 +11,5 @@ class StreakStatisticSerializer(serializers.ModelSerializer):
       "current_streak",
       "longest_streak",
       "last_participated_date",
+      "total_days",
     )

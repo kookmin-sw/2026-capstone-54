@@ -13,13 +13,12 @@ from config.celery import app
 class ExpireStreaksTask(BaseScheduledTask):
   """스트릭 만료 배치. KST 02:00 실행."""
 
-  # KST 02:00 = UTC 17:00
   schedule = crontab(hour=2, minute=0)
 
   def run(self):
-    from streaks.services import ExpireStreaksService
+    from streaks.services import StreakStatisticsService
 
-    return ExpireStreaksService(user=None).perform()
+    return StreakStatisticsService(user=None).expire_streaks()
 
 
 RegisteredExpireStreaksTask = app.register_task(ExpireStreaksTask())
