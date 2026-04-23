@@ -29,6 +29,10 @@ class StreakStatistics(BaseModel):
     blank=True,
     verbose_name="마지막 참여 날짜",
   )
+  total_days = models.PositiveIntegerField(
+    default=0,
+    verbose_name="총 참여일",
+  )
 
   def __str__(self):
-    return f"{self.user} — 현재 {self.current_streak}일 / 최장 {self.longest_streak}일"
+    return (f"{self.user} — 현재 {self.current_streak}일 / 최장 {self.longest_streak}일")
