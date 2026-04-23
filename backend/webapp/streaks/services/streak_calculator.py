@@ -8,20 +8,23 @@ from streaks.models import StreakLog, StreakStatistics
 class StreakCalculator:
   """통계 계산만 담당 ( interview_results_count > 0 기준)."""
 
-  def __init__(self, user):
+  def __init__(self, user, today=None):
     self.user = user
+    self.today = today or timezone.localdate()
 
   def calculate(self):
     participated_logs = list(self.user.streak_logs.filter(interview_results_count__gt=0).order_by("date"))
 
     stats, _ = StreakStatistics.objects.get_or_create(user=self.user)
 
-    self._apply_stats(stats, participated_logs)
+    self._apply_stats(stats, participated_logs, self.today)
     return stats
 
   @staticmethod
-  def bulk_calculate(users):
+  def bulk_calculate(users, today=None):
     """여러 사용자의 통계를 한 번에 재계산 (N+1 방지)."""
+    target_date = today or timezone.localdate()
+
     users_with_prefetch = users.prefetch_related(
       Prefetch(
         "streak_logs",
@@ -46,7 +49,7 @@ class StreakCalculator:
       else:
         stats = StreakStatistics(user=user)
 
-      StreakCalculator._apply_stats(stats, participated_logs)
+      StreakCalculator._apply_stats(stats, participated_logs, target_date)
 
       if stats.pk:
         stats_to_update.append(stats)
@@ -71,7 +74,9 @@ class StreakCalculator:
     return len(stats_to_update) + len(stats_to_create)
 
   @staticmethod
-  def _apply_stats(stats, participated_logs):
+  def _apply_stats(stats, participated_logs, today=None):
+    now = timezone.now()
+    stats.updated_at = now
     stats.total_days = len(participated_logs)
 
     if not participated_logs:
@@ -92,9 +97,9 @@ class StreakCalculator:
         current_streak = 1
       last_date = log.date
 
-    today = timezone.localdate()
-    yesterday = today - timedelta(days=1)
-    if last_date not in (today, yesterday):
+    target_date = today or timezone.localdate()
+    yesterday = target_date - timedelta(days=1)
+    if last_date not in (target_date, yesterday):
       current_streak = 0
 
     stats.current_streak = current_streak

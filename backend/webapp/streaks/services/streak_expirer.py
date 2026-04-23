@@ -16,6 +16,7 @@ class StreakExpirer:
     yesterday = today - timedelta(days=1)
 
     qs = StreakStatistics.objects.filter(
+      current_streak__gt=0,
       last_participated_date__isnull=False,
       last_participated_date__lt=yesterday,
     )

@@ -1,5 +1,4 @@
 from datetime import date, timedelta
-from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
@@ -20,9 +19,7 @@ class StreakCalculatorTests(TestCase):
   def _perform(self, user=None, today=None):
     target_user = user or self.user
     target_date = today or self.today
-    with patch("streaks.services.streak_calculator.timezone.localdate") as mock_localdate:
-      mock_localdate.return_value = target_date
-      return StreakCalculator(target_user).calculate()
+    return StreakCalculator(target_user, today=target_date).calculate()
 
   def test_calculate_total_days_zero_when_no_logs(self):
     stats = self._perform()
@@ -115,7 +112,7 @@ class StreakCalculatorTests(TestCase):
         StreakLogFactory(user=user, date=log_date, interview_results_count=1)
 
     users_qs = User.objects.filter(id__in=[u.id for u in users])
-    count = StreakCalculator.bulk_calculate(users_qs)
+    count = StreakCalculator.bulk_calculate(users_qs, today=self.today)
 
     self.assertEqual(count, 3)
     for user in users:
@@ -132,7 +129,7 @@ class StreakCalculatorTests(TestCase):
         StreakLogFactory(user=user, date=log_date, interview_results_count=1)
 
     users_qs = User.objects.filter(id__in=[u.id for u in users])
-    count = StreakCalculator.bulk_calculate(users_qs)
+    count = StreakCalculator.bulk_calculate(users_qs, today=self.today)
 
     self.assertEqual(count, 2)
     for user in users:
@@ -153,7 +150,7 @@ class StreakCalculatorTests(TestCase):
       StreakLogFactory(user=users[1], date=log_date, interview_results_count=1)
 
     users_qs = User.objects.filter(id__in=[u.id for u in users])
-    count = StreakCalculator.bulk_calculate(users_qs)
+    count = StreakCalculator.bulk_calculate(users_qs, today=self.today)
 
     self.assertEqual(count, 3)
 
@@ -164,7 +161,7 @@ class StreakCalculatorTests(TestCase):
   def test_bulk_calculate_with_zero_logs(self):
     users = [UserFactory() for _ in range(2)]
     users_qs = User.objects.filter(id__in=[u.id for u in users])
-    count = StreakCalculator.bulk_calculate(users_qs)
+    count = StreakCalculator.bulk_calculate(users_qs, today=self.today)
 
     self.assertEqual(count, 2)
     for user in users:

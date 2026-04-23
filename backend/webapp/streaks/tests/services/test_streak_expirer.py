@@ -1,5 +1,4 @@
 from datetime import date, timedelta
-from unittest.mock import patch
 
 from django.test import TestCase
 from streaks.factories import StreakStatisticsFactory
@@ -16,11 +15,12 @@ class StreakExpirerTests(TestCase):
     self.yesterday = self.today - timedelta(days=1)
 
   def _perform(self, user=None, today=None):
-    target_user = user or self.user
+    from unittest.mock import patch
+
     target_date = today or self.today
     with patch("streaks.services.streak_expirer.timezone.localdate") as mock_localdate:
       mock_localdate.return_value = target_date
-      return StreakExpirer(target_user).execute()
+      return StreakExpirer(user=user).execute()
 
   def test_no_expiration_when_user_participated_today(self):
     StreakStatisticsFactory(
@@ -64,6 +64,9 @@ class StreakExpirerTests(TestCase):
         last_participated_date=two_days_ago,
       )
 
+    all_stats = list(StreakStatistics.objects.all())
+    self.assertEqual(len(all_stats), 3)
+
     result = self._perform(user=None)
     self.assertEqual(result["expired_count"], 3)
 
@@ -90,3 +93,12 @@ class StreakExpirerTests(TestCase):
 
     result = self._perform()
     self.assertIn(self.user.id, result["expired_user_ids"])
+
+  def test_no_expiration_when_current_streak_is_zero(self):
+    StreakStatisticsFactory(
+      user=self.user,
+      current_streak=0,
+      last_participated_date=self.today - timedelta(days=2),
+    )
+    result = self._perform()
+    self.assertEqual(result["expired_count"], 0)

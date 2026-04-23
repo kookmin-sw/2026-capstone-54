@@ -25,27 +25,28 @@ class StreakStatisticsService(BaseService):
     from .streak_calculator import StreakCalculator
     from .streak_log_manager import StreakLogManager
 
-    log_manager = StreakLogManager(self.user)
-    streak_log = log_manager.increment()
+    with transaction.atomic():
+      log_manager = StreakLogManager(self.user)
+      streak_log = log_manager.increment()
 
-    calculator = StreakCalculator(self.user)
-    stats = calculator.calculate()
-    stats.save()
+      calculator = StreakCalculator(self.user)
+      stats = calculator.calculate()
+      stats.save()
 
-    if streak_log.interview_results_count <= MAX_REWARDED_INTERVIEWS_PER_DAY:
-      reward = TICKET_REWARD_PER_INTERVIEW_ORDER[streak_log.interview_results_count]
-      if reward > 0:
-        GrantTicketsService(user=self.user, amount=reward).perform()
+      if streak_log.interview_results_count <= MAX_REWARDED_INTERVIEWS_PER_DAY:
+        reward = TICKET_REWARD_PER_INTERVIEW_ORDER[streak_log.interview_results_count]
+        if reward > 0:
+          GrantTicketsService(user=self.user, amount=reward).perform()
 
-    transaction.on_commit(
-      lambda: interview_completed.send(
-        sender=self.__class__,
-        user=self.user,
-        streak_log=streak_log,
+      transaction.on_commit(
+        lambda: interview_completed.send(
+          sender=self.__class__,
+          user=self.user,
+          streak_log=streak_log,
+        )
       )
-    )
 
-    return stats
+      return stats
 
   def recalculate(self):
     from .streak_calculator import StreakCalculator
