@@ -14,8 +14,6 @@ User = get_user_model()
 
 
 class RecalculateStatisticsForm(forms.Form):
-  """스트릭 통계 재계산 폼"""
-
   users = forms.ModelMultipleChoiceField(
     label="사용자 선택",
     queryset=User.objects.all().order_by("email"),
@@ -49,23 +47,10 @@ class StreakStatisticsAdmin(ModelAdmin):
 
   @admin.action(description="선택한 사용자 통계 재계산")
   def recalculate_selected_statistics(self, request, queryset):
-    success_count = 0
-    error_count = 0
+    users = User.objects.filter(id__in=queryset.values_list("user_id", flat=True))
+    count = StreakCalculator.bulk_calculate(users)
 
-    for stats in queryset:
-      try:
-        calculator = StreakCalculator(stats.user)
-        updated = calculator.calculate()
-        updated.save()
-        success_count += 1
-      except Exception:
-        error_count += 1
-
-    message = f"{success_count}명의 사용자에 대해 스트릭 통계가 재계산되었습니다."
-    if error_count > 0:
-      message += f" ({error_count}명 실패)"
-
-    self.message_user(request, message)
+    self.message_user(request, f"{count}명의 사용자에 대해 스트릭 통계가 재계산되었습니다.")
 
   @action(description="통계 재계산 (다중)", url_path="recalculate-multiple")
   def recalculate_multiple_statistics(self, request: HttpRequest) -> HttpResponse:
@@ -73,20 +58,11 @@ class StreakStatisticsAdmin(ModelAdmin):
 
     if request.method == "POST" and form.is_valid():
       selected_users = form.cleaned_data["users"]
-      success_count = 0
-
-      for user in selected_users:
-        try:
-          calculator = StreakCalculator(user)
-          stats = calculator.calculate()
-          stats.save()
-          success_count += 1
-        except Exception:
-          continue
+      count = StreakCalculator.bulk_calculate(selected_users)
 
       self.message_user(
         request,
-        f"{success_count}명의 사용자에 대해 스트릭 통계가 재계산되었습니다.",
+        f"{count}명의 사용자에 대해 스트릭 통계가 재계산되었습니다.",
       )
       return redirect(reverse_lazy("admin:streaks_streakstatistics_changelist"))
 
