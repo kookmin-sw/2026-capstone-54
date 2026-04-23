@@ -16,11 +16,16 @@ export const useStreakStore = create<StreakState>()((set) => ({
 
   fetchStreak: async () => {
     set({ loading: true, error: null });
-    const res = await fetchStreakApi();
-    if (res.success && res.data) {
-      set({ data: res.data, loading: false });
-    } else {
-      set({ error: res.error ?? "스트릭 정보를 불러오지 못했습니다.", loading: false });
+    try {
+      const res = await fetchStreakApi();
+      if (res.success && res.data) {
+        set({ data: res.data, loading: false });
+      } else {
+        set({ error: res.error ?? "스트릭 정보를 불러오지 못했습니다.", loading: false });
+      }
+    } catch (err) {
+      console.error("Streak fetch error:", err);
+      set({ error: "네트워크 오류가 발생했습니다.", loading: false });
     }
   },
 }));

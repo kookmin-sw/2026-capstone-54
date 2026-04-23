@@ -44,10 +44,17 @@ interface StreakStatisticsResponse {
   currentStreak: number;
   longestStreak: number;
   lastParticipatedDate: string | null;
+  totalDays: number;
+}
+
+interface StreakLogsResponse {
+  startDate: string;
+  endDate: string;
+  logs: StreakLogEntry[];
 }
 
 interface StreakLogEntry {
-  date: string; // "YYYY-MM-DD"
+  date: string;
   interviewResultsCount: number;
 }
 
@@ -95,35 +102,33 @@ function buildNextReward(currentStreak: number): StreakNextReward {
   return { targetDays: target, daysRemaining, progress, reward: info.reward, rewardDetail: info.detail };
 }
 
-/* ── Fetch Streak Data ── */
 export async function fetchStreakApi(): Promise<{ success: boolean; data?: StreakData; error?: string }> {
   try {
-    // 통계 + 최근 6개월 로그 병렬 조회
     const now = new Date();
     const startDate = new Date(now.getFullYear(), now.getMonth() - 5, 1);
     const startStr = startDate.toISOString().slice(0, 10);
     const endStr = now.toISOString().slice(0, 10);
 
-    const [stats, logs] = await Promise.all([
+    const [statsRes, logsRes] = await Promise.all([
       apiRequest<StreakStatisticsResponse>("/api/v1/streaks/statistics/", { auth: true }),
-      apiRequest<StreakLogEntry[]>(`/api/v1/streaks/logs/?start_date=${startStr}&end_date=${endStr}`, { auth: true }),
+      apiRequest<StreakLogsResponse>(`/api/v1/streaks/logs/?start_date=${startStr}&end_date=${endStr}`, { auth: true }),
     ]);
 
-    const logsArray = Array.isArray(logs) ? logs : [];
+    const stats = statsRes ?? {};
+    const logsArray = Array.isArray(logsRes?.logs) ? logsRes.logs : [];
     const today = now.toISOString().slice(0, 10);
     const todayLog = logsArray.find((l) => l.date === today);
     const todayCompleted = (todayLog?.interviewResultsCount ?? 0) > 0;
-    const totalDays = logsArray.filter((l) => l.interviewResultsCount > 0).length;
 
     const data: StreakData = {
-      currentStreak: stats.currentStreak,
-      bestStreak: stats.longestStreak,
-      totalDays,
+      currentStreak: stats.currentStreak ?? 0,
+      bestStreak: stats.longestStreak ?? 0,
+      totalDays: stats.totalDays ?? 0,
       rewardsCount: 0,
       todayCompleted,
       calendarDoneMap: buildCalendarDoneMap(logsArray),
-      nextReward: buildNextReward(stats.currentStreak),
-      milestones: buildMilestones(stats.currentStreak),
+      nextReward: buildNextReward(stats.currentStreak ?? 0),
+      milestones: buildMilestones(stats.currentStreak ?? 0),
       rewardHistory: [],
     };
 
