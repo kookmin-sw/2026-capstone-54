@@ -105,7 +105,7 @@ function buildNextReward(currentStreak: number): StreakNextReward {
 export async function fetchStreakApi(): Promise<{ success: boolean; data?: StreakData; error?: string }> {
   try {
     const now = new Date();
-    const startDate = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+    const startDate = new Date(now.getFullYear(), now.getMonth() - 11, 1);
     const startStr = startDate.toISOString().slice(0, 10);
     const endStr = now.toISOString().slice(0, 10);
 
@@ -114,21 +114,21 @@ export async function fetchStreakApi(): Promise<{ success: boolean; data?: Strea
       apiRequest<StreakLogsResponse>(`/api/v1/streaks/logs/?start_date=${startStr}&end_date=${endStr}`, { auth: true }),
     ]);
 
-    const stats = statsRes ?? {};
+    const stats = statsRes;
     const logsArray = Array.isArray(logsRes?.logs) ? logsRes.logs : [];
     const today = now.toISOString().slice(0, 10);
     const todayLog = logsArray.find((l) => l.date === today);
     const todayCompleted = (todayLog?.interviewResultsCount ?? 0) > 0;
 
     const data: StreakData = {
-      currentStreak: stats.currentStreak ?? 0,
-      bestStreak: stats.longestStreak ?? 0,
-      totalDays: stats.totalDays ?? 0,
+      currentStreak: stats?.currentStreak ?? 0,
+      bestStreak: stats?.longestStreak ?? 0,
+      totalDays: stats?.totalDays ?? 0,
       rewardsCount: 0,
       todayCompleted,
       calendarDoneMap: buildCalendarDoneMap(logsArray),
-      nextReward: buildNextReward(stats.currentStreak ?? 0),
-      milestones: buildMilestones(stats.currentStreak ?? 0),
+      nextReward: buildNextReward(stats?.currentStreak ?? 0),
+      milestones: buildMilestones(stats?.currentStreak ?? 0),
       rewardHistory: [],
     };
 
