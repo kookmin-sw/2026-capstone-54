@@ -1,4 +1,5 @@
 import { forwardRef } from "react";
+import { PRO_MONTHLY_PRICE } from "@/features/subscription/constants";
 
 interface PlanCardsProps {
   isPro: boolean;
@@ -96,7 +97,7 @@ export const PlanCards = forwardRef<HTMLDivElement, PlanCardsProps>(
             )}
           </div>
           <div className="flex items-end gap-1 mb-1">
-            <span className="text-[56px] font-black tracking-[-3px] leading-none text-white">₩9,900</span>
+            <span className="text-[56px] font-black tracking-[-3px] leading-none text-white">{PRO_MONTHLY_PRICE}</span>
             <span className="text-[15px] font-bold text-[rgba(255,255,255,.35)] pb-2">/월</span>
           </div>
           <p className="text-xs text-[rgba(255,255,255,.3)] mb-7 min-h-[18px]">월간 결제 · 언제든 취소 가능</p>

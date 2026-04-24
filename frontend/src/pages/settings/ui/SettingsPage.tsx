@@ -282,16 +282,13 @@ export function SettingsPage() {
                         <a href="#" className="font-plex-sans-kr text-[13px] font-bold text-[#0A0A0A] bg-white border-none rounded-lg px-[18px] py-[9px] cursor-pointer whitespace-nowrap no-underline inline-block transition-all duration-150 hover:bg-[#F3F4F6] hover:-translate-y-px">요금제 변경 →</a>
                       </div>
                       <div className="mt-[14px]">
-                        <div className="flex justify-between text-[11px] text-white/45 mb-[5px]">
-                          <span>이력서 사용량</span>
+                        <div className="flex justify-between text-[11px] text-white/45">
+                          <span>이력서 등록 제한</span>
                           <span>
                             {subStatus?.policy?.limits.maxActiveResumes == null
                               ? "무제한"
                               : `최대 ${subStatus.policy.limits.maxActiveResumes}개`}
                           </span>
-                        </div>
-                        <div className="h-[5px] bg-white/12 rounded-full overflow-hidden">
-                          <div className="h-full bg-[#06B6D4] rounded-full" style={{ width: `${(data.subscription.resumeUsed / data.subscription.resumeMax) * 100}%` }} />
                         </div>
                       </div>
                     </div>

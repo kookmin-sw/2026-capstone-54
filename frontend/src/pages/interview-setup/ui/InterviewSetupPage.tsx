@@ -44,6 +44,8 @@ export function InterviewSetupPage() {
   const canUseRealMode = Boolean(subscriptionStatus?.policy.features.realModeInterview);
 
   useEffect(() => {
+    if (!subscriptionStatus) return;
+
     if (interviewMode === "full" && !canUseFullProcess) {
       setInterviewMode("tail");
     }
@@ -57,6 +59,7 @@ export function InterviewSetupPage() {
     canUseRealMode,
     setInterviewMode,
     setPracticeMode,
+    subscriptionStatus,
   ]);
 
   const handleStartInterview = async () => {

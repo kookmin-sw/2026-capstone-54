@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useSubscriptionStore } from "@/features/subscription";
+import { DEFAULT_FREE_POLICY } from "@/features/subscription/constants";
 import { TicketPolicyInfo } from "@/features/subscription/ui/TicketPolicyInfo";
 import { PlanCards } from "./PlanCards";
 import { FeatureComparison } from "./FeatureComparison";
@@ -144,13 +145,13 @@ export function SubscriptionPage() {
                 isPro={isPro}
                 proCtaText={proCtaText}
                 policy={{
-                  maxActiveResumes: policy?.limits.maxActiveResumes ?? 3,
-                  maxActiveJobDescriptions: policy?.limits.maxActiveJobDescriptions ?? 5,
-                  fullProcessInterview: policy?.features.fullProcessInterview ?? false,
-                  realModeInterview: policy?.features.realModeInterview ?? false,
-                  eyeTrackingAnalysis: policy?.features.eyeTrackingAnalysis ?? true,
-                  reportRecordingPlayback: policy?.features.reportRecordingPlayback ?? false,
-                  interviewSessionHistoryDays: policy?.limits.interviewSessionHistoryDays ?? 7,
+                  maxActiveResumes: policy?.limits.maxActiveResumes ?? DEFAULT_FREE_POLICY.limits.maxActiveResumes,
+                  maxActiveJobDescriptions: policy?.limits.maxActiveJobDescriptions ?? DEFAULT_FREE_POLICY.limits.maxActiveJobDescriptions,
+                  fullProcessInterview: policy?.features.fullProcessInterview ?? DEFAULT_FREE_POLICY.features.fullProcessInterview,
+                  realModeInterview: policy?.features.realModeInterview ?? DEFAULT_FREE_POLICY.features.realModeInterview,
+                  eyeTrackingAnalysis: policy?.features.eyeTrackingAnalysis ?? DEFAULT_FREE_POLICY.features.eyeTrackingAnalysis,
+                  reportRecordingPlayback: policy?.features.reportRecordingPlayback ?? DEFAULT_FREE_POLICY.features.reportRecordingPlayback,
+                  interviewSessionHistoryDays: policy?.limits.interviewSessionHistoryDays ?? DEFAULT_FREE_POLICY.limits.interviewSessionHistoryDays,
                 }}
                 processing={processing}
                 expiresAt={status?.expiresAt ?? null}
