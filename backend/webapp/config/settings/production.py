@@ -19,7 +19,7 @@ ALLOWED_CIDR_NETS = ["10.42.0.0/16"]
 # Kubernetes 내부 서비스 호스트 추가
 ALLOWED_HOSTS = [
   "mefit-production-api.mefit-backend-production.svc.cluster.local",
-  "mefit.kr",
+  "api.mefit.kr",
 ]
 
 # ── CORS / CSRF / 보안 설정 ──
