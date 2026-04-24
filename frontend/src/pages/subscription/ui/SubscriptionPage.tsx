@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useSubscriptionStore } from "@/features/subscription";
+import { DEFAULT_FREE_POLICY } from "@/features/subscription/constants";
 import { TicketPolicyInfo } from "@/features/subscription/ui/TicketPolicyInfo";
 import { PlanCards } from "./PlanCards";
 import { FeatureComparison } from "./FeatureComparison";
@@ -47,12 +48,9 @@ export function SubscriptionPage() {
   }, [redirectUrl, clearRedirectUrl]);
 
   const isYearly = billingCycle === "yearly";
-  const monthlyPrice = isYearly ? "₩7,900" : "₩9,900";
-  const originalPrice = "₩9,900";
-  const periodText = isYearly ? "연간 결제 (₩94,800/년) · 언제든 취소" : "월간 결제 · 언제든 취소 가능";
-  const proNote = isYearly ? "첫 7일 무료 체험 · 20% 절약" : "첫 7일 무료 체험 · 이후 자동 결제";
-  const proBtnText = isYearly ? "Pro 연간 결제 시작" : "Pro 시작하기";
-  const isPro = status?.currentPlan === "pro";
+  const isPro = status?.planType === "pro";
+  const policy = status?.policy;
+  const proCtaText = isYearly ? "Pro 연간 결제 시작" : "Pro 시작하기";
 
   const scrollToPro = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -64,7 +62,11 @@ export function SubscriptionPage() {
       <div className="bg-white min-h-[calc(100vh-60px)] pb-20">
         <div className="max-w-[900px] mx-auto px-4 sm:px-8">
           <div className="animate-[subFadeUp_.45s_ease_both]">
-            <TicketPolicyInfo currentPlan={status?.currentPlan ?? "free"} />
+            <TicketPolicyInfo
+              currentPlan={status?.planType ?? "free"}
+              maxActiveResumes={policy?.limits.maxActiveResumes}
+              maxActiveJobDescriptions={policy?.limits.maxActiveJobDescriptions}
+            />
           </div>
 
           <div className="text-center pt-2 sm:pt-[32px] pb-8 sm:pb-11 animate-[subFadeUp_.45s_ease_.05s_both]">
@@ -116,7 +118,7 @@ export function SubscriptionPage() {
             <div className="flex items-center gap-[10px] bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl px-5 py-3 max-w-[600px] mx-auto mb-11 shadow-[var(--sc)] animate-[subFadeUp_.45s_ease_.08s_both]">
               <div className="w-[9px] h-[9px] rounded-full bg-[#059669] shadow-[0_0_0_3px_rgba(5,150,105,.15)] flex-shrink-0 animate-[subBreathe_2.5s_ease-in-out_infinite]" />
               <span className="text-sm font-semibold text-[#0A0A0A]">
-                현재 <span className="text-[#0991B2] font-bold">{status.currentPlan === "pro" ? "Pro" : "Free"} 플랜</span>을 이용 중입니다
+                현재 <span className="text-[#0991B2] font-bold">{status.planType === "pro" ? "Pro" : "Free"} 플랜</span>을 이용 중입니다
               </span>
               {!isPro && (
                 <button
@@ -141,14 +143,18 @@ export function SubscriptionPage() {
               <PlanCards
                 ref={proCardRef}
                 isPro={isPro}
-                isYearly={isYearly}
-                monthlyPrice={monthlyPrice}
-                originalPrice={originalPrice}
-                periodText={periodText}
-                proNote={proNote}
-                proBtnText={proBtnText}
+                proCtaText={proCtaText}
+                policy={{
+                  maxActiveResumes: policy?.limits.maxActiveResumes ?? DEFAULT_FREE_POLICY.limits.maxActiveResumes,
+                  maxActiveJobDescriptions: policy?.limits.maxActiveJobDescriptions ?? DEFAULT_FREE_POLICY.limits.maxActiveJobDescriptions,
+                  fullProcessInterview: policy?.features.fullProcessInterview ?? DEFAULT_FREE_POLICY.features.fullProcessInterview,
+                  realModeInterview: policy?.features.realModeInterview ?? DEFAULT_FREE_POLICY.features.realModeInterview,
+                  eyeTrackingAnalysis: policy?.features.eyeTrackingAnalysis ?? DEFAULT_FREE_POLICY.features.eyeTrackingAnalysis,
+                  reportRecordingPlayback: policy?.features.reportRecordingPlayback ?? DEFAULT_FREE_POLICY.features.reportRecordingPlayback,
+                  interviewSessionHistoryDays: policy?.limits.interviewSessionHistoryDays ?? DEFAULT_FREE_POLICY.limits.interviewSessionHistoryDays,
+                }}
                 processing={processing}
-                nextBillingDate={status?.nextBillingDate ?? undefined}
+                expiresAt={status?.expiresAt ?? null}
                 onCheckout={checkout}
                 onCancel={cancelSubscription}
               />

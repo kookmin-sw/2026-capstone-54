@@ -2,9 +2,15 @@ import { useTicketPolicy } from "@/shared/hooks/useTicketPolicy";
 
 interface TicketPolicyInfoProps {
   currentPlan: "free" | "pro";
+  maxActiveResumes?: number | null;
+  maxActiveJobDescriptions?: number | null;
 }
 
-export function TicketPolicyInfo({ currentPlan }: TicketPolicyInfoProps) {
+export function TicketPolicyInfo({
+  currentPlan,
+  maxActiveResumes,
+  maxActiveJobDescriptions,
+}: TicketPolicyInfoProps) {
   const { policy } = useTicketPolicy();
 
   const dailyAmount = currentPlan === "pro"
@@ -39,6 +45,18 @@ export function TicketPolicyInfo({ currentPlan }: TicketPolicyInfoProps) {
           </div>
 
           <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[#6B7280]">이력서 최대 등록</span>
+              <span className="font-semibold text-[#0A0A0A]">
+                {maxActiveResumes == null ? "무제한" : `${maxActiveResumes}개`}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-[#6B7280]">채용공고 최대 등록</span>
+              <span className="font-semibold text-[#0A0A0A]">
+                {maxActiveJobDescriptions == null ? "무제한" : `${maxActiveJobDescriptions}개`}
+              </span>
+            </div>
             <div className="flex items-center justify-between">
               <span className="text-[#6B7280]">꼬리질문 비용</span>
               <span className="font-semibold text-[#0A0A0A]">{policy.ticketCostFollowupInterview}개</span>

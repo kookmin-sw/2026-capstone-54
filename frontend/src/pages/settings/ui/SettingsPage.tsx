@@ -272,22 +272,23 @@ export function SettingsPage() {
                     <div className="bg-[#0A0A0A] rounded-[10px] px-[22px] py-5 relative overflow-hidden">
                       <div className="flex items-center justify-between gap-3 max-[640px]:flex-col max-[640px]:items-start">
                         <div>
-                          <div className="font-plex-sans-kr text-[20px] font-black text-white">{data.subscription.plan === "free" ? "Free 플랜" : "Pro 플랜"}</div>
+                          <div className="font-plex-sans-kr text-[20px] font-black text-white">{subStatus?.planType === "free" ? "Free 플랜" : "Pro 플랜"}</div>
                           <div className="text-[12px] text-white/45 mt-0.5">
-                            {data.subscription.plan === "free"
+                            {subStatus?.planType === "free"
                               ? "기본 기능 무료 이용 중 · 결제 정보 없음"
-                              : `다음 결제일: ${data.subscription.nextBillingDate}`}
+                              : `구독 만료일: ${subStatus?.expiresAt ? new Date(subStatus.expiresAt).toLocaleDateString("ko-KR") : "-"}`}
                           </div>
                         </div>
                         <a href="#" className="font-plex-sans-kr text-[13px] font-bold text-[#0A0A0A] bg-white border-none rounded-lg px-[18px] py-[9px] cursor-pointer whitespace-nowrap no-underline inline-block transition-all duration-150 hover:bg-[#F3F4F6] hover:-translate-y-px">요금제 변경 →</a>
                       </div>
                       <div className="mt-[14px]">
-                        <div className="flex justify-between text-[11px] text-white/45 mb-[5px]">
-                          <span>이력서 사용량</span>
-                          <span>{data.subscription.resumeUsed} / {data.subscription.resumeMax}개</span>
-                        </div>
-                        <div className="h-[5px] bg-white/12 rounded-full overflow-hidden">
-                          <div className="h-full bg-[#06B6D4] rounded-full" style={{ width: `${(data.subscription.resumeUsed / data.subscription.resumeMax) * 100}%` }} />
+                        <div className="flex justify-between text-[11px] text-white/45">
+                          <span>이력서 등록 제한</span>
+                          <span>
+                            {subStatus?.policy?.limits.maxActiveResumes == null
+                              ? "무제한"
+                              : `최대 ${subStatus.policy.limits.maxActiveResumes}개`}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -299,10 +300,10 @@ export function SettingsPage() {
                     </div>
                     <div className="grid grid-cols-2 gap-[10px] max-[640px]:grid-cols-1">
                       {([
-                        { icon: <Eye size={20} className="text-[#8B5CF6]" />, name: "시선 추적 분석", desc: "면접 중 시선 이탈 횟수 측정" },
-                        { icon: <Zap size={20} className="text-[#F59E0B]" />, name: "실전 모드", desc: "랜덤 대기 후 자동 시작" },
-                        { icon: <FileText size={20} className="text-[#0991B2]" />, name: "상세 리포트 PDF", desc: "면접 리포트 저장·공유" },
-                        { icon: <Archive size={20} className="text-[#059669]" />, name: "무제한 아카이브", desc: "전체 면접 세션 보관" },
+                        { icon: <Eye size={20} className="text-[#8B5CF6]" />, name: "시선 추적 분석", desc: "Free/Pro 모두 사용 가능" },
+                        { icon: <Zap size={20} className="text-[#F59E0B]" />, name: "실전 모드", desc: "PRO 전용 · 랜덤 대기 후 자동 시작" },
+                        { icon: <FileText size={20} className="text-[#0991B2]" />, name: "녹화 영상 확인", desc: "PRO 전용 · 리포트에서 재생" },
+                        { icon: <Archive size={20} className="text-[#059669]" />, name: "무제한 아카이브", desc: "Free는 최근 7일만 조회" },
                       ] as const).map((item) => (
                         <div key={item.name} className="bg-white border border-[#E5E7EB] rounded-[10px] px-4 py-[14px] transition-all duration-150 hover:border-[rgba(9,145,178,0.3)] hover:shadow-[0_2px_8px_rgba(0,0,0,0.1),0_8px_24px_rgba(0,0,0,0.08)]">
                           <div className="mb-[8px]">{item.icon}</div>
@@ -312,13 +313,30 @@ export function SettingsPage() {
                       ))}
                     </div>
                     <div style={{ marginTop: 16 }}>
-                      <button className="font-plex-sans-kr text-[14px] font-bold text-white bg-[#0A0A0A] border-none rounded-lg py-[10px] cursor-pointer transition-all duration-150 flex items-center gap-[7px] hover:opacity-85 hover:-translate-y-px justify-center w-full" style={{ borderRadius: 8 }}>
-                        <Gem size={15} className="text-[#06B6D4]" /> Pro 업그레이드 — 첫 7일 무료
-                      </button>
+                      {subStatus?.planType === "pro" ? (
+                        <button
+                          className="font-plex-sans-kr text-[14px] font-bold text-[#9CA3AF] bg-[#F3F4F6] border border-[#E5E7EB] rounded-lg py-[10px] cursor-not-allowed flex items-center gap-[7px] justify-center w-full"
+                          style={{ borderRadius: 8 }}
+                          disabled
+                        >
+                          <Gem size={15} className="text-[#9CA3AF]" /> 현재 Pro 플랜 이용 중
+                        </button>
+                      ) : (
+                        <button
+                          className="font-plex-sans-kr text-[14px] font-bold text-white bg-[#0A0A0A] border-none rounded-lg py-[10px] cursor-pointer transition-all duration-150 flex items-center gap-[7px] hover:opacity-85 hover:-translate-y-px justify-center w-full"
+                          style={{ borderRadius: 8 }}
+                        >
+                          <Gem size={15} className="text-[#06B6D4]" /> Pro 업그레이드 — 첫 7일 무료
+                        </button>
+                      )}
                     </div>
                   </div>
 
-                  <TicketPolicyInfo currentPlan={subStatus?.currentPlan ?? "free"} />
+                  <TicketPolicyInfo
+                    currentPlan={subStatus?.planType ?? "free"}
+                    maxActiveResumes={subStatus?.policy?.limits.maxActiveResumes}
+                    maxActiveJobDescriptions={subStatus?.policy?.limits.maxActiveJobDescriptions}
+                  />
                 </div>
 
                 {/* ─── CONSENT PANEL ─── */}

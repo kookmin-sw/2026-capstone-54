@@ -7,12 +7,14 @@ import type { InterviewMode, PracticeMode } from "@/features/interview-setup";
 interface InterviewModeSectionProps {
   interviewMode: InterviewMode;
   practiceMode: PracticeMode;
+  isProPlan: boolean;
   onModeChange: (mode: InterviewMode) => void;
   onPracticeModeChange: (mode: PracticeMode) => void;
 }
 
 export function InterviewModeSection({
   interviewMode, practiceMode,
+  isProPlan,
   onModeChange, onPracticeModeChange,
 }: InterviewModeSectionProps) {
   return (
@@ -33,9 +35,15 @@ export function InterviewModeSection({
             tags={["심층 탐구", "실시간 생성"]}
           />
           <OptionCard
-            selected={false}
-            disabled
-            onClick={() => alert("Pro 플랜 업그레이드 후 사용 가능해요!")}
+            selected={interviewMode === "full"}
+            disabled={!isProPlan}
+            onClick={() => {
+              if (!isProPlan) {
+                alert("Pro 플랜 업그레이드 후 사용 가능해요!");
+                return;
+              }
+              onModeChange("full");
+            }}
             title="전체 프로세스"
             description="면접 전 과정 시뮬레이션"
             badge={
@@ -62,7 +70,14 @@ export function InterviewModeSection({
           />
           <OptionCard
             selected={practiceMode === "real"}
-            onClick={() => onPracticeModeChange("real")}
+            disabled={!isProPlan}
+            onClick={() => {
+              if (!isProPlan) {
+                alert("실전 모드는 Pro 플랜에서만 사용할 수 있어요.");
+                return;
+              }
+              onPracticeModeChange("real");
+            }}
             icon={<div className="w-8 h-8 rounded-lg bg-[#FFFBEB] flex items-center justify-center"><Zap size={16} className="text-[#D97706]" /></div>}
             title="실전 모드"
             description="랜덤 대기 후 자동 시작"

@@ -81,13 +81,8 @@ export const useSubscriptionStore = create<SubscriptionState>()((set, get) => ({
     set({ processing: true, error: null });
     const res = await cancelSubscriptionApi();
     if (res.success) {
-      set((s) => ({
-        processing: false,
-        successMessage: res.message,
-        status: s.status
-          ? { ...s.status, currentPlan: "free", billingCycle: null, nextBillingDate: null }
-          : s.status,
-      }));
+      await get().fetchStatus();
+      set({ processing: false, successMessage: res.message });
     } else {
       set({ processing: false, error: res.message });
     }

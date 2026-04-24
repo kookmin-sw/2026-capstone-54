@@ -16,6 +16,7 @@ export function InterviewResultsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+  const [hasHiddenOlderSessions, setHasHiddenOlderSessions] = useState(false);
 
   const sseStreamsRef = useRef<Map<string, () => void>>(new Map());
 
@@ -26,6 +27,7 @@ export function InterviewResultsPage() {
       setSessions(data.results);
       setTotalPages(data.totalPagesCount);
       setTotalCount(data.count);
+      setHasHiddenOlderSessions(Boolean(data.hasHiddenOlderSessions));
     } catch { setError("목록을 불러오지 못했습니다."); }
     finally { setLoading(false); }
   };
@@ -86,6 +88,12 @@ export function InterviewResultsPage() {
 
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-600 rounded-xl p-4 text-sm mb-5">{error}</div>
+      )}
+
+      {!loading && hasHiddenOlderSessions && (
+        <div className="bg-[#FFF7ED] border border-[#FED7AA] text-[#9A3412] rounded-xl p-4 text-sm mb-5">
+          Free 플랜에서는 최근 7일의 면접 세션만 조회할 수 있습니다. 전체 이력을 보려면 Pro 플랜으로 업그레이드하세요.
+        </div>
       )}
 
       {loading ? (
