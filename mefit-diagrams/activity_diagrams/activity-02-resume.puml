@@ -1,0 +1,151 @@
+@startuml
+title MeFit 이력서 관리 흐름\n(등록 / 편집 / 확정 / 분석)
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 11
+skinparam ActivityBackgroundColor #E8F4FD
+skinparam ActivityBorderColor #2196F3
+skinparam ArrowColor #555555
+skinparam DiamondBackgroundColor #FFF9C4
+skinparam DiamondBorderColor #FBC02D
+
+|#E3F2FD|사용자|
+|#E8F5E9|Frontend|
+|#FFF8E1|Backend API|
+|#F3E5F5|비동기 처리|
+
+|사용자|
+start
+:HomeSidebar 에서 "이력서" 메뉴 클릭;
+
+|Frontend|
+:ResumeListPage.tsx\nGET /api/v1/resumes/\n이력서 목록 조회 (무한 스크롤)\nSSE로 분석 중 이력서 상태 실시간 표시;
+
+|사용자|
+if (새 이력서?) then (등록)
+  :"새 이력서" 버튼 클릭\nResumeNewPage.tsx;
+
+  if (등록 방식?) then (파일 업로드)
+    |사용자|
+    :PDF 또는 DOCX 파일 선택;
+
+    |Frontend|
+    :POST /api/v1/resumes/\ntype=file, file=binary;
+
+    |Backend API|
+    :CreateFileResumeService.execute()\n- Resume 생성 (status: DRAFT)\n- S3에 파일 업로드\n- FinalizeResumeService 자동 호출\n파일 업로드 시 자동 확정+분석 시작;
+
+  else (직접 입력)
+    |사용자|
+    :템플릿 선택 (선택사항)\nGET /api/v1/resumes/templates/\n이력서 제목 입력;
+
+    |Frontend|
+    :POST /api/v1/resumes/\ntype=text, title, template_uuid;
+
+    |Backend API|
+    :CreateTextResumeService.execute()\n- Resume 생성 (status: DRAFT)\n- 템플릿 내용 적용 (있으면);
+  endif
+
+  |Frontend|
+  :navigate("/resume/uuid")\nResumeDetailPage.tsx;
+
+else (기존 이력서)
+  |사용자|
+  :이력서 목록에서 선택;
+
+  |Frontend|
+  :GET /api/v1/resumes/uuid/\nResumeDetailPage.tsx\n전체 섹션 데이터 로드;
+endif
+
+' 이력서 편집
+
+|사용자|
+:인라인 편집 (dirty state 추적);
+
+|사용자|
+:기본 정보 수정\n이름, 이메일, 전화, 주소;
+
+|Frontend|
+:PUT /resumes/uuid/sections/basic-info/\nResumeBasicInfoSectionViewSet.upsert();
+
+|사용자|
+:요약, 목표 수정;
+
+|Frontend|
+:PUT /resumes/uuid/sections/summary/\nResumeSummarySectionViewSet.upsert();
+
+|사용자|
+:경력 사항 추가, 수정, 삭제;
+
+|Frontend|
+:POST /sections/experiences/ 추가\nPUT /sections/experiences/uuid/ 수정\nDELETE /sections/experiences/uuid/ 삭제;
+
+|Backend API|
+:UpsertResumeExperienceService\nDeleteResumeExperienceService;
+
+|사용자|
+:학력, 자격증, 수상, 프로젝트,\n언어 섹션 편집\n동일한 CRUD 패턴;
+
+|Frontend|
+:각 섹션별 ViewSet 호출\nPOST, PUT, DELETE;
+
+|사용자|
+:스킬, 키워드, 산업 도메인\n전체 교체;
+
+|Frontend|
+:PUT /sections/skills/\nPUT /sections/keywords/\nPUT /sections/industry-domains/\n전체 배열 교체 방식;
+
+|Backend API|
+:ReplaceResumeSkillsService\nReplaceResumeKeywordsService\nReplaceResumeIndustryDomainsService;
+
+' 이력서 확정 + 분석
+
+|사용자|
+:"확정" 버튼 클릭;
+
+|Frontend|
+:POST /api/v1/resumes/uuid/finalize/;
+
+|Backend API|
+:FinalizeResumeService.execute()\n- status -> ANALYZING\n- UploadResumeBundleService\n  정규화된 JSON -> S3 업로드\n- Celery 태스크 디스패치\n  analysis-resume 큐;
+
+|비동기 처리|
+#DCEDC8:process_resume_task\nanalysis-resume 서비스;
+
+:ExtractTextTask\nPDF, 문서 -> 텍스트 추출;
+
+fork
+  :EmbedResumeTask\n텍스트 청크 -> 벡터 임베딩\nOpenAI embedding;
+fork again
+  :AnalyzeResumeTask\nLLM 기반 이력서 파싱\n스킬, 경력, 키워드 추출;
+end fork
+
+:FinalizeResumeTask\n- 임베딩 + 분석 결과 통합\n- Backend 콜백 API 호출;
+
+|Backend API|
+:ApplyAnalysisResultTask (Celery)\n- 분석 결과 Resume에 적용\n- status -> COMPLETED;
+
+|Frontend|
+:SSE /sse/resumes/uuid/analysis-status/\nResumeAnalysisStatusConsumer\n1.5초 간격 DB 폴링\n상태 변화 감지: ANALYZING -> COMPLETED;
+
+|사용자|
+:분석 완료 알림 확인\n이력서 상세에서 분석 결과 확인\n- 추출된 스킬\n- 파싱된 경력\n- 키워드\n- 면접 준비에 사용 가능;
+
+stop
+
+legend right
+  색상 범례
+  ....
+  사용자 = 사용자 액션
+  Frontend = Frontend 처리
+  Backend API = Backend API 호출
+  비동기 처리 = Celery 비동기 태스크
+  DCEDC8 = analysis-resume 서비스
+  ....
+  이력서 유형:
+  file = PDF, DOCX 업로드 -> 자동 분석
+  text = 직접 입력 -> 수동 확정 후 분석
+end legend
+
+footer MeFit 코드 기반 Activity Diagram - resume flow
+@enduml

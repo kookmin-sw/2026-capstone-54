@@ -1,0 +1,196 @@
+@startuml
+title MeFit 면접 진행 흐름\n(준비 / 환경 점검 / 면접 세션 / 종료)
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 11
+skinparam ActivityBackgroundColor #E8F4FD
+skinparam ActivityBorderColor #2196F3
+skinparam ArrowColor #555555
+skinparam DiamondBackgroundColor #FFF9C4
+skinparam DiamondBorderColor #FBC02D
+
+|#E3F2FD|사용자|
+|#E8F5E9|Frontend|
+|#FFF8E1|Backend API|
+|#F3E5F5|비동기 처리|
+
+|사용자|
+start
+:HomeSidebar 에서 "면접 시작" 클릭;
+
+' 면접 설정
+
+|Frontend|
+:InterviewSetupPage.tsx Step 1\n- 이력서 선택 ResumeSection\n- 채용공고 선택 JdSection\n  또는 URL 직접 입력;
+
+|사용자|
+:이력서 선택\n채용공고 선택;
+
+|Frontend|
+:InterviewSetupPage.tsx Step 2\n- 면접 모드 선택 InterviewModeSection\n- 난이도 선택 DifficultySection;
+
+|사용자|
+:면접 모드 선택\nFOLLOWUP: 후속 질문형\nFULL_PROCESS: 전체 프로세스형\n난이도 선택\nEASY, MEDIUM, HARD;
+
+|Frontend|
+:POST /api/v1/interviews/interview-sessions/\nresume_uuid, jd_uuid, type, difficulty, mode;
+
+|Backend API|
+:InterviewSessionViewSet.create()\n- InterviewSession 생성\n  status: IN_PROGRESS\n- session UUID 반환;
+
+|Frontend|
+:새 창에서 Precheck 열기\nwindow.open "/interview/precheck/uuid" "_blank";
+
+' 환경 점검
+
+|Frontend|
+#LightCyan:InterviewPreCheckPage.tsx\nfull-screen 레이아웃;
+
+:Step 1: 카메라, 마이크 점검\n- navigator.mediaDevices.getUserMedia\n- 카메라 프리뷰 표시\n- 마이크 레벨 시각화;
+
+|사용자|
+:카메라, 마이크 권한 허용\n디바이스 선택 확인;
+
+|Frontend|
+:Step 2: 브라우저, 네트워크 점검\n- WebRTC 호환성 확인\n- MediaRecorder API 지원 확인\n- 네트워크 속도 측정;
+
+|사용자|
+:점검 결과 확인;
+
+|Frontend|
+:Step 3: 음성 테스트\n- TTS 음성 출력 테스트\n- 마이크 녹음 -> 재생 테스트;
+
+|사용자|
+:음성 테스트 완료\n"면접 시작" 버튼 클릭;
+
+|Frontend|
+:navigate "/interview/session/uuid";
+
+' 면접 시작
+
+|Frontend|
+#LightCyan:InterviewSessionPage.tsx\nfull-screen 레이아웃\nXState 상태 머신 초기화;
+
+:POST /interview-sessions/uuid/start/;
+
+|Backend API|
+:StartInterviewView.post();
+
+if (티켓 검증) then (충분)
+  :UseTicketsService.execute()\n티켓 차감\nFOLLOWUP=5, FULL_PROCESS=10;
+else (부족)
+  :HTTP 402\n티켓 부족 오류 반환;
+  |Frontend|
+  :티켓 부족 안내\n결제 페이지로 유도;
+  stop
+endif
+
+|Backend API|
+if (구독 플랜 검증) then (통과)
+  :검증 완료;
+else (미충족)
+  :HTTP 403\nPRO 플랜 필요 오류\nFULL_PROCESS, REAL 모드;
+  |Frontend|
+  :플랜 업그레이드 안내;
+  stop
+endif
+
+|Backend API|
+:GenerateInitialQuestionsService.execute()\n- 이력서 내용 로드 content_service\n- 채용공고 내용 로드\n- LLM 호출\n  FollowupInterviewQuestionGenerator\n  또는 FullProcessInterviewQuestionGenerator\n- InterviewTurn 생성 INITIAL 타입\n- 질문 목록 반환;
+
+|Frontend|
+:WebSocket /ws/interviews/uuid/\nInterviewSessionConsumer 연결\n연결 상태 추적\n첫 번째 질문 표시 QuestionPanel\nTTS로 질문 음성 출력;
+
+:POST /recordings/initiate/\nInitiateRecordingService\n녹화 세션 시작;
+
+' Q&A 루프
+
+|사용자|
+:녹화 시작 카메라 + 마이크;
+
+repeat
+
+  |사용자|
+  :질문에 대한 답변\n음성 + 영상 녹화 중\nTranscriptPanel에 실시간 자막 표시;
+
+  |Frontend|
+  :useMediaRecorder\n- 영상, 음성 청크 수집\nuseChunkUploader\n- S3 멀티파트 업로드\nPOST /recordings/uuid/presign-part/\nPUT /recordings/uuid/parts/n/;
+
+  |사용자|
+  :"답변 완료" 버튼 클릭;
+
+  |Frontend|
+  :POST /interview-sessions/uuid/turns/turn_id/answer/\nanswer_text, speech_segments;
+
+  |Backend API|
+  if (면접 유형?) then (FOLLOWUP)
+    :SubmitAnswerAndGenerateFollowupService\n- 답변 저장 InterviewTurn\n- LLM 후속 질문 생성\n  FollowupQuestionGenerator\n- 새 InterviewTurn 생성\n  FOLLOWUP 타입;
+  else (FULL_PROCESS)
+    :SubmitAnswerForFullProcessService\n- 답변 저장 InterviewTurn\n- 다음 질문 반환\n  또는 면접 완료 시그널;
+  endif
+
+  |Frontend|
+  :다음 질문 표시 QuestionPanel\nTTS로 질문 음성 출력;
+
+repeat while (남은 질문?) is (있음) not (없음)
+
+' 면접 종료
+
+|Frontend|
+:POST /recordings/uuid/complete/;
+
+|Backend API|
+:CompleteRecordingService.execute()\n- S3 멀티파트 업로드 완료\n- InterviewRecording.status -> UPLOADED;
+
+|Frontend|
+:POST /interview-sessions/uuid/finish/;
+
+|Backend API|
+:FinishInterviewView.post()\n- InterviewSession.status -> COMPLETED\n- StreakStatisticsService\n  .record_participation\n  스트릭 기록;
+
+' 영상 처리 파이프라인
+
+|비동기 처리|
+#FFE0B2:S3 영상 업로드 완료 -> SNS 이벤트\nSNS -> SQS fan-out;
+
+fork
+  :video-converter Lambda\n.webm -> .mp4 변환;
+fork again
+  :frame-extractor Lambda\n영상 -> 프레임 추출 .jpg;
+fork again
+  :audio-extractor Lambda\n영상 -> 오디오 추출 .wav;
+end fork
+
+:audio-scaler Lambda\n오디오 -> 16kHz mono wav 변환;
+
+:각 단계 완료 -> SQS step-complete\n- Celery SQS Worker 수신\n- process_video_step_complete 태스크\n- InterviewRecording 업데이트\n  processed S3 키 저장;
+
+|Frontend|
+:navigate "/interview/results"\n면접 결과 목록 페이지로 이동;
+
+|사용자|
+:면접 종료 확인\n- 분석 리포트 요청 가능\n- 면접 결과 목록에서 확인;
+
+stop
+
+legend right
+  색상 범례
+  ....
+  사용자 = 사용자 액션
+  Frontend = Frontend 처리
+  Backend API = Backend API 호출
+  비동기 처리 = 비동기 처리
+  FFE0B2 = AWS Lambda 파이프라인
+  LightCyan = Full-screen 페이지
+  ....
+  면접 유형:
+  FOLLOWUP = LLM 후속 질문 생성 5티켓
+  FULL_PROCESS = 사전 구성 질문 풀 10티켓
+  ....
+  면접 모드:
+  PRACTICE = 연습 무료 플랜 가능
+  REAL = 실전 PRO 플랜 필요
+end legend
+
+footer MeFit 코드 기반 Activity Diagram - interview flow
+@enduml
