@@ -1,22 +1,35 @@
 name: Deploy Preview
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened, closed]
+  push:
+    branches-ignore: [main]
+  delete:
+  workflow_dispatch:
 
 concurrency:
-  group: preview-${{ github.event.pull_request.number }}
+  group: preview-${{ github.ref_name }}
   cancel-in-progress: true
 
 jobs:
   deploy-preview:
-    if: github.event.action != 'closed'
+    if: github.event_name != 'delete' && github.ref_name != 'main'
     runs-on: ubuntu-latest
     permissions:
       contents: read
       pull-requests: write
     steps:
       - uses: actions/checkout@v4
+
+      - name: Sanitize branch name
+        id: branch
+        run: |
+          SANITIZED=$(echo "${{ github.ref_name }}" \
+            | tr '[:upper:]' '[:lower:]' \
+            | sed 's/[^a-z0-9-]/-/g' \
+            | sed 's/--*/-/g' \
+            | sed 's/^-//;s/-$//' \
+            | cut -c1-40)
+          echo "worker-name=mefit-front-preview-${SANITIZED}" >> "$GITHUB_OUTPUT"
 
       - uses: oven-sh/setup-bun@v2
         with:
@@ -34,7 +47,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: deploy --name mefit-front-pr-${{ github.event.pull_request.number }}
+          command: deploy --name ${{ steps.branch.outputs.worker-name }}
 
       - name: Comment Preview URL on PR
         uses: actions/github-script@v7
@@ -42,19 +55,31 @@ jobs:
           script: |
             const marker = '<!-- cloudflare-preview-comment -->';
             const url = '${{ steps.deploy.outputs.deployment-url }}';
+            const branch = '${{ github.ref_name }}';
             const body = [
               marker,
               '### :rocket: Preview Deployment',
               '',
               `**URL**: ${url}`,
+              `**Branch**: \`${branch}\``,
               `**Commit**: \`${context.sha.slice(0, 7)}\``,
               `**Updated**: ${new Date().toISOString()}`,
             ].join('\n');
 
+            const { data: pulls } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              head: `${context.repo.owner}:${branch}`,
+              state: 'open',
+            });
+
+            if (pulls.length === 0) return;
+
+            const prNumber = pulls[0].number;
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: context.issue.number,
+              issue_number: prNumber,
             });
 
             const existing = comments.find(c => c.body?.includes(marker));
@@ -70,22 +95,33 @@ jobs:
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                issue_number: context.issue.number,
+                issue_number: prNumber,
                 body,
               });
             }
 
   cleanup-preview:
-    if: github.event.action == 'closed'
+    if: github.event_name == 'delete' && github.event.ref_type == 'branch'
     runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
       - uses: actions/checkout@v4
 
+      - name: Sanitize branch name
+        id: branch
+        run: |
+          SANITIZED=$(echo "${{ github.event.ref }}" \
+            | tr '[:upper:]' '[:lower:]' \
+            | sed 's/[^a-z0-9-]/-/g' \
+            | sed 's/--*/-/g' \
+            | sed 's/^-//;s/-$//' \
+            | cut -c1-40)
+          echo "worker-name=mefit-front-preview-${SANITIZED}" >> "$GITHUB_OUTPUT"
+
       - name: Delete Preview Worker
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: delete --name mefit-front-pr-${{ github.event.pull_request.number }} --force
+          command: delete --name ${{ steps.branch.outputs.worker-name }} --force
