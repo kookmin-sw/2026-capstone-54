@@ -31,6 +31,7 @@ export function InterviewSetupPage() {
   const { status: subscriptionStatus, fetchStatus: fetchSubscriptionStatus } = useSubscriptionStore();
 
   useEffect(() => {
+    loadJdList(preferredJdId);
   }, [loadJdList, preferredJdId]);
 
   useEffect(() => {
