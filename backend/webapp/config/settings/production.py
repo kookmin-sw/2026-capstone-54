@@ -31,6 +31,13 @@ CORS_ALLOWED_ORIGINS = [
   "http://127.0.0.1:5174",
   "https://mefit.kr",
   "https://www.mefit.kr",
+  # Cloudflare Workers (production)
+  "https://mefit-front.dev-shinkeonkim.workers.dev",
+]
+
+# Preview Workers (mefit-front-preview-{branch}.dev-shinkeonkim.workers.dev)
+CORS_ALLOWED_ORIGIN_REGEXES = [
+  r"^https://mefit-front-preview-[a-z0-9-]+\.dev-shinkeonkim\.workers\.dev$",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -40,6 +47,8 @@ CSRF_TRUSTED_ORIGINS = [
   "http://127.0.0.1:5174",
   "https://mefit.kr",
   "https://www.mefit.kr",
+  # Cloudflare Workers (production + preview)
+  "https://*.dev-shinkeonkim.workers.dev",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -90,5 +99,9 @@ STORAGES = {
   },
 }
 
-STATIC_URL = f"https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com/static/"  # noqa: F405
-MEDIA_URL = f"https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com/media/"  # noqa: F405
+STATIC_URL = (
+  f"https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com/static/"  # noqa: F405
+)
+MEDIA_URL = (
+  f"https://{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com/media/"  # noqa: F405
+)
