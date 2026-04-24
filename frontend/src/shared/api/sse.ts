@@ -1,6 +1,10 @@
 /** JWT 인증 SSE 스트림 — 401 자동 refresh, 예상치 못한 종료/네트워크 오류 시 지수 백오프 재연결. */
 
-import { BASE_URL, getAccessToken, refreshAccessToken } from "./client";
+import {
+  BASE_URL,
+  getAccessToken,
+  refreshAccessToken,
+} from "./client";
 
 type SseEventHandler = (event: string, data: unknown) => void;
 
@@ -137,6 +141,7 @@ async function fetchWithAuthRetry(path: string, signal: AbortSignal): Promise<Re
         Accept: "text/event-stream",
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
+      credentials: "include",
       signal,
     });
 

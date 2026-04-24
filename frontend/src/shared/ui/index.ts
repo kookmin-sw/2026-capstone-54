@@ -16,3 +16,5 @@ export type { ModalSize, ModalHeightMode } from "./Modal";
 export { ConfirmModal } from "./ConfirmModal";
 export { SearchInput } from "./SearchInput";
 export { TicketIcon } from "./TicketIcon";
+export { CoachMarks } from "./CoachMarks";
+export type { CoachMarkStep, CoachMarksProps } from "./CoachMarks";

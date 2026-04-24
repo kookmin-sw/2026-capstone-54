@@ -3,6 +3,7 @@ import { fetchWithAuth } from "@/shared/api/client";
 
 export const VOICE_API_BASE =
   import.meta.env.VITE_VOICE_API_BASE_URL || "https://mefit-voice.xn--hy1by51c.kr/voice-api/api/v1";
+const VOICE_API_PATH = "/voice-api/api/v1/tts";
 export const TTS_DEFAULT_VOICE = "ko-KR-InJoonNeural";
 
 export interface UseTtsReturn {
@@ -65,7 +66,7 @@ export function useTts(): UseTtsReturn {
           const abort = new AbortController();
           abortRef.current = abort;
 
-          const res = await fetchWithAuth(`${VOICE_API_BASE}/tts`, {
+          const res = await fetchWithAuth(VOICE_API_PATH, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({

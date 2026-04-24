@@ -1,4 +1,7 @@
-import { apiRequest, BASE_URL } from "./client";
+import {
+  apiRequest,
+  BASE_URL,
+} from "./client";
 
 /* ── WebSocket 티켓 발급 ── */
 async function fetchWsTicket(): Promise<string | null> {

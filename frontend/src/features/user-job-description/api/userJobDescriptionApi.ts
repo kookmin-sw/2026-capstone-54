@@ -10,14 +10,31 @@
 
 import { apiRequest } from "@/shared/api/client";
 import type { PaginatedResponse } from "@/shared/api";
-import type { CreatedUserJobDescription, UserJobDescription } from "./types";
+import type { CreatedUserJobDescription, UserJobDescription, UserJobDescriptionStats } from "./types";
 
 const BASE = "/api/v1/user-job-descriptions";
 
 export const userJobDescriptionApi = {
-  list: () =>
-    apiRequest<PaginatedResponse<UserJobDescription>>(`${BASE}/`, { auth: true })
-      .then((res) => res.results),
+  listPage: (page = 1) =>
+    apiRequest<PaginatedResponse<UserJobDescription>>(`${BASE}/?page=${page}`, { auth: true }),
+
+  list: async () => {
+    let page = 1;
+    let hasNext = true;
+    const all: UserJobDescription[] = [];
+
+    while (hasNext) {
+      const res = await userJobDescriptionApi.listPage(page);
+      all.push(...res.results);
+      if (res.nextPage == null) {
+        hasNext = false;
+      } else {
+        page = res.nextPage;
+      }
+    }
+
+    return all;
+  },
 
   retrieve: (uuid: string) =>
     apiRequest<UserJobDescription>(`${BASE}/${uuid}/`, { auth: true }),
@@ -45,4 +62,7 @@ export const userJobDescriptionApi = {
 
   remove: (uuid: string) =>
     apiRequest<void>(`${BASE}/${uuid}/`, { method: "DELETE", auth: true }),
+
+  getStats: () =>
+    apiRequest<UserJobDescriptionStats>(`${BASE}/stats/count/`, { auth: true }),
 };

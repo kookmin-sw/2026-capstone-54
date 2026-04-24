@@ -19,6 +19,7 @@ interface ProfileDraft {
   name: string;
   jobCategoryId: number | null;
   jobIds: number[];
+  careerStage: string;
 }
 
 interface SettingsState {
@@ -71,7 +72,7 @@ interface SettingsState {
   clearMessage: () => void;
 }
 
-const EMPTY_PROFILE_DRAFT: ProfileDraft = { name: "", jobCategoryId: null, jobIds: [] };
+const EMPTY_PROFILE_DRAFT: ProfileDraft = { name: "", jobCategoryId: null, jobIds: [], careerStage: "" };
 
 export const useSettingsStore = create<SettingsState>()((set, get) => ({
   data: null,
@@ -104,6 +105,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
           name: profile.name,
           jobCategoryId: profile.jobCategoryId,
           jobIds: profile.jobIds,
+          careerStage: profile.careerStage,
         },
         notificationsDraft: { ...res.data.notifications },
         aiDataDraft: res.data.consents.aiDataAgreed,
@@ -196,6 +198,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
     const res = await updateProfileApi({
       jobCategoryId: profileDraft.jobCategoryId,
       jobIds: profileDraft.jobIds,
+      careerStage: profileDraft.careerStage || undefined,
     });
     if (res.success) {
       // 로컬 data 업데이트
@@ -214,6 +217,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
               jobCategory: selectedCategory,
               jobIds: profileDraft.jobIds,
               jobs: selectedJobs,
+              careerStage: profileDraft.careerStage,
             } as SettingsProfile,
           },
         };
@@ -231,6 +235,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
           name: data.profile.name,
           jobCategoryId: data.profile.jobCategoryId,
           jobIds: data.profile.jobIds,
+          careerStage: data.profile.careerStage,
         },
         saveMessage: null,
       });

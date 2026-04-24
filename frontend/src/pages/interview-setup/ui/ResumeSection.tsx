@@ -1,5 +1,6 @@
 import { SetupSection } from "@/shared/ui/SetupSection";
 import { SelectableCard } from "@/shared/ui/SelectableCard";
+import { FileText, PencilLine } from "lucide-react";
 
 interface Resume {
   uuid: string;
@@ -44,8 +45,11 @@ export function ResumeSection({
             const eligible = isEligible(r);
             return (
               <SelectableCard key={r.uuid} selected={selectedResumeUuid === r.uuid} disabled={!eligible} onClick={() => onSelectResume(r.uuid)}>
-                <div className="w-8 h-8 rounded-lg bg-white border border-[#E5E7EB] flex items-center justify-center text-sm shrink-0">
-                  {r.type === "file" ? "📄" : "📝"}
+                <div className="w-8 h-8 rounded-lg bg-[#F3F4F6] border border-[#E5E7EB] flex items-center justify-center shrink-0">
+                  {r.type === "file"
+                    ? <FileText size={16} className="text-[#6B7280]" />
+                    : <PencilLine size={16} className="text-[#6B7280]" />
+                  }
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-[12px] font-bold truncate">{r.title}</div>

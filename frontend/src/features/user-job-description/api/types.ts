@@ -47,3 +47,11 @@ export interface CreatedUserJobDescription {
   collectionStatus: JobDescriptionCollectionStatus;
   createdAt: string;
 }
+
+/** 채용공고 상태별 카운트. */
+export interface UserJobDescriptionStats {
+  total: number;
+  planned: number;
+  saved: number;
+  applied: number;
+}

@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { HomeNavbar } from "@/pages/home/ui/components/HomeNavbar";
 import { HomeSidebar } from "@/pages/home/ui/components/HomeSidebar";
 import { SettingsSidebar } from "@/pages/home/ui/components/SettingsSidebar";
-import { useHomeStore } from "@/features/home";
 import { useNotificationToast } from "@/features/notifications";
+import { useStreakStore } from "@/features/streak/model/store";
 import "@/pages/home/ui/HomePage.css";
 
 interface AppLayoutProps {
@@ -12,13 +12,17 @@ interface AppLayoutProps {
 }
 
 /** Pages that use their own full-screen layout (no nav/sidebar) */
-const FULL_SCREEN_PREFIXES = ["/interview/session/", "/interview/precheck/"];
+const FULL_SCREEN_PREFIXES = ["/interview/session/", "/interview/precheck/", "/verify-email", "/onboarding"];
 
 export function AppLayout({ children }: AppLayoutProps) {
   useNotificationToast();
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
-  const { data } = useHomeStore();
+  const { data: streakData, fetchStreak } = useStreakStore();
+
+  useEffect(() => {
+    fetchStreak();
+  }, [fetchStreak]);
 
   const isSettingsArea = location.pathname.startsWith("/settings") || location.pathname.startsWith("/notifications");
 
@@ -43,7 +47,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         ) : (
           <HomeSidebar
             menuOpen={menuOpen}
-            currentStreak={data?.currentStreak ?? 0}
+            currentStreak={streakData?.currentStreak ?? 0}
           />
         )}
         <main className="hp-page-main">{children}</main>

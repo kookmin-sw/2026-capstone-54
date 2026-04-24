@@ -1,3 +1,4 @@
+import { BookOpen, Lock, Zap } from "lucide-react";
 import { SetupSection } from "@/shared/ui/SetupSection";
 import { OptionCard } from "@/shared/ui/OptionCard";
 import { InfoTooltip } from "@/shared/ui/InfoTooltip";
@@ -52,7 +53,7 @@ export function InterviewModeSection({
               </span>
             }
           >
-            <div className="text-[10px] text-[#6B7280] mt-1">🔒 Pro 플랜 필요</div>
+            <div className="flex items-center gap-1 text-[10px] text-[#6B7280] mt-1"><Lock size={10} className="text-[#9CA3AF]" /> Pro 플랜 필요</div>
           </OptionCard>
         </div>
       </SetupSection>
@@ -62,7 +63,7 @@ export function InterviewModeSection({
           <OptionCard
             selected={practiceMode === "practice"}
             onClick={() => onPracticeModeChange("practice")}
-            icon="🎮"
+            icon={<div className="w-8 h-8 rounded-lg bg-[#ECFDF5] flex items-center justify-center"><BookOpen size={16} className="text-[#059669]" /></div>}
             title="연습 모드"
             description="준비 후 직접 시작"
             badge={<InfoTooltip text="질문 음성이 끝난 후 '말하기 시작' 버튼을 직접 눌러 답변합니다. 자신의 페이스에 맞춰 충분히 생각한 후 답변할 수 있어요." />}
@@ -77,7 +78,7 @@ export function InterviewModeSection({
               }
               onPracticeModeChange("real");
             }}
-            icon="⚡"
+            icon={<div className="w-8 h-8 rounded-lg bg-[#FFFBEB] flex items-center justify-center"><Zap size={16} className="text-[#D97706]" /></div>}
             title="실전 모드"
             description="랜덤 대기 후 자동 시작"
             badge={<InfoTooltip text="질문 음성이 끝나면 5~30초 랜덤 대기 후 자동으로 STT가 시작됩니다. 실제 면접의 긴장감을 최대한 재현합니다." />}

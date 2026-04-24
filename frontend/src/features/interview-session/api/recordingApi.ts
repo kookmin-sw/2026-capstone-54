@@ -1,4 +1,4 @@
-import { apiRequest, BASE_URL, fetchWithAuth } from "@/shared/api/client";
+import { apiRequest, fetchWithAuth } from "@/shared/api/client";
 
 export interface InitiateRecordingResponse {
   recordingId: string;
@@ -57,7 +57,7 @@ export const recordingApi = {
   upload: (recordingId: string, blob: Blob) => {
     const formData = new FormData();
     formData.append("file", blob, "recording.webm");
-    return fetchWithAuth(`${BASE_URL}${BASE}/recordings/${recordingId}/upload/`, {
+    return fetchWithAuth(`${BASE}/recordings/${recordingId}/upload/`, {
       method: "PUT",
       body: formData,
     }).then((res) => {

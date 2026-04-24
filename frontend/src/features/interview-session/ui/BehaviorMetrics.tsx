@@ -1,6 +1,7 @@
 import type { SpeechMetrics } from "@/shared/lib/speech/SpeechAnalyzer";
 
 interface BehaviorMetricsProps {
+  className?: string;
   speechMetrics: SpeechMetrics;
   videoWarningCount: number;
   isSpeechActive: boolean;
@@ -10,6 +11,7 @@ interface BehaviorMetricsProps {
 }
 
 export function BehaviorMetrics({
+  className,
   speechMetrics,
   videoWarningCount,
   audioLevel,
@@ -17,7 +19,7 @@ export function BehaviorMetrics({
   isAnalyzing,
 }: BehaviorMetricsProps) {
   return (
-    <div className="bg-slate-800/60 border border-white/10 rounded-2xl p-4 flex flex-col gap-3">
+    <div className={`bg-slate-800/60 border border-white/10 rounded-2xl p-4 flex flex-col gap-3 ${className || ""}`}>
       <div className="text-[10px] font-bold tracking-widest uppercase text-slate-500">실시간 분석</div>
 
       <div className="grid grid-cols-2 gap-2">

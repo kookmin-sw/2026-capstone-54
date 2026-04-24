@@ -1,4 +1,7 @@
-import { BASE_URL, getAccessToken } from "@/shared/api/client";
+import {
+  BASE_URL,
+  getAccessToken,
+} from "@/shared/api/client";
 
 const PING_ROUNDS = 3;
 
@@ -25,6 +28,7 @@ export async function checkNetworkApi(
           method: "GET",
           cache: "no-store",
           headers: authHeaders,
+          credentials: "include",
           signal: AbortSignal.timeout(5000),
         });
       } catch {
@@ -48,6 +52,7 @@ export async function checkNetworkApi(
         method: "GET",
         cache: "no-store",
         headers: { ...authHeaders, Accept: "application/json" },
+        credentials: "include",
         signal: AbortSignal.timeout(5000),
       });
       const blob = await res.blob();

@@ -1,21 +1,11 @@
 import { useState, useRef, useEffect } from "react";
-import {
-  ChevronDown, Check,
-  DollarSign, Handshake, Megaphone, Users, Code2, MoreHorizontal,
-} from "lucide-react";
+import { ChevronDown, Check } from "lucide-react";
 import type { JobCategory, Job } from "@/shared/api/profileApi";
-
-/* 직군 ID → lucide 아이콘 + 색상 매핑 */
-const CATEGORY_ICON: Record<number, { icon: React.ReactNode }> = {
-  3: { icon: <DollarSign size={16} className="text-[#F59E0B]" /> },  // 금융/회계
-  4: { icon: <Handshake  size={16} className="text-[#0991B2]" /> },  // 영업/서비스
-  2: { icon: <Megaphone  size={16} className="text-[#EC4899]" /> },  // 마케팅
-  5: { icon: <Users      size={16} className="text-[#8B5CF6]" /> },  // 인사/HR
-  1: { icon: <Code2      size={16} className="text-[#059669]" /> },  // IT/개발
-};
+import { CATEGORY_STYLE } from "@/shared/ui/categoryIconStyle";
 
 function getCategoryIcon(id: number) {
-  return CATEGORY_ICON[id]?.icon ?? <MoreHorizontal size={16} className="text-[#9CA3AF]" />;
+  const { Icon, color } = CATEGORY_STYLE[id] ?? CATEGORY_STYLE[0];
+  return <Icon size={16} className={color} />;
 }
 
 interface CategoryProps {

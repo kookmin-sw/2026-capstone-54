@@ -1,7 +1,9 @@
 /** 아이콘과 라벨과 설명이 있는 옵션 목록에서 하나를 선택하는 카드 그룹. */
+import type { ReactNode } from "react";
+
 interface StatusCardOption<T = string> {
   value: T;
-  icon: string;
+  icon: ReactNode;
   label: string;
   desc: string;
 }
@@ -34,7 +36,7 @@ export function StatusCard<T extends string | number = string>({ options, select
           onClick={() => onSelect(opt.value)}
           aria-pressed={selected === opt.value}
         >
-          <span className="text-[22px] mb-1.5 block">{opt.icon}</span>
+          <span className="flex justify-center mb-1.5">{opt.icon}</span>
           <div className={`text-xs font-extrabold ${selected === opt.value ? "text-mefit-primary" : "text-mefit-black"}`}>
             {opt.label}
           </div>

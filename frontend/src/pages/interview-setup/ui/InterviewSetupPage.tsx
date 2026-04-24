@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useInterviewSetupStore } from "@/features/interview-setup";
 import { useSubscriptionStore } from "@/features/subscription";
 import { StepLayout } from "@/shared/ui/StepLayout";
@@ -15,8 +16,11 @@ const nextCls = `${navBtnCls} text-white bg-[#0A0A0A] border-none shadow-[0_4px_
 
 export function InterviewSetupPage() {
   const [step, setStep] = useState<SetupStep>(1);
+  const [searchParams] = useSearchParams();
+  const preferredJdId = useMemo(() => searchParams.get("jd"), [searchParams]);
   const {
     jdList, jdListLoading, selectedJdId,
+    preferredJdNotice,
     interviewMode, practiceMode, interviewDifficultyLevel,
     loadJdList, selectJd,
     setInterviewMode, setPracticeMode, setInterviewDifficultyLevel,
@@ -27,11 +31,13 @@ export function InterviewSetupPage() {
   const { status: subscriptionStatus, fetchStatus: fetchSubscriptionStatus } = useSubscriptionStore();
 
   useEffect(() => {
-    loadJdList();
+  }, [loadJdList, preferredJdId]);
+
+  useEffect(() => {
     fetchResumes();
     fetchSubscriptionStatus();
     resetSetup();
-  }, [loadJdList, fetchResumes, fetchSubscriptionStatus, resetSetup]);
+  }, [fetchResumes, fetchSubscriptionStatus, resetSetup]);
 
   const canUseFullProcess = Boolean(subscriptionStatus?.policy.features.fullProcessInterview);
   const canUseRealMode = Boolean(subscriptionStatus?.policy.features.realModeInterview);
@@ -68,6 +74,11 @@ export function InterviewSetupPage() {
           <div className="inline-flex items-center gap-1.5 text-[11px] font-bold tracking-[1.4px] uppercase text-[#0991B2] bg-[#E6F7FA] py-1 px-3 rounded-full mb-2.5">▶ 면접 시작</div>
           <h1 className="text-[clamp(24px,3vw,36px)] font-black tracking-[-0.8px] text-[#0A0A0A] leading-[1.1]">가상 면접 설정</h1>
           <p className="text-sm text-[#6B7280] mt-1.5">채용공고와 면접 방식을 선택하고 맞춤 가상 면접을 시작하세요.</p>
+          {preferredJdNotice && (
+            <div className="mt-3 rounded-lg border border-[#FED7AA] bg-[#FFF7ED] px-3 py-2 text-[12px] text-[#9A3412]">
+              {preferredJdNotice}
+            </div>
+          )}
         </div>
 
         {/* ══════ STEP 1: 지원 컨텍스트 ══════ */}

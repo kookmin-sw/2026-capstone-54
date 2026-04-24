@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Loader2 } from "lucide-react";
+import { FileText, Loader2 } from "lucide-react";
 import { useInfiniteList } from "@/shared/hooks/useInfiniteList";
 import { openSseStream } from "@/shared/api/sse";
 import {
@@ -147,7 +147,7 @@ export function ResumeListPage() {
         {/* 페이지 타이틀 */}
         <div className="flex items-start justify-between mb-8 gap-4">
           <div>
-            <div className="inline-flex items-center gap-1.5 text-[11px] font-bold tracking-[1.4px] uppercase text-[#0991B2] bg-[#E6F7FA] py-1 px-3 rounded-full mb-2.5">📄 이력서</div>
+            <div className="inline-flex items-center gap-1.5 text-[11px] font-bold tracking-[1.4px] uppercase text-[#0991B2] bg-[#E6F7FA] py-1 px-3 rounded-full mb-2.5"><FileText size={12} />이력서</div>
             <h1 className="text-[clamp(24px,3vw,36px)] font-black tracking-[-0.8px] text-[#0A0A0A] leading-[1.1]">내 이력서</h1>
             <p className="text-sm text-[#6B7280] mt-1.5">면접 연습에 사용할 이력서를 관리하세요.</p>
           </div>

@@ -30,13 +30,30 @@ import { NotFoundPage } from "@/pages/not-found";
 import { ServerErrorPage } from "@/pages/server-error";
 
 function App() {
-  const { initAuth, logout, user } = useAuthStore();
+  const { initAuth, logout, user, authReady } = useAuthStore();
   const { connectWs, disconnectWs } = useNotificationStore();
 
+  const shouldSkipRefreshFailLogout = () => {
+    const publicAuthPaths = new Set([
+      "/",
+      "/login",
+      "/sign-up",
+    ]);
+    return publicAuthPaths.has(window.location.pathname);
+  };
+
   useEffect(() => {
-    setOnRefreshFailed(() => logout());
-    initAuth();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    setOnRefreshFailed(() => {
+      if (!authReady) {
+        return;
+      }
+      if (shouldSkipRefreshFailLogout()) {
+        return;
+      }
+      void logout();
+    });
+    void initAuth();
+  }, [authReady, initAuth, logout]);
 
   // 로그인 상태 변화에 따라 WebSocket 연결/해제
   useEffect(() => {
@@ -57,10 +74,10 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/sign-up" element={<SignUpPage />} />
-        <Route path="/verify-email" element={<VerifyEmailPage />} />
-        <Route path="/onboarding" element={<OnboardingPage />} />
 
         {/* ── 보호 라우트 (로그인 필요) ── */}
+        <Route path="/verify-email" element={<ProtectedRoute><VerifyEmailPage /></ProtectedRoute>} />
+        <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
         <Route path="/jd/add" element={<ProtectedRoute><JdAddPage /></ProtectedRoute>} />
         <Route path="/jd/:uuid" element={<ProtectedRoute><JdDetailPage /></ProtectedRoute>} />
         <Route path="/jd" element={<ProtectedRoute><JdListPage /></ProtectedRoute>} />
