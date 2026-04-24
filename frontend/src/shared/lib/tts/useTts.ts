@@ -2,7 +2,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { fetchWithAuth } from "@/shared/api/client";
 
 export const VOICE_API_BASE =
-  import.meta.env.VITE_VOICE_API_BASE_URL || "https://mefit-voice.xn--hy1by51c.kr/voice-api/api/v1";
+  import.meta.env.VITE_VOICE_API_BASE_URL || "https://voice-api.mefit.kr/voice-api/api/v1";
 const VOICE_API_PATH = "/voice-api/api/v1/tts";
 export const TTS_DEFAULT_VOICE = "ko-KR-InJoonNeural";
 

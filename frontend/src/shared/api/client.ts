@@ -1,4 +1,4 @@
-export const BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://mefit.xn--hy1by51c.kr";
+export const BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://api.mefit.kr";
 
 // 단일 인증 전략: access token(in-memory) + refresh token(HttpOnly cookie)
 

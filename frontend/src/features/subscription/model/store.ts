@@ -64,7 +64,7 @@ export const useSubscriptionStore = create<SubscriptionState>()((set, get) => ({
       if (res.redirectUrl && res.redirectUrl !== "#") {
         try {
           const parsed = new URL(res.redirectUrl);
-          if (parsed.protocol === "https:" && parsed.hostname.endsWith("mefit.xn--hy1by51c.kr")) {
+          if (parsed.protocol === "https:" && parsed.hostname.endsWith("mefit.kr")) {
             validatedUrl = res.redirectUrl;
           }
         } catch {
