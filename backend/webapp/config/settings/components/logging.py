@@ -144,13 +144,21 @@ DRF_API_LOGGER_CONTENT_TYPES = [
 ]
 
 # 민감 필드 자동 마스킹
-DRF_API_LOGGER_EXCLUDE_KEYS = ['password', 'password1', 'password2', 'token', 'access', 'refresh', 'secret']
+DRF_API_LOGGER_EXCLUDE_KEYS = [
+  "password",
+  "password1",
+  "password2",
+  "token",
+  "access",
+  "refresh",
+  "secret",
+]
 
 # 200ms 이상 걸리는 API를 slow로 표시
 DRF_API_LOGGER_SLOW_API_ABOVE = 200
 
 # URL 저장 형식
-DRF_API_LOGGER_PATH_TYPE = 'FULL_PATH'
+DRF_API_LOGGER_PATH_TYPE = "FULL_PATH"
 
 # 큐 설정 (배치 DB 삽입)
 DRF_LOGGER_QUEUE_MAX_SIZE = 50
@@ -161,10 +169,13 @@ DRF_API_LOGGER_MAX_REQUEST_BODY_SIZE = 4096
 DRF_API_LOGGER_MAX_RESPONSE_BODY_SIZE = 4096
 
 # admin 패널 로그 제외 (기본값이지만 명시)
-DRF_API_LOGGER_SKIP_NAMESPACE = ['admin']
+DRF_API_LOGGER_SKIP_NAMESPACE = ["admin"]
 
 # Health check 엔드포인트 로그 제외
-DRF_API_LOGGER_SKIP_URL_NAME = ['health-check']
+DRF_API_LOGGER_SKIP_URL_NAME = [
+  "health-check",
+  "recording-presign-part",
+]
 
 __all__ = [
   "LOGGING",

@@ -1,8 +1,5 @@
-import traceback
-
 from common.exceptions import ConflictException, PermissionDeniedException
 from common.services import BaseService
-from common.tasks import RegisteredSendErrorAlertTask
 from interviews.enums import RecordingStatus
 
 from .get_s3_client import get_video_s3_client
@@ -29,50 +26,28 @@ class CompleteRecordingService(BaseService):
     parts = self.kwargs["parts"]
     end_timestamp = self.kwargs["end_timestamp"]
     duration_ms = self.kwargs["duration_ms"]
-    single_upload = self.kwargs.get("single_upload", False)
 
     s3 = get_video_s3_client()
 
-    if not single_upload:
-      # 클라이언트/테스트에 따라 part_number(backend snake_case) 또는 partNumber(frontend camelCase)로 전달될 수 있다.
-      normalized_parts = []
-      for p in parts:
-        part_number = p.get("part_number") or p.get("partNumber")
-        normalized_parts.append({
-          "part_number": part_number,
-          "etag": p.get("etag") or p.get("ETag"),
-        })
+    normalized_parts = []
+    for p in parts:
+      part_number = p.get("part_number") or p.get("partNumber")
+      normalized_parts.append({
+        "part_number": part_number,
+        "etag": p.get("etag") or p.get("ETag"),
+      })
 
-      s3.complete_multipart_upload(
-        Bucket=recording.s3_bucket,
-        Key=recording.s3_key,
-        UploadId=recording.upload_id,
-        MultipartUpload={
-          "Parts": [{
-            "PartNumber": p["part_number"],
-            "ETag": p["etag"],
-          } for p in normalized_parts],
-        },
-      )
-    else:
-      try:
-        s3.abort_multipart_upload(
-          Bucket=recording.s3_bucket,
-          Key=recording.s3_key,
-          UploadId=recording.upload_id,
-        )
-      except Exception as exc:
-        try:
-          RegisteredSendErrorAlertTask.delay(
-            error_type=type(exc).__name__,
-            error_message=str(exc),
-            path="interviews.services.complete_recording_service.CompleteRecordingService.execute",
-            method="SERVICE",
-            traceback=traceback.format_exc(),
-          )
-        except Exception:
-          # 알림 태스크 전송 실패는 녹화 완료 처리 흐름을 막지 않는다.
-          pass
+    s3.complete_multipart_upload(
+      Bucket=recording.s3_bucket,
+      Key=recording.s3_key,
+      UploadId=recording.upload_id,
+      MultipartUpload={
+        "Parts": [{
+          "PartNumber": p["part_number"],
+          "ETag": p["etag"],
+        } for p in normalized_parts],
+      },
+    )
 
     recording.status = RecordingStatus.COMPLETED
     recording.end_timestamp = end_timestamp
