@@ -10,10 +10,10 @@ spec:
   ingressClassName: traefik
   tls:
   - hosts:
-    - mefit.xn--hy1by51c.kr
+    - api.mefit.kr
     secretName: mefit-tls-cert
   rules:
-  - host: mefit.xn--hy1by51c.kr
+  - host: api.mefit.kr
     http:
       paths:
       - path: /
