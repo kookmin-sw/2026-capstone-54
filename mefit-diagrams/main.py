@@ -145,8 +145,8 @@ def k8s_diagram():
             wk_node_1 = EC2("ec2-worker-1\n(k3s agent)")
             wk_node_2 = EC2("ec2-worker-2\n(k3s agent)")
 
-            web_ing = Ing("Traefik Ingress\nHost: mefit.xn--hy1by51c.kr")
-            voice_ing = Ing("Traefik Ingress\nHost: mefit-voice.xn--hy1by51c.kr")
+            web_ing = Ing("Traefik Ingress\nHost: api.mefit.kr")
+            voice_ing = Ing("Traefik Ingress\nHost: voice-api.mefit.kr")
 
             with Cluster("Namespace: mefit-backend-production"):
                 with Cluster("backend"):
@@ -293,8 +293,8 @@ def combined_diagram():
             lb_voice = LambdaFunction("voice-analyzer")
 
         with Cluster("k3s namespace: mefit-backend-production"):
-            web_ing = Ing("Ingress mefit.xn--hy1by51c.kr")
-            voice_ing = Ing("Ingress mefit-voice.xn--hy1by51c.kr")
+            web_ing = Ing("Ingress api.mefit.kr")
+            voice_ing = Ing("Ingress voice-api.mefit.kr")
 
             api_svc = SVC("Service mefit-production-api:8000")
             api_dp = Deploy("Deployment api\nreplicas=2")
