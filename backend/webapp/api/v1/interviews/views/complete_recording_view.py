@@ -20,7 +20,7 @@ class CompleteRecordingView(BaseAPIView):
     serializer = CompleteRecordingSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
 
-    recording = get_object_or_404(InterviewRecording, pk=uuid)
+    recording = get_object_or_404(InterviewRecording, pk=uuid, user=self.current_user)
     data = serializer.validated_data
 
     try:

@@ -29,14 +29,6 @@ class CompleteRecordingService(BaseService):
 
     s3 = get_video_s3_client()
 
-    normalized_parts = []
-    for p in parts:
-      part_number = p.get("part_number") or p.get("partNumber")
-      normalized_parts.append({
-        "part_number": part_number,
-        "etag": p.get("etag") or p.get("ETag"),
-      })
-
     s3.complete_multipart_upload(
       Bucket=recording.s3_bucket,
       Key=recording.s3_key,
@@ -45,7 +37,7 @@ class CompleteRecordingService(BaseService):
         "Parts": [{
           "PartNumber": p["part_number"],
           "ETag": p["etag"],
-        } for p in normalized_parts],
+        } for p in parts],
       },
     )
 

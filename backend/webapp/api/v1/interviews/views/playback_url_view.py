@@ -26,10 +26,10 @@ class PlaybackUrlView(BaseAPIView):
 
   @extend_schema(summary="녹화 재생 URL 조회")
   def get(self, request, uuid):
-    recording = get_object_or_404(InterviewRecording, pk=uuid)
+    recording = get_object_or_404(InterviewRecording, pk=uuid, user=self.current_user)
 
-    if recording.status == RecordingStatus.ABANDONED:
-      raise ConflictException("중단된 녹화는 재생할 수 없습니다.")
+    if recording.status != RecordingStatus.COMPLETED:
+      raise ConflictException("녹화가 완료된 상태에서만 재생할 수 있습니다.")
 
     subscription = GetCurrentSubscriptionService(user=self.current_user).perform()
     plan_type = subscription.plan_type if subscription else PlanType.FREE

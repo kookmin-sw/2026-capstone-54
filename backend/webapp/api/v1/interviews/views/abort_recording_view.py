@@ -16,7 +16,7 @@ class AbortRecordingView(BaseAPIView):
 
   @extend_schema(summary="녹화 중단")
   def post(self, request, uuid):
-    recording = get_object_or_404(InterviewRecording, pk=uuid)
+    recording = get_object_or_404(InterviewRecording, pk=uuid, user=self.current_user)
 
     try:
       AbortRecordingService(recording=recording, user=self.current_user).perform()
