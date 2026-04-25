@@ -38,6 +38,7 @@ class PresignPartView(BaseAPIView):
           "Key": recording.s3_key,
           "UploadId": recording.upload_id,
           "PartNumber": part_number,
+          "ContentType": "video/webm",
         },
         ExpiresIn=1800,
       )
