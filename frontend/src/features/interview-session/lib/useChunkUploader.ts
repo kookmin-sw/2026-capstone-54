@@ -104,8 +104,7 @@ export function useChunkUploader({
 
             const response = await fetch(presignedUrl, {
               method: "PUT",
-              body: blob,
-              headers: { "Content-Type": "video/webm" },
+              body: new Blob([blob]),
             });
 
             if (!response.ok) {
