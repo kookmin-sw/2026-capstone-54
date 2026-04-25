@@ -13,7 +13,7 @@ export interface UseRecordingManagerReturn {
   stream: MediaStream | null;
   isRecording: boolean;
   uploadedBytes: number;
-  uploadProgress: number;
+  uploadedPartsCount: number;
   error: string | null;
   prepareRecording: (turnId: number) => Promise<void>;
   startRecording: (turnId: number) => Promise<void>;
@@ -34,19 +34,23 @@ export function useRecordingManager({
   const startTimeRef = useRef<number | null>(null);
   const isInitializedRef = useRef(false);
   const collectedPartsRef = useRef<UploadedPart[]>([]);
+  const pendingUploadsRef = useRef<Promise<UploadedPart | null>[]>([]);
   const preparedTurnIdRef = useRef<number | null>(null);
 
   const chunkUploader = useChunkUploader();
 
   const handleChunk = useCallback(
     (blob: Blob) => {
-      chunkUploader.uploadChunk(blob).then((part) => {
+      const promise = chunkUploader.uploadChunk(blob).then((part) => {
         if (part) {
           collectedPartsRef.current = [...collectedPartsRef.current, part];
         }
+        return part;
       }).catch((err) => {
         setManagerError(err instanceof Error ? err.message : "청크 업로드 실패");
+        return null;
       });
+      pendingUploadsRef.current = [...pendingUploadsRef.current, promise];
     },
     [chunkUploader],
   );
@@ -71,6 +75,7 @@ export function useRecordingManager({
     startTimeRef.current = null;
     isInitializedRef.current = false;
     collectedPartsRef.current = [];
+    pendingUploadsRef.current = [];
     chunkUploader.reset();
   }, [chunkUploader]);
 
@@ -150,6 +155,9 @@ export function useRecordingManager({
     try {
       const finalBlob = await mediaRecorder.stop();
 
+      await Promise.all(pendingUploadsRef.current);
+      pendingUploadsRef.current = [];
+
       if (finalBlob && finalBlob.size > 0) {
         const finalPart = await chunkUploader.uploadChunk(finalBlob);
         if (finalPart) {
@@ -197,7 +205,7 @@ export function useRecordingManager({
     stream: mediaRecorder.stream,
     isRecording: mediaRecorder.isRecording,
     uploadedBytes: chunkUploader.uploadedBytes,
-    uploadProgress: chunkUploader.uploadedParts.length > 0 ? chunkUploader.uploadedParts.length * 5 : 0,
+    uploadedPartsCount: chunkUploader.uploadedParts.length,
     error: combinedError,
     prepareRecording,
     startRecording,

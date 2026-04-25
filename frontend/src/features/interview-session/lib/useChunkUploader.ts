@@ -60,6 +60,7 @@ export function useChunkUploader({
   }, []);
 
   const acquireSlot = useCallback(async () => {
+    setIsUploading(true);
     if (activeCountRef.current < maxConcurrent) {
       activeCountRef.current++;
       return;
@@ -74,6 +75,9 @@ export function useChunkUploader({
     activeCountRef.current--;
     const next = queueRef.current.shift();
     if (next) next();
+    if (activeCountRef.current === 0 && queueRef.current.length === 0) {
+      setIsUploading(false);
+    }
   }, []);
 
   const uploadChunk = useCallback(
@@ -81,13 +85,11 @@ export function useChunkUploader({
       await acquireSlot();
 
       try {
-        setIsUploading(true);
         setError(null);
 
         const id = recordingIdRef.current;
         if (!id) {
           setError("Recording not initialized.");
-          setIsUploading(false);
           return null;
         }
 
@@ -115,17 +117,12 @@ export function useChunkUploader({
             const part: UploadedPart = { partNumber, etag };
             setUploadedParts((prev) => [...prev, part]);
             setUploadedBytes((prev) => prev + blob.size);
-
-            if (activeCountRef.current <= 1) {
-              setIsUploading(false);
-            }
             return part;
           } catch (err) {
             attempt++;
             console.warn(`[ChunkUploader] Part ${partNumber} attempt ${attempt}/${maxRetries} failed:`, err);
             if (attempt > maxRetries) {
               setError(err instanceof Error ? err.message : "Upload failed after retries.");
-              setIsUploading(false);
               return null;
             }
             await new Promise((resolve) =>
@@ -134,7 +131,6 @@ export function useChunkUploader({
           }
         }
 
-        setIsUploading(false);
         return null;
       } finally {
         releaseSlot();
