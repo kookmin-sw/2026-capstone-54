@@ -27,7 +27,7 @@ uv run pre-commit run --all-files
 
 ## 코딩 컨벤션
 
-- 들여쓰기: 2 spaces (yapf)
+- **들여쓰기: 2 spaces** (yapf 강제, PEP 8 4-space가 아님. 반드시 2칸 들여쓰기 사용)
 - 최대 줄 길이: 120자
 - import 정렬: isort (profile=black)
 - 문자열: 큰따옴표 `"`
