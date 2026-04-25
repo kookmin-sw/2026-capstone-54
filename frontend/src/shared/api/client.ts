@@ -170,19 +170,22 @@ async function _request<T>(
 
 export async function fetchWithAuth(
   path: string,
-  options: RequestInit = {},
+  options: RequestInit & { baseUrl?: string } = {},
 ): Promise<Response> {
+  const { baseUrl, ...fetchOptions } = options;
+  const resolvedBase = baseUrl ?? BASE_URL;
+
   const { pathname, search } = validateTrustedPath(path);
-  const endpoint = new URL(BASE_URL);
+  const endpoint = new URL(resolvedBase);
   endpoint.pathname = pathname;
   endpoint.search = search;
 
   const token = getAccessToken();
-  const headers = new Headers(options.headers);
+  const headers = new Headers(fetchOptions.headers);
   if (token) headers.set("Authorization", `Bearer ${token}`);
 
   const res = await fetch(endpoint.toString(), {
-    ...options,
+    ...fetchOptions,
     headers,
     credentials: "include",
   });
@@ -191,10 +194,10 @@ export async function fetchWithAuth(
     const refreshed = await refreshAccessToken();
     if (refreshed) {
       const newToken = getAccessToken();
-      const retryHeaders = new Headers(options.headers);
+      const retryHeaders = new Headers(fetchOptions.headers);
       if (newToken) retryHeaders.set("Authorization", `Bearer ${newToken}`);
       return fetch(endpoint.toString(), {
-        ...options,
+        ...fetchOptions,
         headers: retryHeaders,
         credentials: "include",
       });

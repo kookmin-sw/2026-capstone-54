@@ -78,6 +78,7 @@ export function useTts(): UseTtsReturn {
               pitch: "+0Hz",
             }),
             signal: abort.signal,
+            baseUrl: new URL(VOICE_API_BASE).origin,
           });
 
           if (!res.ok) throw new Error(`TTS ${res.status}`);

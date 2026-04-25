@@ -112,6 +112,7 @@ export function useRecordingManager({
       setManagerError(null);
       isInitializedRef.current = false;
       collectedPartsRef.current = [];
+      pendingUploadsRef.current = [];
 
       try {
         if (preparedTurnIdRef.current !== turnId || !recordingIdRef.current) {
