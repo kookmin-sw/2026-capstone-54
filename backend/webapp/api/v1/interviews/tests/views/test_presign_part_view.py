@@ -42,8 +42,9 @@ class PresignPartViewTests(TestCase):
     response = self.client.get(url)
 
     self.assertEqual(response.status_code, status.HTTP_200_OK)
-    self.assertEqual(response.data["presigned_url"], "https://presigned.example.com")
-    self.assertEqual(response.data["part_number"], 1)
+    self.assertIn("presignedUrl", response.data)
+    self.assertEqual(response.data["presignedUrl"], "https://presigned.example.com")
+    self.assertEqual(response.data["partNumber"], 1)
 
   def test_presign_part_missing_part_number_returns_400(self):
     recording = InterviewRecordingFactory(

@@ -61,7 +61,7 @@ class RecordingSafetyGuardScenarioTests(TestCase):
     CompleteRecordingService(
       recording=recording,
       parts=[{
-        "partNumber": 1,
+        "part_number": 1,
         "etag": "abc"
       }],
       end_timestamp="2026-04-18T12:05:00Z",
@@ -311,7 +311,7 @@ class RecordingSafetyGuardScenarioTests(TestCase):
     CompleteRecordingService(
       recording=second_recording,
       parts=[{
-        "partNumber": 1,
+        "part_number": 1,
         "etag": "abc"
       }],
       end_timestamp="2026-04-18T13:05:00Z",
