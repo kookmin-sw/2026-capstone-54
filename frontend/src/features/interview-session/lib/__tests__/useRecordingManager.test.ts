@@ -5,6 +5,7 @@ jest.mock("../../api/recordingApi", () => ({
     initiate: jest.fn(),
     complete: jest.fn(),
     abort: jest.fn(),
+    presignPart: jest.fn(),
   },
 }));
 
@@ -13,6 +14,12 @@ import { recordingApi } from "../../api/recordingApi";
 const mockInitiate = recordingApi.initiate as jest.Mock;
 const mockComplete = recordingApi.complete as jest.Mock;
 const mockAbort = recordingApi.abort as jest.Mock;
+
+const mockMediaStart = jest.fn().mockResolvedValue(undefined);
+const mockMediaStop = jest.fn();
+const mockUploaderInit = jest.fn();
+const mockUploadChunk = jest.fn();
+const mockUploaderReset = jest.fn();
 
 jest.mock("../useMediaRecorder", () => ({
   useMediaRecorder: () => ({
@@ -27,21 +34,14 @@ jest.mock("../useMediaRecorder", () => ({
 jest.mock("../useChunkUploader", () => ({
   useChunkUploader: () => ({
     uploadedParts: [],
-    currentPartNumber: 1,
     isUploading: false,
-    progress: 0,
+    uploadedBytes: 0,
     error: null,
     init: mockUploaderInit,
     uploadChunk: mockUploadChunk,
     reset: mockUploaderReset,
   }),
 }));
-
-const mockMediaStart = jest.fn().mockResolvedValue(undefined);
-const mockMediaStop = jest.fn();
-const mockUploaderInit = jest.fn();
-const mockUploadChunk = jest.fn();
-const mockUploaderReset = jest.fn();
 
 import { useRecordingManager } from "../useRecordingManager";
 
@@ -58,7 +58,7 @@ describe("useRecordingManager", () => {
     mockComplete.mockResolvedValue({ recordingId: "rec-123", status: "completed" });
     mockAbort.mockResolvedValue(undefined);
     mockMediaStop.mockResolvedValue(new Blob([new ArrayBuffer(1024)]));
-    globalThis.fetch = jest.fn().mockResolvedValue({ ok: true }) as jest.Mock;
+    mockUploadChunk.mockResolvedValue({ partNumber: 1, etag: "etag-1" });
   });
 
   it("startRecording: initiate API → chunkUploader.init → mediaRecorder.start", async () => {
@@ -73,13 +73,10 @@ describe("useRecordingManager", () => {
     expect(mockMediaStart).toHaveBeenCalled();
   });
 
-  it("stopRecording (단일 업로드): parts=0이면 recordingApi.upload 후 complete(singleUpload=true)", async () => {
-    const mockUpload = jest.fn().mockResolvedValue({ status: "uploaded" });
-    (recordingApi as Record<string, unknown>).upload = mockUpload;
-
+  it("stopRecording: finalBlob → uploadChunk → complete with parts", async () => {
     const finalBlob = new Blob([new ArrayBuffer(2048)]);
     mockMediaStop.mockResolvedValue(finalBlob);
-    mockUploadChunk.mockResolvedValue(null);
+    mockUploadChunk.mockResolvedValue({ partNumber: 1, etag: "final-etag" });
 
     const { result } = renderHook(() =>
       useRecordingManager({ sessionUuid: "sess-1" }),
@@ -88,20 +85,16 @@ describe("useRecordingManager", () => {
     await act(async () => { await result.current.startRecording(10); });
     await act(async () => { await result.current.stopRecording(); });
 
-    expect(mockUpload).toHaveBeenCalledWith("rec-123", finalBlob);
+    expect(mockUploadChunk).toHaveBeenCalledWith(finalBlob);
     expect(mockComplete).toHaveBeenCalledWith(
       "rec-123",
-      [],
+      expect.arrayContaining([expect.objectContaining({ partNumber: 1 })]),
       expect.any(String),
       expect.any(Number),
-      true,
     );
   });
 
-  it("stopRecording: complete API에 올바른 타임스탬프와 duration을 전달한다", async () => {
-    const mockUpload = jest.fn().mockResolvedValue({ status: "uploaded" });
-    (recordingApi as Record<string, unknown>).upload = mockUpload;
-
+  it("stopRecording: complete API receives valid timestamp and duration", async () => {
     const finalBlob = new Blob([new ArrayBuffer(2048)]);
     mockMediaStop.mockResolvedValue(finalBlob);
 
@@ -118,7 +111,7 @@ describe("useRecordingManager", () => {
     expect(durationMs).toBeGreaterThanOrEqual(0);
   });
 
-  it("abortRecording: abort API 호출 + 상태 초기화", async () => {
+  it("abortRecording: abort API + state reset", async () => {
     const { result } = renderHook(() =>
       useRecordingManager({ sessionUuid: "sess-1" }),
     );
@@ -130,7 +123,7 @@ describe("useRecordingManager", () => {
     expect(mockUploaderReset).toHaveBeenCalled();
   });
 
-  it("enabled=false이면 startRecording이 무시된다", async () => {
+  it("enabled=false → startRecording is ignored", async () => {
     const { result } = renderHook(() =>
       useRecordingManager({ sessionUuid: "sess-1", enabled: false }),
     );
@@ -142,6 +135,7 @@ describe("useRecordingManager", () => {
 
   it("stopRecording: finalBlob=null + parts=0 → abort", async () => {
     mockMediaStop.mockResolvedValue(null);
+    mockUploadChunk.mockResolvedValue(null);
 
     const { result } = renderHook(() =>
       useRecordingManager({ sessionUuid: "sess-1" }),

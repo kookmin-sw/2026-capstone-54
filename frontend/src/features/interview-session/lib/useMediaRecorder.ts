@@ -69,6 +69,7 @@ export function useMediaRecorder({
 
       const recorder = new MediaRecorder(mediaStream, {
         mimeType: selectedMimeType,
+        videoBitsPerSecond: 1_500_000,
       });
 
       recorder.ondataavailable = (event) => {

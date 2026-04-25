@@ -1,28 +1,36 @@
 import { renderHook, act } from "@testing-library/react";
 
-jest.mock("@/shared/api/client", () => ({
-  fetchWithAuth: (...args: unknown[]) => globalThis.fetch(...(args as [RequestInfo, RequestInit?])),
+jest.mock("../../api/recordingApi", () => ({
+  recordingApi: {
+    presignPart: jest.fn(),
+  },
 }));
 
+import { recordingApi } from "../../api/recordingApi";
 import { useChunkUploader } from "../useChunkUploader";
 
+const mockPresignPart = recordingApi.presignPart as jest.Mock;
 const RECORDING_ID = "test-recording-uuid";
-
 const makeBlob = (size = 1024) => new Blob([new ArrayBuffer(size)]);
+
+const mockFetchOk = (etag = "abc123") => {
+  globalThis.fetch = jest.fn().mockResolvedValue({
+    ok: true,
+    headers: new Headers({ ETag: `"${etag}"` }),
+  }) as jest.Mock;
+};
 
 describe("useChunkUploader", () => {
   beforeEach(() => {
     jest.restoreAllMocks();
+    mockPresignPart.mockReset();
   });
 
-  it("init 후 uploadChunk가 순번대로 backend endpoint를 호출한다", async () => {
-    globalThis.fetch = jest.fn().mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve({ etag: "abc123" }),
-    }) as jest.Mock;
+  it("init → uploadChunk calls presignPart then PUT to S3", async () => {
+    mockPresignPart.mockResolvedValue({ presignedUrl: "https://s3.example.com/part1", partNumber: 1 });
+    mockFetchOk("abc123");
 
     const { result } = renderHook(() => useChunkUploader());
-
     act(() => { result.current.init(RECORDING_ID); });
 
     let part: unknown;
@@ -31,36 +39,34 @@ describe("useChunkUploader", () => {
     });
 
     expect(part).toEqual({ partNumber: 1, etag: "abc123" });
+    expect(mockPresignPart).toHaveBeenCalledWith(RECORDING_ID, 1);
     expect(globalThis.fetch).toHaveBeenCalledWith(
-      `/api/v1/interviews/recordings/${RECORDING_ID}/parts/1/`,
+      "https://s3.example.com/part1",
       expect.objectContaining({ method: "PUT" }),
     );
   });
 
-  it("연속 uploadChunk 호출 시 partNumber가 순차 증가한다", async () => {
-    globalThis.fetch = jest.fn()
-      .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ etag: "e1" }) })
-      .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ etag: "e2" }) })
-      .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ etag: "e3" }) }) as jest.Mock;
+  it("sequential uploadChunk increments partNumber", async () => {
+    mockPresignPart
+      .mockResolvedValueOnce({ presignedUrl: "https://s3.example.com/p1", partNumber: 1 })
+      .mockResolvedValueOnce({ presignedUrl: "https://s3.example.com/p2", partNumber: 2 })
+      .mockResolvedValueOnce({ presignedUrl: "https://s3.example.com/p3", partNumber: 3 });
+    mockFetchOk("e1");
 
     const { result } = renderHook(() => useChunkUploader());
     act(() => { result.current.init(RECORDING_ID); });
 
-    const parts = [];
     for (let i = 0; i < 3; i++) {
-      await act(async () => {
-        parts.push(await result.current.uploadChunk(makeBlob()));
-      });
+      await act(async () => { await result.current.uploadChunk(makeBlob()); });
     }
 
-    expect(parts).toEqual([
-      { partNumber: 1, etag: "e1" },
-      { partNumber: 2, etag: "e2" },
-      { partNumber: 3, etag: "e3" },
-    ]);
+    expect(mockPresignPart).toHaveBeenCalledTimes(3);
+    expect(mockPresignPart).toHaveBeenNthCalledWith(1, RECORDING_ID, 1);
+    expect(mockPresignPart).toHaveBeenNthCalledWith(2, RECORDING_ID, 2);
+    expect(mockPresignPart).toHaveBeenNthCalledWith(3, RECORDING_ID, 3);
   });
 
-  it("init 전에 uploadChunk를 호출하면 null을 반환한다", async () => {
+  it("init not called → uploadChunk returns null with error", async () => {
     const { result } = renderHook(() => useChunkUploader());
 
     let part: unknown;
@@ -72,7 +78,8 @@ describe("useChunkUploader", () => {
     expect(result.current.error).toBe("Recording not initialized.");
   });
 
-  it("fetch 실패 시 재시도 후 null 반환", async () => {
+  it("S3 PUT failure retries then returns null", async () => {
+    mockPresignPart.mockResolvedValue({ presignedUrl: "https://s3.example.com/p1", partNumber: 1 });
     globalThis.fetch = jest.fn().mockRejectedValue(new Error("Network error")) as jest.Mock;
 
     const { result } = renderHook(() => useChunkUploader({ maxRetries: 1, retryBaseDelay: 10 }));
@@ -85,14 +92,11 @@ describe("useChunkUploader", () => {
 
     expect(part).toBeNull();
     expect(result.current.error).toContain("Network error");
-    expect(globalThis.fetch).toHaveBeenCalledTimes(2);
   });
 
-  it("reset 후 상태가 초기화된다", async () => {
-    globalThis.fetch = jest.fn().mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve({ etag: "e1" }),
-    }) as jest.Mock;
+  it("reset clears state", async () => {
+    mockPresignPart.mockResolvedValue({ presignedUrl: "https://s3.example.com/p1", partNumber: 1 });
+    mockFetchOk("e1");
 
     const { result } = renderHook(() => useChunkUploader());
     act(() => { result.current.init(RECORDING_ID); });

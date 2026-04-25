@@ -1,4 +1,4 @@
-import { apiRequest, fetchWithAuth } from "@/shared/api/client";
+import { apiRequest } from "@/shared/api/client";
 
 export interface InitiateRecordingResponse {
   recordingId: string;
@@ -41,12 +41,12 @@ export const recordingApi = {
       },
     ),
 
-  complete: (recordingId: string, parts: { partNumber: number; etag: string }[], endTimestamp: string, durationMs: number, singleUpload = false) =>
+  complete: (recordingId: string, parts: { partNumber: number; etag: string }[], endTimestamp: string, durationMs: number) =>
     apiRequest<CompleteRecordingResponse>(
       `${BASE}/recordings/${recordingId}/complete/`,
       {
         method: "POST",
-        body: JSON.stringify({ parts, endTimestamp, durationMs, singleUpload }),
+        body: JSON.stringify({ parts, endTimestamp, durationMs }),
         auth: true,
       },
     ),
@@ -54,17 +54,11 @@ export const recordingApi = {
   abort: (recordingId: string) =>
     apiRequest<void>(`${BASE}/recordings/${recordingId}/abort/`, { method: "POST", auth: true }),
 
-  upload: (recordingId: string, blob: Blob) => {
-    const formData = new FormData();
-    formData.append("file", blob, "recording.webm");
-    return fetchWithAuth(`${BASE}/recordings/${recordingId}/upload/`, {
-      method: "PUT",
-      body: formData,
-    }).then((res) => {
-      if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
-      return res.json();
-    });
-  },
+  presignPart: (recordingId: string, partNumber: number) =>
+    apiRequest<{ presignedUrl: string; partNumber: number }>(
+      `${BASE}/recordings/${recordingId}/presign-part/?partNumber=${partNumber}`,
+      { auth: true },
+    ),
 
   list: (sessionUuid: string) =>
     apiRequest<RecordingItem[]>(`${BASE}/interview-sessions/${sessionUuid}/recordings/`, { auth: true }),

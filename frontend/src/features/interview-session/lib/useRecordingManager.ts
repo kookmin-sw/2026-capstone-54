@@ -12,6 +12,7 @@ export interface UseRecordingManagerOptions {
 export interface UseRecordingManagerReturn {
   stream: MediaStream | null;
   isRecording: boolean;
+  uploadedBytes: number;
   uploadProgress: number;
   error: string | null;
   prepareRecording: (turnId: number) => Promise<void>;
@@ -149,9 +150,7 @@ export function useRecordingManager({
     try {
       const finalBlob = await mediaRecorder.stop();
 
-      const hasParts = collectedPartsRef.current.length > 0;
-
-      if (hasParts && finalBlob && finalBlob.size > 0) {
+      if (finalBlob && finalBlob.size > 0) {
         const finalPart = await chunkUploader.uploadChunk(finalBlob);
         if (finalPart) {
           collectedPartsRef.current = [...collectedPartsRef.current, finalPart];
@@ -159,21 +158,12 @@ export function useRecordingManager({
       }
 
       const parts = collectedPartsRef.current;
-      const useSingleUpload = parts.length === 0 && finalBlob && finalBlob.size > 0;
 
-      if (parts.length === 0 && !useSingleUpload) {
+      if (parts.length === 0) {
         setManagerError("업로드된 청크가 없습니다.");
         await recordingApi.abort(recordingIdRef.current).catch(() => {});
         resetRefs();
         return;
-      }
-
-      console.info("[RecordingManager] decision: hasParts=%s useSingleUpload=%s", hasParts, useSingleUpload);
-
-      if (useSingleUpload) {
-        console.info("[RecordingManager] proxy upload via backend, blob size=%d", finalBlob.size);
-        await recordingApi.upload(recordingIdRef.current, finalBlob);
-        console.info("[RecordingManager] proxy upload complete");
       }
 
       const endTime = Date.now();
@@ -186,11 +176,9 @@ export function useRecordingManager({
         sortedParts,
         endTimestamp,
         durationMs,
-        useSingleUpload ?? false,
       );
 
-      console.info("[RecordingManager] recording completed, mode=%s, parts=%d",
-        useSingleUpload ? "single" : "multipart", parts.length);
+      console.info("[RecordingManager] recording completed, parts=%d", parts.length);
 
       resetRefs();
       isInitializedRef.current = false;
@@ -208,7 +196,8 @@ export function useRecordingManager({
   return {
     stream: mediaRecorder.stream,
     isRecording: mediaRecorder.isRecording,
-    uploadProgress: chunkUploader.progress,
+    uploadedBytes: chunkUploader.uploadedBytes,
+    uploadProgress: chunkUploader.uploadedParts.length > 0 ? chunkUploader.uploadedParts.length * 5 : 0,
     error: combinedError,
     prepareRecording,
     startRecording,
