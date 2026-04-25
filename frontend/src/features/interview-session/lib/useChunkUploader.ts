@@ -1,9 +1,10 @@
 import { useState, useCallback, useRef } from "react";
-import { fetchWithAuth } from "@/shared/api/client";
+import { recordingApi } from "../api/recordingApi";
 
 interface UseChunkUploaderOptions {
   maxRetries?: number;
   retryBaseDelay?: number;
+  maxConcurrent?: number;
 }
 
 export interface UploadedPart {
@@ -14,7 +15,7 @@ export interface UploadedPart {
 interface UseChunkUploaderReturn {
   uploadedParts: UploadedPart[];
   isUploading: boolean;
-  progress: number;
+  uploadedBytes: number;
   error: string | null;
   init: (recordingId: string) => void;
   uploadChunk: (blob: Blob) => Promise<UploadedPart | null>;
@@ -24,21 +25,25 @@ interface UseChunkUploaderReturn {
 export function useChunkUploader({
   maxRetries = 3,
   retryBaseDelay = 1000,
+  maxConcurrent = 3,
 }: UseChunkUploaderOptions = {}): UseChunkUploaderReturn {
   const [uploadedParts, setUploadedParts] = useState<UploadedPart[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadedBytes, setUploadedBytes] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
   const recordingIdRef = useRef<string | null>(null);
   const partCounterRef = useRef(1);
-  const uploadLockRef = useRef(false);
-
-  const progress = uploadedParts.length > 0 ? uploadedParts.length * 5 : 0;
+  const activeCountRef = useRef(0);
+  const queueRef = useRef<Array<() => void>>([]);
 
   const init = useCallback((recordingId: string) => {
     recordingIdRef.current = recordingId;
     partCounterRef.current = 1;
+    activeCountRef.current = 0;
+    queueRef.current = [];
     setUploadedParts([]);
+    setUploadedBytes(0);
     setIsUploading(false);
     setError(null);
   }, []);
@@ -46,59 +51,78 @@ export function useChunkUploader({
   const reset = useCallback(() => {
     recordingIdRef.current = null;
     partCounterRef.current = 1;
+    activeCountRef.current = 0;
+    queueRef.current = [];
     setUploadedParts([]);
+    setUploadedBytes(0);
     setIsUploading(false);
     setError(null);
   }, []);
 
+  const acquireSlot = useCallback(async () => {
+    setIsUploading(true);
+    if (activeCountRef.current < maxConcurrent) {
+      activeCountRef.current++;
+      return;
+    }
+    await new Promise<void>((resolve) => {
+      queueRef.current.push(resolve);
+    });
+    activeCountRef.current++;
+  }, [maxConcurrent]);
+
+  const releaseSlot = useCallback(() => {
+    activeCountRef.current--;
+    const next = queueRef.current.shift();
+    if (next) next();
+    if (activeCountRef.current === 0 && queueRef.current.length === 0) {
+      setIsUploading(false);
+    }
+  }, []);
+
   const uploadChunk = useCallback(
     async (blob: Blob): Promise<UploadedPart | null> => {
-      while (uploadLockRef.current) {
-        await new Promise((r) => setTimeout(r, 50));
-      }
-      uploadLockRef.current = true;
+      await acquireSlot();
 
       try {
-        setIsUploading(true);
         setError(null);
 
         const id = recordingIdRef.current;
         if (!id) {
           setError("Recording not initialized.");
-          setIsUploading(false);
           return null;
         }
 
         const partNumber = partCounterRef.current;
-        const path = `/api/v1/interviews/recordings/${id}/parts/${partNumber}/`;
+        partCounterRef.current = partNumber + 1;
 
         let attempt = 0;
 
         while (attempt <= maxRetries) {
           try {
-            const formData = new FormData();
-            formData.append("file", blob, "chunk.webm");
+            const { presignedUrl } = await recordingApi.presignPart(id, partNumber);
 
-            const response = await fetchWithAuth(path, { method: "PUT", body: formData });
+            const response = await fetch(presignedUrl, {
+              method: "PUT",
+              body: blob,
+              headers: { "Content-Type": "video/webm" },
+            });
 
             if (!response.ok) {
-              throw new Error(`Upload failed with status ${response.status}`);
+              throw new Error(`S3 upload failed with status ${response.status}`);
             }
 
-            const data = await response.json();
-            const etag = (data.etag ?? "").replace(/"/g, "");
+            const etag = (response.headers.get("ETag") ?? "").replace(/"/g, "");
 
             const part: UploadedPart = { partNumber, etag };
             setUploadedParts((prev) => [...prev, part]);
-            partCounterRef.current = partNumber + 1;
-            setIsUploading(false);
+            setUploadedBytes((prev) => prev + blob.size);
             return part;
           } catch (err) {
             attempt++;
             console.warn(`[ChunkUploader] Part ${partNumber} attempt ${attempt}/${maxRetries} failed:`, err);
             if (attempt > maxRetries) {
               setError(err instanceof Error ? err.message : "Upload failed after retries.");
-              setIsUploading(false);
               return null;
             }
             await new Promise((resolve) =>
@@ -107,14 +131,13 @@ export function useChunkUploader({
           }
         }
 
-        setIsUploading(false);
         return null;
       } finally {
-        uploadLockRef.current = false;
+        releaseSlot();
       }
     },
-    [maxRetries, retryBaseDelay],
+    [maxRetries, retryBaseDelay, acquireSlot, releaseSlot],
   );
 
-  return { uploadedParts, isUploading, progress, error, init, uploadChunk, reset };
+  return { uploadedParts, isUploading, uploadedBytes, error, init, uploadChunk, reset };
 }
