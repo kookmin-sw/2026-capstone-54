@@ -9,11 +9,10 @@ from api.v1.interviews.views import (
   InterviewSessionViewSet,
   InterviewTurnListView,
   PlaybackUrlView,
+  PresignPartView,
   RecordingListView,
   StartInterviewView,
   SubmitAnswerView,
-  UploadPartView,
-  UploadRecordingView,
 )
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
@@ -66,14 +65,9 @@ urlpatterns = [
     name="recording-abort",
   ),
   path(
-    "recordings/<uuid:uuid>/upload/",
-    UploadRecordingView.as_view(),
-    name="recording-upload",
-  ),
-  path(
-    "recordings/<uuid:uuid>/parts/<int:part_number>/",
-    UploadPartView.as_view(),
-    name="recording-part-upload",
+    "recordings/<uuid:uuid>/presign-part/",
+    PresignPartView.as_view(),
+    name="recording-presign-part",
   ),
   path(
     "recordings/<uuid:uuid>/playback-url/",

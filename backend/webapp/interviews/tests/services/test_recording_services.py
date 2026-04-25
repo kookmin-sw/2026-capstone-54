@@ -200,28 +200,6 @@ class RecordingServicesTests(TestCase):
       ).perform()
     mock_get_client.assert_not_called()
 
-  def test_complete_single_upload_skips_s3_operations(self):
-    """단일 업로드 모드에서는 S3 multipart 작업 없이 상태만 COMPLETED로 변경한다."""
-    recording = InterviewRecordingFactory(
-      interview_session=self.session,
-      interview_turn=self.turn,
-      user=self.user,
-      status=RecordingStatus.INITIATED,
-    )
-
-    CompleteRecordingService(
-      recording=recording,
-      parts=[],
-      end_timestamp="2023-01-01T00:00:00Z",
-      duration_ms=3000,
-      single_upload=True,
-      user=self.user,
-    ).perform()
-
-    recording.refresh_from_db()
-    self.assertEqual(recording.status, RecordingStatus.COMPLETED)
-    self.assertEqual(recording.duration_ms, 3000)
-
   @patch("interviews.services.abort_recording_service.get_video_s3_client")
   def test_abort_rejects_wrong_user(self, mock_get_client):
     """본인의 녹화가 아닌 경우 abort 시 PermissionDeniedException을 발생시킨다."""

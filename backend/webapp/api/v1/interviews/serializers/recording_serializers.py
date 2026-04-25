@@ -14,10 +14,13 @@ class CompleteRecordingPartSerializer(serializers.Serializer):
 
 
 class CompleteRecordingSerializer(serializers.Serializer):
-  parts = CompleteRecordingPartSerializer(many=True, required=False, default=[])
+  parts = CompleteRecordingPartSerializer(many=True)
   end_timestamp = serializers.DateTimeField()
   duration_ms = serializers.IntegerField()
-  single_upload = serializers.BooleanField(required=False, default=False)
+
+
+class PresignPartQuerySerializer(serializers.Serializer):
+  part_number = serializers.IntegerField(min_value=1, max_value=10000)
 
 
 class InitiateRecordingResponseSerializer(serializers.Serializer):
