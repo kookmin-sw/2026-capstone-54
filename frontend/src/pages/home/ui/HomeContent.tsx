@@ -68,7 +68,7 @@ export function HomeContent() {
           )}
 
           <div className="hp-bottom hp-bottom--single">
-            <JobStatus jobs={data.jobs} revealed={revealed} />
+            <JobStatus revealed={revealed} />
           </div>
         </>
       ) : null}
