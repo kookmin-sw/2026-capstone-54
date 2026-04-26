@@ -229,7 +229,7 @@ export function VerifyEmailPage() {
             <p className="text-[13px] text-[#6B7280] mt-4 leading-[1.6]">
               메일이 안 보인다면 <strong>스팸함</strong>을 확인하거나,
               <br />
-              <a href="#" className="text-[#0A0A0A] font-bold underline hover:text-[#0991B2]">고객센터에 문의</a>해 주세요.
+              <a href="mailto:mefit.contact@gmail.com?subject=[이메일 인증 문의]" className="text-[#0A0A0A] font-bold underline hover:text-[#0991B2]">고객센터에 문의</a>해 주세요.
             </p>
           </div>
         </section>
