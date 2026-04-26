@@ -42,25 +42,23 @@ export function JobStatus({ revealed }: JobStatusProps) {
       ) : displayItems.length === 0 ? (
         <div className="text-[13px] text-[#9CA3AF] py-2">등록된 채용공고가 없어요</div>
       ) : (
-        displayItems.map((jd) => (
-          <Link key={jd.uuid} to={`/jd/${jd.uuid}`} className="hp-job-item no-underline">
-            <div className="w-7 h-7 shrink-0">
-              <CompanyIcon platform={jd.raw.jobDescription.platform} title={jd.title} size={16} />
-            </div>
-            <div className="hp-job-body">
-              <div className="hp-job-name">{jd.company}</div>
-              <div className="hp-job-sub">{jd.title}</div>
-            </div>
-            {(() => {
-              const badge = STATUS_BADGE[jd.status] ?? STATUS_BADGE.analyzing;
-              return (
-                <div className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold shrink-0 ${badge.bg} ${badge.text}`}>
-                  {badge.label}
-                </div>
-              );
-            })()}
-          </Link>
-        ))
+        displayItems.map((jd) => {
+          const badge = STATUS_BADGE[jd.status] ?? STATUS_BADGE.analyzing;
+          return (
+            <Link key={jd.uuid} to={`/jd/${jd.uuid}`} className="hp-job-item no-underline">
+              <div className="w-7 h-7 shrink-0">
+                <CompanyIcon platform={jd.raw.jobDescription.platform} title={jd.title} size={16} />
+              </div>
+              <div className="hp-job-body">
+                <div className="hp-job-name">{jd.company}</div>
+                <div className="hp-job-sub">{jd.title}</div>
+              </div>
+              <div className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold shrink-0 ${badge.bg} ${badge.text}`}>
+                {badge.label}
+              </div>
+            </Link>
+          );
+        })
       )}
 
       <div style={{ marginTop: 14 }}>
