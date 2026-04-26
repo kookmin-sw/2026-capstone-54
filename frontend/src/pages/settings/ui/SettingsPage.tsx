@@ -236,7 +236,7 @@ export function SettingsPage() {
                       <Megaphone size={15} className="text-[#0991B2]" /> 서비스 &amp; 마케팅
                     </div>
                     {([
-                      { key: "serviceNotice", title: "서비스 공지 및 업데이트", desc: "새 기능, ���검, 약관 변경 등 중요 서비스 소식" },
+                      { key: "serviceNotice", title: "서비스 공지 및 업데이트", desc: "새 기능, 보안 점검, 약관 변경 등 중요 서비스 소식" },
                       { key: "marketing", title: "마케팅 정보 수신", desc: "할인, 프로모션, 이벤트 등 혜택 정보 이메일 발송" },
                     ] as const).map((item) => (
                       <NotificationToggle
