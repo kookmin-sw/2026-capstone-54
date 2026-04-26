@@ -67,8 +67,10 @@ export function OnboardingPage() {
   );
 
   const filledCount =
-    (selectedJobCategoryId !== null ? 1 : 0) + (selectedJobIds.length > 0 ? 1 : 0);
-  const progress = Math.round((filledCount / 2) * 100);
+    (selectedJobCategoryId !== null ? 1 : 0) +
+    (selectedJobIds.length > 0 ? 1 : 0) +
+    (careerStage !== "" ? 1 : 0);
+  const progress = Math.round((filledCount / 3) * 100);
 
   const handleSubmit = async () => {
     clearError();
@@ -156,7 +158,7 @@ export function OnboardingPage() {
           <div className="w-full max-w-[560px] bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg px-5 py-10 shadow-[var(--sc)] sm:px-7 sm:py-12">
             <h2 className="font-plex-sans-kr text-[22px] font-extrabold text-[#0A0A0A] mb-1.5">나를 알려주세요 👋</h2>
             <p className="text-[14px] text-[#6B7280] leading-[1.6] mb-6">
-              면접 질문 맞춤화를 위해 딱 2가지만 입력하면 돼요.
+              면접 질문 맞춤화를 위해 딱 3가지만 입력하면 돼요.
             </p>
 
             {/* Progress */}
