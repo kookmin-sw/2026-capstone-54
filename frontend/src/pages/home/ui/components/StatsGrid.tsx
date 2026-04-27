@@ -29,21 +29,10 @@ export function StatsGrid({ stats, revealed }: StatsGridProps) {
           <div className="hp-stat-num">
             {stat.value}
             {stat.unit && (
-              <small style={{ fontSize: 14, opacity: 0.5 }}>{stat.unit}</small>
+              <small style={{ fontSize: 14, opacity: 0.5, marginLeft: 6 }}>{stat.unit}</small>
             )}
           </div>
           <div className="hp-stat-label">{stat.label}</div>
-          <span
-            className={`hp-stat-delta ${
-              stat.deltaType === "up"
-                ? "hp-delta-up"
-                : stat.deltaType === "down"
-                ? "hp-delta-dn"
-                : "hp-delta-neutral"
-            }`}
-          >
-            {stat.delta}
-          </span>
         </div>
       ))}
     </div>
