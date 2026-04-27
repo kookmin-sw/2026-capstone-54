@@ -27,6 +27,9 @@ class DedupeActiveInterviewSessionsMigrationTests(TestCase):
   def setUp(self):
     self.dedupe = _load_migration_module()._dedupe
     self.user = UserFactory()
+    from django.db import connection
+    with connection.cursor() as cursor:
+      cursor.execute("DROP INDEX IF EXISTS uq_active_interview_session_per_user;")
 
   def test_dedupe_keeps_most_recent_in_progress_when_two_in_progress_for_same_user(self):
     """같은 user 의 IN_PROGRESS 2 개 중 가장 최근 1 개만 유지된다."""
