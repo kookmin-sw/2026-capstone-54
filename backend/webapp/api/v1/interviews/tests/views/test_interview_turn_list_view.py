@@ -43,7 +43,7 @@ class InterviewTurnListViewTests(TestCase):
   def test_returns_only_turns_for_requested_session(self):
     """요청한 세션의 턴만 반환한다."""
     InterviewTurnFactory(interview_session=self.session, turn_number=1)
-    other_session = InterviewSessionFactory(user=self.user)
+    other_session = InterviewSessionFactory(user=self.user, interview_session_status=InterviewSessionStatus.COMPLETED)
     InterviewTurnFactory(interview_session=other_session, turn_number=1)
 
     response = self.client.get(self.url)

@@ -47,15 +47,15 @@ class InterviewSessionListTests(_AuthenticatedTestCase):
     self.assertEqual(response.status_code, status.HTTP_200_OK)
 
   def test_returns_only_own_sessions(self):
-    InterviewSessionFactory(user=self.user)
-    InterviewSessionFactory(user=self.user)
+    InterviewSessionFactory(user=self.user, interview_session_status=InterviewSessionStatus.COMPLETED)
+    InterviewSessionFactory(user=self.user, interview_session_status=InterviewSessionStatus.COMPLETED)
     InterviewSessionFactory()  # 다른 사용자
     response = self.client.get(self.url)
     self.assertEqual(len(response.data["results"]), 2)
 
   def test_ordered_by_created_at_desc(self):
-    s1 = InterviewSessionFactory(user=self.user)
-    s2 = InterviewSessionFactory(user=self.user)
+    s1 = InterviewSessionFactory(user=self.user, interview_session_status=InterviewSessionStatus.COMPLETED)
+    s2 = InterviewSessionFactory(user=self.user, interview_session_status=InterviewSessionStatus.COMPLETED)
     response = self.client.get(self.url)
     uuids = [r["uuid"] for r in response.data["results"]]
     self.assertEqual(uuids, [str(s2.pk), str(s1.pk)])
@@ -73,12 +73,12 @@ class InterviewSessionListTests(_AuthenticatedTestCase):
     self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
   def test_free_plan_hides_sessions_older_than_7_days(self):
-    old_session = InterviewSessionFactory(user=self.user)
+    old_session = InterviewSessionFactory(user=self.user, interview_session_status=InterviewSessionStatus.COMPLETED)
     InterviewSession.objects.filter(pk=old_session.pk).update(
       created_at=timezone.now() - timezone.timedelta(days=8),
       updated_at=timezone.now() - timezone.timedelta(days=8),
     )
-    recent_session = InterviewSessionFactory(user=self.user)
+    recent_session = InterviewSessionFactory(user=self.user, interview_session_status=InterviewSessionStatus.COMPLETED)
 
     response = self.client.get(self.url)
 
@@ -89,12 +89,12 @@ class InterviewSessionListTests(_AuthenticatedTestCase):
 
   def test_pro_plan_returns_all_sessions_without_hidden_flag(self):
     SubscriptionFactory.create(user=self.user, pro=True)
-    old_session = InterviewSessionFactory(user=self.user)
+    old_session = InterviewSessionFactory(user=self.user, interview_session_status=InterviewSessionStatus.COMPLETED)
     InterviewSession.objects.filter(pk=old_session.pk).update(
       created_at=timezone.now() - timezone.timedelta(days=8),
       updated_at=timezone.now() - timezone.timedelta(days=8),
     )
-    recent_session = InterviewSessionFactory(user=self.user)
+    recent_session = InterviewSessionFactory(user=self.user, interview_session_status=InterviewSessionStatus.COMPLETED)
 
     response = self.client.get(self.url)
 
