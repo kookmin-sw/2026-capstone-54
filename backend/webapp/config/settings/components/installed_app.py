@@ -70,6 +70,7 @@ PROJECT_APPS = [
   "job_descriptions",
   "notifications",
   "achievements",
+  "dashboard",
 ]
 
 INSTALLED_APPS = ADMIN_APPS + DJANGO_APPS + PACKAGE_APPS + PROJECT_APPS

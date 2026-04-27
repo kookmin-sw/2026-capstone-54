@@ -1,4 +1,4 @@
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from django.test import TestCase
 from interviews.enums import InterviewSessionStatus, RecordingStatus
@@ -27,21 +27,21 @@ class CompleteRecordingViewTests(TestCase):
 
   @patch("api.v1.interviews.views.complete_recording_view.CompleteRecordingService")
   def test_complete_recording_endpoint_returns_200(self, mock_service_class):
+    mock_service = MagicMock()
+    mock_service_class.return_value = mock_service
+
     recording = InterviewRecordingFactory(
-      interview_session=self.session,
-      user=self.user,
-      status=RecordingStatus.INITIATED,
+      interview_session=self.session, interview_turn=self.turn, user=self.user, status=RecordingStatus.INITIATED
     )
 
-    url = f"{BASE}/recordings/{recording.pk}/complete/"
     data = {
       "parts": [{
         "part_number": 1,
-        "etag": "etag"
+        "etag": "etag1"
       }],
-      "end_timestamp": "2023-01-01T00:00:00Z",
+      "end_timestamp": "2026-04-27T12:00:00Z",
       "duration_ms": 1000,
     }
 
-    response = self.client.post(url, data, format="json")
+    response = self.client.post(f"{BASE}/recordings/{recording.uuid}/complete/", data, format="json")
     self.assertEqual(response.status_code, status.HTTP_200_OK)
