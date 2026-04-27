@@ -24,16 +24,27 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Sanitize branch name
+      - name: Compute worker name
         id: branch
         run: |
-          SANITIZED=$(echo "${{ github.ref_name }}" \
+          BRANCH="${{ github.ref_name }}"
+          # Sanitize branch name to URL-safe characters
+          SANITIZED=$(echo "$BRANCH" \
             | tr '[:upper:]' '[:lower:]' \
             | sed 's/[^a-z0-9-]/-/g' \
             | sed 's/--*/-/g' \
-            | sed 's/^-//;s/-$//' \
-            | cut -c1-40)
-          echo "worker-name=mefit-front-preview-${SANITIZED}" >> "$GITHUB_OUTPUT"
+            | sed 's/^-//;s/-$//')
+          # Deterministic 8-char hash suffix (same branch -> same hash, so cleanup matches)
+          HASH=$(printf '%s' "$BRANCH" | sha256sum | cut -c1-8)
+          # Budget: 54 (Cloudflare limit) - 20 (prefix) - 1 (separator) - 8 (hash) = 25 chars
+          TRUNCATED=$(echo "$SANITIZED" | cut -c1-25 | sed 's/-$//')
+          if [ -z "$TRUNCATED" ]; then
+            WORKER_NAME="mefit-front-preview-${HASH}"
+          else
+            WORKER_NAME="mefit-front-preview-${TRUNCATED}-${HASH}"
+          fi
+          echo "worker-name=${WORKER_NAME}" >> "$GITHUB_OUTPUT"
+          echo "Computed worker name: ${WORKER_NAME} (length: ${#WORKER_NAME})"
 
       - uses: oven-sh/setup-bun@v2
         with:
@@ -112,16 +123,27 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Sanitize branch name
+      - name: Compute worker name
         id: branch
         run: |
-          SANITIZED=$(echo "${{ github.event.ref }}" \
+          BRANCH="${{ github.event.ref }}"
+          # Sanitize branch name to URL-safe characters
+          SANITIZED=$(echo "$BRANCH" \
             | tr '[:upper:]' '[:lower:]' \
             | sed 's/[^a-z0-9-]/-/g' \
             | sed 's/--*/-/g' \
-            | sed 's/^-//;s/-$//' \
-            | cut -c1-40)
-          echo "worker-name=mefit-front-preview-${SANITIZED}" >> "$GITHUB_OUTPUT"
+            | sed 's/^-//;s/-$//')
+          # Deterministic 8-char hash suffix (must match deploy job's algorithm exactly)
+          HASH=$(printf '%s' "$BRANCH" | sha256sum | cut -c1-8)
+          # Budget: 54 (Cloudflare limit) - 20 (prefix) - 1 (separator) - 8 (hash) = 25 chars
+          TRUNCATED=$(echo "$SANITIZED" | cut -c1-25 | sed 's/-$//')
+          if [ -z "$TRUNCATED" ]; then
+            WORKER_NAME="mefit-front-preview-${HASH}"
+          else
+            WORKER_NAME="mefit-front-preview-${TRUNCATED}-${HASH}"
+          fi
+          echo "worker-name=${WORKER_NAME}" >> "$GITHUB_OUTPUT"
+          echo "Computed worker name: ${WORKER_NAME} (length: ${#WORKER_NAME})"
 
       - name: Delete Preview Worker
         uses: cloudflare/wrangler-action@v3
