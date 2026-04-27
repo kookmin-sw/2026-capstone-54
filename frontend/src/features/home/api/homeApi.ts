@@ -116,16 +116,14 @@ export async function fetchHomeDataApi(): Promise<{ success: boolean; data?: Hom
   let userName = MOCK_DATA.user.name;
   let stats: HomeStat[] = PLACEHOLDER_STATS;
   let currentStreak = 0;
-  let allSucceeded = true;
-  let errorMessage: string | undefined;
+  const errorMessages: string[] = [];
 
   try {
     const userData = await userApi.getMe();
     userName = userData.name || MOCK_DATA.user.name;
   } catch (error) {
     console.error("Failed to fetch user data:", error);
-    allSucceeded = false;
-    errorMessage = error instanceof Error ? error.message : "사용자 정보를 불러오지 못했습니다.";
+    errorMessages.push(error instanceof Error ? error.message : "사용자 정보를 불러오지 못했습니다.");
   }
 
   try {
@@ -134,18 +132,17 @@ export async function fetchHomeDataApi(): Promise<{ success: boolean; data?: Hom
     currentStreak = dashboardStats.currentStreakDays;
   } catch (error) {
     console.error("Failed to fetch dashboard statistics:", error);
-    allSucceeded = false;
-    errorMessage = error instanceof Error ? error.message : "대시보드 통계를 불러오지 못했습니다.";
+    errorMessages.push(error instanceof Error ? error.message : "대시보드 통계를 불러오지 못했습니다.");
   }
 
   return {
-    success: allSucceeded,
+    success: errorMessages.length === 0,
     data: {
       ...MOCK_DATA,
       user: { ...MOCK_DATA.user, name: userName },
       stats,
       currentStreak,
     },
-    error: errorMessage,
+    error: errorMessages.length > 0 ? errorMessages.join(" / ") : undefined,
   };
 }
