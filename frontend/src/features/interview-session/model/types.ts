@@ -25,6 +25,10 @@ export interface InterviewSessionState {
   interviewError: string | null;
   interviewAnalysisReport: InterviewAnalysisReport | null;
   isReportPolling: boolean;
+  ownerToken: string | null;
+  ownerVersion: number | null;
+  wsTicket: string | null;
+  takeoverModalOpen: boolean;
 }
 
 export interface InterviewSessionActions {
@@ -35,6 +39,8 @@ export interface InterviewSessionActions {
   finishInterview: (uuid: string) => Promise<void>;
   startReportPolling: (uuid: string) => void;
   resetInterviewSession: () => void;
+  applyTakeover: (uuid: string) => Promise<void>;
+  setTakeoverModalOpen: (open: boolean) => void;
 }
 
 export type InterviewSessionStore = InterviewSessionState & InterviewSessionActions;
@@ -48,4 +54,8 @@ export const initialInterviewSessionState: InterviewSessionState = {
   interviewError: null,
   interviewAnalysisReport: null,
   isReportPolling: false,
+  ownerToken: null,
+  ownerVersion: null,
+  wsTicket: null,
+  takeoverModalOpen: false,
 };

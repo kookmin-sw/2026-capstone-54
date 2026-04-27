@@ -17,11 +17,13 @@ import { useVideoAnalysis } from "../hooks/useVideoAnalysis";
 import { usePermissionMonitor } from "../hooks/usePermissionMonitor";
 import { useScreenSize } from "../hooks/useScreenSize";
 import { useInterviewMachine } from "../hooks/useInterviewMachine";
+import { useSessionWs } from "../hooks/useSessionWs";
 import { SessionHeader } from "./SessionHeader";
 import { SessionActionPanel } from "./SessionActionPanel";
 import { PermissionOverlay } from "./PermissionOverlay";
 import { ScreenSizeOverlay } from "./ScreenSizeOverlay";
 import { FinishConfirmModal } from "./FinishConfirmModal";
+import { SessionTakeoverModal } from "@/widgets/interview-session/SessionTakeoverModal";
 
 const INTERVIEW_COACH_MARKS_KEY = "interview-session";
 
@@ -142,6 +144,11 @@ export function InterviewSessionPage() {
   const shouldShowCoachMarksGuide = shouldShowCoachMarks(INTERVIEW_COACH_MARKS_KEY) && isFirstQuestion && !coachMarksCompleted;
 
   const permissionError = usePermissionMonitor(hasStarted && !isFinished);
+
+  useSessionWs({
+    interviewSessionUuid: interviewSessionUuid ?? "",
+    enabled: hasStarted && !isFinished,
+  });
 
   useEffect(() => {
     if (!interviewSessionUuid) return;
@@ -316,6 +323,7 @@ export function InterviewSessionPage() {
       {showFinishModal && <FinishConfirmModal onConfirm={handleFinishConfirm} onCancel={() => setShowFinishModal(false)} />}
       {isTooSmall && <ScreenSizeOverlay screenWidth={screenSize.w} screenHeight={screenSize.h} onGoHome={() => navigate("/interview/results")} />}
       {permissionError && <PermissionOverlay onReload={() => window.location.reload()} onGoResults={() => navigate("/interview/results")} />}
+      <SessionTakeoverModal interviewSessionUuid={interviewSessionUuid ?? ""} />
     </div>
   );
 }

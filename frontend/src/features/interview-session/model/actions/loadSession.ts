@@ -54,13 +54,17 @@ export async function loadInterviewTurns(set: Set, interviewSessionUuid: string)
 export async function startInterview(set: Set, interviewSessionUuid: string) {
   try {
     set({ interviewPhase: "starting" });
-    const interviewTurns = await interviewApi.startInterview(interviewSessionUuid);
+    const response = await interviewApi.startInterview(interviewSessionUuid);
+    const interviewTurns = response.turns;
     const firstTurn = interviewTurns[0] ?? null;
     set({
       interviewTurns,
       currentInterviewTurnIndex: 0,
       currentInterviewTurn: firstTurn,
       interviewPhase: "listening",
+      ownerToken: response.ownerToken,
+      ownerVersion: response.ownerVersion,
+      wsTicket: response.wsTicket,
     });
   } catch {
     set({ interviewPhase: "error", interviewError: "면접 시작에 실패했습니다." });

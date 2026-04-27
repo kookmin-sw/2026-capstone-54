@@ -82,6 +82,19 @@ export interface CreateInterviewSessionParams {
   interview_practice_mode: InterviewPracticeMode;
 }
 
+export interface StartInterviewResponse {
+  turns: InterviewTurn[];
+  ownerToken: string;
+  ownerVersion: number;
+  wsTicket: string;
+}
+
+export interface TakeoverInterviewSessionResponse {
+  ownerToken: string;
+  ownerVersion: number;
+  wsTicket: string;
+}
+
 export interface SubmitAnswerFollowupResponse {
   turns: InterviewTurn[];
   followupExhausted: boolean;
