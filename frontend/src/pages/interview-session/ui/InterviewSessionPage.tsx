@@ -25,6 +25,8 @@ import { ScreenSizeOverlay } from "./ScreenSizeOverlay";
 import { FinishConfirmModal } from "./FinishConfirmModal";
 import { SessionTakeoverModal } from "@/widgets/interview-session/SessionTakeoverModal";
 import { PausedOverlay } from "@/widgets/interview-session/PausedOverlay";
+import { IdleDetectedModal } from "@/widgets/interview-session/IdleDetectedModal";
+import { useIdleDetector } from "@/features/interview-session/lib/useIdleDetector";
 
 const INTERVIEW_COACH_MARKS_KEY = "interview-session";
 
@@ -146,10 +148,34 @@ export function InterviewSessionPage() {
 
   const permissionError = usePermissionMonitor(hasStarted && !isFinished);
 
-  useSessionWs({
+  const wsClientRef = useSessionWs({
     interviewSessionUuid: interviewSessionUuid ?? "",
     enabled: hasStarted && !isFinished,
   });
+
+  const { isIdle, resetIdle } = useIdleDetector({
+    enabled: hasStarted && !isFinished,
+    thresholdMs: 60_000,
+    faceVisible: video.isAnalyzing && video.fps > 0,
+  });
+
+  useEffect(() => {
+    if (!hasStarted || isFinished) return;
+    if (isIdle) {
+      wsClientRef.current?.sendPause("user_idle");
+    } else {
+      wsClientRef.current?.sendResume();
+    }
+  }, [isIdle, hasStarted, isFinished, wsClientRef]);
+
+  const handleIdleContinue = () => {
+    resetIdle();
+  };
+
+  const handleIdleFinish = () => {
+    resetIdle();
+    setShowFinishModal(true);
+  };
 
   useEffect(() => {
     if (!interviewSessionUuid) return;
@@ -326,6 +352,7 @@ export function InterviewSessionPage() {
       {permissionError && <PermissionOverlay onReload={() => window.location.reload()} onGoResults={() => navigate("/interview/results")} />}
       <SessionTakeoverModal interviewSessionUuid={interviewSessionUuid ?? ""} />
       <PausedOverlay />
+      <IdleDetectedModal open={isIdle} onContinue={handleIdleContinue} onFinish={handleIdleFinish} />
     </div>
   );
 }
