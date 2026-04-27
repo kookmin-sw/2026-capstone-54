@@ -1,8 +1,23 @@
-/** 세션 로드: 진행 중이면 현재 위치를 복원, 완료면 종료 상태로 표시. */
+/** 세션 로드: 진행 중이면 현재 위치를 복원, 완료면 종료 상태로 표시. 페이지 진입 즉시 takeover 로 ownership 인수하여 다른 탭/브라우저/기기의 connection 을 backend Channels eviction 으로 닫는다. */
 import { interviewApi } from "../../api/interviewApi";
+import { isApiError } from "@/shared/api/client";
+import { toast } from "sonner";
 import type { InterviewSessionStore } from "../types";
 
 type Set = (partial: Partial<InterviewSessionStore>) => void;
+
+async function autoTakeoverIfPossible(set: Set, interviewSessionUuid: string) {
+  try {
+    const ownership = await interviewApi.takeoverInterviewSession(interviewSessionUuid);
+    set({
+      ownerToken: ownership.ownerToken,
+      ownerVersion: ownership.ownerVersion,
+      wsTicket: ownership.wsTicket,
+    });
+  } catch {
+    /* takeover 실패 (예: 권한 없음) — 페이지는 read-only 상태로 표시될 수 있음 */
+  }
+}
 
 export async function loadInterviewSession(set: Set, interviewSessionUuid: string) {
   try {
@@ -14,11 +29,11 @@ export async function loadInterviewSession(set: Set, interviewSessionUuid: strin
       return;
     }
 
-    // 진행 중인 세션 — turns 로드 후 현재 위치 복원
+    await autoTakeoverIfPossible(set, interviewSessionUuid);
+
     const turns = await interviewApi.getInterviewTurns(interviewSessionUuid);
 
     if (turns.length === 0) {
-      // start API가 아직 호출 안 된 세션 → 시작 화면으로
       set({ interviewSession, interviewTurns: [], interviewPhase: "idle" });
       return;
     }
@@ -26,7 +41,6 @@ export async function loadInterviewSession(set: Set, interviewSessionUuid: strin
     const firstUnansweredIdx = turns.findIndex((t) => !t.answer);
 
     if (firstUnansweredIdx < 0) {
-      // 모든 질문에 답했지만 종료 API가 호출 안 된 경우 → 자동 종료
       try { await interviewApi.finishInterview(interviewSessionUuid); } catch { /* ignore */ }
       set({ interviewSession, interviewTurns: turns, interviewPhase: "finished" });
       return;
@@ -66,8 +80,19 @@ export async function startInterview(set: Set, interviewSessionUuid: string) {
       ownerVersion: response.ownerVersion,
       wsTicket: response.wsTicket,
     });
-  } catch {
-    set({ interviewPhase: "error", interviewError: "면접 시작에 실패했습니다." });
+  } catch (error) {
+    if (isApiError(error) && error.errorCode === "INTERVIEW_ALREADY_STARTED") {
+      const message = (typeof error.message === "string" && error.message)
+        || "이미 시작된 면접입니다. 이어서 진행합니다.";
+      toast.info(message);
+      await loadInterviewSession(set, interviewSessionUuid);
+      return;
+    }
+    const message = isApiError(error) && typeof error.message === "string" && error.message
+      ? error.message
+      : "면접을 시작할 수 없습니다. 잠시 후 다시 시도하세요.";
+    toast.error(message);
+    set({ interviewPhase: "error", interviewError: message });
   }
 }
 

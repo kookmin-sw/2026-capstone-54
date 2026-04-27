@@ -150,7 +150,7 @@ export function InterviewSessionPage() {
 
   const wsClientRef = useSessionWs({
     interviewSessionUuid: interviewSessionUuid ?? "",
-    enabled: hasStarted && !isFinished,
+    enabled: !isFinished,
   });
 
   const { isIdle, resetIdle } = useIdleDetector({
@@ -350,7 +350,7 @@ export function InterviewSessionPage() {
       {showFinishModal && <FinishConfirmModal onConfirm={handleFinishConfirm} onCancel={() => setShowFinishModal(false)} />}
       {isTooSmall && <ScreenSizeOverlay screenWidth={screenSize.w} screenHeight={screenSize.h} onGoHome={() => navigate("/interview/results")} />}
       {permissionError && <PermissionOverlay onReload={() => window.location.reload()} onGoResults={() => navigate("/interview/results")} />}
-      <SessionTakeoverModal interviewSessionUuid={interviewSessionUuid ?? ""} />
+      <SessionTakeoverModal />
       <PausedOverlay />
       <IdleDetectedModal open={isIdle} onContinue={handleIdleContinue} onFinish={handleIdleFinish} />
     </div>
