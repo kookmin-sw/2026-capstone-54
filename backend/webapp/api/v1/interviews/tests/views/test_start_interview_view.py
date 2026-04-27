@@ -36,14 +36,17 @@ class StartInterviewViewTests(TestCase):
 
   @patch("api.v1.interviews.views.start_interview_view.GenerateInitialQuestionsService")
   def test_returns_201_with_turn_list(self, MockService):
-    """정상 요청 시 201과 턴 목록을 반환한다."""
+    """정상 요청 시 201과 turns + owner 정보 + ws_ticket 을 반환한다."""
     turns = InterviewTurnFactory.create_batch(3, interview_session=self.session)
     MockService.return_value.perform.return_value = turns
 
     response = self.client.post(self.url)
 
     self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-    self.assertEqual(len(response.data), 3)
+    self.assertEqual(len(response.data["turns"]), 3)
+    self.assertIn("owner_token", response.data)
+    self.assertIn("owner_version", response.data)
+    self.assertIn("ws_ticket", response.data)
 
   @patch("api.v1.interviews.views.start_interview_view.GenerateInitialQuestionsService")
   def test_service_called_with_correct_session(self, MockService):

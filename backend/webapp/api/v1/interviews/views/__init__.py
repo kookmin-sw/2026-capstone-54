@@ -11,6 +11,7 @@ from .presign_part_view import PresignPartView
 from .recording_list_view import RecordingListView
 from .start_interview_view import StartInterviewView
 from .submit_answer_view import SubmitAnswerView
+from .takeover_interview_session_view import TakeoverInterviewSessionView
 from .turn_list_view import InterviewTurnListView
 
 __all__ = [
@@ -28,4 +29,5 @@ __all__ = [
   "RecordingListView",
   "StartInterviewView",
   "SubmitAnswerView",
+  "TakeoverInterviewSessionView",
 ]

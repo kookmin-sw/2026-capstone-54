@@ -1,13 +1,17 @@
 """면접 초기 질문 생성 뷰."""
 
+import secrets
+
 from api.v1.interviews.serializers import InterviewTurnSerializer
 from common.exceptions import PermissionDeniedException, ValidationException
 from common.permissions import IsEmailVerified
 from common.views import BaseAPIView
+from django.core.cache import cache
 from drf_spectacular.utils import extend_schema
 from interviews.constants import TICKET_COST_FOLLOWUP, TICKET_COST_FULL_PROCESS
 from interviews.enums import InterviewSessionType
 from interviews.services import (
+  ClaimSessionOwnershipService,
   GenerateInitialQuestionsService,
   get_interview_session_for_user,
 )
@@ -19,6 +23,8 @@ from subscriptions.services import (
   PlanFeaturePolicyService,
 )
 from tickets.services import UseTicketsService
+
+WS_TICKET_TTL_SECONDS = 60
 
 
 @extend_schema(tags=["면접"])
@@ -37,8 +43,20 @@ class StartInterviewView(BaseAPIView):
 
     interview_turns = GenerateInitialQuestionsService(interview_session=interview_session).perform()
 
+    ownership = ClaimSessionOwnershipService(
+      user=self.current_user,
+      session=interview_session,
+    ).perform()
+    ws_ticket = secrets.token_urlsafe(32)
+    cache.set(f"ws_ticket:{ws_ticket}", self.current_user.pk, timeout=WS_TICKET_TTL_SECONDS)
+
     return Response(
-      InterviewTurnSerializer(interview_turns, many=True).data,
+      {
+        "turns": InterviewTurnSerializer(interview_turns, many=True).data,
+        "owner_token": ownership["owner_token"],
+        "owner_version": ownership["owner_version"],
+        "ws_ticket": ws_ticket,
+      },
       status=status.HTTP_201_CREATED,
     )
 

@@ -13,6 +13,7 @@ from api.v1.interviews.views import (
   RecordingListView,
   StartInterviewView,
   SubmitAnswerView,
+  TakeoverInterviewSessionView,
 )
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
@@ -42,6 +43,11 @@ urlpatterns = [
     "interview-sessions/<uuid:interview_session_uuid>/finish/",
     FinishInterviewView.as_view(),
     name="interview-finish",
+  ),
+  path(
+    "interview-sessions/<uuid:interview_session_uuid>/takeover/",
+    TakeoverInterviewSessionView.as_view(),
+    name="interview-takeover",
   ),
   # 녹화
   path(
