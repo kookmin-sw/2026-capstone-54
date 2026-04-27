@@ -89,11 +89,12 @@ class StartInterviewViewTests(TestCase):
     self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
   def test_insufficient_tickets_returns_400(self):
-    """티켓이 부족하면 400을 반환한다."""
+    """티켓이 부족하면 400 + INSUFFICIENT_TICKETS 코드를 반환한다."""
     self.user.ticket.delete()
     response = self.client.post(self.url)
     self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
     self.assertIn("티켓이 부족합니다", str(response.data))
+    self.assertEqual(response.data.get("errorCode") or response.data.get("error_code"), "INSUFFICIENT_TICKETS")
 
   @patch("api.v1.interviews.views.start_interview_view.GenerateInitialQuestionsService")
   def test_tickets_deducted_when_daily_zero_and_purchased_thirty(self, MockService):
@@ -111,7 +112,7 @@ class StartInterviewViewTests(TestCase):
     self.assertEqual(self.user.ticket.total_count, 25)
 
   def test_already_started_interview_returns_400(self):
-    """이미 시작된 면접(total_questions > 0)은 400을 반환한다."""
+    """이미 시작된 면접(total_questions > 0)은 400 + INTERVIEW_ALREADY_STARTED 코드를 반환한다."""
     self.user.ticket.delete()
     UserTicketFactory(user=self.user, daily_count=0, purchased_count=30)
     self.session.total_questions = 5
@@ -121,6 +122,7 @@ class StartInterviewViewTests(TestCase):
 
     self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
     self.assertIn("이미 시작된 면접입니다", str(response.data))
+    self.assertEqual(response.data.get("errorCode") or response.data.get("error_code"), "INTERVIEW_ALREADY_STARTED")
 
   def test_real_mode_free_plan_returns_403(self):
     """무료 플랜 사용자의 실전 모드 시작은 403을 반환한다."""
