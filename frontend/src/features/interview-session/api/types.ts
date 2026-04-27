@@ -5,6 +5,9 @@ export type InterviewPracticeMode = "practice" | "real";
 export type InterviewSessionStatus = "in_progress" | "completed";
 export type InterviewTurnType = "initial" | "followup";
 export type InterviewAnalysisReportStatus = "pending" | "generating" | "completed" | "failed";
+export type InterviewSttMode = "browser" | "backend";
+export type TranscriptStatus = "pending" | "processing" | "completed" | "failed" | null;
+export type TranscriptSource = "browser_stt" | "backend_stt" | "none";
 
 // ── Core Models ──
 export interface InterviewSession {
@@ -36,6 +39,9 @@ export interface InterviewTurn {
   turnNumber: number;
   followupOrder: number | null;
   createdAt: string;
+  transcriptStatus?: TranscriptStatus;
+  transcriptSource?: TranscriptSource;
+  transcriptErrorCode?: string;
 }
 
 // ── Report Models ──

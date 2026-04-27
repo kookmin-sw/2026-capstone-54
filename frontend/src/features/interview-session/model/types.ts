@@ -37,7 +37,13 @@ export interface InterviewSessionActions {
   loadInterviewSession: (uuid: string) => Promise<void>;
   loadInterviewTurns: (uuid: string) => Promise<void>;
   startInterview: (uuid: string) => Promise<void>;
-  submitInterviewAnswer: (uuid: string, turnPk: number, answer: string, speechSegments?: { text: string; startMs: number; endMs: number }[]) => Promise<void>;
+  submitInterviewAnswer: (
+    uuid: string,
+    turnPk: number,
+    answer: string,
+    speechSegments?: { text: string; startMs: number; endMs: number }[],
+    fallbackOptions?: { fallbackRequested?: boolean; recordingUuid?: string },
+  ) => Promise<void>;
   finishInterview: (uuid: string) => Promise<void>;
   startReportPolling: (uuid: string) => void;
   resetInterviewSession: () => void;
