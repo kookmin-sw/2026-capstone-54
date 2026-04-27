@@ -29,7 +29,13 @@ class PlaybackUrlViewTests(TestCase):
   @patch("api.v1.interviews.views.playback_url_view.GeneratePlaybackUrlService")
   def test_playback_url_returns_presigned_url(self, mock_service_class):
     mock_service = MagicMock()
-    mock_service.execute.return_value = "https://playback.example.com"
+    mock_service.perform.return_value = {
+      "url": "https://playback.example.com",
+      "scaledUrl": None,
+      "audioUrl": None,
+      "mediaType": "video",
+      "expiresIn": 3600,
+    }
     mock_service_class.return_value = mock_service
 
     SubscriptionFactory(user=self.user, pro=True)

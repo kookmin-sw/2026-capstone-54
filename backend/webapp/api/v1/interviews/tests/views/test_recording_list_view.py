@@ -32,7 +32,7 @@ class RecordingListViewTests(TestCase):
     other_turn = InterviewTurnFactory(interview_session=other_session)
     InterviewRecordingFactory(user=other_user, interview_session=other_session, interview_turn=other_turn)
 
-    response = self.client.get(f"{BASE}/recordings/")
+    response = self.client.get(f"{BASE}/interview-sessions/{self.session.uuid}/recordings/")
 
     self.assertEqual(response.status_code, status.HTTP_200_OK)
-    self.assertEqual(len(response.data["results"]), 2)
+    self.assertEqual(len(response.data), 2)
