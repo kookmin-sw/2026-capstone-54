@@ -2,7 +2,7 @@
 
 from common.models import BaseModel
 from django.db import models
-from interviews.enums import InterviewExchangeType, QuestionSource
+from interviews.enums import InterviewExchangeType, QuestionSource, TranscriptSource, TranscriptStatus
 
 
 class InterviewTurn(BaseModel):
@@ -74,6 +74,30 @@ class InterviewTurn(BaseModel):
     on_delete=models.SET_NULL,
     related_name="followup_turns",
     verbose_name="앵커 질문",
+  )
+
+  transcript_status = models.CharField(
+    max_length=20,
+    choices=TranscriptStatus.choices,
+    null=True,
+    blank=True,
+    default=None,
+    verbose_name="STT 상태",
+    help_text="None=브라우저 STT 정상 / pending=백엔드 STT 대기 / processing/completed/failed",
+  )
+
+  transcript_source = models.CharField(
+    max_length=20,
+    choices=TranscriptSource.choices,
+    default=TranscriptSource.BROWSER_STT,
+    verbose_name="STT 출처",
+  )
+
+  transcript_error_code = models.CharField(
+    max_length=50,
+    blank=True,
+    default="",
+    verbose_name="STT 에러 코드",
   )
 
   def __str__(self):

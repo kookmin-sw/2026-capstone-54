@@ -8,3 +8,5 @@ class SubmitAnswerSerializer(serializers.Serializer):
     required=False,
     default=list,
   )
+  fallback_requested = serializers.BooleanField(required=False, default=False)
+  recording_uuid = serializers.UUIDField(required=False, allow_null=True, default=None)

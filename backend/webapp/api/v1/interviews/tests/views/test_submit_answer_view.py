@@ -79,6 +79,49 @@ class SubmitAnswerViewFollowupTests(OwnershipHeadersMixin, TestCase):
 
     self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+  @patch("api.v1.interviews.views.submit_answer_view.RegisteredTranscribeRecordingTask.delay")
+  @patch("api.v1.interviews.views.submit_answer_view.SubmitAnswerAndGenerateFollowupService")
+  def test_fallback_requested_dispatches_transcribe_task(self, MockService, mock_delay):
+    """fallback_requested=true 인 경우 TranscribeRecordingTask 가 디스패치되고 transcript_status=pending 으로 저장된다."""
+    from interviews.enums import RecordingStatus, TranscriptStatus
+    from interviews.factories import InterviewRecordingFactory
+
+    MockService.return_value.perform.return_value = FollowupResult(turns=[], followup_exhausted=False)
+    recording = InterviewRecordingFactory(
+      interview_session=self.session,
+      interview_turn=self.turn,
+      user=self.user,
+      status=RecordingStatus.COMPLETED,
+    )
+
+    response = self.client.post(
+      self.url,
+      data={
+        "answer": "(STT 처리 중)",
+        "fallback_requested": True,
+        "recording_uuid": str(recording.pk),
+      },
+      format="json",
+    )
+
+    self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+    mock_delay.assert_called_once_with(recording_uuid=str(recording.pk), turn_id=self.turn.pk)
+    self.turn.refresh_from_db()
+    self.assertEqual(self.turn.transcript_status, TranscriptStatus.PENDING)
+
+  def test_fallback_requested_without_recording_uuid_returns_400(self):
+    """fallback_requested=true 인데 recording_uuid 가 없으면 400."""
+    response = self.client.post(
+      self.url,
+      data={
+        "answer": "내 답변",
+        "fallback_requested": True
+      },
+      format="json",
+    )
+
+    self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
 
 class SubmitAnswerViewFullProcessTests(OwnershipHeadersMixin, TestCase):
   """SubmitAnswerView — FULL_PROCESS 세션 테스트"""

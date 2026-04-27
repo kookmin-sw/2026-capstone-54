@@ -19,11 +19,13 @@ def create_interview_session(
   interview_session_type: str,
   interview_difficulty_level: str,
   interview_practice_mode: str = "practice",
+  stt_mode: str | None = None,
 ) -> InterviewSession:
   """면접 세션을 생성한다.
 
   resume와 user_job_description은 이미 검증된 DB 객체여야 한다.
   사용자가 제공한 UUID만으로 세션을 만들지 않는다; 뷰에서 소유권 검증 후 객체를 넘겨야 한다.
+  stt_mode 가 None 이면 모델 default(InterviewSttMode.BROWSER) 가 적용된다.
   """
   with transaction.atomic():
     active_session_exists = InterviewSession.objects.select_for_update().filter(
@@ -40,15 +42,19 @@ def create_interview_session(
         detail=ACTIVE_SESSION_CONFLICT_DETAIL,
       )
 
+    create_kwargs = dict(
+      user=user,
+      resume=resume,
+      user_job_description=user_job_description,
+      interview_session_type=interview_session_type,
+      interview_difficulty_level=interview_difficulty_level,
+      interview_practice_mode=interview_practice_mode,
+    )
+    if stt_mode is not None:
+      create_kwargs["stt_mode"] = stt_mode
+
     try:
-      return InterviewSession.objects.create(
-        user=user,
-        resume=resume,
-        user_job_description=user_job_description,
-        interview_session_type=interview_session_type,
-        interview_difficulty_level=interview_difficulty_level,
-        interview_practice_mode=interview_practice_mode,
-      )
+      return InterviewSession.objects.create(**create_kwargs)
     except IntegrityError as exc:
       if "uq_active_interview_session_per_user" in str(exc):
         raise ConflictException(
