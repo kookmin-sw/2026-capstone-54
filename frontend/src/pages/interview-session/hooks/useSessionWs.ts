@@ -1,22 +1,35 @@
-/** Interview-session WebSocket 연결 + eviction 처리 hook. */
+/** Interview-session WebSocket 연결 + eviction / pause / resume / heartbeat 처리 hook. */
 import { useEffect, useRef } from "react";
 import { InterviewSessionWsClient, WS_CLOSE_EVICTED } from "@/features/interview-session/api/sessionWs";
 import { useInterviewSessionStore } from "@/features/interview-session/model/store";
+import { usePageVisibility } from "@/features/interview-session/lib/usePageVisibility";
 
 interface UseSessionWsOptions {
   interviewSessionUuid: string;
   enabled: boolean;
 }
 
+const HEARTBEAT_INTERVAL_MS = 30_000;
+
 export function useSessionWs({ interviewSessionUuid, enabled }: UseSessionWsOptions) {
   const wsTicket = useInterviewSessionStore((s) => s.wsTicket);
   const setTakeoverModalOpen = useInterviewSessionStore((s) => s.setTakeoverModalOpen);
+  const setPaused = useInterviewSessionStore((s) => s.setPaused);
   const clientRef = useRef<InterviewSessionWsClient | null>(null);
+  const visible = usePageVisibility();
 
   useEffect(() => {
     if (!enabled || !interviewSessionUuid || !wsTicket) return;
 
     const client = new InterviewSessionWsClient({
+      onMessage: (data) => {
+        const messageType = data.type;
+        if (messageType === "pause_ack") {
+          setPaused(true, (data.reason as string | undefined) ?? null);
+        } else if (messageType === "resume_ack") {
+          setPaused(false, null);
+        }
+      },
       onClose: (code) => {
         if (code === WS_CLOSE_EVICTED) {
           setTakeoverModalOpen(true);
@@ -30,7 +43,29 @@ export function useSessionWs({ interviewSessionUuid, enabled }: UseSessionWsOpti
       client.disconnect();
       clientRef.current = null;
     };
-  }, [interviewSessionUuid, wsTicket, enabled, setTakeoverModalOpen]);
+  }, [interviewSessionUuid, wsTicket, enabled, setTakeoverModalOpen, setPaused]);
+
+  useEffect(() => {
+    if (!enabled || !clientRef.current) return;
+
+    if (!visible) {
+      clientRef.current.sendPause("user_left_window");
+      setPaused(true, "user_left_window");
+    } else {
+      clientRef.current.sendResume();
+      setPaused(false, null);
+    }
+  }, [visible, enabled, setPaused]);
+
+  useEffect(() => {
+    if (!enabled || !visible) return;
+
+    const id = setInterval(() => {
+      clientRef.current?.sendHeartbeat();
+    }, HEARTBEAT_INTERVAL_MS);
+
+    return () => clearInterval(id);
+  }, [enabled, visible]);
 
   return clientRef;
 }

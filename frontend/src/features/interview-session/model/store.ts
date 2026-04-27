@@ -22,6 +22,7 @@ export const useInterviewSessionStore = create<InterviewSessionStore>((set, get)
   startReportPolling: (uuid) => startReportPolling(set, uuid),
   applyTakeover: (uuid) => applyTakeover(set, uuid),
   setTakeoverModalOpen: (open) => set({ takeoverModalOpen: open }),
+  setPaused: (paused, reason = null) => set({ isPaused: paused, pauseReason: reason }),
 
   resetInterviewSession: () => {
     stopReportStream();

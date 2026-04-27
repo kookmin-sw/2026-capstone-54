@@ -24,6 +24,7 @@ import { PermissionOverlay } from "./PermissionOverlay";
 import { ScreenSizeOverlay } from "./ScreenSizeOverlay";
 import { FinishConfirmModal } from "./FinishConfirmModal";
 import { SessionTakeoverModal } from "@/widgets/interview-session/SessionTakeoverModal";
+import { PausedOverlay } from "@/widgets/interview-session/PausedOverlay";
 
 const INTERVIEW_COACH_MARKS_KEY = "interview-session";
 
@@ -324,6 +325,7 @@ export function InterviewSessionPage() {
       {isTooSmall && <ScreenSizeOverlay screenWidth={screenSize.w} screenHeight={screenSize.h} onGoHome={() => navigate("/interview/results")} />}
       {permissionError && <PermissionOverlay onReload={() => window.location.reload()} onGoResults={() => navigate("/interview/results")} />}
       <SessionTakeoverModal interviewSessionUuid={interviewSessionUuid ?? ""} />
+      <PausedOverlay />
     </div>
   );
 }

@@ -29,6 +29,8 @@ export interface InterviewSessionState {
   ownerVersion: number | null;
   wsTicket: string | null;
   takeoverModalOpen: boolean;
+  isPaused: boolean;
+  pauseReason: string | null;
 }
 
 export interface InterviewSessionActions {
@@ -41,6 +43,7 @@ export interface InterviewSessionActions {
   resetInterviewSession: () => void;
   applyTakeover: (uuid: string) => Promise<void>;
   setTakeoverModalOpen: (open: boolean) => void;
+  setPaused: (paused: boolean, reason?: string | null) => void;
 }
 
 export type InterviewSessionStore = InterviewSessionState & InterviewSessionActions;
@@ -58,4 +61,6 @@ export const initialInterviewSessionState: InterviewSessionState = {
   ownerVersion: null,
   wsTicket: null,
   takeoverModalOpen: false,
+  isPaused: false,
+  pauseReason: null,
 };
