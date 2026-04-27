@@ -1,3 +1,4 @@
+from api.v1.interviews.views._owner_validation import require_session_owner_from_request
 from botocore.exceptions import BotoCoreError, ClientError
 from common.exceptions import ServiceUnavailableException
 from common.permissions import IsEmailVerified
@@ -17,6 +18,7 @@ class AbortRecordingView(BaseAPIView):
   @extend_schema(summary="녹화 중단")
   def post(self, request, uuid):
     recording = get_object_or_404(InterviewRecording, pk=uuid, user=self.current_user)
+    require_session_owner_from_request(request, recording.interview_session)
 
     try:
       AbortRecordingService(recording=recording, user=self.current_user).perform()

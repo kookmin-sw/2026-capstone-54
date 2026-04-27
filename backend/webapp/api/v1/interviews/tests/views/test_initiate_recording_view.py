@@ -1,6 +1,7 @@
 import uuid
 from unittest.mock import MagicMock, patch
 
+from api.v1.interviews.tests.ownership_test_helpers import OwnershipHeadersMixin
 from django.test import TestCase
 from interviews.enums import InterviewSessionStatus
 from interviews.factories import (
@@ -9,20 +10,18 @@ from interviews.factories import (
 )
 from rest_framework import status
 from rest_framework.test import APIClient
-from rest_framework_simplejwt.tokens import RefreshToken
 from users.factories import UserFactory
 
 BASE = "/api/v1/interviews"
 
 
-class InitiateRecordingViewTests(TestCase):
+class InitiateRecordingViewTests(OwnershipHeadersMixin, TestCase):
 
   def setUp(self):
     self.client = APIClient()
     self.user = UserFactory(is_email_confirmed=True)
-    token = RefreshToken.for_user(self.user)
-    self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {str(token.access_token)}")
     self.session = InterviewSessionFactory(user=self.user, interview_session_status=InterviewSessionStatus.IN_PROGRESS)
+    self.authenticate_with_ownership(self.user, self.session)
     self.turn = InterviewTurnFactory(interview_session=self.session)
 
   @patch("api.v1.interviews.views.initiate_recording_view.InitiateRecordingService")

@@ -1,5 +1,6 @@
 from unittest.mock import patch
 
+from api.v1.interviews.tests.ownership_test_helpers import OwnershipHeadersMixin
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
@@ -8,18 +9,15 @@ from interviews.factories import InterviewSessionFactory, InterviewTurnFactory
 from interviews.services.submit_answer_and_generate_followup_service import FollowupResult
 from rest_framework import status
 from rest_framework.test import APIClient
-from rest_framework_simplejwt.tokens import RefreshToken
 from users.factories import UserFactory
 
 
-class SubmitAnswerViewFollowupTests(TestCase):
+class SubmitAnswerViewFollowupTests(OwnershipHeadersMixin, TestCase):
   """SubmitAnswerView — FOLLOWUP 세션 테스트"""
 
   def setUp(self):
     self.client = APIClient()
     self.user = UserFactory(email_confirmed_at=timezone.now())
-    token = RefreshToken.for_user(self.user)
-    self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token.access_token}")
     self.session = InterviewSessionFactory(
       user=self.user,
       interview_session_type=InterviewSessionType.FOLLOWUP,
@@ -27,6 +25,7 @@ class SubmitAnswerViewFollowupTests(TestCase):
       total_questions=3,
       total_followup_questions=0,
     )
+    self.authenticate_with_ownership(self.user, self.session)
     self.turn = InterviewTurnFactory(interview_session=self.session, answer="", turn_number=1)
     self.url = reverse(
       "interview-answer",
@@ -73,20 +72,19 @@ class SubmitAnswerViewFollowupTests(TestCase):
     )
 
 
-class SubmitAnswerViewFullProcessTests(TestCase):
+class SubmitAnswerViewFullProcessTests(OwnershipHeadersMixin, TestCase):
   """SubmitAnswerView — FULL_PROCESS 세션 테스트"""
 
   def setUp(self):
     self.client = APIClient()
     self.user = UserFactory(email_confirmed_at=timezone.now())
-    token = RefreshToken.for_user(self.user)
-    self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token.access_token}")
     self.session = InterviewSessionFactory(
       user=self.user,
       interview_session_type=InterviewSessionType.FULL_PROCESS,
       interview_session_status=InterviewSessionStatus.IN_PROGRESS,
       total_questions=3,
     )
+    self.authenticate_with_ownership(self.user, self.session)
     self.turn = InterviewTurnFactory(interview_session=self.session, answer="", turn_number=1)
     self.url = reverse(
       "interview-answer",
@@ -118,19 +116,18 @@ class SubmitAnswerViewFullProcessTests(TestCase):
     self.assertEqual(response.data["detail"], "모든 질문에 답변하였습니다.")
 
 
-class SubmitAnswerViewAuthTests(TestCase):
+class SubmitAnswerViewAuthTests(OwnershipHeadersMixin, TestCase):
   """SubmitAnswerView 인증/권한 테스트"""
 
   def setUp(self):
     self.client = APIClient()
     self.user = UserFactory(email_confirmed_at=timezone.now())
-    token = RefreshToken.for_user(self.user)
-    self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token.access_token}")
     self.session = InterviewSessionFactory(
       user=self.user,
       interview_session_type=InterviewSessionType.FOLLOWUP,
       interview_session_status=InterviewSessionStatus.IN_PROGRESS,
     )
+    self.authenticate_with_ownership(self.user, self.session)
     self.turn = InterviewTurnFactory(interview_session=self.session, answer="")
 
   def test_unauthenticated_returns_401(self):

@@ -4,6 +4,7 @@ from api.v1.interviews.serializers import (
   InterviewTurnSerializer,
   SubmitAnswerSerializer,
 )
+from api.v1.interviews.views._owner_validation import require_session_owner_from_request
 from common.permissions import IsEmailVerified
 from common.views import BaseAPIView
 from drf_spectacular.utils import extend_schema
@@ -27,6 +28,7 @@ class SubmitAnswerView(BaseAPIView):
   @extend_schema(summary="답변 제출")
   def post(self, request, interview_session_uuid, turn_pk):
     interview_session = get_interview_session_for_user(interview_session_uuid, self.current_user)
+    require_session_owner_from_request(request, interview_session)
     interview_turn = get_object_or_404(InterviewTurn, pk=turn_pk, interview_session=interview_session)
 
     serializer = SubmitAnswerSerializer(data=request.data)

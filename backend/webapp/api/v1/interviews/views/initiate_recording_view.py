@@ -2,6 +2,7 @@ from api.v1.interviews.serializers import (
   InitiateRecordingResponseSerializer,
   InitiateRecordingSerializer,
 )
+from api.v1.interviews.views._owner_validation import require_session_owner_from_request
 from botocore.exceptions import BotoCoreError, ClientError
 from common.exceptions import ServiceUnavailableException
 from common.permissions import IsEmailVerified
@@ -24,6 +25,7 @@ class InitiateRecordingView(BaseAPIView):
     serializer.is_valid(raise_exception=True)
 
     interview_session = get_interview_session_for_user(uuid, self.current_user)
+    require_session_owner_from_request(request, interview_session)
     interview_turn = get_object_or_404(
       InterviewTurn,
       pk=serializer.validated_data["turn_id"],
