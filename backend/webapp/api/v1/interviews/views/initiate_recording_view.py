@@ -4,10 +4,11 @@ from api.v1.interviews.serializers import (
 )
 from api.v1.interviews.views._owner_validation import require_session_owner_from_request
 from botocore.exceptions import BotoCoreError, ClientError
-from common.exceptions import ServiceUnavailableException
+from common.exceptions import ServiceUnavailableException, ValidationException
 from common.permissions import IsEmailVerified
 from common.views import BaseAPIView
 from drf_spectacular.utils import extend_schema
+from interviews.enums import InterviewSessionStatus
 from interviews.models import InterviewTurn
 from interviews.services import InitiateRecordingService, get_interview_session_for_user
 from rest_framework import status
@@ -26,6 +27,8 @@ class InitiateRecordingView(BaseAPIView):
 
     interview_session = get_interview_session_for_user(uuid, self.current_user)
     require_session_owner_from_request(request, interview_session)
+    if interview_session.interview_session_status == InterviewSessionStatus.PAUSED:
+      raise ValidationException(detail="일시정지된 세션입니다. 재개 후 다시 시도하세요.")
     interview_turn = get_object_or_404(
       InterviewTurn,
       pk=serializer.validated_data["turn_id"],

@@ -104,6 +104,79 @@ class InterviewSessionConsumer(UserWebSocketConsumer):
     if (self._owner_version, self._conn_seq) < (incoming_owner_version, incoming_seq):
       await self.close(code=WS_CLOSE_EVICTED)
 
+  async def handle_message(self, data: dict) -> None:
+    message_type = data.get("type")
+    if self._session is None:
+      await self.reply({"type": "error", "error": "session_not_initialized"})
+      return
+
+    if message_type == "pause":
+      await self._handle_pause(data.get("reason", "manual_pause"))
+    elif message_type == "resume":
+      await self._handle_resume()
+    elif message_type == "heartbeat":
+      await self._handle_heartbeat()
+    else:
+      await self.reply({"type": "error", "error": f"unknown_message_type: {message_type}"})
+
+  async def _handle_pause(self, reason: str) -> None:
+    try:
+      await self._invoke_pause_service(reason)
+    except Exception as exc:
+      logger.warning(
+        "interview_pause_failed",
+        session_uuid=str(self._session.pk),
+        reason=reason,
+        error=str(exc),
+      )
+      await self.reply({"type": "pause_error", "error": str(exc)})
+      return
+    await self.reply({"type": "pause_ack", "reason": reason})
+
+  async def _handle_resume(self) -> None:
+    try:
+      await self._invoke_resume_service()
+    except Exception as exc:
+      logger.warning(
+        "interview_resume_failed",
+        session_uuid=str(self._session.pk),
+        error=str(exc),
+      )
+      await self.reply({"type": "resume_error", "error": str(exc)})
+      return
+    await self.reply({"type": "resume_ack"})
+
+  async def _handle_heartbeat(self) -> None:
+    try:
+      await self._invoke_heartbeat_service()
+    except Exception as exc:
+      logger.warning(
+        "interview_heartbeat_failed",
+        session_uuid=str(self._session.pk),
+        error=str(exc),
+      )
+      await self.reply({"type": "heartbeat_error", "error": str(exc)})
+      return
+    await self.reply({"type": "heartbeat_ack"})
+
+  @database_sync_to_async
+  def _invoke_pause_service(self, reason: str) -> None:
+    from interviews.services import PauseInterviewSessionService
+
+    PauseInterviewSessionService(user=self.user, session=self._session, reason=reason).perform()
+
+  @database_sync_to_async
+  def _invoke_resume_service(self) -> None:
+    from interviews.services import ResumeInterviewSessionService
+
+    ResumeInterviewSessionService(user=self.user, session=self._session).perform()
+
+  @database_sync_to_async
+  def _invoke_heartbeat_service(self) -> None:
+    from interviews.services import RecordInterviewHeartbeatService
+
+    RecordInterviewHeartbeatService(user=self.user, session=self._session).perform()
+
   async def _issue_conn_seq(self, session_uuid: str) -> int:
     cache_key = f"session_conn_seq:{session_uuid}"
     await cache.aadd(cache_key, 0, timeout=CONN_SEQ_TTL_SECONDS)

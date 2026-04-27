@@ -28,8 +28,10 @@ class GenerateAnalysisReportView(BaseAPIView):
     interview_session = get_interview_session_for_user(interview_session_uuid, self.current_user)
     require_session_owner_from_request(request, interview_session)
 
-    if (interview_session.interview_session_status == InterviewSessionStatus.IN_PROGRESS):
+    if interview_session.interview_session_status == InterviewSessionStatus.IN_PROGRESS:
       raise ValidationException(detail="진행 중인 세션은 리포트를 생성할 수 없습니다.")
+    if interview_session.interview_session_status == InterviewSessionStatus.PAUSED:
+      raise ValidationException(detail="일시정지된 세션입니다. 재개 후 다시 시도하세요.")
 
     self._validate_and_use_tickets(interview_session)
 

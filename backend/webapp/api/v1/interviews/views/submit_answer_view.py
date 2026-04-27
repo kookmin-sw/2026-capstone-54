@@ -5,10 +5,11 @@ from api.v1.interviews.serializers import (
   SubmitAnswerSerializer,
 )
 from api.v1.interviews.views._owner_validation import require_session_owner_from_request
+from common.exceptions import ValidationException
 from common.permissions import IsEmailVerified
 from common.views import BaseAPIView
 from drf_spectacular.utils import extend_schema
-from interviews.enums import InterviewSessionType
+from interviews.enums import InterviewSessionStatus, InterviewSessionType
 from interviews.models import InterviewTurn
 from interviews.services import (
   SubmitAnswerAndGenerateFollowupService,
@@ -29,6 +30,8 @@ class SubmitAnswerView(BaseAPIView):
   def post(self, request, interview_session_uuid, turn_pk):
     interview_session = get_interview_session_for_user(interview_session_uuid, self.current_user)
     require_session_owner_from_request(request, interview_session)
+    if interview_session.interview_session_status == InterviewSessionStatus.PAUSED:
+      raise ValidationException(detail="일시정지된 세션입니다. 재개 후 다시 시도하세요.")
     interview_turn = get_object_or_404(InterviewTurn, pk=turn_pk, interview_session=interview_session)
 
     serializer = SubmitAnswerSerializer(data=request.data)

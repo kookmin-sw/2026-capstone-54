@@ -41,6 +41,14 @@ CELERY_BEAT_SCHEDULE = {
     "kwargs": {},
     "options": {},
   },
+  # heartbeat timeout / 장기 PAUSED 자동 종료 (5분마다)
+  "interviews.tasks.monitor_paused_sessions_task.MonitorPausedSessionsTask": {
+    "task": "interviews.tasks.monitor_paused_sessions_task.MonitorPausedSessionsTask",
+    "schedule": crontab(minute="*/5"),
+    "args": (),
+    "kwargs": {},
+    "options": {},
+  },
 }
 
 __all__ = [
