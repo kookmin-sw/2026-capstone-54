@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import uuid
 
-from common.exceptions import NotFoundException
+from common.exceptions import ConflictException, NotFoundException
+from django.db import transaction
+from interviews.enums.session_status import InterviewSessionStatus
 from interviews.models import InterviewSession
 
 
@@ -18,18 +20,32 @@ def create_interview_session(
 ) -> InterviewSession:
   """면접 세션을 생성한다.
 
-    resume와 user_job_description은 이미 검증된 DB 객체여야 한다.
-    사용자가 제공한 UUID만으로 세션을 만들지 않는다; 뷰에서 소유권 검증 후 객체를 넘겨야 한다.
-    """
+  resume와 user_job_description은 이미 검증된 DB 객체여야 한다.
+  사용자가 제공한 UUID만으로 세션을 만들지 않는다; 뷰에서 소유권 검증 후 객체를 넘겨야 한다.
+  """
+  with transaction.atomic():
+    active_session_exists = InterviewSession.objects.select_for_update().filter(
+      user=user,
+      interview_session_status__in=[
+        InterviewSessionStatus.IN_PROGRESS,
+        InterviewSessionStatus.PAUSED,
+      ],
+    ).exists()
 
-  return InterviewSession.objects.create(
-    user=user,
-    resume=resume,
-    user_job_description=user_job_description,
-    interview_session_type=interview_session_type,
-    interview_difficulty_level=interview_difficulty_level,
-    interview_practice_mode=interview_practice_mode,
-  )
+    if active_session_exists:
+      raise ConflictException(
+        error_code="ACTIVE_INTERVIEW_SESSION_EXISTS",
+        detail="진행 중이거나 일시정지된 인터뷰 세션이 있습니다. 강제 종료 후 다시 시작하세요.",
+      )
+
+    return InterviewSession.objects.create(
+      user=user,
+      resume=resume,
+      user_job_description=user_job_description,
+      interview_session_type=interview_session_type,
+      interview_difficulty_level=interview_difficulty_level,
+      interview_practice_mode=interview_practice_mode,
+    )
 
 
 def get_interview_session_for_user(session_uuid: uuid.UUID, user) -> InterviewSession:

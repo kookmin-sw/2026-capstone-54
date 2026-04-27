@@ -4,6 +4,7 @@ from common.models import BaseModelWithUUID
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericRelation
 from django.db import models
+from django.utils import timezone
 from interviews.enums import (
   InterviewDifficultyLevel,
   InterviewPracticeMode,
@@ -78,6 +79,15 @@ class InterviewSession(BaseModelWithUUID):
   total_questions = models.PositiveIntegerField(default=0, verbose_name="총 질문 수")
   total_followup_questions = models.PositiveIntegerField(default=0, verbose_name="총 꼬리질문 수")
 
+  # 세션 상태/소유권
+  paused_at = models.DateTimeField(null=True, blank=True, verbose_name="일시정지 시각")
+  pause_reason = models.CharField(max_length=20, blank=True, default="", verbose_name="일시정지 사유")
+  pause_count = models.PositiveIntegerField(default=0, verbose_name="일시정지 횟수")
+  total_paused_duration_ms = models.BigIntegerField(default=0, verbose_name="누적 일시정지 시간(ms)")
+  last_heartbeat_at = models.DateTimeField(null=True, blank=True, verbose_name="최종 하트비트 수신 시각")
+  owner_token_hash = models.CharField(max_length=128, blank=True, default="", verbose_name="소유 토큰 해시")
+  owner_version = models.PositiveIntegerField(default=0, verbose_name="소유권 버전")
+
   # TokenUsage 역방향 Generic Relation (토큰 사용 상세 내역)
   token_usages = GenericRelation(
     "llm_trackers.TokenUsage",
@@ -91,3 +101,33 @@ class InterviewSession(BaseModelWithUUID):
   def mark_completed(self) -> None:
     self.interview_session_status = InterviewSessionStatus.COMPLETED
     self.save(update_fields=["interview_session_status", "updated_at"])
+
+  def mark_paused(self, reason: str) -> None:
+    """면접 세션을 일시정지 상태로 변경한다."""
+    self.interview_session_status = InterviewSessionStatus.PAUSED
+    self.paused_at = timezone.now()
+    self.pause_count += 1
+    self.pause_reason = reason
+    self.save(update_fields=["interview_session_status", "paused_at", "pause_count", "pause_reason", "updated_at"])
+
+  def mark_resumed(self) -> None:
+    """면접 세션을 다시 진행 상태로 변경한다."""
+    if self.paused_at is None:
+      raise ValueError("일시정지 상태가 아닙니다")
+
+    now = timezone.now()
+    duration_ms = int((now - self.paused_at).total_seconds() * 1000)
+    self.total_paused_duration_ms += duration_ms
+
+    self.interview_session_status = InterviewSessionStatus.IN_PROGRESS
+    self.paused_at = None
+    self.pause_reason = ""
+    self.save(
+      update_fields=["interview_session_status", "paused_at", "pause_reason", "total_paused_duration_ms", "updated_at"]
+    )
+
+  def mark_owner_changed(self, token_hash: str) -> None:
+    """면접 세션의 소유권을 변경한다."""
+    self.owner_token_hash = token_hash
+    self.owner_version += 1
+    self.save(update_fields=["owner_token_hash", "owner_version", "updated_at"])

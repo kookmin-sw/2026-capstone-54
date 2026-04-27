@@ -1,6 +1,6 @@
 import uuid
 
-from common.exceptions import NotFoundException
+from common.exceptions import ConflictException, NotFoundException
 from django.test import TestCase
 from interviews.enums import InterviewDifficultyLevel, InterviewSessionStatus, InterviewSessionType
 from interviews.factories import InterviewSessionFactory
@@ -119,3 +119,78 @@ class GetInterviewSessionForUserServiceTests(TestCase):
     _ = result.resume
     _ = result.user_job_description
     self.assertIsNotNone(result)
+
+
+class CreateInterviewSessionActiveSessionGuardTests(TestCase):
+  """create_interview_session 활성 세션 가드 테스트"""
+
+  def setUp(self):
+    self.user = UserFactory()
+    self.resume = ResumeFactory(user=self.user)
+    self.user_job_description = UserJobDescriptionFactory(user=self.user)
+
+  def test_raises_conflict_if_in_progress_session_exists(self):
+    """IN_PROGRESS 상태인 세션이 존재하면 ConflictException이 발생한다."""
+    InterviewSessionFactory(user=self.user, interview_session_status=InterviewSessionStatus.IN_PROGRESS)
+
+    with self.assertRaises(ConflictException) as ctx:
+      create_interview_session(
+        user=self.user,
+        resume=self.resume,
+        user_job_description=self.user_job_description,
+        interview_session_type=InterviewSessionType.FOLLOWUP,
+        interview_difficulty_level=InterviewDifficultyLevel.NORMAL,
+      )
+    self.assertEqual(ctx.exception.error_code, "ACTIVE_INTERVIEW_SESSION_EXISTS")
+
+  def test_raises_conflict_if_paused_session_exists(self):
+    """PAUSED 상태인 세션이 존재하면 ConflictException이 발생한다."""
+    InterviewSessionFactory(user=self.user, interview_session_status=InterviewSessionStatus.PAUSED)
+
+    with self.assertRaises(ConflictException) as ctx:
+      create_interview_session(
+        user=self.user,
+        resume=self.resume,
+        user_job_description=self.user_job_description,
+        interview_session_type=InterviewSessionType.FOLLOWUP,
+        interview_difficulty_level=InterviewDifficultyLevel.NORMAL,
+      )
+    self.assertEqual(ctx.exception.error_code, "ACTIVE_INTERVIEW_SESSION_EXISTS")
+
+  def test_creates_session_when_only_completed_exists(self):
+    """COMPLETED 상태인 세션만 존재할 때는 세션이 정상적으로 생성된다."""
+    InterviewSessionFactory(user=self.user, interview_session_status=InterviewSessionStatus.COMPLETED)
+
+    session = create_interview_session(
+      user=self.user,
+      resume=self.resume,
+      user_job_description=self.user_job_description,
+      interview_session_type=InterviewSessionType.FOLLOWUP,
+      interview_difficulty_level=InterviewDifficultyLevel.NORMAL,
+    )
+    self.assertIsNotNone(session.pk)
+
+  def test_creates_session_when_no_active_for_user(self):
+    """유저에게 활성화된 세션이 없으면 세션이 정상적으로 생성된다."""
+    session = create_interview_session(
+      user=self.user,
+      resume=self.resume,
+      user_job_description=self.user_job_description,
+      interview_session_type=InterviewSessionType.FOLLOWUP,
+      interview_difficulty_level=InterviewDifficultyLevel.NORMAL,
+    )
+    self.assertIsNotNone(session.pk)
+
+  def test_other_user_active_session_does_not_block(self):
+    """다른 유저의 활성화된 세션은 생성을 막지 않는다."""
+    other_user = UserFactory()
+    InterviewSessionFactory(user=other_user, interview_session_status=InterviewSessionStatus.IN_PROGRESS)
+
+    session = create_interview_session(
+      user=self.user,
+      resume=self.resume,
+      user_job_description=self.user_job_description,
+      interview_session_type=InterviewSessionType.FOLLOWUP,
+      interview_difficulty_level=InterviewDifficultyLevel.NORMAL,
+    )
+    self.assertIsNotNone(session.pk)
