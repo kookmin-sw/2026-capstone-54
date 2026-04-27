@@ -1,4 +1,4 @@
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from django.test import TestCase
 from interviews.enums import InterviewSessionStatus, RecordingStatus
@@ -28,32 +28,25 @@ class PlaybackUrlViewTests(TestCase):
 
   @patch("api.v1.interviews.views.playback_url_view.GeneratePlaybackUrlService")
   def test_playback_url_returns_presigned_url(self, mock_service_class):
+    mock_service = MagicMock()
+    mock_service.execute.return_value = "https://playback.example.com"
+    mock_service_class.return_value = mock_service
+
+    SubscriptionFactory(user=self.user, pro=True)
+
     recording = InterviewRecordingFactory(
-      interview_session=self.session,
-      user=self.user,
-      status=RecordingStatus.COMPLETED,
+      interview_session=self.session, interview_turn=self.turn, user=self.user, status=RecordingStatus.COMPLETED
     )
-    SubscriptionFactory.create(user=self.user, pro=True)
 
-    mock_service_class.return_value.perform.return_value = {
-      "url": "http://example.com/video",
-      "scaledUrl": None,
-      "audioUrl": None,
-      "mediaType": "video",
-      "expiresIn": 3600,
-    }
+    response = self.client.get(f"{BASE}/recordings/{recording.uuid}/playback-url/")
 
-    url = f"{BASE}/recordings/{recording.pk}/playback-url/"
-    response = self.client.get(url)
     self.assertEqual(response.status_code, status.HTTP_200_OK)
+    self.assertEqual(response.data["url"], "https://playback.example.com")
 
   def test_playback_url_free_plan_returns_403(self):
     recording = InterviewRecordingFactory(
-      interview_session=self.session,
-      user=self.user,
-      status=RecordingStatus.COMPLETED,
+      interview_session=self.session, interview_turn=self.turn, user=self.user, status=RecordingStatus.COMPLETED
     )
 
-    url = f"{BASE}/recordings/{recording.pk}/playback-url/"
-    response = self.client.get(url)
+    response = self.client.get(f"{BASE}/recordings/{recording.uuid}/playback-url/")
     self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

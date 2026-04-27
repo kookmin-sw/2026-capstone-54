@@ -1,4 +1,4 @@
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from django.test import TestCase
 from interviews.enums import InterviewSessionStatus, RecordingStatus
@@ -27,12 +27,12 @@ class AbortRecordingViewTests(TestCase):
 
   @patch("api.v1.interviews.views.abort_recording_view.AbortRecordingService")
   def test_abort_recording_endpoint_returns_204(self, mock_service_class):
+    mock_service = MagicMock()
+    mock_service_class.return_value = mock_service
+
     recording = InterviewRecordingFactory(
-      interview_session=self.session,
-      user=self.user,
-      status=RecordingStatus.INITIATED,
+      interview_session=self.session, interview_turn=self.turn, user=self.user, status=RecordingStatus.INITIATED
     )
 
-    url = f"{BASE}/recordings/{recording.pk}/abort/"
-    response = self.client.post(url)
+    response = self.client.post(f"{BASE}/recordings/{recording.uuid}/abort/")
     self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
