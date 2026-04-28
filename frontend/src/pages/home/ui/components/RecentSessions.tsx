@@ -35,7 +35,7 @@ export function RecentSessions({ revealed }: RecentSessionsProps) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    interviewApi.getMyInterviews(1, "completed").then((data) => {
+    interviewApi.getMyInterviews(1).then((data) => {
       setSessions(data.results.filter((s) => s.interviewSessionStatus === "completed").slice(0, 3));
     }).catch(() => {}).finally(() => setLoading(false));
   }, []);
