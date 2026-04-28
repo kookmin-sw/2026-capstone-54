@@ -10,6 +10,7 @@ from interviews.enums import (
   InterviewPracticeMode,
   InterviewSessionStatus,
   InterviewSessionType,
+  InterviewSttMode,
 )
 
 
@@ -94,6 +95,13 @@ class InterviewSession(BaseModelWithUUID):
   last_heartbeat_at = models.DateTimeField(null=True, blank=True, verbose_name="최종 하트비트 수신 시각")
   owner_token_hash = models.CharField(max_length=128, blank=True, default="", verbose_name="소유 토큰 해시")
   owner_version = models.PositiveIntegerField(default=0, verbose_name="소유권 버전")
+
+  stt_mode = models.CharField(
+    max_length=20,
+    choices=InterviewSttMode.choices,
+    default=InterviewSttMode.BROWSER,
+    verbose_name="STT 모드",
+  )
 
   # TokenUsage 역방향 Generic Relation (토큰 사용 상세 내역)
   token_usages = GenericRelation(

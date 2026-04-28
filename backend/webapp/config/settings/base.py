@@ -35,4 +35,8 @@ OPENAI_API_KEY = env.str("OPENAI_API_KEY", default="")
 OPENAI_MODEL = env.str("OPENAI_MODEL", default="gpt-4o-mini")
 OPENAI_EMBEDDING_MODEL = env.str("OPENAI_EMBEDDING_MODEL", default="text-embedding-3-small")
 
+VOICE_API_URL = env.str("VOICE_API_URL", default="http://voice-api:8000")
+VOICE_API_AUTH_TOKEN = env.str("VOICE_API_AUTH_TOKEN", default="")
+VOICE_API_TIMEOUT_SECONDS = env.int("VOICE_API_TIMEOUT_SECONDS", default=120)
+
 ROOT_URLCONF = "config.urls"

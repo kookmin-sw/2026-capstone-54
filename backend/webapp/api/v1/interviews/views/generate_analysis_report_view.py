@@ -6,13 +6,13 @@
 
 from api.v1.interviews.serializers import InterviewAnalysisReportSerializer
 from api.v1.interviews.views._owner_validation import require_session_owner_from_request
-from common.exceptions import ValidationException
+from common.exceptions import ConflictException, ValidationException
 from common.permissions import IsEmailVerified
 from common.views import BaseAPIView
 from config.settings.base import TICKET_COST_ANALYSIS_REPORT
 from drf_spectacular.utils import extend_schema
-from interviews.enums import InterviewSessionStatus
-from interviews.models import InterviewAnalysisReport
+from interviews.enums import InterviewSessionStatus, TranscriptStatus
+from interviews.models import InterviewAnalysisReport, InterviewTurn
 from interviews.services import get_interview_session_for_user
 from rest_framework import status
 from rest_framework.response import Response
@@ -32,6 +32,16 @@ class GenerateAnalysisReportView(BaseAPIView):
       raise ValidationException(detail="진행 중인 세션은 리포트를 생성할 수 없습니다.")
     if interview_session.interview_session_status == InterviewSessionStatus.PAUSED:
       raise ValidationException(detail="일시정지된 세션입니다. 재개 후 다시 시도하세요.")
+
+    pending_count = InterviewTurn.objects.filter(
+      interview_session=interview_session,
+      transcript_status__in=[TranscriptStatus.PENDING, TranscriptStatus.PROCESSING],
+    ).count()
+    if pending_count > 0:
+      raise ConflictException(
+        error_code="TRANSCRIPT_PENDING",
+        detail=f"백엔드 STT 가 {pending_count} 건 진행 중입니다. 잠시 후 다시 시도하세요.",
+      )
 
     self._validate_and_use_tickets(interview_session)
 
