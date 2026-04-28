@@ -25,13 +25,6 @@ class InterviewSession(BaseModelWithUUID):
     db_table = "interview_sessions"
     verbose_name = "면접 세션"
     verbose_name_plural = "면접 세션 목록"
-    constraints = [
-      models.UniqueConstraint(
-        fields=["user"],
-        condition=models.Q(interview_session_status__in=["in_progress", "paused"]),
-        name="uq_active_interview_session_per_user",
-      ),
-    ]
 
   user = models.ForeignKey(
     settings.AUTH_USER_MODEL,
