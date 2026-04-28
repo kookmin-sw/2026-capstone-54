@@ -18,7 +18,7 @@ const CELL_COLORS = [
 ];
 
 interface StreakCalendarProps {
-  calendarDoneMap: Record<string, number[]>;
+  calendarDoneMap: Record<string, Record<number, number>>;
   revealed: boolean;
   todayYear: number;
   todayMonth: number;
@@ -27,7 +27,7 @@ interface StreakCalendarProps {
 
 interface DayCell {
   date: Date | null;
-  done: boolean;
+  count: number;
   today: boolean;
   label?: string;
 }
@@ -42,12 +42,6 @@ function buildYearGrid(
   const startDate = new Date(today);
   startDate.setDate(today.getDate() - (MAX_WEEKS - 1) * 7 - today.getDay());
 
-  const doneSet = new Set<string>();
-  for (const [key, days] of Object.entries(calendarDoneMap)) {
-    const [y, m] = key.split("-").map(Number);
-    for (const d of days) doneSet.add(`${y}-${m}-${d}`);
-  }
-
   const weeks: DayCell[][] = [];
   const monthPositions: { label: string; col: number }[] = [];
   let lastMonth = -1;
@@ -59,20 +53,23 @@ function buildYearGrid(
       cur.setDate(startDate.getDate() + w * NUM_DAYS + d);
 
       if (cur > today) {
-        week.push({ date: null, done: false, today: false });
+        week.push({ date: null, count: 0, today: false });
         continue;
       }
 
       const y   = cur.getFullYear();
       const mo  = cur.getMonth() + 1;
       const day = cur.getDate();
-      const key = `${y}-${mo}-${day}`;
+      const monthKey = `${y}-${mo}`;
+      const count = calendarDoneMap[monthKey]?.[day] ?? 0;
 
       week.push({
         date: cur,
-        done: doneSet.has(key),
+        count,
         today: y === todayYear && mo === todayMonth && day === todayDay,
-        label: `${y}년 ${mo}월 ${day}일${doneSet.has(key) ? " — 면접 참여 ✓" : ""}`,
+        label: count > 0
+          ? `${y}년 ${mo}월 ${day}일 — 면접 ${count}회 ✓`
+          : `${y}년 ${mo}월 ${day}일`,
       });
 
       if (d === 0 && mo !== lastMonth) {
@@ -133,7 +130,7 @@ export function StreakCalendar({
 
   const totalDone = useMemo(() => {
     let n = 0;
-    for (const days of Object.values(calendarDoneMap)) n += days.length;
+    for (const dayMap of Object.values(calendarDoneMap)) n += Object.keys(dayMap).length;
     return n;
   }, [calendarDoneMap]);
 
@@ -189,8 +186,9 @@ export function StreakCalendar({
             {weeks.map((week, col) => {
               const cell = week[row];
               const isEmpty = !cell?.date;
-              const isDone  = cell?.done  ?? false;
+              const count   = cell?.count  ?? 0;
               const isToday = cell?.today ?? false;
+              const colorIdx = count === 0 ? 0 : Math.min(count, CELL_COLORS.length - 1);
               return (
                 <div
                   key={col}
@@ -201,11 +199,11 @@ export function StreakCalendar({
                     flexShrink: 0,
                     borderRadius: Math.max(2, Math.floor(cellSize / 4)),
                     marginRight: col < visibleWeeks - 1 ? CELL_GAP : 0,
-                    background: isEmpty ? "transparent" : isDone ? CELL_COLORS[3] : CELL_COLORS[0],
+                    background: isEmpty ? "transparent" : CELL_COLORS[colorIdx],
                     outline: "none",
                     outlineOffset: 0,
                     boxShadow: isToday
-                      ? isDone
+                      ? count > 0
                         ? "0 0 0 2px #0991B2, 0 0 6px rgba(9,145,178,0.5)"
                         : "0 0 0 2px #0991B2"
                       : undefined,
@@ -235,6 +233,8 @@ export function StreakCalendar({
         ))}
         <span className="text-[10px] text-[#9CA3AF] ml-0.5">More</span>
       </div>
+
+
     </div>
   );
 }
