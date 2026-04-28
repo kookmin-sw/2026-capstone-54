@@ -6,7 +6,7 @@ import { fetchDashboardStatisticsApi, type DashboardStatistics } from "./dashboa
 export interface HomeUser {
   name: string;
   greeting: string;
-  lastInterviewDaysAgo: number;
+  lastInterviewDaysAgo: number | null;
 }
 
 export interface HomeStat {
@@ -82,8 +82,8 @@ function formatPracticeTime(seconds: number): { value: number; unit: string } {
   return { value: Math.round((seconds / 3600) * 10) / 10, unit: "h" };
 }
 
-function calcDaysAgo(dateStr: string | null): number {
-  if (!dateStr) return 0;
+function calcDaysAgo(dateStr: string | null): number | null {
+  if (!dateStr) return null;
   const diff = Date.now() - new Date(dateStr).getTime();
   return Math.max(0, Math.floor(diff / (1000 * 60 * 60 * 24)));
 }
