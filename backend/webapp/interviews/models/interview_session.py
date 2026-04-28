@@ -112,6 +112,9 @@ class InterviewSession(BaseModelWithUUID):
 
   def mark_paused(self, reason: str) -> None:
     """면접 세션을 일시정지 상태로 변경한다."""
+    if self.interview_session_status != InterviewSessionStatus.IN_PROGRESS:
+      raise ValueError("진행 중인 세션만 일시정지할 수 있습니다.")
+
     self.interview_session_status = InterviewSessionStatus.PAUSED
     self.paused_at = timezone.now()
     self.pause_count += 1
@@ -120,8 +123,8 @@ class InterviewSession(BaseModelWithUUID):
 
   def mark_resumed(self) -> None:
     """면접 세션을 다시 진행 상태로 변경한다."""
-    if self.paused_at is None:
-      raise ValueError("일시정지 상태가 아닙니다")
+    if self.interview_session_status != InterviewSessionStatus.PAUSED or self.paused_at is None:
+      raise ValueError("일시정지 상태가 아닙니다.")
 
     now = timezone.now()
     duration_ms = int((now - self.paused_at).total_seconds() * 1000)
