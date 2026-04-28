@@ -33,7 +33,7 @@ interface DayCell {
 }
 
 function buildYearGrid(
-  calendarDoneMap: Record<string, number[]>,
+  calendarDoneMap: Record<string, Record<number, number>>,
   todayYear: number,
   todayMonth: number,
   todayDay: number
