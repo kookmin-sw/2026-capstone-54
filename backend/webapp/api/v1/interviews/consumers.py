@@ -163,18 +163,21 @@ class InterviewSessionConsumer(UserWebSocketConsumer):
   def _invoke_pause_service(self, reason: str) -> None:
     from interviews.services import PauseInterviewSessionService
 
+    self._session.refresh_from_db()
     PauseInterviewSessionService(user=self.user, session=self._session, reason=reason).perform()
 
   @database_sync_to_async
   def _invoke_resume_service(self) -> None:
     from interviews.services import ResumeInterviewSessionService
 
+    self._session.refresh_from_db()
     ResumeInterviewSessionService(user=self.user, session=self._session).perform()
 
   @database_sync_to_async
   def _invoke_heartbeat_service(self) -> None:
     from interviews.services import RecordInterviewHeartbeatService
 
+    self._session.refresh_from_db()
     RecordInterviewHeartbeatService(user=self.user, session=self._session).perform()
 
   async def _issue_conn_seq(self, session_uuid: str) -> int:
