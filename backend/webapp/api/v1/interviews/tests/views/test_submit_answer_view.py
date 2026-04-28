@@ -71,6 +71,14 @@ class SubmitAnswerViewFollowupTests(OwnershipHeadersMixin, TestCase):
       answer="테스트 답변",
     )
 
+  def test_paused_session_returns_400(self):
+    """PAUSED 세션에 답변 제출 시 400 (ValidationException)."""
+    self.session.mark_paused(reason="user_left_window")
+
+    response = self.client.post(self.url, data={"answer": "내 답변"}, format="json")
+
+    self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
 
 class SubmitAnswerViewFullProcessTests(OwnershipHeadersMixin, TestCase):
   """SubmitAnswerView — FULL_PROCESS 세션 테스트"""

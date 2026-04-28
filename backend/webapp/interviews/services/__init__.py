@@ -10,11 +10,14 @@ from .interview_session_service import (
   create_interview_session,
   get_interview_session_for_user,
 )
+from .pause_interview_session_service import PauseInterviewSessionService
+from .record_interview_heartbeat_service import RecordInterviewHeartbeatService
 from .regenerate_analysis_report_service import (
   dispatch_report_task,
   get_resume_bundle_url,
   regenerate_analysis_report,
 )
+from .resume_interview_session_service import ResumeInterviewSessionService
 from .save_behavior_analysis_service import SaveBehaviorAnalysisService
 from .submit_answer_and_generate_followup_service import (
   SubmitAnswerAndGenerateFollowupService,
@@ -31,6 +34,9 @@ __all__ = [
   "GeneratePlaybackUrlService",
   "get_video_s3_client",
   "InitiateRecordingService",
+  "PauseInterviewSessionService",
+  "RecordInterviewHeartbeatService",
+  "ResumeInterviewSessionService",
   "SaveBehaviorAnalysisService",
   "SubmitAnswerAndGenerateFollowupService",
   "SubmitAnswerForFullProcessService",

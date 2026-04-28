@@ -179,3 +179,74 @@ class InterviewSessionConsumerTests(TestCase):
       await consumer.handle_connect()
 
     consumer.close.assert_called_once_with(code=4409)
+
+  async def test_handle_message_pause_invokes_pause_service_and_acks(self):
+    """pause 메시지는 PauseInterviewSessionService 호출 후 pause_ack 를 reply 한다."""
+    consumer = self._build_consumer()
+    consumer._session = self.session
+    consumer.reply = AsyncMock()
+    consumer._invoke_pause_service = AsyncMock()
+
+    await consumer.handle_message({"type": "pause", "reason": "user_left_window"})
+
+    consumer._invoke_pause_service.assert_awaited_once_with("user_left_window")
+    consumer.reply.assert_awaited_with({"type": "pause_ack", "reason": "user_left_window"})
+
+  async def test_handle_message_resume_invokes_resume_service_and_acks(self):
+    """resume 메시지는 ResumeInterviewSessionService 호출 후 resume_ack 를 reply 한다."""
+    consumer = self._build_consumer()
+    consumer._session = self.session
+    consumer.reply = AsyncMock()
+    consumer._invoke_resume_service = AsyncMock()
+
+    await consumer.handle_message({"type": "resume"})
+
+    consumer._invoke_resume_service.assert_awaited_once()
+    consumer.reply.assert_awaited_with({"type": "resume_ack"})
+
+  async def test_handle_message_heartbeat_invokes_heartbeat_service_and_acks(self):
+    """heartbeat 메시지는 RecordInterviewHeartbeatService 호출 후 heartbeat_ack 를 reply 한다."""
+    consumer = self._build_consumer()
+    consumer._session = self.session
+    consumer.reply = AsyncMock()
+    consumer._invoke_heartbeat_service = AsyncMock()
+
+    await consumer.handle_message({"type": "heartbeat"})
+
+    consumer._invoke_heartbeat_service.assert_awaited_once()
+    consumer.reply.assert_awaited_with({"type": "heartbeat_ack"})
+
+  async def test_handle_message_unknown_type_replies_error(self):
+    """알 수 없는 메시지 타입은 error reply 후 종료한다."""
+    consumer = self._build_consumer()
+    consumer._session = self.session
+    consumer.reply = AsyncMock()
+
+    await consumer.handle_message({"type": "frobnicate"})
+
+    consumer.reply.assert_awaited_once()
+    payload = consumer.reply.call_args[0][0]
+    self.assertEqual(payload["type"], "error")
+
+  async def test_handle_message_replies_error_when_session_not_initialized(self):
+    """_session 이 None 이면 session_not_initialized error 를 reply 한다."""
+    consumer = self._build_consumer()
+    consumer._session = None
+    consumer.reply = AsyncMock()
+
+    await consumer.handle_message({"type": "pause", "reason": "any"})
+
+    consumer.reply.assert_awaited_once_with({"type": "error", "error": "session_not_initialized"})
+
+  async def test_handle_message_pause_service_failure_replies_error(self):
+    """pause service 가 예외를 던지면 pause_error 를 reply 한다."""
+    consumer = self._build_consumer()
+    consumer._session = self.session
+    consumer.reply = AsyncMock()
+    consumer._invoke_pause_service = AsyncMock(side_effect=RuntimeError("pause failed"))
+
+    await consumer.handle_message({"type": "pause", "reason": "any"})
+
+    consumer.reply.assert_awaited_once()
+    payload = consumer.reply.call_args[0][0]
+    self.assertEqual(payload["type"], "pause_error")
