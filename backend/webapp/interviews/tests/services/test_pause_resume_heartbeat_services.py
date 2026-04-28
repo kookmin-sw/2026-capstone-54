@@ -51,7 +51,7 @@ class PauseInterviewSessionServiceTests(TestCase):
     with self.assertRaises(ConflictException) as ctx:
       PauseInterviewSessionService(user=self.user, session=self.session, reason="any").perform()
 
-    self.assertEqual(ctx.exception.error_code, "INTERVIEW_SESSION_NOT_RESUMABLE")
+    self.assertEqual(ctx.exception.error_code, "INTERVIEW_SESSION_NOT_IN_PROGRESS")
 
   def test_raises_owner_required_for_other_user(self):
     """다른 사용자가 호출하면 SESSION_OWNER_REQUIRED 로 거부한다."""

@@ -5,6 +5,7 @@ from datetime import timedelta
 from celery.schedules import crontab
 from common.tasks.base_scheduled_task import BaseScheduledTask
 from config.celery import app
+from django.db.models import Q
 from django.utils import timezone
 from interviews.enums import InterviewSessionStatus
 from interviews.models import InterviewSession
@@ -32,9 +33,8 @@ class MonitorPausedSessionsTask(BaseScheduledTask):
     cutoff = now - HEARTBEAT_TIMEOUT
     candidates = InterviewSession.objects.filter(
       interview_session_status=InterviewSessionStatus.IN_PROGRESS,
-      last_heartbeat_at__isnull=False,
-      last_heartbeat_at__lt=cutoff,
-    )
+    ).filter(Q(last_heartbeat_at__lt=cutoff)
+             | Q(last_heartbeat_at__isnull=True, created_at__lt=cutoff))
     paused_count = 0
     for session in candidates.iterator():
       session.mark_paused(reason="heartbeat_timeout")

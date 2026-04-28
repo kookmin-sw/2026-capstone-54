@@ -25,7 +25,7 @@ class PauseInterviewSessionService(BaseService):
       return session
     if session.interview_session_status != InterviewSessionStatus.IN_PROGRESS:
       raise ConflictException(
-        error_code="INTERVIEW_SESSION_NOT_RESUMABLE",
+        error_code="INTERVIEW_SESSION_NOT_IN_PROGRESS",
         detail="진행 중인 세션만 일시정지할 수 있습니다.",
       )
     session.mark_paused(reason=self.kwargs["reason"])

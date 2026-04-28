@@ -36,7 +36,10 @@ class StartInterviewView(BaseAPIView):
     interview_session = get_interview_session_for_user(interview_session_uuid, self.current_user)
 
     if interview_session.total_questions > 0:
-      raise ValidationException(detail="이미 시작된 면접입니다. 이어서 진행하세요.")
+      raise ValidationException(
+        detail="이미 시작된 면접입니다. 이어서 진행하세요.",
+        error_code="INTERVIEW_ALREADY_STARTED",
+      )
 
     ticket_cost = self._get_ticket_cost(interview_session)
     self._validate_and_use_tickets(interview_session, ticket_cost)
@@ -65,7 +68,7 @@ class StartInterviewView(BaseAPIView):
       return TICKET_COST_FOLLOWUP
     elif (interview_session.interview_session_type == InterviewSessionType.FULL_PROCESS):
       return TICKET_COST_FULL_PROCESS
-    raise ValidationException("알 수 없는 면접 타입입니다.")
+    raise ValidationException(detail="알 수 없는 면접 타입입니다.", error_code="UNKNOWN_INTERVIEW_TYPE")
 
   def _validate_and_use_tickets(self, interview_session, ticket_cost):
     subscription = GetCurrentSubscriptionService(user=self.current_user).perform()
@@ -81,7 +84,7 @@ class StartInterviewView(BaseAPIView):
     try:
       UseTicketsService(user=self.current_user, amount=ticket_cost, reason=reason).perform()
     except ValueError as e:
-      raise ValidationException(str(e))
+      raise ValidationException(detail=str(e), error_code="INSUFFICIENT_TICKETS") from e
 
   def _validate_full_process_plan(self, plan_type: str):
     if not PlanFeaturePolicyService.can_use_feature(
