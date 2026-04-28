@@ -1,6 +1,8 @@
 import uuid
+from unittest.mock import patch
 
 from common.exceptions import ConflictException, NotFoundException
+from django.db import IntegrityError
 from django.test import TestCase
 from interviews.enums import InterviewDifficultyLevel, InterviewSessionStatus, InterviewSessionType
 from interviews.factories import InterviewSessionFactory
@@ -194,3 +196,46 @@ class CreateInterviewSessionActiveSessionGuardTests(TestCase):
       interview_difficulty_level=InterviewDifficultyLevel.NORMAL,
     )
     self.assertIsNotNone(session.pk)
+
+
+class CreateInterviewSessionIntegrityErrorTests(TestCase):
+  """create_interview_session 의 IntegrityError → ConflictException 변환 테스트."""
+
+  def setUp(self):
+    self.user = UserFactory()
+    self.resume = ResumeFactory(user=self.user)
+    self.user_job_description = UserJobDescriptionFactory(user=self.user)
+
+  def test_converts_active_session_unique_violation_to_conflict_exception(self):
+    """active session unique index 위반은 ACTIVE_INTERVIEW_SESSION_EXISTS 로 변환된다."""
+    with patch(
+      "interviews.services.interview_session_service.InterviewSession.objects.create",
+      side_effect=IntegrityError(
+        'duplicate key value violates unique constraint "uq_active_interview_session_per_user"'
+      ),
+    ):
+      with self.assertRaises(ConflictException) as ctx:
+        create_interview_session(
+          user=self.user,
+          resume=self.resume,
+          user_job_description=self.user_job_description,
+          interview_session_type=InterviewSessionType.FOLLOWUP,
+          interview_difficulty_level=InterviewDifficultyLevel.NORMAL,
+        )
+
+    self.assertEqual(ctx.exception.error_code, "ACTIVE_INTERVIEW_SESSION_EXISTS")
+
+  def test_reraises_unrelated_integrity_errors(self):
+    """알 수 없는 constraint 의 IntegrityError 는 변환 없이 그대로 raise 한다."""
+    with patch(
+      "interviews.services.interview_session_service.InterviewSession.objects.create",
+      side_effect=IntegrityError("some other constraint violation"),
+    ):
+      with self.assertRaises(IntegrityError):
+        create_interview_session(
+          user=self.user,
+          resume=self.resume,
+          user_job_description=self.user_job_description,
+          interview_session_type=InterviewSessionType.FOLLOWUP,
+          interview_difficulty_level=InterviewDifficultyLevel.NORMAL,
+        )
