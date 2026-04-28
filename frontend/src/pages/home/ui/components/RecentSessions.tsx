@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { BarChart2, ClipboardList } from "lucide-react";
 import { interviewApi } from "@/features/interview-session";
 import type { InterviewSessionListItem } from "@/features/interview-session";
 
@@ -58,6 +59,11 @@ export function RecentSessions({ revealed }: RecentSessionsProps) {
               className={`hp-session-item hp-rv${revealed ? " hp-rv-in" : ""}`}
               style={{ transitionDelay: `${330 + i * 55}ms` }}
             >
+              <div className="w-9 h-9 rounded-lg bg-white border border-[#E5E7EB] flex items-center justify-center shrink-0">
+                {session.reportStatus === "completed"
+                  ? <BarChart2 size={16} className="text-[#0991B2]" />
+                  : <ClipboardList size={16} className="text-[#9CA3AF]" />}
+              </div>
               <div className="hp-si-body">
                 <div className="hp-si-company">
                   {session.jobDescriptionLabel}
