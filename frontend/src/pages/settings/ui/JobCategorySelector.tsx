@@ -116,7 +116,7 @@ export function JobCategorySelector({
         <div className="flex flex-col gap-[5px]">
           <label className="font-plex-sans-kr text-[12px] font-bold text-[#0A0A0A] tracking-[0.1px]">
             직업 선택{" "}
-            <span className="text-[11px] font-normal text-[#6B7280]">(복수 선택 가능)</span>
+            <span className="text-[11px] font-normal text-[#6B7280]">(최대 3개 선택)</span>
           </label>
 
           {jobsLoading ? (
