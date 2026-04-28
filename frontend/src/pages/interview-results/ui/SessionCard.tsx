@@ -73,7 +73,7 @@ export function SessionCard({ session: s, isGenerating, onContinue, onViewReport
 
         <div className="shrink-0 flex items-center gap-2">
           {isInProgress ? (
-            <button onClick={() => onContinue(s.uuid)} className="flex items-center gap-1 text-[12px] font-bold text-white bg-[#0991B2] rounded-lg px-3 py-1.5 hover:opacity-85 transition-opacity">
+            <button onClick={() => onContinue(s.uuid)} className="flex items-center gap-1 text-[12px] font-bold text-white bg-[#0A0A0A] rounded-lg px-3 py-1.5 hover:opacity-85 transition-opacity">
               <Play size={12} /> 이어서 진행
             </button>
           ) : hasReport ? (
