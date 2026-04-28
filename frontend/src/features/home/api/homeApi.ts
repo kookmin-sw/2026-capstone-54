@@ -122,7 +122,7 @@ export async function fetchHomeDataApi(): Promise<{ success: boolean; data?: Hom
   let userName = MOCK_DATA.user.name;
   let stats: HomeStat[] = PLACEHOLDER_STATS;
   let currentStreak = 0;
-  let lastInterviewDaysAgo = 0;
+  let lastInterviewDaysAgo: number | null = null;
   const errorMessages: string[] = [];
 
   try {
