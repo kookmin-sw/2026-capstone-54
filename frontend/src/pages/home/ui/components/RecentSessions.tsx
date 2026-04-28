@@ -32,14 +32,12 @@ interface RecentSessionsProps {
 
 export function RecentSessions({ revealed }: RecentSessionsProps) {
   const [sessions, setSessions] = useState<InterviewSessionListItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    interviewApi.getMyInterviews(1).then((data) => {
-      const completed = data.results
-        .filter((s) => s.interviewSessionStatus === "completed")
-        .slice(0, 3);
-      setSessions(completed);
-    }).catch(() => {});
+    interviewApi.getMyInterviews(1, "completed").then((data) => {
+      setSessions(data.results.filter((s) => s.interviewSessionStatus === "completed").slice(0, 3));
+    }).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
   return (
@@ -49,7 +47,13 @@ export function RecentSessions({ revealed }: RecentSessionsProps) {
         <Link to="/interview/results" className="hp-sec-link">전체 보기 →</Link>
       </div>
       <div className="hp-session-list">
-        {sessions.length === 0 ? (
+        {loading ? (
+          <div className="flex flex-col gap-2">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="h-[52px] rounded-lg bg-[#F3F4F6] animate-pulse" />
+            ))}
+          </div>
+        ) : sessions.length === 0 ? (
           <p className="text-[13px] text-[#9CA3AF] py-2">아직 완료된 면접이 없어요</p>
         ) : (
           sessions.map((session, i) => (
