@@ -149,7 +149,7 @@ export function StreakCalendar({
         <span className="w-7 h-7 rounded-lg bg-[#E6F7FA] flex items-center justify-center">
           <Calendar size={14} className="text-[#0991B2]" />
         </span>
-        <Link to="/streak" className="text-[14px] font-bold text-[#0A0A0A] no-underline hover:text-[#0991B2] transition-colors">참여 기록</Link>
+        <Link to="/streak" className="text-[14px] font-bold text-[#0A0A0A] no-underline hover:text-[#0991B2] transition-colors">스트릭</Link>
         <span className="text-[11px] text-[#9CA3AF] font-medium ml-auto">
           {visibleWeeks < MAX_WEEKS ? `최근 ${visibleWeeks}주` : "최근 52주"} ·{" "}
           <strong className="text-[#0991B2]">{totalDone}일</strong> 참여
