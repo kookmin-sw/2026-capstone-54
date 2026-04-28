@@ -53,7 +53,7 @@ export function HomeContent() {
 
           <StatsGrid stats={data.stats} revealed={revealed} />
 
-          <RecentSessions sessions={data.recentSessions} revealed={revealed} />
+          <RecentSessions revealed={revealed} />
 
           {streakData && (
             <div className="hp-streak-wrapper">
