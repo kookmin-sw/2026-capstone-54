@@ -1,5 +1,6 @@
 import uuid
 
+from api.v1.interviews.tests.ownership_test_helpers import OwnershipHeadersMixin
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
@@ -11,20 +12,18 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from users.factories import UserFactory
 
 
-class FinishInterviewViewCompletedTests(TestCase):
+class FinishInterviewViewCompletedTests(OwnershipHeadersMixin, TestCase):
   """FinishInterviewView — 정상 종료(모든 답변 완료) 테스트"""
 
   def setUp(self):
     self.client = APIClient()
     self.user = UserFactory(email_confirmed_at=timezone.now())
-    token = RefreshToken.for_user(self.user)
-    self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token.access_token}")
     self.session = InterviewSessionFactory(
       user=self.user,
       interview_session_type=InterviewSessionType.FOLLOWUP,
       interview_session_status=InterviewSessionStatus.IN_PROGRESS,
     )
-    # 모든 턴에 답변 완료
+    self.authenticate_with_ownership(self.user, self.session)
     InterviewTurnFactory(interview_session=self.session, answer="답변1", turn_number=1)
     InterviewTurnFactory(interview_session=self.session, answer="답변2", turn_number=2)
     self.url = reverse("interview-finish", kwargs={"interview_session_uuid": str(self.session.pk)})
@@ -47,20 +46,18 @@ class FinishInterviewViewCompletedTests(TestCase):
     self.assertIn("interview_session_status", response.data)
 
 
-class FinishInterviewViewWithUnansweredTurnsTests(TestCase):
+class FinishInterviewViewWithUnansweredTurnsTests(OwnershipHeadersMixin, TestCase):
   """FinishInterviewView — 미답변 턴이 있어도 정상 종료 테스트 (이어하기 정책)"""
 
   def setUp(self):
     self.client = APIClient()
     self.user = UserFactory(email_confirmed_at=timezone.now())
-    token = RefreshToken.for_user(self.user)
-    self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token.access_token}")
     self.session = InterviewSessionFactory(
       user=self.user,
       interview_session_type=InterviewSessionType.FOLLOWUP,
       interview_session_status=InterviewSessionStatus.IN_PROGRESS,
     )
-    # 미답변 턴 포함
+    self.authenticate_with_ownership(self.user, self.session)
     InterviewTurnFactory(interview_session=self.session, answer="답변1", turn_number=1)
     InterviewTurnFactory(interview_session=self.session, answer="", turn_number=2)
     self.url = reverse("interview-finish", kwargs={"interview_session_uuid": str(self.session.pk)})
@@ -77,7 +74,7 @@ class FinishInterviewViewWithUnansweredTurnsTests(TestCase):
     self.assertEqual(self.session.interview_session_status, InterviewSessionStatus.COMPLETED)
 
 
-class FinishInterviewViewErrorTests(TestCase):
+class FinishInterviewViewErrorTests(OwnershipHeadersMixin, TestCase):
   """FinishInterviewView — 오류 케이스 테스트"""
 
   def setUp(self):
@@ -86,12 +83,16 @@ class FinishInterviewViewErrorTests(TestCase):
     token = RefreshToken.for_user(self.user)
     self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token.access_token}")
 
+  def _authorize_for_session(self, session) -> None:
+    self.authenticate_with_ownership(self.user, session)
+
   def test_already_completed_session_returns_error(self):
     """이미 완료된 세션에 finish를 시도하면 에러를 반환한다."""
     session = InterviewSessionFactory(
       user=self.user,
       interview_session_status=InterviewSessionStatus.COMPLETED,
     )
+    self._authorize_for_session(session)
     url = reverse("interview-finish", kwargs={"interview_session_uuid": str(session.pk)})
     response = self.client.post(url)
     self.assertIn(

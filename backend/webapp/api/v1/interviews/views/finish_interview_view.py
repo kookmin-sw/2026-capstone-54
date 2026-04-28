@@ -6,6 +6,7 @@
 """
 
 from api.v1.interviews.serializers import InterviewSessionSerializer
+from api.v1.interviews.views._owner_validation import require_session_owner_from_request
 from common.exceptions import ValidationException
 from common.permissions import IsEmailVerified
 from common.views import BaseAPIView
@@ -24,6 +25,7 @@ class FinishInterviewView(BaseAPIView):
   @extend_schema(summary="면접 종료")
   def post(self, request, interview_session_uuid):
     interview_session = get_interview_session_for_user(interview_session_uuid, self.current_user)
+    require_session_owner_from_request(request, interview_session)
 
     if interview_session.interview_session_status != InterviewSessionStatus.IN_PROGRESS:
       raise ValidationException(detail="진행 중인 세션만 종료할 수 있습니다.")

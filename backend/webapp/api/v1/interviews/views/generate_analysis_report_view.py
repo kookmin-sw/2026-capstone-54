@@ -5,6 +5,7 @@
 """
 
 from api.v1.interviews.serializers import InterviewAnalysisReportSerializer
+from api.v1.interviews.views._owner_validation import require_session_owner_from_request
 from common.exceptions import ValidationException
 from common.permissions import IsEmailVerified
 from common.views import BaseAPIView
@@ -25,6 +26,7 @@ class GenerateAnalysisReportView(BaseAPIView):
   @extend_schema(summary="면접 분석 리포트 생성 요청")
   def post(self, request, interview_session_uuid):
     interview_session = get_interview_session_for_user(interview_session_uuid, self.current_user)
+    require_session_owner_from_request(request, interview_session)
 
     if (interview_session.interview_session_status == InterviewSessionStatus.IN_PROGRESS):
       raise ValidationException(detail="진행 중인 세션은 리포트를 생성할 수 없습니다.")

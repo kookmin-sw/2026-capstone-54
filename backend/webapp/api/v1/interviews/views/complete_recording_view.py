@@ -1,4 +1,5 @@
 from api.v1.interviews.serializers import CompleteRecordingSerializer
+from api.v1.interviews.views._owner_validation import require_session_owner_from_request
 from botocore.exceptions import BotoCoreError, ClientError
 from common.exceptions import ServiceUnavailableException
 from common.permissions import IsEmailVerified
@@ -21,6 +22,7 @@ class CompleteRecordingView(BaseAPIView):
     serializer.is_valid(raise_exception=True)
 
     recording = get_object_or_404(InterviewRecording, pk=uuid, user=self.current_user)
+    require_session_owner_from_request(request, recording.interview_session)
     data = serializer.validated_data
 
     try:
