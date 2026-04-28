@@ -149,7 +149,7 @@ export function JdAddPage() {
                   label="내 식별 제목 (선택)"
                   helperText="미입력 시 공고 원제목 사용"
                   type="text"
-                  placeholder="예: 네이버 백엔드 — 2차 지원"
+                  placeholder="예: 홍길동 채용공고"
                   value={customTitle}
                   onChange={(e) => setCustomTitle(e.target.value)}
                   aria-label="내 식별 제목"
