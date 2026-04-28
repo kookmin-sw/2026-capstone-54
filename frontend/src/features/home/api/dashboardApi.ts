@@ -6,6 +6,7 @@ export interface DashboardStatistics {
   averageScoreSampleSize: number;
   currentStreakDays: number;
   totalPracticeTimeSeconds: number;
+  lastParticipatedDate: string | null;
 }
 
 export async function fetchDashboardStatisticsApi(): Promise<DashboardStatistics> {
@@ -20,5 +21,6 @@ export async function fetchDashboardStatisticsApi(): Promise<DashboardStatistics
     averageScoreSampleSize: data.averageScoreSampleSize ?? 0,
     currentStreakDays: data.currentStreakDays ?? 0,
     totalPracticeTimeSeconds: data.totalPracticeTimeSeconds ?? 0,
+    lastParticipatedDate: data.lastParticipatedDate ?? null,
   };
 }
