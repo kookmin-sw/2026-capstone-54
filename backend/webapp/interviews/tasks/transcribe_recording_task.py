@@ -118,12 +118,13 @@ class TranscribeRecordingTask(BaseTask):
   @staticmethod
   def _save_transcript(turn: InterviewTurn, payload: dict) -> None:
     segments = payload.get("segments", [])
+    transcribed_text = payload.get("text", "")
     turn.speech_segments = segments
     turn.transcript_status = TranscriptStatus.COMPLETED
     turn.transcript_source = TranscriptSource.BACKEND_STT
     turn.transcript_error_code = ""
-    if not turn.answer:
-      turn.answer = payload.get("text", "")
+    if transcribed_text:
+      turn.answer = transcribed_text
     turn.save(
       update_fields=[
         "speech_segments",
