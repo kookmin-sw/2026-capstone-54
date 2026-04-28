@@ -1,4 +1,4 @@
-import { Loader2, FileText, Plus, ChevronRight, Play } from "lucide-react";
+import { Loader2, FileText, Plus, ChevronRight, Play, Mic, BarChart2, ClipboardList } from "lucide-react";
 import { SESSION_TYPE_LABEL, DIFFICULTY_LABEL, REPORT_STATUS_BADGE } from "@/features/interview-session";
 import type { InterviewSessionListItem } from "@/features/interview-session";
 import { formatDateTime } from "@/shared/lib/format/date";
@@ -24,8 +24,12 @@ export function SessionCard({ session: s, isGenerating, onContinue, onViewReport
       }`}
     >
       <div className="flex items-start gap-3">
-        <div className="w-10 h-10 rounded-lg bg-white border border-[#E5E7EB] flex items-center justify-center text-lg shrink-0">
-          {isInProgress ? "🎙️" : hasReport ? "📊" : "🗒️"}
+        <div className="w-10 h-10 rounded-lg bg-white border border-[#E5E7EB] flex items-center justify-center shrink-0">
+          {isInProgress
+            ? <Mic size={18} className="text-[#D97706]" />
+            : hasReport
+              ? <BarChart2 size={18} className="text-[#0991B2]" />
+              : <ClipboardList size={18} className="text-[#9CA3AF]" />}
         </div>
 
         <div className="flex-1 min-w-0">

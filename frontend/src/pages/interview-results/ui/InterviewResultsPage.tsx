@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Loader2, Plus } from "lucide-react";
+import { Loader2, Plus, BarChart2 } from "lucide-react";
 import { interviewApi } from "@/features/interview-session";
 import type { InterviewSessionListItem, InterviewAnalysisReportStatus } from "@/features/interview-session";
 import { Pagination } from "@/shared/ui/Pagination";
@@ -78,7 +78,7 @@ export function InterviewResultsPage() {
       <div className="w-full px-8 pt-[28px] pb-[60px] max-sm:px-4 max-sm:pt-5">
       {/* Header */}
       <div className="mb-8">
-        <div className="inline-flex items-center gap-1.5 text-[11px] font-bold tracking-[1.4px] uppercase text-[#0991B2] bg-[#E6F7FA] py-1 px-3 rounded-full mb-2.5">📊 분석</div>
+        <div className="inline-flex items-center gap-1.5 text-[11px] font-bold tracking-[1.4px] uppercase text-[#0991B2] bg-[#E6F7FA] py-1 px-3 rounded-full mb-2.5"><BarChart2 size={12} /> 분석</div>
         <h1 className="text-[clamp(24px,3vw,36px)] font-black tracking-[-0.8px] text-[#0A0A0A] leading-[1.1]">면접 결과</h1>
         <p className="text-sm text-[#6B7280] mt-1.5">
           지금까지 진행한 면접 세션과 분석 리포트를 확인하세요.
