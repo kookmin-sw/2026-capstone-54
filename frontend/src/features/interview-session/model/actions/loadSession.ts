@@ -24,7 +24,10 @@ export async function loadInterviewSession(set: Set, interviewSessionUuid: strin
     set({ interviewPhase: "connecting" });
     const interviewSession = await interviewApi.getInterviewSession(interviewSessionUuid);
 
-    if (interviewSession.interviewSessionStatus !== "in_progress") {
+    const isResumable =
+      interviewSession.interviewSessionStatus === "in_progress"
+      || interviewSession.interviewSessionStatus === "paused";
+    if (!isResumable) {
       set({ interviewSession, interviewPhase: "idle" });
       return;
     }

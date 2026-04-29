@@ -21,8 +21,14 @@ export function useSessionWs({ interviewSessionUuid, enabled }: UseSessionWsOpti
   useEffect(() => {
     if (!enabled || !interviewSessionUuid || !wsTicket) return;
 
+    // StrictMode dev double-mount 또는 cleanup 후 도달하는 stale onClose 무시 가드.
+    // ws1 cleanup → ws2 connect → server broadcast eviction 이 ws1 의 onclose 로 도달해도
+    // 이미 cleanup 된 effect 의 setTakeoverModalOpen 호출을 차단한다.
+    let isCurrent = true;
+
     const client = new InterviewSessionWsClient({
       onMessage: (data) => {
+        if (!isCurrent) return;
         const messageType = data.type;
         if (messageType === "pause_ack") {
           setPaused(true, (data.reason as string | undefined) ?? null);
@@ -31,6 +37,7 @@ export function useSessionWs({ interviewSessionUuid, enabled }: UseSessionWsOpti
         }
       },
       onClose: (code) => {
+        if (!isCurrent) return;
         if (code === WS_CLOSE_EVICTED) {
           setTakeoverModalOpen(true);
         }
@@ -40,6 +47,7 @@ export function useSessionWs({ interviewSessionUuid, enabled }: UseSessionWsOpti
     clientRef.current = client;
 
     return () => {
+      isCurrent = false;
       client.disconnect();
       clientRef.current = null;
     };

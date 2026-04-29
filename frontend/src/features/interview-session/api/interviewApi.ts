@@ -1,5 +1,5 @@
 import { apiRequest } from "@/shared/api/client";
-import { useInterviewSessionStore } from "../model/store";
+import { ownerHeaders } from "./ownerHeaders";
 import type {
   InterviewSession,
   InterviewTurn,
@@ -14,15 +14,6 @@ import type {
 } from "./types";
 
 const BASE = "/api/v1/interviews/interview-sessions";
-
-function ownerHeaders(): Record<string, string> {
-  const state = useInterviewSessionStore.getState();
-  if (!state.ownerToken || state.ownerVersion === null) return {};
-  return {
-    "X-Session-Owner-Token": state.ownerToken,
-    "X-Session-Owner-Version": String(state.ownerVersion),
-  };
-}
 
 export const interviewApi = {
   createInterviewSession: (params: CreateInterviewSessionParams) =>
@@ -55,7 +46,6 @@ export const interviewApi = {
     turnPk: number,
     answer: string,
     speechSegments?: { text: string; startMs: number; endMs: number }[],
-    options?: { fallbackRequested?: boolean; recordingUuid?: string },
   ) =>
     apiRequest<SubmitAnswerResponse>(
       `${BASE}/${interviewSessionUuid}/turns/${turnPk}/answer/`,
@@ -64,8 +54,6 @@ export const interviewApi = {
         body: JSON.stringify({
           answer,
           speech_segments: speechSegments ?? [],
-          fallback_requested: options?.fallbackRequested ?? false,
-          recording_uuid: options?.recordingUuid ?? null,
         }),
         auth: true,
         headers: ownerHeaders(),

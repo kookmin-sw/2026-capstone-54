@@ -26,6 +26,7 @@ import { FinishConfirmModal } from "./FinishConfirmModal";
 import { SessionTakeoverModal } from "@/widgets/interview-session/SessionTakeoverModal";
 import { PausedOverlay } from "@/widgets/interview-session/PausedOverlay";
 import { IdleDetectedModal } from "@/widgets/interview-session/IdleDetectedModal";
+import { SttAidNotice } from "@/widgets/interview-session/SttAidNotice";
 import { useIdleDetector } from "@/features/interview-session/lib/useIdleDetector";
 
 const INTERVIEW_COACH_MARKS_KEY = "interview-session";
@@ -177,8 +178,12 @@ export function InterviewSessionPage() {
     setShowFinishModal(true);
   };
 
+  const initGuardRef = useRef<string | null>(null);
+
   useEffect(() => {
     if (!interviewSessionUuid) return;
+    if (initGuardRef.current === interviewSessionUuid) return;
+    initGuardRef.current = interviewSessionUuid;
     resetInterviewSession();
     loadInterviewSession(interviewSessionUuid);
     setupMedia();
@@ -353,6 +358,7 @@ export function InterviewSessionPage() {
       <SessionTakeoverModal />
       <PausedOverlay />
       <IdleDetectedModal open={isIdle} onContinue={handleIdleContinue} onFinish={handleIdleFinish} />
+      <SttAidNotice />
     </div>
   );
 }
