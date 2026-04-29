@@ -52,8 +52,8 @@ export function ResetPasswordPage() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token") ?? "";
 
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [newPw, setNewPw] = useState("");
+  const [confirmPw, setConfirmPw] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [showConfirmPw, setShowConfirmPw] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -63,10 +63,10 @@ export function ResetPasswordPage() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
-    if (newPassword.length < 8) { setError("비밀번호는 8자 이상이어야 합니다."); return; }
-    if (newPassword !== confirmPassword) { setError("비밀번호가 일치하지 않습니다."); return; }
+    if (newPw.length < 8) { setError("비밀번호는 8자 이상이어야 합니다."); return; }
+    if (newPw !== confirmPw) { setError("비밀번호가 일치하지 않습니다."); return; }
     setIsLoading(true);
-    const result = await confirmPasswordResetApi({ token, newPassword });
+    const result = await confirmPasswordResetApi({ token, newPassword: newPw });
     setIsLoading(false);
     if (result.success) setSuccess(true);
     else setError(result.message);
@@ -98,11 +98,11 @@ export function ResetPasswordPage() {
               <form onSubmit={handleSubmit} noValidate>
                 <div className="mb-4 md:mb-[18px]">
                   <label className="block text-[13px] font-semibold text-[#374151] mb-1.5" htmlFor="rp-pw">새 비밀번호</label>
-                  <PasswordInput id="rp-pw" value={newPassword} show={showPw} placeholder="8자 이상 입력하세요" onChange={setNewPassword} onToggle={() => setShowPw(!showPw)} />
+                  <PasswordInput id="rp-pw" value={newPw} show={showPw} placeholder="8자 이상 입력하세요" onChange={setNewPw} onToggle={() => setShowPw(!showPw)} />
                 </div>
                 <div className="mb-4 md:mb-[18px]">
                   <label className="block text-[13px] font-semibold text-[#374151] mb-1.5" htmlFor="rp-pw-confirm">비밀번호 확인</label>
-                  <PasswordInput id="rp-pw-confirm" value={confirmPassword} show={showConfirmPw} placeholder="비밀번호를 다시 입력하세요" onChange={setConfirmPassword} onToggle={() => setShowConfirmPw(!showConfirmPw)} /> {/* gitleaks:allow */}
+                  <PasswordInput id="rp-pw-confirm" value={confirmPw} show={showConfirmPw} placeholder="비밀번호를 다시 입력하세요" onChange={setConfirmPw} onToggle={() => setShowConfirmPw(!showConfirmPw)} />
                 </div>
                 {error && <p className="text-[13px] text-[#DC2626] mb-[14px] px-[14px] py-[10px] bg-[#FEF2F2] border border-[#FECACA] rounded-lg" role="alert">{error}</p>}
                 <button type="submit" className="w-full py-[15px] bg-[#0A0A0A] text-white font-plex-sans-kr text-[15px] font-bold border-none rounded-lg cursor-pointer transition-opacity duration-200 hover:enabled:opacity-85 disabled:opacity-50 disabled:cursor-not-allowed md:py-4 md:text-[16px]" disabled={isLoading}>
