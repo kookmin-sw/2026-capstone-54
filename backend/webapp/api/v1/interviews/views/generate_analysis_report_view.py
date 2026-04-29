@@ -2,10 +2,11 @@
 
 사용자가 면접 결과 화면에서 직접 리포트 생성을 요청할 때 호출된다.
 이미 리포트가 있으면 기존 리포트를 재생성한다.
+완료된 세션에 대한 일회성 trigger 라 owner-token 다중 접속 차단 대상이 아니다
+(get_interview_session_for_user 가 user 검증 + status 검사로 충분).
 """
 
 from api.v1.interviews.serializers import InterviewAnalysisReportSerializer
-from api.v1.interviews.views._owner_validation import require_session_owner_from_request
 from common.exceptions import ConflictException, ValidationException
 from common.permissions import IsEmailVerified
 from common.views import BaseAPIView
@@ -26,7 +27,6 @@ class GenerateAnalysisReportView(BaseAPIView):
   @extend_schema(summary="면접 분석 리포트 생성 요청")
   def post(self, request, interview_session_uuid):
     interview_session = get_interview_session_for_user(interview_session_uuid, self.current_user)
-    require_session_owner_from_request(request, interview_session)
 
     if interview_session.interview_session_status == InterviewSessionStatus.IN_PROGRESS:
       raise ValidationException(detail="진행 중인 세션은 리포트를 생성할 수 없습니다.")
