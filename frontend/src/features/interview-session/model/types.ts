@@ -42,7 +42,6 @@ export interface InterviewSessionActions {
     turnPk: number,
     answer: string,
     speechSegments?: { text: string; startMs: number; endMs: number }[],
-    fallbackOptions?: { fallbackRequested?: boolean; recordingUuid?: string },
   ) => Promise<void>;
   finishInterview: (uuid: string) => Promise<void>;
   startReportPolling: (uuid: string) => void;

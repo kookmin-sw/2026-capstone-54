@@ -2,7 +2,7 @@
 export type InterviewSessionType = "followup" | "full_process";
 export type InterviewDifficultyLevel = "friendly" | "normal" | "pressure";
 export type InterviewPracticeMode = "practice" | "real";
-export type InterviewSessionStatus = "in_progress" | "completed";
+export type InterviewSessionStatus = "in_progress" | "paused" | "completed";
 export type InterviewTurnType = "initial" | "followup";
 export type InterviewAnalysisReportStatus = "pending" | "generating" | "completed" | "failed";
 export type InterviewSttMode = "browser" | "backend";
@@ -42,6 +42,7 @@ export interface InterviewTurn {
   transcriptStatus?: TranscriptStatus;
   transcriptSource?: TranscriptSource;
   transcriptErrorCode?: string;
+  transcriptText?: string;
 }
 
 // ── Report Models ──

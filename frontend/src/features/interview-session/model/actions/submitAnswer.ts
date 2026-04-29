@@ -13,7 +13,6 @@ export async function submitInterviewAnswer(
   turnPk: number,
   answer: string,
   speechSegments?: { text: string; startMs: number; endMs: number }[],
-  fallbackOptions?: { fallbackRequested?: boolean; recordingUuid?: string },
 ) {
   const { interviewSession, interviewTurns, currentInterviewTurnIndex } = get();
   if (!interviewSession) return;
@@ -32,7 +31,6 @@ export async function submitInterviewAnswer(
       turnPk,
       answer,
       speechSegments,
-      fallbackOptions,
     );
 
     if (isFollowup) {
