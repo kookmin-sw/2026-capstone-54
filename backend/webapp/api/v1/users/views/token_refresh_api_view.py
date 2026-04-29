@@ -1,5 +1,6 @@
 from common.permissions import AllowAny
 from common.views import BaseAPIView
+from django.contrib.auth import get_user_model
 from drf_spectacular.utils import extend_schema
 from rest_framework import serializers
 from rest_framework.exceptions import AuthenticationFailed, ValidationError
@@ -51,3 +52,5 @@ class TokenRefreshAPIView(BaseAPIView):
       return response
     except TokenError as exc:
       raise AuthenticationFailed(str(exc))
+    except get_user_model().DoesNotExist:
+      raise AuthenticationFailed("사용자를 찾을 수 없습니다. 탈퇴했거나 삭제된 계정일 수 있습니다.")
