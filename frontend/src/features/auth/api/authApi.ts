@@ -196,6 +196,34 @@ export async function changePasswordApi(payload: ChangePasswordPayload): Promise
   }
 }
 
+/* ── Password Reset ── */
+export async function requestPasswordResetApi(email: string): Promise<{ success: boolean; message: string }> {
+  try {
+    await apiRequest("/api/v1/users/password-reset/", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    });
+    return { success: true, message: "비밀번호 재설정 이메일을 발송했습니다." };
+  } catch (err: unknown) {
+    return { success: false, message: parseApiError(err, "이메일 발송에 실패했습니다.") };
+  }
+}
+
+export async function confirmPasswordResetApi(payload: { token: string; newPassword: string }): Promise<{ success: boolean; message: string }> {
+  try {
+    await apiRequest("/api/v1/users/password-reset/confirm/", {
+      method: "POST",
+      body: JSON.stringify({
+        token: payload.token,
+        new_password: payload.newPassword,
+      }),
+    });
+    return { success: true, message: "비밀번호가 변경되었습니다." };
+  } catch (err: unknown) {
+    return { success: false, message: parseApiError(err, "비밀번호 변경에 실패했습니다.") };
+  }
+}
+
 /* ── Unregister ── */
 export interface UnregisterResult {
   success: boolean;
