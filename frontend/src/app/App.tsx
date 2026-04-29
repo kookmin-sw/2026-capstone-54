@@ -28,6 +28,8 @@ import { AchievementsPage } from "@/pages/achievements";
 import { NotificationsPage } from "@/pages/notifications";
 import { NotFoundPage } from "@/pages/not-found";
 import { ServerErrorPage } from "@/pages/server-error";
+import { ResetPasswordPage } from "@/pages/reset-password";
+import { ForgotPasswordPage } from "@/pages/forgot-password";
 
 function App() {
   const { initAuth, logout, user, authReady } = useAuthStore();
@@ -74,6 +76,8 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/sign-up" element={<SignUpPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
 
         {/* ── 보호 라우트 (로그인 필요) ── */}
         <Route path="/verify-email" element={<ProtectedRoute><VerifyEmailPage /></ProtectedRoute>} />

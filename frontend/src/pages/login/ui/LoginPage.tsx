@@ -130,12 +130,18 @@ export function LoginPage() {
               </button>
             </form>
 
-            <p className="text-center text-[13px] text-[#6B7280] mt-5">
-              아직 계정이 없으신가요?{" "}
-              <Link to="/sign-up" className="text-[#0991B2] font-bold no-underline hover:underline">
-                회원가입 →
+            <div className="flex items-center justify-center gap-3 mt-5 text-[13px] text-[#6B7280]">
+              <span>
+                아직 계정이 없으신가요?{" "}
+                <Link to="/sign-up" className="text-[#0991B2] font-bold no-underline hover:underline">
+                  회원가입 →
+                </Link>
+              </span>
+              <span className="text-[#D1D5DB]">|</span>
+              <Link to="/forgot-password" className="text-[#6B7280] no-underline hover:text-[#0A0A0A] hover:underline">
+                비밀번호 찾기
               </Link>
-            </p>
+            </div>
           </div>
         </section>
       </main>
