@@ -161,8 +161,11 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   toggleJobId: (jobId) => {
     set((s) => {
       const ids = s.profileDraft.jobIds;
-      const next = ids.includes(jobId) ? ids.filter((id) => id !== jobId) : [...ids, jobId];
-      return { profileDraft: { ...s.profileDraft, jobIds: next } };
+      if (ids.includes(jobId)) {
+        return { profileDraft: { ...s.profileDraft, jobIds: ids.filter((id) => id !== jobId) } };
+      }
+      if (ids.length >= 3) return s;
+      return { profileDraft: { ...s.profileDraft, jobIds: [...ids, jobId] } };
     });
   },
 

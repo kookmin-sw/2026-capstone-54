@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { Check, Sparkles, Rocket } from "lucide-react";
 import { useAuthStore } from "@/features/auth";
 import { useOnboardingStore, JOB_STATUS_OPTIONS } from "@/features/onboarding";
+import { CATEGORY_STYLE } from "@/shared/ui/categoryIconStyle";
 
 export function OnboardingPage() {
   const navigate = useNavigate();
@@ -115,11 +117,8 @@ export function OnboardingPage() {
 
           {/* Email verified card */}
           <div className="flex items-center justify-center gap-[14px] bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg px-[22px] py-[18px] mb-6 shadow-[var(--sc)] w-full md:justify-start">
-            <div className="shrink-0">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                <rect width="24" height="24" rx="6" fill="#059669" />
-                <polyline points="7 13 10 16 17 9" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-              </svg>
+            <div className="w-[22px] h-[22px] rounded-md bg-[#059669] flex items-center justify-center shrink-0">
+              <Check size={14} stroke="#fff" strokeWidth={2.5} />
             </div>
             <div className="flex flex-col gap-0.5 overflow-hidden">
               <span className="text-[14px] font-bold text-[#059669]">이메일 인증 완료!</span>
@@ -135,7 +134,7 @@ export function OnboardingPage() {
             ].map((step, i) => (
               <div key={i} className="flex flex-row items-center gap-[14px] text-left px-5 py-[14px] rounded-lg opacity-60">
                 <div className="w-9 h-9 rounded-full flex items-center justify-center text-[14px] font-bold text-white bg-[#059669] shrink-0">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                  <Check size={16} stroke="#fff" strokeWidth={3} />
                 </div>
                 <div className="flex flex-col gap-0.5">
                   <span className="text-[14px] font-semibold text-[#0A0A0A]">{step.name}</span>
@@ -156,7 +155,7 @@ export function OnboardingPage() {
         {/* ── Right: Profile Card ── */}
         <section className="flex justify-center w-full md:flex-1">
           <div className="w-full max-w-[560px] bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg px-5 py-10 shadow-[var(--sc)] sm:px-7 sm:py-12">
-            <h2 className="font-plex-sans-kr text-[22px] font-extrabold text-[#0A0A0A] mb-1.5">나를 알려주세요 👋</h2>
+            <h2 className="font-plex-sans-kr text-[22px] font-extrabold text-[#0A0A0A] mb-1.5 flex items-center gap-2">나를 알려주세요 <Sparkles size={20} className="text-[#F59E0B]" /></h2>
             <p className="text-[14px] text-[#6B7280] leading-[1.6] mb-6">
               면접 질문 맞춤화를 위해 딱 3가지만 입력하면 돼요.
             </p>
@@ -191,7 +190,7 @@ export function OnboardingPage() {
                     onClick={() => selectJobCategory(cat.id)}
                     aria-pressed={selectedJobCategoryId === cat.id}
                   >
-                    <span className="text-[14px]">{cat.emoji}</span>
+                    {(() => { const s = CATEGORY_STYLE[cat.id] ?? CATEGORY_STYLE[0]; return <s.Icon size={14} className={s.color} />; })()}
                     {cat.name}
                   </button>
                 ))}
@@ -297,7 +296,7 @@ export function OnboardingPage() {
               onClick={handleSubmit}
               disabled={isLoading}
             >
-              {isLoading ? "저장 중..." : "면접 시작하러 가기 🚀"}
+              {isLoading ? "저장 중..." : <span className="flex items-center justify-center gap-2">면접 시작하러 가기 <Rocket size={16} /></span>}
             </button>
           </div>
         </section>

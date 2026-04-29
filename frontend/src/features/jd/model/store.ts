@@ -38,8 +38,12 @@ interface JdAddState {
   clearError: () => void;
   /** 성공 시 생성된 UserJobDescription.uuid 반환. 실패 시 null. */
   submit: () => Promise<string | null>;
-  /** 임시저장 — 아직 backend 엔드포인트가 없어 no-op 성공으로 둔다. */
+  /** 임시저장 — localStorage에 저장. */
   saveDraft: () => Promise<boolean>;
+  /** localStorage 임시저장 복원. */
+  loadDraft: () => boolean;
+  /** localStorage 임시저장 삭제 후 reset. */
+  clearDraft: () => void;
   reset: () => void;
 }
 
@@ -128,12 +132,36 @@ export const useJdAddStore = create<JdAddState>()((set, get) => ({
     }
   },
 
-  // 임시저장 기능은 backend 에 아직 없음. 로컬 성공으로만 처리.
   saveDraft: async () => {
+    const { url, customTitle, status } = get();
     set({ isSaving: true, error: null });
-    await new Promise((r) => setTimeout(r, 120));
-    set({ isSaving: false });
-    return true;
+    try {
+      localStorage.setItem("jd_draft", JSON.stringify({ url, customTitle, status }));
+      await new Promise((r) => setTimeout(r, 120));
+      set({ isSaving: false });
+      return true;
+    } catch {
+      set({ isSaving: false });
+      return false;
+    }
+  },
+
+  loadDraft: () => {
+    try {
+      const raw = localStorage.getItem("jd_draft");
+      if (!raw) return false;
+      const { url, customTitle, status } = JSON.parse(raw) as { url: string; customTitle: string; status: JdStatus };
+      get().setUrl(url);
+      set({ customTitle, status });
+      return true;
+    } catch {
+      return false;
+    }
+  },
+
+  clearDraft: () => {
+    localStorage.removeItem("jd_draft");
+    set(INITIAL);
   },
 
   reset: () => set(INITIAL),

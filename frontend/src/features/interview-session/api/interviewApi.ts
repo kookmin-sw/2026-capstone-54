@@ -72,8 +72,11 @@ export const interviewApi = {
       auth: true,
     }),
 
-  getMyInterviews: (page = 1) =>
-    apiRequest<PaginatedResponse<InterviewSessionListItem>>(`/api/v1/interviews/interview-sessions/?page=${page}`, { auth: true }),
+  getMyInterviews: (page = 1, status?: string) => {
+    const params = new URLSearchParams({ page: String(page) });
+    if (status) params.set("status", status);
+    return apiRequest<PaginatedResponse<InterviewSessionListItem>>(`/api/v1/interviews/interview-sessions/?${params}`, { auth: true });
+  },
 
   generateReport: (interviewSessionUuid: string) =>
     apiRequest<InterviewAnalysisReport>(`${BASE}/${interviewSessionUuid}/generate-report/`, {

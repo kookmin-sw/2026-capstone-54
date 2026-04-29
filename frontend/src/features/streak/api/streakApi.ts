@@ -32,8 +32,8 @@ export interface StreakData {
   totalDays: number;
   rewardsCount: number;
   todayCompleted: boolean;
-  /** key: "YYYY-M", value: array of completed day numbers */
-  calendarDoneMap: Record<string, number[]>;
+  /** key: "YYYY-M", value: { day: interviewCount } */
+  calendarDoneMap: Record<string, Record<number, number>>;
   nextReward: StreakNextReward;
   milestones: StreakMilestone[];
   rewardHistory: StreakRewardHistory[];
@@ -59,14 +59,14 @@ interface StreakLogEntry {
 }
 
 /* ── Helpers ── */
-function buildCalendarDoneMap(logs: StreakLogEntry[]): Record<string, number[]> {
-  const map: Record<string, number[]> = {};
+function buildCalendarDoneMap(logs: StreakLogEntry[]): Record<string, Record<number, number>> {
+  const map: Record<string, Record<number, number>> = {};
   for (const log of logs) {
     if (log.interviewResultsCount < 1) continue;
     const [year, month, day] = log.date.split("-").map(Number);
     const key = `${year}-${month}`;
-    if (!map[key]) map[key] = [];
-    map[key].push(day);
+    if (!map[key]) map[key] = {};
+    map[key][day] = log.interviewResultsCount;
   }
   return map;
 }

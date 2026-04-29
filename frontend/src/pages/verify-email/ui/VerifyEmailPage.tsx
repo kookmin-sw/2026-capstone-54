@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { LogIn, LogOut } from "lucide-react";
 import { useAuthStore } from "@/features/auth";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -68,10 +69,10 @@ export function VerifyEmailPage() {
         </Link>
         <button
           type="button"
-          className="text-[13px] font-medium text-[#6B7280] px-4 py-2 bg-none border border-[#E5E7EB] rounded-lg cursor-pointer font-plex-sans-kr transition-[color,background] duration-200 hover:text-[#0A0A0A] hover:bg-[#F9FAFB]"
+          className="text-[13px] font-medium text-[#6B7280] px-4 py-2 bg-none border border-[#E5E7EB] rounded-lg cursor-pointer font-plex-sans-kr transition-[color,background] duration-200 hover:text-[#0A0A0A] hover:bg-[#F9FAFB] flex items-center gap-1.5"
           onClick={handleLogout}
         >
-          🚪 로그아웃
+          <LogOut size={14} /> 로그아웃
         </button>
       </header>
 
@@ -220,10 +221,10 @@ export function VerifyEmailPage() {
             {/* Action buttons */}
             <button
               type="button"
-              className="w-full py-[14px] bg-white text-[#374151] font-plex-sans-kr text-[14px] font-semibold border border-[#E5E7EB] rounded-lg cursor-pointer transition-[color,background] duration-200 mb-2 hover:text-[#0A0A0A] hover:bg-[#F3F4F6]"
+              className="w-full py-[14px] bg-white text-[#374151] font-plex-sans-kr text-[14px] font-semibold border border-[#E5E7EB] rounded-lg cursor-pointer transition-[color,background] duration-200 mb-2 hover:text-[#0A0A0A] hover:bg-[#F3F4F6] flex items-center justify-center gap-2"
               onClick={handleLogout}
             >
-              🚪 다른 계정으로 로그인
+              <LogIn size={15} /> 다른 계정으로 로그인
             </button>
 
             <p className="text-[13px] text-[#6B7280] mt-4 leading-[1.6]">
