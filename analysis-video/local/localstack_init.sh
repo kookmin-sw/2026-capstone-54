@@ -54,9 +54,9 @@ create_fanout_queue() {
   Q_ARN=$(awslocal sqs get-queue-attributes --queue-url "$Q_URL" --attribute-names QueueArn --query 'Attributes.QueueArn' --output text)
   awslocal sqs set-queue-attributes --queue-url "$Q_URL" --attributes '{
     "Policy": "{\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":\"*\",\"Action\":\"sqs:SendMessage\",\"Resource\":\"*\"}]}"
-  }'
+  }' >&2
   awslocal sns subscribe --topic-arn "$SNS_ARN" --protocol sqs --notification-endpoint "$Q_ARN" > /dev/null
-  echo "  [OK] SQS: $QUEUE_NAME → SNS subscribed"
+  echo "  [OK] SQS: $QUEUE_NAME → SNS subscribed" >&2
   echo "$Q_ARN"
 }
 
@@ -182,21 +182,38 @@ add_s3_lambda_trigger() {
 echo ""
 echo "=== 6. SQS → Lambda Event Source Mappings (fan-out) ==="
 
-for PAIR in \
-  "mefit-video-converter:$VC_QUEUE_ARN" \
-  "mefit-frame-extractor:$FE_QUEUE_ARN" \
-  "mefit-audio-extractor:$AE_QUEUE_ARN"; do
+ensure_event_source_mapping() {
+  local FUNC_NAME=$1
+  local QUEUE_ARN=$2
+  local existing_uuid
 
-  FUNC_NAME="${PAIR%%:*}"
-  QUEUE_ARN="${PAIR##*:}"
+  existing_uuid=$(awslocal lambda list-event-source-mappings \
+    --function-name "$FUNC_NAME" \
+    --event-source-arn "$QUEUE_ARN" \
+    --query 'EventSourceMappings[0].UUID' \
+    --output text 2>/dev/null)
+
+  if [ -n "$existing_uuid" ] && [ "$existing_uuid" != "None" ]; then
+    awslocal lambda delete-event-source-mapping --uuid "$existing_uuid" > /dev/null 2>&1 || true
+  fi
 
   awslocal lambda create-event-source-mapping \
     --function-name "$FUNC_NAME" \
     --event-source-arn "$QUEUE_ARN" \
     --batch-size 1 \
     --enabled \
-    > /dev/null 2>&1 || true
+    > /dev/null 2>&1
   echo "  [OK] SQS → Lambda: $FUNC_NAME"
+}
+
+for PAIR in \
+  "mefit-video-converter:$VC_QUEUE_ARN" \
+  "mefit-frame-extractor:$FE_QUEUE_ARN" \
+  "mefit-audio-extractor:$AE_QUEUE_ARN"; do
+
+  FUNC_NAME="${PAIR%%:*}"
+  QUEUE_ARN="${PAIR#*:}"
+  ensure_event_source_mapping "$FUNC_NAME" "$QUEUE_ARN"
 done
 
 echo ""
