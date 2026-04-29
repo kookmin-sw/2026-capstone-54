@@ -1,5 +1,6 @@
 """면접 세션 ViewSet — 목록 조회(GET) / 생성(POST) / 단건 조회(GET /:uuid/)."""
 
+from api.v1.interviews.filters import InterviewSessionFilter
 from api.v1.interviews.serializers import (
   CreateInterviewSessionSerializer,
   InterviewSessionSerializer,
@@ -13,6 +14,7 @@ from common.permissions import IsEmailVerified
 from common.views import BaseGenericViewSet
 from django.db.models import Prefetch
 from django.utils import timezone
+from django_filters import rest_framework as filters
 from drf_spectacular.utils import extend_schema
 from interviews.enums import InterviewExchangeType
 from interviews.models import InterviewSession, InterviewTurn
@@ -41,6 +43,8 @@ class InterviewSessionViewSet(
   permission_classes = [IsEmailVerified]
   pagination_class = StandardPagination
   lookup_field = "pk"
+  filter_backends = [filters.DjangoFilterBackend]
+  filterset_class = InterviewSessionFilter
 
   # ── serializer 분기 ──────────────────────────────────────────────────
 
