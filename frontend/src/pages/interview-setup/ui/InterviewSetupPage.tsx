@@ -78,11 +78,6 @@ export function InterviewSetupPage() {
           <div className="inline-flex items-center gap-1.5 text-[11px] font-bold tracking-[1.4px] uppercase text-[#0991B2] bg-[#E6F7FA] py-1 px-3 rounded-full mb-2.5">▶ 면접 시작</div>
           <h1 className="text-[clamp(24px,3vw,36px)] font-black tracking-[-0.8px] text-[#0A0A0A] leading-[1.1]">가상 면접 설정</h1>
           <p className="text-sm text-[#6B7280] mt-1.5">채용공고와 면접 방식을 선택하고 맞춤 가상 면접을 시작하세요.</p>
-          {preferredJdNotice && (
-            <div className="mt-3 rounded-lg border border-[#FED7AA] bg-[#FFF7ED] px-3 py-2 text-[12px] text-[#9A3412]">
-              {preferredJdNotice}
-            </div>
-          )}
         </div>
 
         {/* ══════ STEP 1: 지원 컨텍스트 ══════ */}
@@ -110,6 +105,7 @@ export function InterviewSetupPage() {
                     jdListLoading={jdListLoading}
                     selectedJdId={selectedJdId}
                     onSelectJd={selectJd}
+                    notice={preferredJdNotice}
                   />
                 </div>
               }
