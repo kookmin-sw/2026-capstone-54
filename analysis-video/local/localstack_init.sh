@@ -20,7 +20,7 @@ CORS_CONFIG='{
     {
       "AllowedHeaders": ["*"],
       "AllowedMethods": ["GET", "PUT", "HEAD"],
-      "AllowedOrigins": ["*"],
+      "AllowedOrigins": ["http://localhost:5173", "http://localhost:3000", "http://localhost:8000"],
       "ExposeHeaders": ["ETag", "Content-Length", "Content-Type"],
       "MaxAgeSeconds": 3600
     }
