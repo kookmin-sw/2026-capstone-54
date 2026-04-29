@@ -10,6 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
+from corsheaders.defaults import default_headers
+
 from .components.admin import *
 from .components.auth import *
 from .components.cache import *
@@ -36,3 +38,9 @@ OPENAI_MODEL = env.str("OPENAI_MODEL", default="gpt-4o-mini")
 OPENAI_EMBEDDING_MODEL = env.str("OPENAI_EMBEDDING_MODEL", default="text-embedding-3-small")
 
 ROOT_URLCONF = "config.urls"
+
+CORS_ALLOW_HEADERS = (
+  *default_headers,
+  "x-session-owner-token",
+  "x-session-owner-version",
+)
