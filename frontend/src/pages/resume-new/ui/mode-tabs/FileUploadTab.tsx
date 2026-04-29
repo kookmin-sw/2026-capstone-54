@@ -54,7 +54,7 @@ export function FileUploadTab() {
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="예: 2026 백엔드 개발자 이력서"
+          placeholder="예: 2026 홍길동 이력서"
           className="border border-[#E5E7EB] rounded-lg px-3.5 py-2.5 text-[13px] outline-none transition-[border-color,box-shadow] focus:border-[#0991B2] focus:shadow-[0_0_0_3px_rgba(9,145,178,0.1)] placeholder:text-[#9CA3AF]"
         />
       </label>

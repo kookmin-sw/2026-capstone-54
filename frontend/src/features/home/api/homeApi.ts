@@ -6,7 +6,7 @@ import { fetchDashboardStatisticsApi, type DashboardStatistics } from "./dashboa
 export interface HomeUser {
   name: string;
   greeting: string;
-  lastInterviewDaysAgo: number;
+  lastInterviewDaysAgo: number | null;
 }
 
 export interface HomeStat {
@@ -82,6 +82,12 @@ function formatPracticeTime(seconds: number): { value: number; unit: string } {
   return { value: Math.round((seconds / 3600) * 10) / 10, unit: "h" };
 }
 
+function calcDaysAgo(dateStr: string | null): number | null {
+  if (!dateStr) return null;
+  const diff = Date.now() - new Date(dateStr).getTime();
+  return Math.max(0, Math.floor(diff / (1000 * 60 * 60 * 24)));
+}
+
 function buildStatsFromDashboard(stats: DashboardStatistics): HomeStat[] {
   const practice = formatPracticeTime(stats.totalPracticeTimeSeconds);
 
@@ -116,6 +122,7 @@ export async function fetchHomeDataApi(): Promise<{ success: boolean; data?: Hom
   let userName = MOCK_DATA.user.name;
   let stats: HomeStat[] = PLACEHOLDER_STATS;
   let currentStreak = 0;
+  let lastInterviewDaysAgo: number | null = null;
   const errorMessages: string[] = [];
 
   try {
@@ -130,6 +137,7 @@ export async function fetchHomeDataApi(): Promise<{ success: boolean; data?: Hom
     const dashboardStats = await fetchDashboardStatisticsApi();
     stats = buildStatsFromDashboard(dashboardStats);
     currentStreak = dashboardStats.currentStreakDays;
+    lastInterviewDaysAgo = calcDaysAgo(dashboardStats.lastParticipatedDate);
   } catch (error) {
     console.error("Failed to fetch dashboard statistics:", error);
     errorMessages.push(error instanceof Error ? error.message : "대시보드 통계를 불러오지 못했습니다.");
@@ -139,7 +147,7 @@ export async function fetchHomeDataApi(): Promise<{ success: boolean; data?: Hom
     success: errorMessages.length === 0,
     data: {
       ...MOCK_DATA,
-      user: { ...MOCK_DATA.user, name: userName },
+      user: { ...MOCK_DATA.user, name: userName, lastInterviewDaysAgo },
       stats,
       currentStreak,
     },

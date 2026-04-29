@@ -1,8 +1,8 @@
 import { Fragment, useEffect, useRef, useState, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useJdListStore, type JdListItem } from "@/features/jd";
-import { useUserJobDescriptionScrapingSse } from "@/features/user-job-description";
-import { ClipboardList, Search } from "lucide-react";
+import { useUserJobDescriptionScrapingSse, userJobDescriptionApi } from "@/features/user-job-description";
+import { ClipboardList, Search, Trash2 } from "lucide-react";
 import { CompanyIcon } from "@/shared/ui/CompanyIcon";
 
 type FilterKey = "all" | "planned" | "applied" | "saved";
@@ -39,8 +39,7 @@ const TAG_COLOR_CLS: Record<string, string> = {
 };
 
 /* ── More-menu dropdown ── */
-function MoreMenu({ id, onClose }: { id: string; onClose: () => void }) {
-  const navigate = useNavigate();
+function MoreMenu({ onDelete, onClose }: { onDelete: () => void; onClose: () => void }) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -57,10 +56,10 @@ function MoreMenu({ id, onClose }: { id: string; onClose: () => void }) {
       className="absolute top-[calc(100%+6px)] right-0 bg-white border border-[#E5E7EB] rounded-lg shadow-[0_8px_24px_rgba(0,0,0,0.1)] min-w-[140px] overflow-hidden z-50 animate-[jdl-fadeUp_.15s_ease]"
     >
       <button
-        className="flex items-center gap-2 w-full py-[10px] px-3.5 border-none bg-transparent text-[13px] font-semibold text-[#374151] cursor-pointer text-left transition-[background] hover:bg-[#F9FAFB] hover:text-[#0991B2]"
-        onClick={() => { navigate(`/jd/${id}`); onClose(); }}
+        className="flex items-center gap-2 w-full py-[10px] px-3.5 border-none bg-transparent text-[13px] font-semibold text-[#EF4444] cursor-pointer text-left transition-[background] hover:bg-[#FEF2F2]"
+        onClick={(e) => { e.stopPropagation(); onDelete(); onClose(); }}
       >
-        📄 상세 보기
+        <Trash2 size={14} /> 채용공고 삭제
       </button>
     </div>
   );
@@ -71,6 +70,11 @@ function JdCard({ item }: { item: JdListItem }) {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const { fetchList } = useJdListStore();
+
+  const handleDelete = useCallback(async () => {
+    await userJobDescriptionApi.remove(item.uuid);
+    fetchList();
+  }, [item.uuid, fetchList]);
   const cfg = STATUS_CONFIG[item.status];
   const isAnalyzing = item.status === "analyzing";
   const tagColorCls = (color: string) => TAG_COLOR_CLS[color] ?? TAG_COLOR_CLS.default;
@@ -122,7 +126,7 @@ function JdCard({ item }: { item: JdListItem }) {
           >
             ⋯
           </button>
-          {menuOpen && <MoreMenu id={item.uuid} onClose={() => setMenuOpen(false)} />}
+          {menuOpen && <MoreMenu onDelete={handleDelete} onClose={() => setMenuOpen(false)} />}
         </div>
       </div>
 

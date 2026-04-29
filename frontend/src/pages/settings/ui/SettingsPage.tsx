@@ -167,7 +167,7 @@ export function SettingsPage() {
                       <div className="flex flex-col gap-[5px] mt-4">
                         <label className="font-plex-sans-kr text-[12px] font-bold text-[#0A0A0A] tracking-[0.1px]">현재 직업 상태</label>
                         <div className="relative">
-                          <select className={inputClass} value={profileDraft.careerStage} onChange={(e) => setProfileDraftField("careerStage", e.target.value)} aria-label="현재 직업 상태">
+                          <select className={`${inputClass} appearance-none`} value={profileDraft.careerStage} onChange={(e) => setProfileDraftField("careerStage", e.target.value)} aria-label="현재 직업 상태">
                             {JOB_STATUS_OPTIONS.map((opt) => (
                               <option key={opt.value} value={opt.value}>{opt.label}</option>
                             ))}
