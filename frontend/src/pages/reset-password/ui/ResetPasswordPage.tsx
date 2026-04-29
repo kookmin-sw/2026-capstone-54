@@ -6,7 +6,7 @@ import { confirmPasswordResetApi } from "@/features/auth/api/authApi";
 const INPUT_CLS = "w-full py-[13px] px-4 pr-11 bg-white border border-[#E5E7EB] rounded-lg text-[14px] text-[#0A0A0A] font-plex-sans-kr outline-none transition-[border-color] duration-200 placeholder-[#9CA3AF] focus:border-[#0991B2] md:py-[14px]";
 const TOGGLE_BTN_CLS = "absolute right-3 top-1/2 -translate-y-1/2 bg-none border-none cursor-pointer text-[#9CA3AF] p-1 flex items-center justify-center hover:text-[#6B7280]";
 
-function PasswordInput({ id, value, show, placeholder, onChange, onToggle }: {
+function SecureInput({ id, value, show, placeholder, onChange, onToggle }: {
   id: string; value: string; show: boolean; placeholder: string;
   onChange: (v: string) => void; onToggle: () => void;
 }) {
@@ -98,11 +98,11 @@ export function ResetPasswordPage() {
               <form onSubmit={handleSubmit} noValidate>
                 <div className="mb-4 md:mb-[18px]">
                   <label className="block text-[13px] font-semibold text-[#374151] mb-1.5" htmlFor="rp-pw">새 비밀번호</label>
-                  <PasswordInput id="rp-pw" value={newPw} show={showPw} placeholder="8자 이상 입력하세요" onChange={setNewPw} onToggle={() => setShowPw(!showPw)} />
+                  <SecureInput id="rp-pw" value={newPw} show={showPw} placeholder="8자 이상 입력하세요" onChange={setNewPw} onToggle={() => setShowPw(!showPw)} />
                 </div>
                 <div className="mb-4 md:mb-[18px]">
                   <label className="block text-[13px] font-semibold text-[#374151] mb-1.5" htmlFor="rp-pw-confirm">비밀번호 확인</label>
-                  <PasswordInput id="rp-pw-confirm" value={confirmPw} show={showConfirmPw} placeholder="비밀번호를 다시 입력하세요" onChange={setConfirmPw} onToggle={() => setShowConfirmPw(!showConfirmPw)} />
+                  <SecureInput id="rp-pw-confirm" value={confirmPw} show={showConfirmPw} placeholder="비밀번호를 다시 입력하세요" onChange={setConfirmPw} onToggle={() => setShowConfirmPw(!showConfirmPw)} />
                 </div>
                 {error && <p className="text-[13px] text-[#DC2626] mb-[14px] px-[14px] py-[10px] bg-[#FEF2F2] border border-[#FECACA] rounded-lg" role="alert">{error}</p>}
                 <button type="submit" className="w-full py-[15px] bg-[#0A0A0A] text-white font-plex-sans-kr text-[15px] font-bold border-none rounded-lg cursor-pointer transition-opacity duration-200 hover:enabled:opacity-85 disabled:opacity-50 disabled:cursor-not-allowed md:py-4 md:text-[16px]" disabled={isLoading}>
