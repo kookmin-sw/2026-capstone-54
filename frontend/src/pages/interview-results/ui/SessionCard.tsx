@@ -14,6 +14,8 @@ interface SessionCardProps {
 export function SessionCard({ session: s, isGenerating, onContinue, onViewReport, onGenerateReport }: SessionCardProps) {
   const badge = s.reportStatus ? REPORT_STATUS_BADGE[s.reportStatus] : null;
   const isInProgress = s.interviewSessionStatus === "in_progress";
+  const isPaused = s.interviewSessionStatus === "paused";
+  const isResumable = isInProgress || isPaused;
   const hasReport = s.reportStatus === "completed";
   const isBusy = s.reportStatus === "generating" || s.reportStatus === "pending";
 
@@ -25,7 +27,7 @@ export function SessionCard({ session: s, isGenerating, onContinue, onViewReport
     >
       <div className="flex items-start gap-3">
         <div className="w-10 h-10 rounded-lg bg-white border border-[#E5E7EB] flex items-center justify-center shrink-0">
-          {isInProgress
+          {isResumable
             ? <Mic size={18} className="text-[#D97706]" />
             : hasReport
               ? <BarChart2 size={18} className="text-[#0991B2]" />
@@ -43,7 +45,12 @@ export function SessionCard({ session: s, isGenerating, onContinue, onViewReport
                 진행 중
               </span>
             )}
-            {badge && !isInProgress && (
+            {isPaused && (
+              <span className="text-[10px] font-bold py-px px-2 rounded-full border border-[#BFDBFE] bg-[#EFF6FF] text-[#2563EB]">
+                일시정지
+              </span>
+            )}
+            {badge && !isResumable && (
               <span
                 className={
                   isBusy
@@ -72,7 +79,7 @@ export function SessionCard({ session: s, isGenerating, onContinue, onViewReport
         </div>
 
         <div className="shrink-0 flex items-center gap-2">
-          {isInProgress ? (
+          {isResumable ? (
             <button onClick={() => onContinue(s.uuid)} className="flex items-center gap-1 text-[12px] font-bold text-white bg-[#0A0A0A] rounded-lg px-3 py-1.5 hover:opacity-85 transition-opacity">
               <Play size={12} /> 이어서 진행
             </button>

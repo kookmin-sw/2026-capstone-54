@@ -61,6 +61,18 @@ export class InterviewSessionWsClient {
     }
   }
 
+  sendPause(reason: string) {
+    this.send({ type: "pause", reason });
+  }
+
+  sendResume() {
+    this.send({ type: "resume" });
+  }
+
+  sendHeartbeat() {
+    this.send({ type: "heartbeat", ts: Date.now() });
+  }
+
   disconnect() {
     this.stopped = true;
     this.ws?.close();

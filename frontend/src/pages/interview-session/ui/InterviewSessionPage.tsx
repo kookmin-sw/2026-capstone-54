@@ -24,6 +24,10 @@ import { PermissionOverlay } from "./PermissionOverlay";
 import { ScreenSizeOverlay } from "./ScreenSizeOverlay";
 import { FinishConfirmModal } from "./FinishConfirmModal";
 import { SessionTakeoverModal } from "@/widgets/interview-session/SessionTakeoverModal";
+import { PausedOverlay } from "@/widgets/interview-session/PausedOverlay";
+import { IdleDetectedModal } from "@/widgets/interview-session/IdleDetectedModal";
+import { SttAidNotice } from "@/widgets/interview-session/SttAidNotice";
+import { useIdleDetector } from "@/features/interview-session/lib/useIdleDetector";
 
 const INTERVIEW_COACH_MARKS_KEY = "interview-session";
 
@@ -145,13 +149,41 @@ export function InterviewSessionPage() {
 
   const permissionError = usePermissionMonitor(hasStarted && !isFinished);
 
-  useSessionWs({
+  const wsClientRef = useSessionWs({
     interviewSessionUuid: interviewSessionUuid ?? "",
+    enabled: !isFinished,
+  });
+
+  const { isIdle, resetIdle } = useIdleDetector({
     enabled: hasStarted && !isFinished,
+    thresholdMs: 60_000,
+    faceVisible: video.isAnalyzing && video.fps > 0,
   });
 
   useEffect(() => {
+    if (!hasStarted || isFinished) return;
+    if (isIdle) {
+      wsClientRef.current?.sendPause("user_idle");
+    } else {
+      wsClientRef.current?.sendResume();
+    }
+  }, [isIdle, hasStarted, isFinished, wsClientRef]);
+
+  const handleIdleContinue = () => {
+    resetIdle();
+  };
+
+  const handleIdleFinish = () => {
+    resetIdle();
+    setShowFinishModal(true);
+  };
+
+  const initGuardRef = useRef<string | null>(null);
+
+  useEffect(() => {
     if (!interviewSessionUuid) return;
+    if (initGuardRef.current === interviewSessionUuid) return;
+    initGuardRef.current = interviewSessionUuid;
     resetInterviewSession();
     loadInterviewSession(interviewSessionUuid);
     setupMedia();
@@ -323,7 +355,10 @@ export function InterviewSessionPage() {
       {showFinishModal && <FinishConfirmModal onConfirm={handleFinishConfirm} onCancel={() => setShowFinishModal(false)} />}
       {isTooSmall && <ScreenSizeOverlay screenWidth={screenSize.w} screenHeight={screenSize.h} onGoHome={() => navigate("/interview/results")} />}
       {permissionError && <PermissionOverlay onReload={() => window.location.reload()} onGoResults={() => navigate("/interview/results")} />}
-      <SessionTakeoverModal interviewSessionUuid={interviewSessionUuid ?? ""} />
+      <SessionTakeoverModal />
+      <PausedOverlay />
+      <IdleDetectedModal open={isIdle} onContinue={handleIdleContinue} onFinish={handleIdleFinish} />
+      <SttAidNotice />
     </div>
   );
 }

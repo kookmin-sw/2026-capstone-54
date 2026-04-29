@@ -26,7 +26,12 @@ export async function submitInterviewAnswer(
   );
 
   try {
-    const response = await interviewApi.submitAnswer(interviewSessionUuid, turnPk, answer, speechSegments);
+    const response = await interviewApi.submitAnswer(
+      interviewSessionUuid,
+      turnPk,
+      answer,
+      speechSegments,
+    );
 
     if (isFollowup) {
       await handleFollowupResponse(set, interviewSessionUuid, response as SubmitAnswerFollowupResponse, turnsWithAnswer, currentInterviewTurnIndex);
