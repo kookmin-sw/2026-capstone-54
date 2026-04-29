@@ -1,0 +1,31 @@
+[project]
+name = "analysis-stt"
+version = "0.1.0"
+description = "면접 audio 의 객관적 STT 결과를 backend 로 전달하는 Celery worker (자체 faster-whisper)"
+requires-python = ">=3.12,<3.14"
+dependencies = [
+    "celery>=5.4.0",
+    "redis>=5.0.0",
+    "boto3>=1.35.0",
+    "python-dotenv>=1.0.0",
+    "faster-whisper>=1.2.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.8.4",
+    "mypy>=1.13.0",
+]
+
+[tool.ruff]
+line-length = 120
+indent-width = 2
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "B", "UP"]
+ignore = ["E501"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
