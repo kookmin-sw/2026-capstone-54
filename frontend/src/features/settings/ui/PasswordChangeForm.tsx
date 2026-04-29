@@ -1,4 +1,5 @@
 import { KeyRound, Lock } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface PasswordChangeFormProps {
   passwordDraft: { currentPassword: string; newPassword: string; confirmPassword: string };
@@ -99,7 +100,7 @@ export function PasswordChangeForm({
       <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl px-7 py-7 shadow-[var(--sc)] mb-4 max-[640px]:px-[18px]" style={{ background: "rgba(9,145,178,.03)", borderColor: "rgba(9,145,178,.12)" }}>
         <p style={{ fontSize: 13, color: "#6B7280", lineHeight: 1.7 }}>
           <Lock size={13} className="text-[#0991B2] inline-block mr-1 align-text-bottom" /> 비밀번호는 암호화되어 저장됩니다.<br />
-          분실 시 로그인 화면에서 <strong style={{ color: "#0991B2" }}>비밀번호 찾기</strong>를 이용하세요.
+          분실 시 <Link to="/forgot-password" className="font-bold no-underline hover:underline" style={{ color: "#0991B2" }}>비밀번호 찾기</Link>를 이용하세요.
         </p>
       </div>
 
