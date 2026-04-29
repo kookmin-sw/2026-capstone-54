@@ -51,7 +51,7 @@ export function SettingsSidebar({ menuOpen }: SettingsSidebarProps) {
           className={`hp-sb-item w-full text-left border-none bg-transparent${location.pathname === "/settings" && activePanel === item.key ? " active" : ""}`}
           onClick={() => {
             setActivePanel(item.key);
-            if (location.pathname !== "/settings") navigate("/settings");
+            navigate(`/settings?panel=${item.key}`);
           }}
         >
           <span className="hp-sb-icon">{item.icon}</span>
@@ -66,7 +66,7 @@ export function SettingsSidebar({ menuOpen }: SettingsSidebarProps) {
       <div className="hp-sb-sep">알림</div>
       <button
         className={`hp-sb-item w-full text-left border-none bg-transparent${location.pathname === "/settings" && activePanel === "notifications" ? " active" : ""}`}
-        onClick={() => { setActivePanel("notifications"); if (location.pathname !== "/settings") navigate("/settings"); }}
+        onClick={() => { setActivePanel("notifications"); navigate("/settings?panel=notifications"); }}
       >
         <span className="hp-sb-icon"><Bell size={18} /></span>알림 설정
       </button>
