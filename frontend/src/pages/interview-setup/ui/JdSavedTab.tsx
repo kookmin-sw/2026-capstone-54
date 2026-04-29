@@ -22,6 +22,14 @@ interface JdSavedTabProps {
 export function JdSavedTab({ jdList, jdListLoading, selectedJdId, onSelectJd }: JdSavedTabProps) {
   if (jdListLoading) return <div className="p-4 text-center text-[13px] text-[#9CA3AF]">불러오는 중...</div>;
 
+  if (jdList.length === 0) {
+    return (
+      <div className="p-4 text-center text-[13px] text-[#6B7280] border border-dashed border-[#E5E7EB] rounded-lg">
+        등록된 채용공고가 없어요. 먼저 채용공고를 업로드해 주세요.
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-[7px] flex-1 overflow-y-auto min-h-0">
       {jdList.map((jd) => (

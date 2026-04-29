@@ -1,4 +1,5 @@
 import type React from "react";
+import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Building2, Calendar, CheckCircle2, ClipboardList,
@@ -47,12 +48,23 @@ export function JdAddPage() {
     clearError,
     submit,
     saveDraft,
+    loadDraft,
+    clearDraft,
+    reset,
   } = useJdAddStore();
+
+  useEffect(() => {
+    loadDraft();
+    return () => { reset(); };
+  }, [loadDraft, reset]);
 
   const handleSubmit = async () => {
     clearError();
     const jdUuid = await submit();
-    if (jdUuid) navigate(`/jd/${jdUuid}`);
+    if (jdUuid) {
+      clearDraft();
+      navigate(`/jd/${jdUuid}`);
+    }
   };
 
   const handleSaveDraft = async () => {
@@ -149,7 +161,7 @@ export function JdAddPage() {
                   label="내 식별 제목 (선택)"
                   helperText="미입력 시 공고 원제목 사용"
                   type="text"
-                  placeholder="예: 네이버 백엔드 — 2차 지원"
+                  placeholder="예: 홍길동 채용공고"
                   value={customTitle}
                   onChange={(e) => setCustomTitle(e.target.value)}
                   aria-label="내 식별 제목"
@@ -173,7 +185,7 @@ export function JdAddPage() {
 
               {/* ACTIONS */}
               <div className="flex items-center justify-end gap-3 mt-7 pt-6 border-t border-[#E5E7EB]">
-                <Button variant="ghost" onClick={() => navigate("/jd")}>
+                <Button variant="ghost" onClick={() => { clearDraft(); navigate("/jd"); }}>
                   취소
                 </Button>
                 <Button variant="secondary" onClick={handleSaveDraft} disabled={isSaving}>

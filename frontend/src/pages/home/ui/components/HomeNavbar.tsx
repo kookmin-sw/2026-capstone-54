@@ -15,6 +15,7 @@ interface HomeNavbarProps {
 export function HomeNavbar({ menuOpen, onMenuToggle }: HomeNavbarProps) {
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
+  const avatarUrl = user?.avatarUrl;
   const { notifications, markAllRead, markRead } = useNotificationStore();
   const unreadCount = notifications.filter((n) => !n.isRead).length;
   const { tickets } = useTicketCount();
@@ -152,8 +153,8 @@ export function HomeNavbar({ menuOpen, onMenuToggle }: HomeNavbarProps) {
           aria-label="프로필 메뉴"
         >
           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#0991B2] to-[#06B6D4] flex items-center justify-center text-white text-sm font-bold overflow-hidden">
-            {user?.avatarUrl ? (
-              <img src={user.avatarUrl} alt="프로필" className="w-full h-full object-cover" />
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="프로필" className="w-full h-full object-cover" />
             ) : (
               user?.name?.[0]?.toUpperCase() || "U"
             )}

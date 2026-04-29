@@ -132,7 +132,7 @@ export function StructuredFormTab() {
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="예: 백엔드 시니어 이력서"
+          placeholder="예: 2026 홍길동 이력서"
           className={inputCls}
         />
       </div>
@@ -153,7 +153,7 @@ export function StructuredFormTab() {
           value={data.summary}
           onChange={(e) => patch({ summary: e.target.value })}
           rows={2}
-          placeholder="예: 5년차 백엔드 개발자, MSA 와 데이터 파이프라인 설계 전문"
+          placeholder="예: 3년차 마케터, 브랜드 캠페인 기획 및 성과 분석 전문"
           className={inputCls}
         />
       </Section>
@@ -195,10 +195,10 @@ export function StructuredFormTab() {
       {/* 스킬 */}
       <Section icon={SECTION_ICONS["스킬"]} title="스킬 (콤마로 구분)">
         <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
-          <LabeledInput label="기술 스택" value={techCsv} onChange={setTechCsv} placeholder="Python, Django, FastAPI" />
-          <LabeledInput label="도구" value={toolCsv} onChange={setToolCsv} placeholder="Docker, Jira, Figma" />
-          <LabeledInput label="소프트 스킬" value={softCsv} onChange={setSoftCsv} placeholder="협업, 리더십, 커뮤니케이션" />
-          <LabeledInput label="외국어" value={skillLangCsv} onChange={setSkillLangCsv} placeholder="영어, 일본어" />
+          <LabeledInput label="기술 스택" value={techCsv} onChange={setTechCsv} placeholder="Excel, PowerPoint, Google Analytics" />
+          <LabeledInput label="도구" value={toolCsv} onChange={setToolCsv} placeholder="Notion, Slack, Google Workspace" />
+          <LabeledInput label="소프트 스킬" value={softCsv} onChange={setSoftCsv} placeholder="문제 해결, 리더십, 커뮤니케이션" />
+          <LabeledInput label="외국어" value={skillLangCsv} onChange={setSkillLangCsv} placeholder="영어, 중국어" />
         </div>
       </Section>
 
@@ -213,11 +213,11 @@ export function StructuredFormTab() {
           <div className="grid grid-cols-1 gap-2">
             <div className="grid grid-cols-3 gap-2 max-sm:grid-cols-1">
               <LabeledInput label="회사명" value={item.company} onChange={(v) => update({ ...item, company: v })} placeholder="(주)회사명" />
-              <LabeledInput label="직함" value={item.role} onChange={(v) => update({ ...item, role: v })} placeholder="백엔드 개발자" />
+              <LabeledInput label="직함" value={item.role} onChange={(v) => update({ ...item, role: v })} placeholder="마케팅 담당자" />
               <LabeledInput label="기간" value={item.period} onChange={(v) => update({ ...item, period: v })} placeholder="2022.03 ~ 2024.06" />
             </div>
-            <LabeledInput label="주요 업무 (한 줄에 하나)" value={(item.responsibilities ?? []).join("\n")} onChange={(v) => update({ ...item, responsibilities: v.split("\n").filter(Boolean) })} placeholder="API 설계 및 개발&#10;DB 쿼리 최적화" textarea rows={2} />
-            <LabeledInput label="주요 성과 (한 줄에 하나)" value={(item.highlights ?? []).join("\n")} onChange={(v) => update({ ...item, highlights: v.split("\n").filter(Boolean) })} placeholder="응답속도 40% 개선&#10;MAU 10만 달성" textarea rows={2} />
+            <LabeledInput label="주요 업무 (한 줄에 하나)" value={(item.responsibilities ?? []).join("\n")} onChange={(v) => update({ ...item, responsibilities: v.split("\n").filter(Boolean) })} placeholder="신규 캠페인 기획 및 운영&#10;데이터 분석 및 보고서 작성" textarea rows={2} />
+            <LabeledInput label="주요 성과 (한 줄에 하나)" value={(item.highlights ?? []).join("\n")} onChange={(v) => update({ ...item, highlights: v.split("\n").filter(Boolean) })} placeholder="전년 대비 매출 20% 증가&#10;팀 프로세스 개선으로 업무 효율 향상" textarea rows={2} />
           </div>
         )}
       />
@@ -231,10 +231,10 @@ export function StructuredFormTab() {
         onChange={(v) => patch({ educations: v })}
         renderRow={(item, update) => (
           <div className="grid grid-cols-2 gap-2 max-sm:grid-cols-1">
-            <LabeledInput label="학교명" value={item.school} onChange={(v) => update({ ...item, school: v })} placeholder="한국대학교" />
+            <LabeledInput label="학교명" value={item.school} onChange={(v) => update({ ...item, school: v })} placeholder="○○대학교" />
             <LabeledInput label="학위" value={item.degree} onChange={(v) => update({ ...item, degree: v })} placeholder="학사" />
-            <LabeledInput label="전공" value={item.major} onChange={(v) => update({ ...item, major: v })} placeholder="컴퓨터공학" />
-            <LabeledInput label="재학 기간" value={item.period} onChange={(v) => update({ ...item, period: v })} placeholder="2018.03 ~ 2022.02" />
+            <LabeledInput label="전공" value={item.major} onChange={(v) => update({ ...item, major: v })} placeholder="경영학" />
+            <LabeledInput label="재학 기간" value={item.period} onChange={(v) => update({ ...item, period: v })} placeholder="2020.03 ~ 2024.02" />
           </div>
         )}
       />
@@ -248,9 +248,9 @@ export function StructuredFormTab() {
         onChange={(v) => patch({ certifications: v })}
         renderRow={(item, update) => (
           <div className="grid grid-cols-3 gap-2 max-sm:grid-cols-1">
-            <LabeledInput label="자격증명" value={item.name} onChange={(v) => update({ ...item, name: v })} placeholder="정보처리기사" />
-            <LabeledInput label="발급기관" value={item.issuer} onChange={(v) => update({ ...item, issuer: v })} placeholder="한국산업인력공단" />
-            <LabeledInput label="취득일" value={item.date} onChange={(v) => update({ ...item, date: v })} placeholder="2022.05" />
+            <LabeledInput label="자격증명" value={item.name} onChange={(v) => update({ ...item, name: v })} placeholder="TOEIC 900" />
+            <LabeledInput label="발급기관" value={item.issuer} onChange={(v) => update({ ...item, issuer: v })} placeholder="YBM" />
+            <LabeledInput label="취득일" value={item.date} onChange={(v) => update({ ...item, date: v })} placeholder="2023.06" />
           </div>
         )}
       />
@@ -265,11 +265,11 @@ export function StructuredFormTab() {
         renderRow={(item, update) => (
           <div className="grid grid-cols-1 gap-2">
             <div className="grid grid-cols-3 gap-2 max-sm:grid-cols-1">
-              <LabeledInput label="수상명" value={item.name} onChange={(v) => update({ ...item, name: v })} placeholder="우수상" />
-              <LabeledInput label="주최" value={item.organization} onChange={(v) => update({ ...item, organization: v })} placeholder="과학기술정보통신부" />
-              <LabeledInput label="연도" value={item.year} onChange={(v) => update({ ...item, year: v })} placeholder="2023" />
+              <LabeledInput label="수상명" value={item.name} onChange={(v) => update({ ...item, name: v })} placeholder="최우수상" />
+              <LabeledInput label="주최" value={item.organization} onChange={(v) => update({ ...item, organization: v })} placeholder="○○대학교" />
+              <LabeledInput label="연도" value={item.year} onChange={(v) => update({ ...item, year: v })} placeholder="2024" />
             </div>
-            <LabeledInput label="상세 설명" value={item.description} onChange={(v) => update({ ...item, description: v })} placeholder="해커톤 최우수상 수상" textarea rows={2} />
+            <LabeledInput label="상세 설명" value={item.description} onChange={(v) => update({ ...item, description: v })} placeholder="교내 경진대회 최우수상 수상" textarea rows={2} />
           </div>
         )}
       />
@@ -284,12 +284,12 @@ export function StructuredFormTab() {
         renderRow={(item, update) => (
           <div className="grid grid-cols-1 gap-2">
             <div className="grid grid-cols-3 gap-2 max-sm:grid-cols-1">
-              <LabeledInput label="프로젝트명" value={item.name} onChange={(v) => update({ ...item, name: v })} placeholder="meFit 서비스" />
-              <LabeledInput label="역할" value={item.role} onChange={(v) => update({ ...item, role: v })} placeholder="백엔드 리드" />
+              <LabeledInput label="프로젝트명" value={item.name} onChange={(v) => update({ ...item, name: v })} placeholder="브랜드 SNS 마케팅 캠페인" />
+              <LabeledInput label="역할" value={item.role} onChange={(v) => update({ ...item, role: v })} placeholder="콘텐츠 기획 담당" />
               <LabeledInput label="기간" value={item.period} onChange={(v) => update({ ...item, period: v })} placeholder="2023.01 ~ 2023.06" />
             </div>
-            <LabeledInput label="개요 / 기여" value={item.description} onChange={(v) => update({ ...item, description: v })} placeholder="AI 면접 서비스 백엔드 설계 및 개발" textarea rows={2} />
-            <LabeledInput label="기술 스택 (콤마 구분)" value={(item.techStack ?? []).join(", ")} onChange={(v) => update({ ...item, techStack: csvToList(v) })} placeholder="FastAPI, PostgreSQL, Redis" />
+            <LabeledInput label="개요 / 기여" value={item.description} onChange={(v) => update({ ...item, description: v })} placeholder="인스타그램·유튜브 콘텐츠 기획 및 운영으로 팔로워 30% 증가" textarea rows={2} />
+            <LabeledInput label="기술 스택 (콤마 구분)" value={(item.techStack ?? []).join(", ")} onChange={(v) => update({ ...item, techStack: csvToList(v) })} placeholder="Canva, Google Analytics, Meta Ads" />
           </div>
         )}
       />
@@ -312,8 +312,8 @@ export function StructuredFormTab() {
       {/* 산업 도메인 / 키워드 */}
       <Section icon={SECTION_ICONS["산업 도메인 / 키워드"]} title="산업 도메인 / 키워드 (콤마 구분)">
         <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
-          <LabeledInput label="산업 도메인" value={domainsCsv} onChange={setDomainsCsv} placeholder="핀테크, 이커머스" />
-          <LabeledInput label="키워드" value={keywordsCsv} onChange={setKeywordsCsv} placeholder="microservices, pgvector" />
+          <LabeledInput label="산업 도메인" value={domainsCsv} onChange={setDomainsCsv} placeholder="유통, 소비재, 서비스업" />
+          <LabeledInput label="키워드" value={keywordsCsv} onChange={setKeywordsCsv} placeholder="데이터 분석, 프로젝트 관리, 고객 응대" />
         </div>
       </Section>
 
