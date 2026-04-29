@@ -57,7 +57,7 @@ function MoreMenu({ onDelete, onClose }: { onDelete: () => void; onClose: () => 
     >
       <button
         className="flex items-center gap-2 w-full py-[10px] px-3.5 border-none bg-transparent text-[13px] font-semibold text-[#EF4444] cursor-pointer text-left transition-[background] hover:bg-[#FEF2F2]"
-        onClick={() => { onDelete(); onClose(); }}
+        onClick={(e) => { e.stopPropagation(); onDelete(); onClose(); }}
       >
         <Trash2 size={14} /> 채용공고 삭제
       </button>
