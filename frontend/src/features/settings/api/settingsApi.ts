@@ -22,7 +22,6 @@ export interface SettingsProfile {
 export interface SettingsNotifications {
   streakReminder: boolean;
   streakExpire: boolean;
-  streakReward: boolean;
   reportReady: boolean;
   serviceNotice: boolean;
   marketing: boolean;
@@ -55,14 +54,13 @@ export interface ApiResult {
   message: string;
 }
 
-/* ── Fallback Mock (비프로필 영역 — 아직 API 미구현) ── */
-const MOCK_NOTIFICATIONS: SettingsNotifications = {
+/* ── Fallback (이메일 알림 API 호출 실패 시 모든 항목 동의 상태로 가정) ── */
+const FALLBACK_NOTIFICATIONS: SettingsNotifications = {
   streakReminder: true,
   streakExpire: true,
-  streakReward: true,
   reportReady: true,
-  serviceNotice: false,
-  marketing: false,
+  serviceNotice: true,
+  marketing: true,
 };
 
 const MOCK_SUBSCRIPTION: SettingsSubscription = {
@@ -77,21 +75,27 @@ const MOCK_SUBSCRIPTION: SettingsSubscription = {
 /* ── Fetch Settings ──
    - 사용자 기본정보: GET /api/v1/users/me/
    - 프로필 (직군/직업): GET /api/v1/profiles/me/
-   - 나머지는 미구현 → mock fallback
+   - 이메일 알림: GET /api/v1/email-notifications/
+   - 구독: 미구현 → mock fallback
 */
 export async function fetchSettingsApi(): Promise<{ success: boolean; data?: SettingsData; error?: string }> {
   try {
-    const [me, userProfile, myConsents, avatar] = await Promise.allSettled([
+    const [me, userProfile, myConsents, avatar, notifications] = await Promise.allSettled([
       getMeApi(),
       profileApi.getMyProfile(),
       getMyConsentsApi(),
       profileApi.getAvatar(),
+      fetchEmailNotificationsApi(),
     ]);
 
     const meData = me.status === "fulfilled" ? me.value : null;
     const profileData = userProfile.status === "fulfilled" ? userProfile.value : null;
     const consentsData = myConsents.status === "fulfilled" ? myConsents.value : [];
     const avatarData = avatar.status === "fulfilled" ? avatar.value : null;
+    const notificationsData =
+      notifications.status === "fulfilled" && notifications.value.success && notifications.value.data
+        ? notifications.value.data
+        : FALLBACK_NOTIFICATIONS;
 
     const profile: SettingsProfile = {
       name: meData?.name ?? "",
@@ -130,13 +134,26 @@ export async function fetchSettingsApi(): Promise<{ success: boolean; data?: Set
       success: true,
       data: {
         profile,
-        notifications: MOCK_NOTIFICATIONS,
+        notifications: notificationsData,
         subscription: MOCK_SUBSCRIPTION,
         consents,
       },
     };
   } catch {
     return { success: false, error: "설정을 불러오지 못했습니다." };
+  }
+}
+
+/* ── Fetch Email Notifications ── GET /api/v1/email-notifications/ ── */
+export async function fetchEmailNotificationsApi(): Promise<{ success: boolean; data?: SettingsNotifications; message?: string }> {
+  try {
+    const data = await apiRequest<SettingsNotifications>("/api/v1/email-notifications/", {
+      method: "GET",
+      auth: true,
+    });
+    return { success: true, data };
+  } catch {
+    return { success: false, message: "알림 설정을 불러오지 못했습니다." };
   }
 }
 
@@ -183,10 +200,10 @@ export async function changePasswordApi(payload: {
   }
 }
 
-/* ── Update Notifications ── */
-export async function updateNotificationsApi(payload: SettingsNotifications): Promise<ApiResult> {
+/* ── Update Notifications ── PUT /api/v1/email-notifications/ ── */
+export async function updateNotificationsApi(payload: Partial<SettingsNotifications>): Promise<ApiResult> {
   try {
-    await apiRequest("/api/v1/users/notifications/", {
+    await apiRequest("/api/v1/email-notifications/", {
       method: "PUT", auth: true, body: JSON.stringify(payload),
     });
     return { success: true, message: "알림 설정이 저장되었습니다." };
