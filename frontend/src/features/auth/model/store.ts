@@ -12,6 +12,15 @@ import {
   getAccessToken,
   refreshAccessToken,
 } from "@/shared/api/client";
+import { profileApi } from "@/shared/api/profileApi";
+
+function fetchAndSetAvatar(set: (partial: object) => void) {
+  profileApi.getAvatar().then((avatar) => {
+    if (avatar?.avatarUrl) {
+      set((s: { user: UserMe | null }) => s.user ? { user: { ...s.user, avatarUrl: avatar.avatarUrl } } : {});
+    }
+  }).catch(() => {});
+}
 
 interface LoginResult {
   success: boolean;
@@ -77,6 +86,7 @@ export const useAuthStore = create<AuthState>()((set) => ({
     // 로그인 성공 시 사용자 정보 즉시 조회 (isProfileCompleted, isEmailConfirmed 확인)
     const me = await getMeApi();
     set({ isLoading: false, pendingEmail: email, user: me });
+    if (me) fetchAndSetAvatar(set);
     return {
       success: true,
       isEmailConfirmed: me?.isEmailConfirmed ?? res.isEmailConfirmed,
@@ -140,6 +150,7 @@ export const useAuthStore = create<AuthState>()((set) => ({
 
     const me = await getMeApi({ noRetry: true });
     set({ user: me ?? null, authReady: true });
+    if (me) fetchAndSetAvatar(set);
   },
 
   setPendingEmail: (email) => set({ pendingEmail: email }),
