@@ -1,11 +1,11 @@
-import logging
-
+import structlog
+from config.celery import app as redis_app
 from config.celery_sqs import app
 from interviews.enums import TranscriptStatus
 from interviews.models import InterviewTurn
 from interviews.services import UpdateRecordingStepService
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 STEP_FIELD_MAP = {
   "video_converter": "scaled_video_key",
@@ -28,7 +28,7 @@ def _dispatch_transcribe_audio(turn_id: str, output_bucket: str, output_key: str
 
   try:
     InterviewTurn.objects.filter(pk=turn_id).update(transcript_status=TranscriptStatus.PENDING)
-    app.send_task(
+    redis_app.send_task(
       "transcribe_audio",
       kwargs={
         "turn_id": int(turn_id),
@@ -52,7 +52,7 @@ def process_video_step_complete(
   **kwargs,
 ):
   if step not in STEP_FIELD_MAP:
-    logger.warning("Unknown step: %s", step)
+    logger.warning("unknown_step", step=step)
     return
 
   field_name = STEP_FIELD_MAP[step]
@@ -64,13 +64,13 @@ def process_video_step_complete(
       field_name=field_name,
       output_key=output_key,
     ).perform()
-    logger.info("Step complete: session=%s turn=%s step=%s", session_uuid, turn_id, step)
+    logger.info("step_complete", session_uuid=session_uuid, turn_id=turn_id, step=step)
   except Exception:
     logger.exception(
-      "Failed to process step: session=%s turn=%s step=%s",
-      session_uuid,
-      turn_id,
-      step,
+      "step_complete_failed",
+      session_uuid=session_uuid,
+      turn_id=turn_id,
+      step=step,
     )
     raise
 
