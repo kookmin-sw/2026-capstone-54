@@ -49,6 +49,22 @@ CELERY_BEAT_SCHEDULE = {
     "kwargs": {},
     "options": {},
   },
+  # 스트릭 리마인더 이메일 디스패치 (KST 20:00 = 저녁 8시)
+  "notifications.tasks.dispatch_streak_reminder_emails_task.DispatchStreakReminderEmailsTask": {
+    "task": "notifications.tasks.dispatch_streak_reminder_emails_task.DispatchStreakReminderEmailsTask",
+    "schedule": crontab(hour=20, minute=0),
+    "args": (),
+    "kwargs": {},
+    "options": {},
+  },
+  # 스트릭 만료 경고 이메일 디스패치 (KST 23:00 = 자정 1시간 전)
+  "notifications.tasks.dispatch_streak_expire_emails_task.DispatchStreakExpireEmailsTask": {
+    "task": "notifications.tasks.dispatch_streak_expire_emails_task.DispatchStreakExpireEmailsTask",
+    "schedule": crontab(hour=23, minute=0),
+    "args": (),
+    "kwargs": {},
+    "options": {},
+  },
 }
 
 __all__ = [
