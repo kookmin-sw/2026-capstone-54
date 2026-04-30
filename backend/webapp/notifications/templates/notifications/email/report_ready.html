@@ -1,0 +1,43 @@
+{% extends "email/base.html" %}
+
+{% block title %}AI 면접 리뷰 리포트가 준비되었습니다{% endblock %}
+
+{% block icon %}
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto 24px;">
+  <tr>
+    <td style="background-color:#DBEAFE; border-radius:32px; width:64px; height:64px; text-align:center; vertical-align:middle;">
+      <img src="cid:email-icon" alt="Report" width="32" height="32" style="display:inline-block;">
+    </td>
+  </tr>
+</table>
+{% endblock %}
+
+{% block title_text %}AI 면접 리뷰 리포트가 준비되었습니다{% endblock %}
+
+{% block description_text %}
+{{ user_name }}님, 안녕하세요!<br>
+{% if interview_title %}<strong>{{ interview_title }}</strong>{% else %}최근 진행하신 면접{% endif %}에 대한<br>
+AI 분석 리포트가 생성되었습니다.
+{% endblock %}
+
+{% block content %}
+{% if report_url %}
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto 24px;">
+  <tr>
+    <td style="background-color:#0991B2; border-radius:8px; padding:14px 32px;">
+      <a href="{{ report_url }}" style="color:#FFFFFF; font-size:14px; font-weight:600; text-decoration:none; display:inline-block;">
+        리포트 확인하기
+      </a>
+    </td>
+  </tr>
+</table>
+{% endif %}
+<p style="margin:0 0 24px; color:#374151; font-size:14px; line-height:1.7;">
+  강점, 약점, 개선 포인트가 정리되어 있어요.
+</p>
+{% endblock %}
+
+{% block footer_note_text %}본 메일은 면접 리포트 완성 알림에 동의하신 분들께 발송됩니다.{% endblock %}
+
+{% block footer_text1 %}본 이메일은 MeFit 알림 설정에 따라 자동 발송됩니다.{% endblock %}
+{% block footer_text2 %}수신을 원하지 않으시면 설정 &gt; 알림 페이지에서 변경하실 수 있습니다.{% endblock %}
