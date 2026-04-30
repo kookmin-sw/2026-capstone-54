@@ -38,13 +38,13 @@ export function SettingsPage() {
   const navigate = useNavigate();
   const {
     data, loading, saving, error, saveMessage, activePanel,
-    profileDraft, notificationsDraft, passwordDraft, aiDataDraft,
+    profileDraft, passwordDraft, aiDataDraft,
     jobCategories, jobCategoriesLoading, availableJobs, availableJobsLoading,
     fetchSettings, setActivePanel,
     loadJobCategories,
     setProfileDraftField, toggleJobId, uploadAvatar, saveProfile, resetProfileDraft,
     setPasswordDraft, savePassword, resetPasswordDraft,
-    toggleNotification, saveNotifications, resetNotificationsDraft,
+    toggleNotification,
     setAiDataDraft, saveConsents,
     deleteAccount,
     clearMessage,
@@ -207,9 +207,25 @@ export function SettingsPage() {
 
                 {/* ─── NOTIFICATIONS PANEL ─── */}
                 <div className={`${activePanel === "notifications" ? "block animate-[spFadeUp_0.3s_ease_both]" : "hidden"}`}>
-                  <div className="mb-7">
-                    <h1 className="font-plex-sans-kr text-[26px] font-black tracking-[-0.5px] text-[#0A0A0A] mb-[5px]">알림 설정</h1>
-                    <p className="text-[14px] text-[#6B7280] leading-[1.55]">원하는 알림만 골라서 받아보세요</p>
+                  <div className="mb-7 flex items-end justify-between gap-3 max-[640px]:flex-col max-[640px]:items-start">
+                    <div>
+                      <h1 className="font-plex-sans-kr text-[26px] font-black tracking-[-0.5px] text-[#0A0A0A] mb-[5px]">알림 설정</h1>
+                      <p className="text-[14px] text-[#6B7280] leading-[1.55]">원하는 알림만 골라서 받아보세요. 변경 사항은 자동으로 저장됩니다.</p>
+                    </div>
+                    <div className="min-h-[18px] text-[12px] font-bold flex items-center gap-2">
+                      {saving && activePanel === "notifications" && (
+                        <span className="text-[#6B7280] flex items-center gap-1.5">
+                          <span className="w-[12px] h-[12px] border-2 border-[#9CA3AF]/30 border-t-[#0991B2] rounded-full animate-[spSpin_0.6s_linear_infinite]" />
+                          저장 중…
+                        </span>
+                      )}
+                      {!saving && saveMessage && activePanel === "notifications" && (
+                        <span className="text-[#059669] animate-[spFadeUp_0.3s_ease]">✓ {saveMessage}</span>
+                      )}
+                      {!saving && error && activePanel === "notifications" && (
+                        <span className="text-[#EF4444] animate-[spFadeUp_0.3s_ease]">✕ {error}</span>
+                      )}
+                    </div>
                   </div>
 
                   <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl px-7 py-7 shadow-[var(--sc)] mb-4 max-[640px]:px-[18px]">
@@ -219,13 +235,13 @@ export function SettingsPage() {
                     {([
                       { key: "streakReminder", title: "스트릭 리마인더", desc: "오늘 면접 연습을 아직 하지 않았을 때 저녁 8시에 알림" },
                       { key: "streakExpire", title: "스트릭 만료 경고", desc: "자정 1시간 전, 오늘 스트릭이 만료될 예정일 때 알림" },
-                      { key: "streakReward", title: "스트릭 보상 수령", desc: "마일스톤 달성 시 보상이 지급되었을 때 알림" },
                       { key: "reportReady", title: "면접 리포트 완성", desc: "AI 면접 리뷰 리포트 생성이 완료되었을 때 알림" },
                     ] as const).map((item) => (
                       <NotificationToggle
+                        key={item.key}
                         title={item.title}
                         desc={item.desc}
-                        checked={notificationsDraft[item.key] ?? false}
+                        checked={data.notifications[item.key]}
                         onClick={() => toggleNotification(item.key)}
                       />
                     ))}
@@ -240,21 +256,13 @@ export function SettingsPage() {
                       { key: "marketing", title: "마케팅 정보 수신", desc: "할인, 프로모션, 이벤트 등 혜택 정보 이메일 발송" },
                     ] as const).map((item) => (
                       <NotificationToggle
+                        key={item.key}
                         title={item.title}
                         desc={item.desc}
-                        checked={notificationsDraft[item.key] ?? false}
+                        checked={data.notifications[item.key]}
                         onClick={() => toggleNotification(item.key)}
                       />
                     ))}
-                  </div>
-
-                  <div className="flex items-center justify-end gap-[10px] pt-5 border-t border-[#E5E7EB] mt-1 max-[640px]:flex-col-reverse max-[640px]:items-stretch">
-                    {saveMessage && activePanel === "notifications" && <span className="text-[12px] font-bold text-[#059669] mr-auto animate-[spFadeUp_0.3s_ease]">✓ {saveMessage}</span>}
-                    {error && activePanel === "notifications" && <span className="text-[12px] font-bold text-[#EF4444] mr-auto animate-[spFadeUp_0.3s_ease]">✕ {error}</span>}
-                    <button className="font-plex-sans-kr text-[14px] font-semibold text-[#6B7280] bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg px-5 py-[10px] cursor-pointer transition-all duration-150 hover:bg-[#F3F4F6] hover:text-[#0A0A0A]" onClick={resetNotificationsDraft}>취소</button>
-                    <button className="font-plex-sans-kr text-[14px] font-bold text-white bg-[#0A0A0A] border-none rounded-lg px-6 py-[10px] cursor-pointer transition-all duration-150 flex items-center gap-[7px] hover:opacity-85 hover:-translate-y-px disabled:opacity-60 disabled:cursor-not-allowed max-[640px]:justify-center" onClick={saveNotifications} disabled={saving}>
-                      {saving ? <span className="w-[14px] h-[14px] border-2 border-white/40 border-t-white rounded-full animate-[spSpin_0.6s_linear_infinite]" /> : <span>저장하기</span>}
-                    </button>
                   </div>
                 </div>
 

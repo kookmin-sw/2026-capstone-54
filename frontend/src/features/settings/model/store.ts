@@ -26,6 +26,8 @@ interface SettingsState {
   data: SettingsData | null;
   loading: boolean;
   saving: boolean;
+  /* 동시 진행 중인 알림 토글 PUT 개수 (race condition 방지: 모든 요청 완료 시까지 saving 유지) */
+  pendingNotificationRequests: number;
   error: string | null;
   saveMessage: string | null;
   activePanel: SettingsPanel;
@@ -39,7 +41,6 @@ interface SettingsState {
 
   /* Draft state for editing */
   profileDraft: ProfileDraft;
-  notificationsDraft: Partial<SettingsNotifications>;
   passwordDraft: { currentPassword: string; newPassword: string; confirmPassword: string };
   aiDataDraft: boolean | null;
 
@@ -59,9 +60,7 @@ interface SettingsState {
   savePassword: () => Promise<void>;
   resetPasswordDraft: () => void;
 
-  toggleNotification: (key: keyof SettingsNotifications) => void;
-  saveNotifications: () => Promise<void>;
-  resetNotificationsDraft: () => void;
+  toggleNotification: (key: keyof SettingsNotifications) => Promise<void>;
 
   setAiDataDraft: (value: boolean) => void;
   saveConsents: () => Promise<void>;
@@ -78,6 +77,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   data: null,
   loading: false,
   saving: false,
+  pendingNotificationRequests: 0,
   error: null,
   saveMessage: null,
   activePanel: "account" as SettingsPanel,
@@ -89,7 +89,6 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   availableJobsLoading: false,
 
   profileDraft: EMPTY_PROFILE_DRAFT,
-  notificationsDraft: {},
   passwordDraft: { currentPassword: "", newPassword: "", confirmPassword: "" },
   aiDataDraft: null,
 
@@ -107,7 +106,6 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
           jobIds: profile.jobIds,
           careerStage: profile.careerStage,
         },
-        notificationsDraft: { ...res.data.notifications },
         aiDataDraft: res.data.consents.aiDataAgreed,
       });
       // 프로필에 직군이 있으면 해당 직군의 직업 목록을 미리 로드
@@ -271,31 +269,50 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
     set({ passwordDraft: { currentPassword: "", newPassword: "", confirmPassword: "" }, saveMessage: null, error: null });
   },
 
-  toggleNotification: (key) => {
+  toggleNotification: async (key) => {
+    const { data } = get();
+    if (!data) return;
+
+    const previousValue = data.notifications[key];
+    const newValue = !previousValue;
+
+    /* Optimistic update: 즉시 UI 반영 → 실패 시 rollback. 카운터로 동시 요청 추적. */
     set((s) => ({
-      notificationsDraft: { ...s.notificationsDraft, [key]: !s.notificationsDraft[key] },
+      saving: true,
+      pendingNotificationRequests: s.pendingNotificationRequests + 1,
+      error: null,
+      saveMessage: null,
+      data: s.data ? {
+        ...s.data,
+        notifications: { ...s.data.notifications, [key]: newValue },
+      } : s.data,
     }));
-  },
 
-  saveNotifications: async () => {
-    const { notificationsDraft, data } = get();
-    const merged: SettingsNotifications = { ...data!.notifications, ...notificationsDraft };
-    set({ saving: true, error: null, saveMessage: null });
-    const res = await updateNotificationsApi(merged);
+    const res = await updateNotificationsApi({ [key]: newValue });
+
     if (res.success) {
-      set((s) => ({
-        saving: false,
-        saveMessage: res.message,
-        data: s.data ? { ...s.data, notifications: merged } : s.data,
-      }));
+      set((s) => {
+        const remaining = s.pendingNotificationRequests - 1;
+        return {
+          pendingNotificationRequests: remaining,
+          saving: remaining > 0,
+          saveMessage: res.message,
+        };
+      });
     } else {
-      set({ saving: false, error: res.message });
+      set((s) => {
+        const remaining = s.pendingNotificationRequests - 1;
+        return {
+          pendingNotificationRequests: remaining,
+          saving: remaining > 0,
+          error: res.message,
+          data: s.data ? {
+            ...s.data,
+            notifications: { ...s.data.notifications, [key]: previousValue },
+          } : s.data,
+        };
+      });
     }
-  },
-
-  resetNotificationsDraft: () => {
-    const data = get().data;
-    if (data) set({ notificationsDraft: { ...data.notifications }, saveMessage: null });
   },
 
   setAiDataDraft: (value) => set({ aiDataDraft: value }),
