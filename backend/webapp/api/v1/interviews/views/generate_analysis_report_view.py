@@ -2,17 +2,23 @@
 
 사용자가 면접 결과 화면에서 직접 리포트 생성을 요청할 때 호출된다.
 이미 리포트가 있으면 기존 리포트를 재생성한다.
+완료된 세션에 대한 일회성 trigger 라 owner-token 다중 접속 차단 대상이 아니다
+(get_interview_session_for_user 가 user 검증 + status 검사로 충분).
+
+STT (transcript) 가 진행 중인 경우 사용자에게 에러를 노출하지 않는다.
+report 는 PENDING 으로 생성되어 사용자에게 즉시 반환되고,
+analysis-stt 의 마지막 turn 콜백 (save_transcript_result_task) 에서
+모든 STT 가 COMPLETED 인 것을 확인하면 자동으로 dispatch_report_if_ready 가 호출된다.
 """
 
 from api.v1.interviews.serializers import InterviewAnalysisReportSerializer
-from api.v1.interviews.views._owner_validation import require_session_owner_from_request
-from common.exceptions import ConflictException, ValidationException
+from common.exceptions import ValidationException
 from common.permissions import IsEmailVerified
 from common.views import BaseAPIView
 from config.settings.base import TICKET_COST_ANALYSIS_REPORT
 from drf_spectacular.utils import extend_schema
-from interviews.enums import InterviewSessionStatus, TranscriptStatus
-from interviews.models import InterviewAnalysisReport, InterviewTurn
+from interviews.enums import InterviewAnalysisReportStatus, InterviewSessionStatus
+from interviews.models import InterviewAnalysisReport
 from interviews.services import get_interview_session_for_user
 from rest_framework import status
 from rest_framework.response import Response
@@ -26,44 +32,27 @@ class GenerateAnalysisReportView(BaseAPIView):
   @extend_schema(summary="면접 분석 리포트 생성 요청")
   def post(self, request, interview_session_uuid):
     interview_session = get_interview_session_for_user(interview_session_uuid, self.current_user)
-    require_session_owner_from_request(request, interview_session)
 
     if interview_session.interview_session_status == InterviewSessionStatus.IN_PROGRESS:
       raise ValidationException(detail="진행 중인 세션은 리포트를 생성할 수 없습니다.")
     if interview_session.interview_session_status == InterviewSessionStatus.PAUSED:
       raise ValidationException(detail="일시정지된 세션입니다. 재개 후 다시 시도하세요.")
 
-    pending_count = InterviewTurn.objects.filter(
-      interview_session=interview_session,
-      transcript_status__in=[TranscriptStatus.PENDING, TranscriptStatus.PROCESSING],
-    ).count()
-    if pending_count > 0:
-      raise ConflictException(
-        error_code="TRANSCRIPT_PENDING",
-        detail=f"백엔드 STT 가 {pending_count} 건 진행 중입니다. 잠시 후 다시 시도하세요.",
-      )
-
     self._validate_and_use_tickets(interview_session)
 
     report, created = InterviewAnalysisReport.objects.get_or_create(interview_session=interview_session, )
-    if not created:
-      from interviews.enums import InterviewAnalysisReportStatus
 
+    from interviews.services.regenerate_analysis_report_service import (
+      dispatch_report_if_ready,
+      regenerate_analysis_report,
+    )
+
+    if not created:
       if (report.interview_analysis_report_status != InterviewAnalysisReportStatus.FAILED):
         raise ValidationException(detail="리포트가 이미 생성 중이거나 완료되었습니다.")
-      from interviews.services.regenerate_analysis_report_service import (
-        regenerate_analysis_report,
-      )
-
       regenerate_analysis_report(report)
     else:
-      from interviews.services.regenerate_analysis_report_service import (
-        dispatch_report_task,
-        get_resume_bundle_url,
-      )
-
-      bundle_url = get_resume_bundle_url(interview_session)
-      dispatch_report_task(report, bundle_url=bundle_url)
+      dispatch_report_if_ready(report)
 
     return Response(
       InterviewAnalysisReportSerializer(report).data,

@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 from achievements.factories import AchievementFactory, UserAchievementFactory
 from achievements.services import ClaimAchievementRewardService
-from django.db import close_old_connections
+from django.db import connections
 from django.test import TestCase, TransactionTestCase
 from rest_framework.exceptions import ValidationError
 from tickets.models import UserTicket
@@ -77,6 +77,14 @@ class ClaimAchievementRewardServiceTests(TestCase):
 class ClaimAchievementRewardRaceConditionTests(TransactionTestCase):
   reset_sequences = True
 
+  def tearDown(self):
+    super().tearDown()
+    # 동시성 테스트가 worker thread 안에서 close_old_connections() 를 호출하면서
+    # 메인 thread 가 보유한 server-side connection 이 끊긴 상태로 다음 TestCase 의
+    # setUp 까지 살아남는 경우가 있다. 명시적으로 모든 alias 의 connection 을 닫아
+    # 다음 테스트가 fresh connection 으로 시작하도록 한다.
+    connections.close_all()
+
   @patch("tickets.services.grant_tickets_service.GrantTicketsService.execute")
   def test_allows_only_one_claim_under_concurrency(self, mock_grant):
     achievement = AchievementFactory(reward_payload={"type": "ticket", "amount": 3})
@@ -86,7 +94,6 @@ class ClaimAchievementRewardRaceConditionTests(TransactionTestCase):
     errors = []
 
     def claim_in_thread():
-      close_old_connections()
       try:
         barrier.wait(timeout=5)
         result = ClaimAchievementRewardService(
@@ -97,7 +104,7 @@ class ClaimAchievementRewardRaceConditionTests(TransactionTestCase):
       except Exception as exc:  # noqa: BLE001
         errors.append(exc)
       finally:
-        close_old_connections()
+        connections.close_all()
 
     first = threading.Thread(target=claim_in_thread)
     second = threading.Thread(target=claim_in_thread)
