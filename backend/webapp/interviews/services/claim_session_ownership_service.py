@@ -9,7 +9,7 @@ from django.core.cache import cache
 
 
 class ClaimSessionOwnershipService(BaseService):
-  """Redis SETNX 로 인터뷰 세션의 owner 토큰을 발급하고 DB 와 동기화한다."""
+  """인터뷰 세션의 owner 토큰을 발급하고 Redis + DB 에 동기화한다."""
 
   required_value_kwargs = ["session"]
 
@@ -29,13 +29,7 @@ class ClaimSessionOwnershipService(BaseService):
     token_hash = hashlib.sha256(token.encode()).hexdigest()
 
     cache_key = f"interview_session_owner:{session.uuid}"
-    acquired = cache.add(cache_key, token, timeout=self.OWNER_TTL_SECONDS)
-
-    if not acquired:
-      raise ConflictException(
-        error_code="SESSION_OWNED_ELSEWHERE",
-        detail="다른 곳에서 인터뷰가 진행 중입니다.",
-      )
+    cache.set(cache_key, token, timeout=self.OWNER_TTL_SECONDS)
 
     session.mark_owner_changed(token_hash=token_hash)
 

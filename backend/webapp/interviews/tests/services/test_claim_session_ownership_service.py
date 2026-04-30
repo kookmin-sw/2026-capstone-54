@@ -63,15 +63,15 @@ class ClaimSessionOwnershipServiceTests(TestCase):
     cache_key = f"interview_session_owner:{self.session.uuid}"
     self.assertEqual(cache.get(cache_key), result["owner_token"])
 
-  def test_raises_conflict_when_owner_already_held(self):
-    """이미 다른 owner_token 이 점유 중이면 SESSION_OWNED_ELSEWHERE 를 raise 한다."""
+  def test_overwrites_stale_owner_token_for_same_user(self):
+    """이전에 발급된 stale owner_token 이 남아있어도 같은 사용자 재진입 시 새 토큰으로 덮어쓴다."""
     cache_key = f"interview_session_owner:{self.session.uuid}"
-    cache.set(cache_key, "existing-token", timeout=7200)
+    cache.set(cache_key, "stale-token", timeout=7200)
 
-    with self.assertRaises(ConflictException) as ctx:
-      ClaimSessionOwnershipService(user=self.user, session=self.session).perform()
+    result = ClaimSessionOwnershipService(user=self.user, session=self.session).perform()
 
-    self.assertEqual(ctx.exception.error_code, "SESSION_OWNED_ELSEWHERE")
+    self.assertNotEqual(result["owner_token"], "stale-token")
+    self.assertEqual(cache.get(cache_key), result["owner_token"])
 
   def test_raises_conflict_when_user_is_not_owner(self):
     """세션 user 가 아닌 다른 사용자의 claim 은 SESSION_OWNER_REQUIRED 로 거부한다."""
