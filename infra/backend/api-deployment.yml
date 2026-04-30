@@ -6,12 +6,12 @@ metadata:
   labels:
     app: mefit-production-api
 spec:
-  replicas: 2
+  replicas: 1
   strategy:
     type: RollingUpdate
     rollingUpdate:
       maxSurge: 1
-      maxUnavailable: 1
+      maxUnavailable: 0
   selector:
     matchLabels:
       app: mefit-production-api
@@ -20,8 +20,8 @@ spec:
       labels:
         app: mefit-production-api
     spec:
-      # replicas:2 + 각 limit 1.2 vCPU/1229Mi → t3.small(2 vCPU/2GiB) 에 한 replica 라도 가면
-      # 노드 거의 전체를 점유, OOM/Pending 위험. 반드시 m5.large 에 스케줄.
+      # replicas:1, limit 1.2 vCPU/768Mi 로 운영. m5.large nodepool 에 핀.
+      # 배포 시 maxSurge=1/maxUnavailable=0 으로 ~30s 동안 2x 메모리 spike 허용 (zero-downtime).
       nodeSelector:
         nodepool: heavy
       imagePullSecrets:
@@ -68,7 +68,7 @@ spec:
         resources:
           requests:
             cpu: 150m
-            memory: 640Mi
+            memory: 512Mi
           limits:
             cpu: "1.2"
-            memory: 1229Mi
+            memory: 768Mi
