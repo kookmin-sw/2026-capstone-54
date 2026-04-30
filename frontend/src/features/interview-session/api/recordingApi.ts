@@ -1,4 +1,5 @@
 import { apiRequest } from "@/shared/api/client";
+import { ownerHeaders } from "./ownerHeaders";
 
 export interface InitiateRecordingResponse {
   recordingId: string;
@@ -38,6 +39,7 @@ export const recordingApi = {
         method: "POST",
         body: JSON.stringify({ turnId, mediaType }),
         auth: true,
+        headers: ownerHeaders(),
       },
     ),
 
@@ -48,11 +50,16 @@ export const recordingApi = {
         method: "POST",
         body: JSON.stringify({ parts, endTimestamp, durationMs }),
         auth: true,
+        headers: ownerHeaders(),
       },
     ),
 
   abort: (recordingId: string) =>
-    apiRequest<void>(`${BASE}/recordings/${recordingId}/abort/`, { method: "POST", auth: true }),
+    apiRequest<void>(`${BASE}/recordings/${recordingId}/abort/`, {
+      method: "POST",
+      auth: true,
+      headers: ownerHeaders(),
+    }),
 
   presignPart: (recordingId: string, partNumber: number) =>
     apiRequest<{ presignedUrl: string; partNumber: number }>(
