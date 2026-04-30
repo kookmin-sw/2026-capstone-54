@@ -44,7 +44,7 @@ class ChunkPoolBuilder:
         ChunkItem(
           source_label="이력서",
           type_label=ChunkType(emb.chunk_type).label,
-          text=emb.context,
+          text=emb.context.strip(),
         ) for emb in embeddings if emb.context.strip()
       ]
     except Exception:
