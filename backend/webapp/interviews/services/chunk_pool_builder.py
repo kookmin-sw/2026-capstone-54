@@ -37,14 +37,14 @@ class ChunkPoolBuilder:
     if resume is None:
       return []
     try:
-      embeddings = ResumeEmbedding.objects.filter(resume=resume, ).exclude(
+      embeddings = ResumeEmbedding.objects.filter(resume=resume).exclude(
         chunk_type__in=[ct.value for ct in _EXCLUDED_CHUNK_TYPES],
       )
       return [
         ChunkItem(
           source_label="이력서",
           type_label=ChunkType(emb.chunk_type).label,
-          text=emb.context,
+          text=emb.context.strip(),
         ) for emb in embeddings if emb.context.strip()
       ]
     except Exception:
