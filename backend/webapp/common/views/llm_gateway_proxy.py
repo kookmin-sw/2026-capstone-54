@@ -8,6 +8,7 @@ Flower 프록시와 다른 점:
   반드시 그대로 전달해야 한다.
 """
 
+import logging
 import urllib.error
 import urllib.request
 from http.cookies import SimpleCookie
@@ -16,6 +17,8 @@ from urllib.parse import urlparse
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
+
+logger = logging.getLogger(__name__)
 
 _LLM_GATEWAY_BASE = settings.LLM_GATEWAY_INTERNAL_URL
 
@@ -88,6 +91,11 @@ def llm_gateway_proxy(request: HttpRequest, path: str = "") -> HttpResponse:
     body_content = e.read() if hasattr(e, "read") else b""
     return _build_proxy_response(body_content, e.code, e.headers)
   except Exception:
+    logger.exception(
+      "llm_gateway_proxy_failed method=%s target=%s",
+      request.method,
+      target,
+    )
     return HttpResponse(status=502)
 
 
@@ -102,9 +110,25 @@ def _build_proxy_response(content: bytes, status: int, upstream_headers) -> Http
   if upstream_headers is None:
     return response
 
-  for key, value in upstream_headers.items():
-    if key.lower() not in _RESPONSE_SKIP_HEADERS:
-      response[key] = value
+  # urllib 의 HTTPMessage 는 동일 헤더가 여러 번 등장하면 .items() / .keys() 가
+  # 각 인스턴스를 별도 항목으로 yield 한다. 단순 ``response[key] = value`` 루프는
+  # 마지막 값으로 덮어쓰므로 ``Vary``, ``Cache-Control`` 같은 다중값을 잃는다.
+  # RFC 7230 §3.2.2 에 따라 combinable 헤더는 ", " 로 join 해 한 번만 set 한다.
+  # ``Set-Cookie`` 는 join 불가능 — 아래 SimpleCookie 블록에서 별도 처리.
+  seen_keys: set[str] = set()
+  for key in upstream_headers.keys():
+    lowered = key.lower()
+    if lowered in _RESPONSE_SKIP_HEADERS or lowered in seen_keys:
+      continue
+    seen_keys.add(lowered)
+    if hasattr(upstream_headers, "get_all"):
+      values = upstream_headers.get_all(key) or []
+    else:
+      single = upstream_headers.get(key)
+      values = [single] if single is not None else []
+    values = [v for v in values if v is not None]
+    if values:
+      response[key] = ", ".join(values)
 
   # LiteLLM 의 ``token`` / ``litellm_cp_return_to`` 쿠키 등을 SimpleCookie 로
   # 파싱해 morsel 속성(HttpOnly, Secure, SameSite ...) 을 보존하면서 재설정.
