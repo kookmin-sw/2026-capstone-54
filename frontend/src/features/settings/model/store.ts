@@ -26,6 +26,8 @@ interface SettingsState {
   data: SettingsData | null;
   loading: boolean;
   saving: boolean;
+  /* 동시 진행 중인 알림 토글 PUT 개수 (race condition 방지: 모든 요청 완료 시까지 saving 유지) */
+  pendingNotificationRequests: number;
   error: string | null;
   saveMessage: string | null;
   activePanel: SettingsPanel;
@@ -75,6 +77,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   data: null,
   loading: false,
   saving: false,
+  pendingNotificationRequests: 0,
   error: null,
   saveMessage: null,
   activePanel: "account" as SettingsPanel,
@@ -273,9 +276,10 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
     const previousValue = data.notifications[key];
     const newValue = !previousValue;
 
-    /* Optimistic update: 즉시 UI 반영 → 실패 시 rollback */
+    /* Optimistic update: 즉시 UI 반영 → 실패 시 rollback. 카운터로 동시 요청 추적. */
     set((s) => ({
       saving: true,
+      pendingNotificationRequests: s.pendingNotificationRequests + 1,
       error: null,
       saveMessage: null,
       data: s.data ? {
@@ -287,16 +291,27 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
     const res = await updateNotificationsApi({ [key]: newValue });
 
     if (res.success) {
-      set({ saving: false, saveMessage: res.message });
+      set((s) => {
+        const remaining = s.pendingNotificationRequests - 1;
+        return {
+          pendingNotificationRequests: remaining,
+          saving: remaining > 0,
+          saveMessage: res.message,
+        };
+      });
     } else {
-      set((s) => ({
-        saving: false,
-        error: res.message,
-        data: s.data ? {
-          ...s.data,
-          notifications: { ...s.data.notifications, [key]: previousValue },
-        } : s.data,
-      }));
+      set((s) => {
+        const remaining = s.pendingNotificationRequests - 1;
+        return {
+          pendingNotificationRequests: remaining,
+          saving: remaining > 0,
+          error: res.message,
+          data: s.data ? {
+            ...s.data,
+            notifications: { ...s.data.notifications, [key]: previousValue },
+          } : s.data,
+        };
+      });
     }
   },
 
