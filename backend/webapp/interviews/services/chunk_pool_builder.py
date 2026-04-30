@@ -1,7 +1,7 @@
 """ChunkPoolBuilder 서비스.
 
 ResumeEmbedding 테이블과 JobDescription 모델에서 청크를 수집하여
-청크 풀을 구성한다. TEXT, SUMMARY 유형은 제외한다.
+청크 풀을 구성한다. TEXT, SUMMARY 유형은 제외한다
 """
 
 from __future__ import annotations
