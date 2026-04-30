@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mefit-production-analysis-stt-worker
+  namespace: mefit-backend-production
+  labels:
+    app: mefit-production-analysis-stt-worker
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: mefit-production-analysis-stt-worker
+  template:
+    metadata:
+      labels:
+        app: mefit-production-analysis-stt-worker
+    spec:
+      # faster-whisper 모델 로딩(~600MB) + 추론 burst 시 2Gi 메모리/2 vCPU 까지 사용 가능 →
+      # t3.small(2GiB) 노드에서는 OOM 위험. 반드시 m5.large(8GiB) 에 스케줄.
+      nodeSelector:
+        nodepool: heavy
+      imagePullSecrets:
+        - name: mefit-production-dockerhub
+      containers:
+        - name: analysis-stt-worker
+          image: teammefit/mefit-analysis-stt:production
+          imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+                name: mefit-production-analysis-stt-env
+            - secretRef:
+                name: mefit-production-analysis-stt-secret
+          # faster-whisper small 모델 로딩 + 추론을 고려한 자원.
+          # 첫 startup 시 HuggingFace 모델 다운로드 (~600MB), int8 small inference 는 short audio 기준 5-10s.
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "2000m"
+              memory: "2Gi"
+          volumeMounts:
+            - name: hf-cache
+              mountPath: /root/.cache/huggingface
+            - name: tmp
+              mountPath: /tmp
+          # Celery worker 는 별도 HTTP probe 가 없어 process liveness 만 검사.
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - "celery -A app.celery_app inspect ping -d celery@$HOSTNAME -t 10 || exit 1"
+            initialDelaySeconds: 90
+            periodSeconds: 60
+            timeoutSeconds: 15
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - "celery -A app.celery_app inspect ping -d celery@$HOSTNAME -t 5 || exit 1"
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 5
+      volumes:
+        # Pod lifecycle 동안 모델 캐시 유지 (재시작 시 재다운로드, 다중 Pod 사이 공유 X).
+        # 더 빠른 cold start 가 필요하면 PVC 로 교체 권장.
+        - name: hf-cache
+          emptyDir:
+            sizeLimit: 2Gi
+        # 임시 audio 파일 저장용. faster-whisper transcribe 시 mkstemp 사용.
+        - name: tmp
+          emptyDir:
+            sizeLimit: 1Gi
+      # 모델 로딩 시간 + queue drain 고려한 종료 grace.
+      terminationGracePeriodSeconds: 60

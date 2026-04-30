@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mefit-production-analysis-stt-env
+  namespace: mefit-backend-production
+data:
+  # Celery broker / result backend (기존 Redis 공유)
+  CELERY_BROKER_URL: "redis://mefit-production-redis:6379/0"
+  CELERY_RESULT_BACKEND: "redis://mefit-production-redis:6379/1"
+
+  # 동시 처리 수 — faster-whisper 모델이 Pod 당 1 개라 1 권장
+  ANALYSIS_STT_CONCURRENCY: "1"
+
+  # faster-whisper 설정 (CPU + int8 small)
+  STT_MODEL_SIZE: "small"
+  STT_DEVICE: "cpu"
+  STT_COMPUTE_TYPE: "int8"
+  STT_DEFAULT_LANGUAGE: "ko"
+
+  # AWS S3 (audio download)
+  # 운영: endpoint 미설정 (실제 AWS), 인스턴스 프로파일 / IRSA 로 인증 권장
+  AWS_S3_REGION_NAME: "us-east-1"
+
+  # backend Celery 의 SaveTranscriptResultTask 콜백 경로
+  BACKEND_CALLBACK_TASK_NAME: "interviews.tasks.save_transcript_result_task.SaveTranscriptResultTask"
+  BACKEND_CALLBACK_QUEUE: "celery"
+
+  # HuggingFace 모델 캐시 위치 (volumeMount 와 일치해야 한다)
+  HF_HOME: "/root/.cache/huggingface"
+
+  LOG_LEVEL: "INFO"
