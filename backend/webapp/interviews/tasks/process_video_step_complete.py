@@ -12,14 +12,24 @@ logger = structlog.get_logger(__name__)
 
 
 def _send_dispatch_failure_alert(*, exc: Exception, source: str) -> None:
-  """SendErrorAlertTask 로 Slack 알림 발송. broker 장애 등으로 알림 자체가 실패해도 swallow."""
+  """SendErrorAlertTask 를 .apply() 로 동기 실행 — broker 무관하게 Slack HTTP 직접 호출.
+
+  .delay() 를 쓰면 알림 task 자체가 같은 broker 를 거치므로, broker 장애가
+  원인인 dispatch 실패에서는 알림 task 도 동일하게 실패한다 (특히 빈 broker URL
+  의 memory:// silent fallback). .apply() 는 현재 프로세스에서 동기 실행하여
+  broker 의존성을 제거한다.
+
+  Slack API 자체가 실패해도 swallow — 무한 재귀 / 로그 폭주 방지.
+  """
   try:
-    RegisteredSendErrorAlertTask.delay(
-      error_type=type(exc).__name__,
-      error_message=str(exc),
-      path=source,
-      method="CELERY_TASK",
-      traceback=tb_module.format_exc(),
+    RegisteredSendErrorAlertTask.apply(
+      kwargs={
+        "error_type": type(exc).__name__,
+        "error_message": str(exc),
+        "path": source,
+        "method": "CELERY_TASK",
+        "traceback": tb_module.format_exc(),
+      }
     )
   except Exception:
     logger.exception("send_error_alert_dispatch_failed", source=source)
