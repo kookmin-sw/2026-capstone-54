@@ -6,7 +6,7 @@ metadata:
   labels:
     app: mefit-production-llm-gateway
 spec:
-  replicas: 2
+  replicas: 1
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -50,7 +50,7 @@ spec:
             - "--port"
             - "4000"
             - "--num_workers"
-            - "2"
+            - "1"
           readinessProbe:
             httpGet:
               path: /health/readiness
@@ -66,11 +66,11 @@ spec:
             periodSeconds: 30
           resources:
             requests:
-              cpu: 200m
-              memory: 512Mi
+              cpu: 100m
+              memory: 256Mi
             limits:
-              cpu: "1.0"
-              memory: 1Gi
+              cpu: 500m
+              memory: 512Mi
       volumes:
         - name: config
           configMap:
