@@ -250,7 +250,7 @@ class CreatedAtRangeFilterTests(_AuthenticatedFilterTestCase):
 
   def test_created_at_after_returns_sessions_at_or_after_threshold(self):
     """created_at_after 는 임계값 이후(gte) 세션을 반환한다."""
-    threshold = (self.now - timezone.timedelta(days=20)).isoformat()
+    threshold = (self.now - timezone.timedelta(days=20)).date().isoformat()
 
     response = self.client.get(self.url, {"created_at_after": threshold})
 
@@ -262,7 +262,7 @@ class CreatedAtRangeFilterTests(_AuthenticatedFilterTestCase):
 
   def test_created_at_before_returns_sessions_at_or_before_threshold(self):
     """created_at_before 는 임계값 이전(lte) 세션을 반환한다."""
-    threshold = (self.now - timezone.timedelta(days=10)).isoformat()
+    threshold = (self.now - timezone.timedelta(days=10)).date().isoformat()
 
     response = self.client.get(self.url, {"created_at_before": threshold})
 
@@ -274,8 +274,8 @@ class CreatedAtRangeFilterTests(_AuthenticatedFilterTestCase):
 
   def test_created_at_range_combined(self):
     """created_at_after + created_at_before 조합으로 범위 필터링된다."""
-    after = (self.now - timezone.timedelta(days=20)).isoformat()
-    before = (self.now - timezone.timedelta(days=10)).isoformat()
+    after = (self.now - timezone.timedelta(days=20)).date().isoformat()
+    before = (self.now - timezone.timedelta(days=10)).date().isoformat()
 
     response = self.client.get(self.url, {"created_at_after": after, "created_at_before": before})
 
@@ -284,7 +284,7 @@ class CreatedAtRangeFilterTests(_AuthenticatedFilterTestCase):
 
   def test_created_at_range_with_no_match_returns_empty(self):
     """범위에 해당하는 세션이 없으면 빈 결과를 반환한다."""
-    after = (self.now + timezone.timedelta(days=1)).isoformat()
+    after = (self.now + timezone.timedelta(days=1)).date().isoformat()
 
     response = self.client.get(self.url, {"created_at_after": after})
 
