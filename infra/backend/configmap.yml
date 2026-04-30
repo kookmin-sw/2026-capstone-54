@@ -7,7 +7,10 @@ data:
   DJANGO_SETTINGS_MODULE: "config.settings.production"
   REDIS_HOST: "mefit-production-redis"
   REDIS_PORT: "6379"
-  CELERY_BROKER_URL: "redis://mefit-production-redis:6379/0"
+  # CELERY_BROKER_URL 은 의도적으로 미주입 — Celery 의 env var fallback 동작 때문에 이 값이
+  # 환경변수로 set 되어 있으면 config.celery_sqs.app (namespace="CELERY_SQS") 의 broker_url 까지
+  # 강제로 같은 redis URL 로 덮어써져 SQS 큐 listening 이 깨진다. 대신 settings/components/celery.py
+  # 의 default `f"redis://{REDIS_HOST}:{REDIS_PORT}/0"` 를 통해 구성됨 (REDIS_HOST 위에 정의됨).
   CELERY_RESULT_BACKEND: "django-db"
   VIDEO_S3_BUCKET: "pj-kmucd1-04-mefit-video-files"
   SCALED_VIDEO_S3_BUCKET: "pj-kmucd1-04-mefit-scaled-video-files"
