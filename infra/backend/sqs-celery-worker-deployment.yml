@@ -34,6 +34,8 @@ spec:
         env:
         - name: CELERY_BROKER_URL
           value: ""
+        - name: DJANGO_APPLICATION_NAME
+          value: "mefit-sqs-celery-worker"
         command: [ "celery" ]
         args: [ "-A", "config.celery_sqs", "worker", "-Q", "mefit-video-step-complete", "-l", "INFO", "--concurrency", "2", "--without-heartbeat", "--without-mingle", "--without-gossip" ]
         resources:

@@ -37,6 +37,8 @@ spec:
             # Migrate job은 단일 연결만 사용하도록 설정
             - name: CONN_MAX_AGE
               value: "0"
+            - name: DJANGO_APPLICATION_NAME
+              value: "mefit-migrate"
           resources:
             requests:
               cpu: 100m

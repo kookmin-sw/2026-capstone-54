@@ -20,6 +20,10 @@ spec:
       labels:
         app: mefit-production-api
     spec:
+      # replicas:2 + 각 limit 1.2 vCPU/1229Mi → t3.small(2 vCPU/2GiB) 에 한 replica 라도 가면
+      # 노드 거의 전체를 점유, OOM/Pending 위험. 반드시 m5.large 에 스케줄.
+      nodeSelector:
+        nodepool: heavy
       imagePullSecrets:
       - name: mefit-production-dockerhub
       containers:
@@ -33,6 +37,9 @@ spec:
             name: mefit-production-env
         - secretRef:
             name: mefit-production-secret
+        env:
+        - name: DJANGO_APPLICATION_NAME
+          value: "mefit-api"
         command: [ "uvicorn" ]
         args:
         - "config.asgi:application"

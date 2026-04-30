@@ -20,6 +20,10 @@ spec:
       labels:
         app: mefit-production-scraper-worker
     spec:
+      # Chromium 2개 인스턴스 + /dev/shm 512Mi(RAM) → 메모리 사용량이 t3.small(2GiB) 한도를 즉시 초과.
+      # 반드시 m5.large 에 스케줄.
+      nodeSelector:
+        nodepool: heavy
       imagePullSecrets:
         - name: mefit-production-dockerhub
       containers:

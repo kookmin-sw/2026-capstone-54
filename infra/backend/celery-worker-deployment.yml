@@ -31,6 +31,9 @@ spec:
                 name: mefit-production-env
             - secretRef:
                 name: mefit-production-secret
+          env:
+            - name: DJANGO_APPLICATION_NAME
+              value: "mefit-celery-worker"
           command: ["celery"]
           args: ["-A", "config", "worker", "-l", "INFO", "-E", "--concurrency", "2"]
           resources:
