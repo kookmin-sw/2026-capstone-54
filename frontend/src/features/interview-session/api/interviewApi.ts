@@ -1,10 +1,13 @@
 import { apiRequest } from "@/shared/api/client";
+import { ownerHeaders } from "./ownerHeaders";
 import type {
   InterviewSession,
   InterviewTurn,
   InterviewAnalysisReport,
   CreateInterviewSessionParams,
+  StartInterviewResponse,
   SubmitAnswerResponse,
+  TakeoverInterviewSessionResponse,
   PaginatedResponse,
   InterviewSessionListItem,
   BehaviorAnalysis,
@@ -24,7 +27,13 @@ export const interviewApi = {
     apiRequest<InterviewSession>(`${BASE}/${interviewSessionUuid}/`, { auth: true }),
 
   startInterview: (interviewSessionUuid: string) =>
-    apiRequest<InterviewTurn[]>(`${BASE}/${interviewSessionUuid}/start/`, {
+    apiRequest<StartInterviewResponse>(`${BASE}/${interviewSessionUuid}/start/`, {
+      method: "POST",
+      auth: true,
+    }),
+
+  takeoverInterviewSession: (interviewSessionUuid: string) =>
+    apiRequest<TakeoverInterviewSessionResponse>(`${BASE}/${interviewSessionUuid}/takeover/`, {
       method: "POST",
       auth: true,
     }),
@@ -40,13 +49,22 @@ export const interviewApi = {
   ) =>
     apiRequest<SubmitAnswerResponse>(
       `${BASE}/${interviewSessionUuid}/turns/${turnPk}/answer/`,
-      { method: "POST", body: JSON.stringify({ answer, speech_segments: speechSegments ?? [] }), auth: true },
+      {
+        method: "POST",
+        body: JSON.stringify({
+          answer,
+          speech_segments: speechSegments ?? [],
+        }),
+        auth: true,
+        headers: ownerHeaders(),
+      },
     ),
 
   finishInterview: (interviewSessionUuid: string) =>
     apiRequest<{ status: string }>(`${BASE}/${interviewSessionUuid}/finish/`, {
       method: "POST",
       auth: true,
+      headers: ownerHeaders(),
     }),
 
   getInterviewAnalysisReport: (interviewSessionUuid: string) =>
@@ -64,6 +82,7 @@ export const interviewApi = {
     apiRequest<InterviewAnalysisReport>(`${BASE}/${interviewSessionUuid}/generate-report/`, {
       method: "POST",
       auth: true,
+      headers: ownerHeaders(),
     }),
 
   getBehaviorAnalyses: (interviewSessionUuid: string) =>

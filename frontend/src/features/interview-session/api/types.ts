@@ -2,9 +2,12 @@
 export type InterviewSessionType = "followup" | "full_process";
 export type InterviewDifficultyLevel = "friendly" | "normal" | "pressure";
 export type InterviewPracticeMode = "practice" | "real";
-export type InterviewSessionStatus = "in_progress" | "completed";
+export type InterviewSessionStatus = "in_progress" | "paused" | "completed";
 export type InterviewTurnType = "initial" | "followup";
 export type InterviewAnalysisReportStatus = "pending" | "generating" | "completed" | "failed";
+export type InterviewSttMode = "browser" | "backend";
+export type TranscriptStatus = "pending" | "processing" | "completed" | "failed" | null;
+export type TranscriptSource = "browser_stt" | "backend_stt" | "none";
 
 // ── Core Models ──
 export interface InterviewSession {
@@ -36,6 +39,10 @@ export interface InterviewTurn {
   turnNumber: number;
   followupOrder: number | null;
   createdAt: string;
+  transcriptStatus?: TranscriptStatus;
+  transcriptSource?: TranscriptSource;
+  transcriptErrorCode?: string;
+  transcriptText?: string;
 }
 
 // ── Report Models ──
@@ -80,6 +87,19 @@ export interface CreateInterviewSessionParams {
   interview_session_type: InterviewSessionType;
   interview_difficulty_level: InterviewDifficultyLevel;
   interview_practice_mode: InterviewPracticeMode;
+}
+
+export interface StartInterviewResponse {
+  turns: InterviewTurn[];
+  ownerToken: string;
+  ownerVersion: number;
+  wsTicket: string;
+}
+
+export interface TakeoverInterviewSessionResponse {
+  ownerToken: string;
+  ownerVersion: number;
+  wsTicket: string;
 }
 
 export interface SubmitAnswerFollowupResponse {
