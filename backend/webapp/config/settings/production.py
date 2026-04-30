@@ -5,6 +5,7 @@ from .base import *  # noqa: F401, F403
 ENVIRONMENT = "production"
 
 FLOWER_INTERNAL_URL = "http://mefit-production-flower:5555"
+LLM_GATEWAY_INTERNAL_URL = "http://mefit-llm-gateway:4000"
 
 SIMPLE_JWT = {
   **SIMPLE_JWT,  # noqa: F405

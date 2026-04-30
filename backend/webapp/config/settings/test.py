@@ -66,6 +66,8 @@ CHANNEL_LAYERS = {
 
 # 테스트에서는 Flower를 사용하지 않으므로 더미 값으로 scheme 검증만 통과
 FLOWER_INTERNAL_URL = "http://localhost:5555"
+# LiteLLM Gateway 도 테스트에서 사용하지 않음 — 빈 문자열이면 프록시 view 가 503 반환.
+LLM_GATEWAY_INTERNAL_URL = ""
 
 CELERY_TASK_ALWAYS_EAGER = True
 CELERY_TASK_EAGER_PROPAGATES = True

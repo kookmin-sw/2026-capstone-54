@@ -36,6 +36,11 @@ ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
 OPENAI_API_KEY = env.str("OPENAI_API_KEY", default="")
 OPENAI_MODEL = env.str("OPENAI_MODEL", default="gpt-4o-mini")
 OPENAI_EMBEDDING_MODEL = env.str("OPENAI_EMBEDDING_MODEL", default="text-embedding-3-small")
+# LLM Gateway (LiteLLM) base URL.
+# - 비어 있으면 OpenAI 직통 (로컬 개발 기본값)
+# - 설정 시 게이트웨이 경유 (예: 운영 K3s = "http://mefit-llm-gateway:4000/v1",
+#   로컬 docker-compose = "http://localhost:4000/v1")
+OPENAI_BASE_URL = env.str("OPENAI_BASE_URL", default="")
 
 ROOT_URLCONF = "config.urls"
 
