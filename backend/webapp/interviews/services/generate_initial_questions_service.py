@@ -15,6 +15,7 @@ from common.services.base_service import BaseService
 from django.conf import settings
 from django.db import transaction
 from django.db.models.functions import Coalesce
+from interviews.constants import FOLLOWUP_ANCHOR_COUNT
 from interviews.enums import (
   InterviewExchangeType,
   InterviewSessionStatus,
@@ -23,6 +24,8 @@ from interviews.enums import (
 )
 from interviews.models import InterviewSession, InterviewTurn
 from interviews.schemas import QuestionGeneratorInput, QuestionGeneratorOutput
+from interviews.schemas.chunk_item import ChunkItem
+from interviews.services.chunk_pool_builder import ChunkPoolBuilder
 from interviews.services.content_service import (
   get_job_description_content,
   get_resume_content,
@@ -33,6 +36,7 @@ from interviews.services.llm import (
   TokenUsageCallback,
   calculate_cost,
 )
+from interviews.services.random_chunk_selector import RandomChunkSelector
 from llm_trackers.enums import TokenOperation, TokenUsageContext
 from llm_trackers.models import TokenUsage
 
@@ -74,23 +78,65 @@ class GenerateInitialQuestionsService(BaseService):
     self.interview_session: InterviewSession = self.kwargs["interview_session"]
 
   def _call_llm(self) -> tuple[QuestionGeneratorOutput, TokenUsageCallback]:
-    resume_content = get_resume_content(self.interview_session.resume)
-    job_description_content = get_job_description_content(self.interview_session.user_job_description)
+    session = self.interview_session
 
+    # 청크 풀 구성
+    builder = ChunkPoolBuilder()
+    jd = session.user_job_description.job_description if session.user_job_description else None
+    chunk_pool = builder.build(session.resume, jd)
+
+    # 청크 풀이 비어있으면 기존 방식으로 폴백
+    if not chunk_pool:
+      return self._call_llm_fallback()
+
+    # 세션 타입에 따른 청크 수 결정
+    n = FOLLOWUP_ANCHOR_COUNT if session.interview_session_type == InterviewSessionType.FOLLOWUP else 10
+
+    # 랜덤 청크 선택
+    selector = RandomChunkSelector()
+    selected_chunks = selector.select(chunk_pool, n)
+
+    # 청크 기반 질문 생성
     input_data = QuestionGeneratorInput(
-      resume_content=resume_content,
-      job_description_content=job_description_content,
-      question_difficulty_level=self.interview_session.interview_difficulty_level,
+      chunks=selected_chunks,
+      question_difficulty_level=session.interview_difficulty_level,
     )
     callback = TokenUsageCallback()
 
     generator = (
-      FollowupInterviewQuestionGenerator() if self.interview_session.interview_session_type
-      == InterviewSessionType.FOLLOWUP else FullProcessInterviewQuestionGenerator()
+      FollowupInterviewQuestionGenerator()
+      if session.interview_session_type == InterviewSessionType.FOLLOWUP else FullProcessInterviewQuestionGenerator()
     )
 
     output = generator.generate(input_data, callback=callback)
+    return output, callback
 
+  def _call_llm_fallback(self) -> tuple[QuestionGeneratorOutput, TokenUsageCallback]:
+    """청크 풀이 비어있을 때 기존 전문 텍스트 기반 방식으로 폴백."""
+    session = self.interview_session
+
+    resume_content = get_resume_content(session.resume)
+    job_description_content = get_job_description_content(session.user_job_description)
+
+    # 폴백용 입력: 전문 텍스트를 단일 청크로 변환
+    chunks: list[ChunkItem] = []
+    if resume_content.strip():
+      chunks.append(ChunkItem(source_label="이력서", type_label="전문", text=resume_content))
+    if job_description_content.strip():
+      chunks.append(ChunkItem(source_label="채용공고", type_label="전문", text=job_description_content))
+
+    input_data = QuestionGeneratorInput(
+      chunks=chunks,
+      question_difficulty_level=session.interview_difficulty_level,
+    )
+    callback = TokenUsageCallback()
+
+    generator = (
+      FollowupInterviewQuestionGenerator()
+      if session.interview_session_type == InterviewSessionType.FOLLOWUP else FullProcessInterviewQuestionGenerator()
+    )
+
+    output = generator.generate(input_data, callback=callback)
     return output, callback
 
   def execute(self) -> list[InterviewTurn]:
