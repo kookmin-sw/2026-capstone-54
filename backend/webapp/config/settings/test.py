@@ -76,8 +76,10 @@ CELERY_RESULT_BACKEND = "cache+memory://"
 CELERY_BEAT_SCHEDULER = None
 
 # 테스트 환경에서 persistent connection 비활성화 (teardown 시 DB drop 실패 방지)
+# CONN_HEALTH_CHECKS 는 활성화: Celery eager 태스크의 close_old_connections() 가 닫은
+# stale connection 을 후속 테스트 setUp 이 재사용하다 OperationalError 가 나는 문제를 차단.
 DATABASES["default"]["CONN_MAX_AGE"] = 0  # noqa: F405
-DATABASES["default"]["CONN_HEALTH_CHECKS"] = False  # noqa: F405
+DATABASES["default"]["CONN_HEALTH_CHECKS"] = True  # noqa: F405
 
 # 테스트 환경에서는 OPENAI API를 직접 접근하지 않게 한다.
 OPENAI_API_KEY = "demo-api-key"
