@@ -53,4 +53,7 @@ class TokenRefreshAPIView(BaseAPIView):
     except TokenError as exc:
       raise AuthenticationFailed(str(exc))
     except get_user_model().DoesNotExist:
-      raise AuthenticationFailed("사용자를 찾을 수 없습니다. 탈퇴했거나 삭제된 계정일 수 있습니다.")
+      raise AuthenticationFailed(
+        detail="사용자를 찾을 수 없습니다. 탈퇴했거나 삭제된 계정일 수 있습니다.",
+        code="user_not_found",
+      )

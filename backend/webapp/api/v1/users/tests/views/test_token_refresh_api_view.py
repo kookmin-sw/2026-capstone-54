@@ -72,3 +72,18 @@ class TokenRefreshAPIViewPropertyTests(TestCase):
     self.assertEqual(response.status_code, status.HTTP_200_OK)
     self.assertIn("mefit_refresh", response.cookies)
     self.assertNotEqual(response.cookies["mefit_refresh"].value, old_refresh)
+
+  @given(st.just(None))
+  @settings(max_examples=1, deadline=None)
+  def test_refresh_for_soft_deleted_user_returns_401(self, _):
+    """탈퇴한 사용자의 refresh 토큰을 전달하면 401 응답과 사용자 미존재 메시지가 반환된다."""
+    refresh = RefreshToken.for_user(self.user)
+    refresh_str = str(refresh)
+
+    self.user.delete()
+
+    self.client.cookies["mefit_refresh"] = refresh_str
+    response = self.client.post(self.url, {}, format="json")
+
+    self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+    self.assertIn("사용자를 찾을 수 없습니다", response.data["message"])
