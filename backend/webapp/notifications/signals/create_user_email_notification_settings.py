@@ -34,15 +34,14 @@ def create_user_email_notification_settings_on_user_created(
     return
 
   user_id = instance.pk
-  db_alias = using
 
   def _ensure_settings():
     try:
-      UserEmailNotificationSettings.objects.using(db_alias).get_or_create(
+      UserEmailNotificationSettings.objects.get_or_create(
         user_id=user_id,
         defaults=UserEmailNotificationSettings.default_consent_defaults(),
       )
     except IntegrityError:
       pass
 
-  transaction.on_commit(_ensure_settings, using=db_alias)
+  transaction.on_commit(_ensure_settings)

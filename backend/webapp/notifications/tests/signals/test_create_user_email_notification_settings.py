@@ -10,7 +10,7 @@ class CreateUserEmailNotificationSettingsSignalTests(TestCase):
 
   @patch(
     "notifications.signals.create_user_email_notification_settings.transaction.on_commit",
-    side_effect=lambda cb, using=None: cb(),
+    side_effect=lambda cb: cb(),
   )
   def test_creates_settings_on_user_creation(self, _mock_on_commit):
     user = UserFactory()
@@ -20,7 +20,7 @@ class CreateUserEmailNotificationSettingsSignalTests(TestCase):
 
   @patch(
     "notifications.signals.create_user_email_notification_settings.transaction.on_commit",
-    side_effect=lambda cb, using=None: cb(),
+    side_effect=lambda cb: cb(),
   )
   def test_default_consent_is_opted_in_for_all_notifications(self, _mock_on_commit):
     """신규 가입자는 모든 알림에 대해 동의 상태로 시작한다 (사업 정책)."""
@@ -40,7 +40,7 @@ class CreateUserEmailNotificationSettingsSignalTests(TestCase):
 
   @patch(
     "notifications.signals.create_user_email_notification_settings.transaction.on_commit",
-    side_effect=lambda cb, using=None: cb(),
+    side_effect=lambda cb: cb(),
   )
   def test_does_not_recreate_settings_on_user_update(self, _mock_on_commit):
     user = UserFactory()
@@ -55,28 +55,36 @@ class CreateUserEmailNotificationSettingsSignalTests(TestCase):
 
   @patch(
     "notifications.signals.create_user_email_notification_settings.transaction.on_commit",
-    side_effect=lambda cb, using=None: cb(),
+    side_effect=lambda cb: cb(),
   )
-  def test_does_not_create_settings_on_raw_save(self, _mock_on_commit):
-    """fixture 로딩 (raw=True) 시에는 시그널이 건너뛴다."""
-    from django.db.models.signals import post_save
+  def test_does_not_create_settings_on_raw_signal(self, _mock_on_commit):
+    """fixture 로딩(raw=True) 케이스에서는 시그널이 건너뛴다."""
+    from notifications.signals.create_user_email_notification_settings import (
+      create_user_email_notification_settings_on_user_created,
+    )
     from users.models import User
 
-    user = UserFactory.build(email="raw-fixture@example.com")
-    user.save_base(raw=True, force_insert=True)
-    post_save.send(sender=User, instance=user, created=True, raw=True, using="default")
+    user = UserFactory()
+    initial_count = UserEmailNotificationSettings.objects.count()
 
-    self.assertFalse(UserEmailNotificationSettings.objects.filter(user=user).exists())
+    create_user_email_notification_settings_on_user_created(
+      sender=User,
+      instance=user,
+      created=True,
+      raw=True,
+      using="default",
+    )
+
+    self.assertEqual(UserEmailNotificationSettings.objects.count(), initial_count)
 
   @patch(
     "notifications.signals.create_user_email_notification_settings.transaction.on_commit",
-    side_effect=lambda cb, using=None: cb(),
+    side_effect=lambda cb: cb(),
   )
-  def test_idempotent_on_integrity_error(self, _mock_on_commit):
-    """동시 트랜잭션이 이미 row 를 만든 경우에도 IntegrityError 가 swallow 된다."""
+  def test_idempotent_on_repeat_signal(self, _mock_on_commit):
+    """동일 user 에 대해 시그널이 재호출되어도 row 가 추가 생성되지 않는다 (race 방어)."""
     user = UserFactory()
-    initial_count = UserEmailNotificationSettings.objects.filter(user=user).count()
-    self.assertEqual(initial_count, 1)
+    self.assertEqual(UserEmailNotificationSettings.objects.filter(user=user).count(), 1)
 
     from notifications.signals.create_user_email_notification_settings import (
       create_user_email_notification_settings_on_user_created,
