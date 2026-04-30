@@ -81,7 +81,12 @@ class _BaseBroadcastEmailAdminView(UnfoldModelAdminViewMixin, TemplateView):
     opted_in_field = EmailNotificationType.opted_in_field(self.notification_type.value)
     raw = form.cleaned_data.get("target_user_ids", "").strip()
 
-    base_qs = UserEmailNotificationSettings.objects.filter(**{f"{opted_in_field}__isnull": False})
+    base_qs = UserEmailNotificationSettings.objects.filter(
+      **{
+        f"{opted_in_field}__isnull": False
+      },
+      user__is_active=True,
+    ).exclude(user__email="")
     if raw:
       try:
         ids = [int(x.strip()) for x in raw.split(",") if x.strip()]

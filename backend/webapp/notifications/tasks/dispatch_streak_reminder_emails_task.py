@@ -26,7 +26,8 @@ class DispatchStreakReminderEmailsTask(BaseScheduledTask):
 
     queryset = UserEmailNotificationSettings.objects.select_related("user", "user__streak_statistic").filter(
       streak_reminder_opted_in_at__isnull=False,
-    )
+      user__is_active=True,
+    ).exclude(user__email="")
 
     enqueued = 0
     for settings in queryset.iterator(chunk_size=500):
@@ -34,9 +35,6 @@ class DispatchStreakReminderEmailsTask(BaseScheduledTask):
         continue
 
       user = settings.user
-      if not user.is_active or not user.email:
-        continue
-
       stats = getattr(user, "streak_statistic", None)
       if stats is not None and stats.last_participated_date == today:
         continue

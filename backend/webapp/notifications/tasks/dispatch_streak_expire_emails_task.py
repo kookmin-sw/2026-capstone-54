@@ -25,8 +25,10 @@ class DispatchStreakExpireEmailsTask(BaseScheduledTask):
 
     today = timezone.localdate()
 
-    queryset = UserEmailNotificationSettings.objects.select_related("user", "user__streak_statistic"
-                                                                    ).filter(streak_expire_opted_in_at__isnull=False, )
+    queryset = UserEmailNotificationSettings.objects.select_related("user", "user__streak_statistic").filter(
+      streak_expire_opted_in_at__isnull=False,
+      user__is_active=True,
+    ).exclude(user__email="")
 
     enqueued = 0
     for settings in queryset.iterator(chunk_size=500):
@@ -34,9 +36,6 @@ class DispatchStreakExpireEmailsTask(BaseScheduledTask):
         continue
 
       user = settings.user
-      if not user.is_active or not user.email:
-        continue
-
       stats = getattr(user, "streak_statistic", None)
       if stats is None or stats.current_streak <= 0:
         continue

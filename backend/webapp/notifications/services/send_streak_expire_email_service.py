@@ -9,6 +9,9 @@ class SendStreakExpireEmailService(BaseSendEmailService):
 
   def execute(self):
     user = self.user
+    if not user.is_active or not user.email:
+      return False
+
     settings, _ = UserEmailNotificationSettings.objects.get_or_create(
       user=user,
       defaults=UserEmailNotificationSettings.default_consent_defaults(),
