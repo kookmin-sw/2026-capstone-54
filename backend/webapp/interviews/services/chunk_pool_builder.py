@@ -37,7 +37,7 @@ class ChunkPoolBuilder:
     if resume is None:
       return []
     try:
-      embeddings = ResumeEmbedding.objects.filter(resume=resume, ).exclude(
+      embeddings = ResumeEmbedding.objects.filter(resume=resume).exclude(
         chunk_type__in=[ct.value for ct in _EXCLUDED_CHUNK_TYPES],
       )
       return [
