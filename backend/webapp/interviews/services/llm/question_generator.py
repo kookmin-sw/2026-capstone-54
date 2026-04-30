@@ -1,7 +1,6 @@
 """면접 초기 질문 생성기 기본 클래스.
 
-이력서 전문과 채용공고 전문을 LLM Structured Output으로 직접 주입하여 질문을 생성한다.
-청킹·벡터 검색은 사용하지 않는다.
+선택된 청크 목록을 [출처 - 유형] 라벨과 함께 LLM Structured Output으로 주입하여 질문을 생성한다.
 """
 
 from __future__ import annotations
@@ -68,12 +67,11 @@ class QuestionGenerator:
     input_data: QuestionGeneratorInput,
     questions_count: int,
   ) -> str:
+    chunks_text = "\n\n".join(chunk.format_for_prompt() for chunk in input_data.chunks)
     return (
       f"{system_prompt}\n\n"
-      "다음은 이력서 전문입니다:\n\n"
-      f"{input_data.resume_content}\n\n"
-      "다음은 채용공고 정보(JSON)입니다:\n\n"
-      f"{input_data.job_description_content}\n\n"
+      "다음은 면접 질문 생성에 참고할 정보입니다:\n\n"
+      f"{chunks_text}\n\n"
       f"위 내용을 바탕으로 면접 질문을 정확히 {questions_count}개 생성해주세요.\n"
       '"source" 값은 resume, job_description, unknown 중 하나로 명시하세요.'
     )
