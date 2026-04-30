@@ -1,0 +1,105 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mefit-production-llm-gateway-env
+  namespace: mefit-backend-production
+data:
+  # ── 운영 옵션 ──
+  STORE_MODEL_IN_DB: "True"            # 어드민 UI 에서 모델 추가/수정 가능
+  AWS_REGION_NAME: "us-east-1"
+
+  # ── 어드민 UI reverse-proxy mounting ──
+  # backend 의 /admin/llm-gateway/* 경로로 노출 (common/views/llm_gateway_proxy.py).
+  # SERVER_ROOT_PATH: FastAPI root_path 설정 + UI 정적 자산(/_next/...) prefix 자동 재작성.
+  # PROXY_BASE_URL : LiteLLM 이 외부 redirect URL 생성 시 사용 (scheme+host only, prefix 자동 부착).
+  # ⚠️ container filesystem 이 read-only 면 UI 자산 prefix 재작성 실패 → 자산 404.
+  #    이 경우 deployment 에 writable emptyDir 마운트 또는 커스텀 이미지 필요.
+  SERVER_ROOT_PATH: "/admin/llm-gateway"
+  PROXY_BASE_URL: "https://api.mefit.kr"
+
+  # 아래 값들은 GitHub Environment secrets로 주입됩니다.
+  # LITELLM_MASTER_KEY     (sk- prefix 필수)
+  # DATABASE_URL           (RDS litellm DB)
+  # OPENAI_API_KEY         (게이트웨이가 OpenAI 호출 시 사용할 실키)
+  # GEMINI_API_KEY         (Google AI Studio 발급)
+  # UI_USERNAME            (어드민 UI 로그인 ID)
+  # UI_PASSWORD            (어드민 UI 로그인 비밀번호)
+  # AWS 자격증명은 EC2 IAM Role 자동 사용 (별도 키 불필요)
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mefit-production-llm-gateway-config
+  namespace: mefit-backend-production
+data:
+  config.yaml: |
+    # =====================================================================
+    # LiteLLM Proxy 설정 — production K3s
+    # =====================================================================
+    # 모델명은 코드와 1:1 일치 (gpt-4o-mini / gpt-4o / text-embedding-3-small)
+    # 1순위(order=1)는 OpenAI, 폴백은 Bedrock(IAM Role 인증) → Gemini
+    # =====================================================================
+    model_list:
+      # ── chat: gpt-4o-mini ──
+      - model_name: gpt-4o-mini
+        litellm_params:
+          model: openai/gpt-4o-mini
+          api_key: os.environ/OPENAI_API_KEY
+          order: 1
+      - model_name: gpt-4o-mini
+        litellm_params:
+          model: bedrock/us.anthropic.claude-haiku-4-5-20251001-v1:0
+          aws_region_name: os.environ/AWS_REGION_NAME
+          order: 2
+      - model_name: gpt-4o-mini
+        litellm_params:
+          model: gemini/gemini-2.5-flash
+          api_key: os.environ/GEMINI_API_KEY
+          order: 3
+
+      # ── chat (vision): gpt-4o ──
+      - model_name: gpt-4o
+        litellm_params:
+          model: openai/gpt-4o
+          api_key: os.environ/OPENAI_API_KEY
+          order: 1
+      - model_name: gpt-4o
+        litellm_params:
+          model: bedrock/us.anthropic.claude-sonnet-4-5-20251001-v1:0
+          aws_region_name: os.environ/AWS_REGION_NAME
+          order: 2
+
+      # ── embeddings: text-embedding-3-small ──
+      - model_name: text-embedding-3-small
+        litellm_params:
+          model: openai/text-embedding-3-small
+          api_key: os.environ/OPENAI_API_KEY
+          order: 1
+      - model_name: text-embedding-3-small
+        litellm_params:
+          model: bedrock/amazon.titan-embed-text-v2:0
+          aws_region_name: os.environ/AWS_REGION_NAME
+          order: 2
+
+    router_settings:
+      routing_strategy: simple-shuffle
+      num_retries: 2
+      timeout: 60
+      allowed_fails: 3
+      cooldown_time: 30
+
+    litellm_settings:
+      drop_params: True                # 모델별 미지원 파라미터 자동 무시
+      success_callback: ["prometheus"]
+      failure_callback: ["prometheus"]
+      cache: True
+      cache_params:
+        type: redis
+        host: mefit-production-redis
+        port: 6379
+        password: ""
+
+    general_settings:
+      master_key: os.environ/LITELLM_MASTER_KEY
+      database_url: os.environ/DATABASE_URL
+      ui_access_mode: "admin_only"

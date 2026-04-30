@@ -1,0 +1,79 @@
+name: Deploy LLM Gateway Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "수행할 동작"
+        required: true
+        type: choice
+        default: deploy
+        options:
+          - deploy
+          - rollback
+          - status
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Secret 주입 및 배포
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            set -e
+            NS="mefit-backend-production"
+            ACTION="${{ inputs.action }}"
+
+            # infra 레포 최신화
+            echo "▶ infra 레포 최신화 중..."
+            git -C ~/infra pull
+
+            # rollback / status 는 secret 주입 없이 스크립트만 실행
+            if [[ "${ACTION}" == "rollback" || "${ACTION}" == "status" ]]; then
+              chmod +x ~/infra/scripts/deploy-llm-gateway.sh
+              ~/infra/scripts/deploy-llm-gateway.sh "${ACTION}"
+              exit 0
+            fi
+
+            # ── deploy 모드 ──
+            # namespace 생성 (없으면)
+            kubectl create namespace "${NS}" --dry-run=client -o yaml | kubectl apply -f -
+
+            # LLM Gateway Secret 주입
+            # AWS 자격증명은 EC2 인스턴스 프로파일(IAM Role) 자동 사용 → secret 불필요
+            # UI_USERNAME / UI_PASSWORD: Django admin 인증 통과 후 LiteLLM 자체 UI 로그인용
+            kubectl create secret generic mefit-production-llm-gateway-secret \
+              --from-literal=LITELLM_MASTER_KEY="${{ secrets.LITELLM_MASTER_KEY }}" \
+              --from-literal=DATABASE_URL="${{ secrets.LITELLM_DATABASE_URL }}" \
+              --from-literal=OPENAI_API_KEY="${{ secrets.LITELLM_OPENAI_API_KEY }}" \
+              --from-literal=GEMINI_API_KEY="${{ secrets.LITELLM_GEMINI_API_KEY }}" \
+              --from-literal=UI_USERNAME="${{ secrets.LITELLM_UI_USERNAME }}" \
+              --from-literal=UI_PASSWORD="${{ secrets.LITELLM_UI_PASSWORD }}" \
+              -n "${NS}" \
+              --dry-run=client -o yaml | kubectl apply -f -
+
+            # 배포 실행
+            chmod +x ~/infra/scripts/deploy-llm-gateway.sh
+            ~/infra/scripts/deploy-llm-gateway.sh production
+
+      - name: 배포 결과 요약
+        if: always()
+        run: |
+          {
+            echo "### 🚀 LLM Gateway 배포 결과"
+            echo "- **동작:** ${{ inputs.action }}"
+            echo "- **이미지:** ghcr.io/berriai/litellm-database:main-stable"
+            echo "- **네임스페이스:** mefit-backend-production"
+            echo "- **클러스터 내부 엔드포인트:** http://mefit-llm-gateway:4000/v1"
+            echo ""
+            echo "**어드민 UI 접근:** https://api.mefit.kr/admin/llm-gateway/ui"
+            echo "- 1차: Django admin 인증 (\`is_staff=True\`)"
+            echo "- 2차: LiteLLM UI 로그인 (\`LITELLM_UI_USERNAME\` / \`LITELLM_UI_PASSWORD\` GitHub secrets)"
+            echo ""
+            echo "비상시 port-forward: \`kubectl port-forward -n mefit-backend-production svc/mefit-llm-gateway 4000:4000\` → http://localhost:4000/admin/llm-gateway/ui"
+          } >> "$GITHUB_STEP_SUMMARY"

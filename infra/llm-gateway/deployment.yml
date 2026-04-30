@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mefit-production-llm-gateway
+  namespace: mefit-backend-production
+  labels:
+    app: mefit-production-llm-gateway
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: mefit-production-llm-gateway
+  template:
+    metadata:
+      labels:
+        app: mefit-production-llm-gateway
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "4000"
+        prometheus.io/path: "/metrics"
+    spec:
+      # replicas:2 × (request 512Mi, limit 1Gi) → 두 replica 합산 시 t3.small RAM 한도 초과.
+      # EC2 IAM Role 의 Bedrock 접근도 m5.large 의 metadata-access 설정에 의존하므로 m5.large 에 핀.
+      nodeSelector:
+        nodepool: heavy
+      containers:
+        - name: litellm
+          image: ghcr.io/berriai/litellm-database:main-stable
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 4000
+          envFrom:
+            - configMapRef:
+                name: mefit-production-llm-gateway-env
+            - secretRef:
+                name: mefit-production-llm-gateway-secret
+          volumeMounts:
+            - name: config
+              mountPath: /app/config.yaml
+              subPath: config.yaml
+          command: ["litellm"]
+          args:
+            - "--config"
+            - "/app/config.yaml"
+            - "--port"
+            - "4000"
+            - "--num_workers"
+            - "2"
+          readinessProbe:
+            httpGet:
+              path: /health/readiness
+              port: 4000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health/liveliness
+              port: 4000
+            initialDelaySeconds: 60
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 200m
+              memory: 512Mi
+            limits:
+              cpu: "1.0"
+              memory: 1Gi
+      volumes:
+        - name: config
+          configMap:
+            name: mefit-production-llm-gateway-config
