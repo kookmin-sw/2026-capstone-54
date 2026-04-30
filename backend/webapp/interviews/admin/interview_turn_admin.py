@@ -3,7 +3,6 @@ from django.contrib import admin
 from django.http import HttpRequest
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
-from interviews.enums import TranscriptStatus
 from interviews.models import InterviewRecording
 from interviews.models.interview_turn import InterviewTurn
 from interviews.tasks.process_video_step_complete import _dispatch_transcribe_audio
@@ -107,23 +106,21 @@ class InterviewTurnAdmin(ModelAdmin):
   @staticmethod
   def _redispatch_for_turns(queryset) -> tuple[int, int]:
     audio_bucket = settings.AUDIO_S3_BUCKET
+
+    recordings = InterviewRecording.objects.filter(interview_turn__in=queryset, ).only("interview_turn_id", "audio_key")
+    recording_map = {r.interview_turn_id: r.audio_key for r in recordings}
+
     dispatched = 0
     skipped = 0
     for turn in queryset:
-      recording = (
-        InterviewRecording.objects.filter(
-          interview_session_id=turn.interview_session_id,
-          interview_turn_id=turn.id,
-        ).only("pk", "audio_key").first()
-      )
-      if recording is None or not recording.audio_key:
+      audio_key = recording_map.get(turn.id)
+      if not audio_key:
         skipped += 1
         continue
-      InterviewTurn.objects.filter(pk=turn.id).update(transcript_status=TranscriptStatus.PENDING)
       _dispatch_transcribe_audio(
         turn_id=str(turn.id),
         output_bucket=audio_bucket,
-        output_key=recording.audio_key,
+        output_key=audio_key,
       )
       dispatched += 1
     return dispatched, skipped
