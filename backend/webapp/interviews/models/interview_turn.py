@@ -100,5 +100,12 @@ class InterviewTurn(BaseModel):
     verbose_name="STT 에러 코드",
   )
 
+  transcript_text = models.TextField(
+    blank=True,
+    default="",
+    verbose_name="STT 텍스트",
+    help_text="audio 의 객관적 STT 결과 (analysis-stt worker 가 채움). user 의 answer 와 별개.",
+  )
+
   def __str__(self):
     return f"InterviewTurn #{self.pk} [{self.get_turn_type_display()}] (Session {self.interview_session_id})"

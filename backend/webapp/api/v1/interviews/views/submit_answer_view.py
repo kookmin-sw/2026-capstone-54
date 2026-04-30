@@ -9,14 +9,13 @@ from common.exceptions import ValidationException
 from common.permissions import IsEmailVerified
 from common.views import BaseAPIView
 from drf_spectacular.utils import extend_schema
-from interviews.enums import InterviewSessionStatus, InterviewSessionType, TranscriptStatus
-from interviews.models import InterviewRecording, InterviewTurn
+from interviews.enums import InterviewSessionStatus, InterviewSessionType
+from interviews.models import InterviewTurn
 from interviews.services import (
   SubmitAnswerAndGenerateFollowupService,
   SubmitAnswerForFullProcessService,
   get_interview_session_for_user,
 )
-from interviews.tasks.transcribe_recording_task import RegisteredTranscribeRecordingTask
 from rest_framework import status
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
@@ -37,25 +36,10 @@ class SubmitAnswerView(BaseAPIView):
 
     serializer = SubmitAnswerSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    answer = serializer.validated_data["answer"]
+    answer = serializer.validated_data.get("answer", "")
     speech_segments = serializer.validated_data.get("speech_segments", [])
-    fallback_requested = serializer.validated_data.get("fallback_requested", False)
-    recording_uuid = serializer.validated_data.get("recording_uuid")
 
-    if fallback_requested:
-      if not recording_uuid:
-        raise ValidationException(detail="fallback_requested=true 인 경우 recording_uuid 가 필요합니다.")
-      recording = get_object_or_404(InterviewRecording, pk=recording_uuid, user=self.current_user)
-      if recording.interview_session_id != interview_session.pk:
-        raise ValidationException(detail="recording 이 현재 세션에 속하지 않습니다.")
-      interview_turn.transcript_status = TranscriptStatus.PENDING
-      interview_turn.speech_segments = []
-      interview_turn.save(update_fields=["transcript_status", "speech_segments"])
-      RegisteredTranscribeRecordingTask.delay(
-        recording_uuid=str(recording.pk),
-        turn_id=interview_turn.pk,
-      )
-    elif speech_segments:
+    if speech_segments:
       interview_turn.speech_segments = speech_segments
       interview_turn.save(update_fields=["speech_segments"])
 
