@@ -61,7 +61,12 @@ jobs:
             -e POSTGRES_PASSWORD=${{ secrets.CI_POSTGRES_PASSWORD }} \
             -v ${{ github.workspace }}/environments/development/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh \
             -p 5432:5432 \
-            teammefit/mefit-postgres-dev:latest
+            --health-cmd="pg_isready -U ${{ env.POSTGRES_USER }} -d ${{ env.DATABASE_NAME }}" \
+            --health-interval=5s \
+            --health-timeout=5s \
+            --health-retries=10 \
+            teammefit/mefit-postgres-dev:latest \
+            -c max_connections=200
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -87,10 +92,16 @@ jobs:
 
       - name: Wait for PostgreSQL to be ready
         run: |
-          for i in {1..10}; do
-            pg_isready -h localhost -p 5432 && break
-            sleep 5
+          for i in {1..30}; do
+            health=$(docker inspect --format='{{.State.Health.Status}}' postgres 2>/dev/null || echo "starting")
+            if [ "$health" = "healthy" ]; then
+              echo "PostgreSQL healthy"
+              break
+            fi
+            echo "Waiting for PostgreSQL ($i/30)... status=$health"
+            sleep 2
           done
+          pg_isready -h localhost -p 5432
 
       - name: Run Django tests
         working-directory: webapp

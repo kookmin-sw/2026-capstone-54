@@ -2,6 +2,7 @@ import os
 
 from celery import Celery
 from celery.signals import task_postrun, task_prerun, worker_process_init
+from django.conf import settings
 from django.db import close_old_connections, connections
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.development")
@@ -25,9 +26,13 @@ def _reset_db_connections_on_fork(**_kwargs):
 
 @task_prerun.connect
 def _close_old_db_connections_before_task(**_kwargs):
+  if getattr(settings, "CELERY_TASK_ALWAYS_EAGER", False):
+    return
   close_old_connections()
 
 
 @task_postrun.connect
 def _close_old_db_connections_after_task(**_kwargs):
+  if getattr(settings, "CELERY_TASK_ALWAYS_EAGER", False):
+    return
   close_old_connections()
