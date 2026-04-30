@@ -32,8 +32,6 @@ spec:
         - secretRef:
             name: mefit-production-secret
         env:
-        - name: CELERY_BROKER_URL
-          value: ""
         - name: DJANGO_APPLICATION_NAME
           value: "mefit-sqs-celery-worker"
         command: [ "celery" ]
