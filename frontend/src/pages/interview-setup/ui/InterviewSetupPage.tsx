@@ -88,7 +88,7 @@ export function InterviewSetupPage() {
               title="면접을 연습할 이력서와 채용공고를 선택해주세요."
               description=""
               left={
-                <div className="flex flex-col min-h-[400px] max-h-[520px]">
+                <div className="flex flex-col h-full overflow-hidden">
                   <ResumeSection
                     resumes={resumes}
                     selectedResumeUuid={selectedResumeUuid}
@@ -99,7 +99,7 @@ export function InterviewSetupPage() {
                 </div>
               }
               right={
-                <div className="flex flex-col min-h-[400px] max-h-[520px]">
+                <div className="flex flex-col h-full overflow-hidden">
                   <JdSection
                     jdList={jdList}
                     jdListLoading={jdListLoading}
