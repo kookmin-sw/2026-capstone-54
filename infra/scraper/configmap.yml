@@ -13,3 +13,5 @@ data:
   SCRAPER_CONCURRENCY: "2"
   HEADLESS: "true"
   LOG_LEVEL: "INFO"
+  # LLM Gateway 경유 (LiteLLM Proxy). 비우면 OpenAI 직통.
+  OPENAI_BASE_URL: "http://mefit-llm-gateway:4000/v1"
