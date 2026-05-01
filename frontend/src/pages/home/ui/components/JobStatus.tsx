@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ClipboardList } from "lucide-react";
 import { useJdListStore } from "@/features/jd";
 import { CompanyIcon } from "@/shared/ui/CompanyIcon";
 
@@ -30,10 +29,7 @@ export function JobStatus({ revealed }: JobStatusProps) {
       style={{ padding: 20, transitionDelay: "550ms" }}
     >
       <div className="flex items-center gap-2 mb-3">
-        <span className="w-7 h-7 rounded-lg bg-[#E6F7FA] flex items-center justify-center">
-          <ClipboardList size={14} className="text-[#0991B2]" />
-        </span>
-        <h3 className="text-[14px] font-bold text-[#0A0A0A]">채용공고</h3>
+        <h3 className="text-[16px] font-bold text-[#0A0A0A]">채용공고</h3>
         <Link to="/jd" className="text-[12px] text-[#0991B2] ml-auto">관리 →</Link>
       </div>
 
@@ -47,7 +43,7 @@ export function JobStatus({ revealed }: JobStatusProps) {
           return (
             <Link key={jd.uuid} to={`/jd/${jd.uuid}`} className="hp-job-item no-underline">
               <div className="w-7 h-7 shrink-0">
-                <CompanyIcon platform={jd.raw.jobDescription.platform} title={jd.title} size={16} />
+                <CompanyIcon categoryId={jd.categoryId} size={16} />
               </div>
               <div className="hp-job-body">
                 <div className="hp-job-name">{jd.company}</div>
