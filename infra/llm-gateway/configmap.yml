@@ -51,11 +51,8 @@ data:
           model: bedrock/us.anthropic.claude-haiku-4-5-20251001-v1:0
           aws_region_name: os.environ/AWS_REGION_NAME
           order: 2
-      - model_name: gpt-4o-mini
-        litellm_params:
-          model: gemini/gemini-2.5-flash
-          api_key: os.environ/GEMINI_API_KEY
-          order: 3
+      # Gemini 폴백은 GEMINI_API_KEY 가 등록되면 활성화. 현재 미등록 → 모델 등록 보류
+      # (등록된 후 항목 추가 시 google-generativeai SDK 로딩으로 ~80-100Mi 증가 예상)
 
       # ── chat (vision): gpt-4o ──
       - model_name: gpt-4o
