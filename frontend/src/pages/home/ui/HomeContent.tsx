@@ -63,6 +63,7 @@ export function HomeContent() {
                 todayYear={todayY}
                 todayMonth={todayM}
                 todayDay={todayD}
+                hideIcon
               />
             </div>
           )}
