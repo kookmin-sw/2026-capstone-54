@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Archive, ClipboardList, Eye, FileText, Flame, Gem, Megaphone, ShieldCheck, Star, UserCircle, Zap } from "lucide-react";
+import { ClipboardList, FileText, Flame, Gem, History, Megaphone, ShieldCheck, Star, UserCircle, Zap } from "lucide-react";
 import { ConfirmModal } from "@/shared/ui";
 import { useSettingsStore } from "@/features/settings";
 import { useSubscriptionStore } from "@/features/subscription";
@@ -312,10 +312,10 @@ export function SettingsPage() {
                     </div>
                     <div className="grid grid-cols-2 gap-[10px] max-[640px]:grid-cols-1">
                       {([
-                        { icon: <Eye size={20} className="text-[#8B5CF6]" />, name: "시선 추적 분석", desc: "Free/Pro 모두 사용 가능" },
                         { icon: <Zap size={20} className="text-[#F59E0B]" />, name: "실전 모드", desc: "PRO 전용 · 랜덤 대기 후 자동 시작" },
-                        { icon: <FileText size={20} className="text-[#0991B2]" />, name: "녹화 영상 확인", desc: "PRO 전용 · 리포트에서 재생" },
-                        { icon: <Archive size={20} className="text-[#059669]" />, name: "무제한 아카이브", desc: "Free는 최근 7일만 조회" },
+                        { icon: <ClipboardList size={20} className="text-[#059669]" />, name: "전체 프로세스", desc: "PRO 전용 · 처음부터 끝까지 전체 면접" },
+                        { icon: <History size={20} className="text-[#0991B2]" />, name: "전체 면접 기록", desc: "PRO 전용 · 모든 면접 세션 무제한 조회" },
+                        { icon: <FileText size={20} className="text-[#8B5CF6]" />, name: "녹화영상 확인", desc: "PRO 전용 · 리포트에서 녹화 영상 재생" },
                       ] as const).map((item) => (
                         <div key={item.name} className="bg-white border border-[#E5E7EB] rounded-[10px] px-4 py-[14px] transition-all duration-150 hover:border-[rgba(9,145,178,0.3)] hover:shadow-[0_2px_8px_rgba(0,0,0,0.1),0_8px_24px_rgba(0,0,0,0.08)]">
                           <div className="mb-[8px]">{item.icon}</div>
