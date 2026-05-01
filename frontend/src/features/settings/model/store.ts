@@ -204,6 +204,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
     }
     set({ saving: true, error: null, saveMessage: null });
     const res = await updateProfileApi({
+      name: profileDraft.name,
       jobCategoryId: profileDraft.jobCategoryId,
       jobIds: profileDraft.jobIds,
       careerStage: profileDraft.careerStage || undefined,
@@ -221,6 +222,8 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
             ...s.data,
             profile: {
               ...s.data.profile,
+              name: profileDraft.name,
+              avatarInitial: profileDraft.name ? profileDraft.name[0] : s.data.profile.avatarInitial,
               jobCategoryId: profileDraft.jobCategoryId,
               jobCategory: selectedCategory,
               jobIds: profileDraft.jobIds,
