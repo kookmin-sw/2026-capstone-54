@@ -1,9 +1,14 @@
 """LiteLLM Gateway 어드민 UI 프록시 — Django admin 인증(is_staff) 전용.
 
 Flower 프록시와 다른 점:
-- LiteLLM 은 FastAPI ``root_path`` 메커니즘을 사용하므로 라우트는 여전히 ``/ui`` 등
-  원래 경로에 정의되어 있다. 따라서 프록시는 ``/admin/llm-gateway/`` prefix 를
-  **벗기고** 내부 LiteLLM 으로 forward 해야 한다.
+- LiteLLM 의 ``SERVER_ROOT_PATH`` env 는 일반 FastAPI ``root_path`` 와 다르게
+  동작한다. FastAPI ``root_path`` 는 OpenAPI/redirect 에만 영향을 주고 라우트는
+  원래 path 로 등록되지만, LiteLLM 은 ``SERVER_ROOT_PATH`` 의 값을 **실제 라우팅
+  path 의 prefix 로 포함** 시키고 HTML 의 ``<script src=...>`` 같은 자산 URL 도
+  같은 prefix 를 붙여서 생성한다.
+  ConfigMap 에 ``SERVER_ROOT_PATH=/admin/llm-gateway`` 가 설정되어 있으므로
+  프록시는 prefix 를 **그대로 유지하여** ``/admin/llm-gateway/<path>`` 로
+  forward 해야 한다 (벗기면 자산 URL 도 strip 되어 404 cascade 발생).
 - LiteLLM UI 는 ``token`` 쿠키(JWT) 기반 세션을 사용하므로 응답의 ``Set-Cookie`` 를
   반드시 그대로 전달해야 한다.
 """
@@ -58,8 +63,10 @@ _RESPONSE_SKIP_HEADERS = frozenset(
 def llm_gateway_proxy(request: HttpRequest, path: str = "") -> HttpResponse:
   """내부 LiteLLM Gateway 서비스로 요청을 포워딩합니다.
 
-  ``/admin/llm-gateway/<path>`` 로 들어온 요청에서 prefix 를 벗기고
-  LiteLLM 내부 서비스(``LLM_GATEWAY_INTERNAL_URL``)의 ``/<path>`` 로 forward 한다.
+  ``/admin/llm-gateway/<path>`` 로 들어온 요청을 prefix 를 그대로 유지하여
+  LiteLLM 내부 서비스의 ``/admin/llm-gateway/<path>`` 로 forward 한다.
+  LiteLLM 의 ``SERVER_ROOT_PATH`` 가 라우트 path 와 자산 URL 양쪽에 prefix 를
+  포함시키므로 prefix 를 보존해야 자산까지 일관되게 동작한다.
   """
   if not _LLM_GATEWAY_BASE:
     return HttpResponse(
@@ -68,7 +75,7 @@ def llm_gateway_proxy(request: HttpRequest, path: str = "") -> HttpResponse:
       status=503,
     )
 
-  target = f"{_LLM_GATEWAY_BASE}/{path}"
+  target = f"{_LLM_GATEWAY_BASE}/admin/llm-gateway/{path}"
   if qs := request.META.get("QUERY_STRING"):
     target += f"?{qs}"
 
