@@ -34,6 +34,7 @@ export interface JdListItem {
   company: string;
   companyInitial: string;
   companyColor: string;
+  categoryId: number;
   title: string;
   categoryId: number;
   status: JdListStatus;
@@ -86,6 +87,7 @@ function transform(item: UserJobDescription): JdListItem {
     company,
     companyInitial: getCompanyInitial(company),
     companyColor: getCompanyColor(company),
+    categoryId: inferCategoryId(jd.platform || "", title),
     title,
     categoryId: inferCategoryId(jd.platform || "", title),
     status,
