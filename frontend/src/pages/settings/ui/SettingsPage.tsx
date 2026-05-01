@@ -37,7 +37,7 @@ const inputClass = "font-plex-sans-kr text-[14px] text-[#0A0A0A] bg-white border
 export function SettingsPage() {
   const navigate = useNavigate();
   const {
-    data, loading, saving, error, saveMessage, activePanel,
+    data, loading, saving, passwordSaving, error, saveMessage, passwordError, passwordSaveMessage, activePanel,
     profileDraft, passwordDraft, aiDataDraft,
     jobCategories, jobCategoriesLoading, availableJobs, availableJobsLoading,
     fetchSettings, setActivePanel,
@@ -178,7 +178,7 @@ export function SettingsPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-end gap-[10px] pt-5 border-t border-[#E5E7EB] mt-1 mb-10 max-[640px]:flex-col-reverse max-[640px]:items-stretch">
+                  <div className="flex items-center justify-end gap-[10px] mt-5 max-[640px]:flex-col-reverse max-[640px]:items-stretch">
                     {saveMessage && activePanel === "account" && <span className="text-[12px] font-bold text-[#059669] mr-auto animate-[spFadeUp_0.3s_ease]">✓ {saveMessage}</span>}
                     {error && activePanel === "account" && <span className="text-[12px] font-bold text-[#EF4444] mr-auto animate-[spFadeUp_0.3s_ease]">✕ {error}</span>}
                     <button className="font-plex-sans-kr text-[14px] font-semibold text-[#6B7280] bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg px-5 py-[10px] cursor-pointer transition-all duration-150 hover:bg-[#F3F4F6] hover:text-[#0A0A0A]" onClick={resetProfileDraft}>취소</button>
@@ -187,17 +187,20 @@ export function SettingsPage() {
                     </button>
                   </div>
 
+                  <div className="border-t border-[#E5E7EB] my-5" />
+
                   {/* 비밀번호 변경 */}
                   <PasswordChangeForm
                     passwordDraft={passwordDraft}
                     pwdStrength={pwdStrength}
                     pwdMatch={pwdMatch}
                     inputClass={inputClass}
-                    saving={saving}
+                    saving={passwordSaving}
                     onSetPassword={setPasswordDraft}
                     callbacks={{ onSave: savePassword, onReset: resetPasswordDraft }}
-                    messages={{ error, saveMessage }}
+                    messages={{ error: passwordError, saveMessage: passwordSaveMessage }}
                   />
+
 
                   {/* 계정 탈퇴 */}
                   <AccountUnregisterSection
@@ -235,6 +238,7 @@ export function SettingsPage() {
                     {([
                       { key: "streakReminder", title: "스트릭 리마인더", desc: "오늘 면접 연습을 아직 하지 않았을 때 저녁 8시에 알림" },
                       { key: "streakExpire", title: "스트릭 만료 경고", desc: "자정 1시간 전, 오늘 스트릭이 만료될 예정일 때 알림" },
+                      { key: "streakReward", title: "스트릭 보상 수령", desc: "마일스톤 달성 시 보상이 지급되었을 때 알림" },
                       { key: "reportReady", title: "면접 리포트 완성", desc: "AI 면접 리뷰 리포트 생성이 완료되었을 때 알림" },
                     ] as const).map((item) => (
                       <NotificationToggle

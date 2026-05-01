@@ -28,8 +28,11 @@ interface SettingsState {
   saving: boolean;
   /* 동시 진행 중인 알림 토글 PUT 개수 (race condition 방지: 모든 요청 완료 시까지 saving 유지) */
   pendingNotificationRequests: number;
+  passwordSaving: boolean;
   error: string | null;
   saveMessage: string | null;
+  passwordError: string | null;
+  passwordSaveMessage: string | null;
   activePanel: SettingsPanel;
   consentBadge: boolean;
 
@@ -69,6 +72,7 @@ interface SettingsState {
   deleteAccount: () => Promise<void>;
 
   clearMessage: () => void;
+  clearPasswordMessage: () => void;
 }
 
 const EMPTY_PROFILE_DRAFT: ProfileDraft = { name: "", jobCategoryId: null, jobIds: [], careerStage: "" };
@@ -78,8 +82,11 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   loading: false,
   saving: false,
   pendingNotificationRequests: 0,
+  passwordSaving: false,
   error: null,
   saveMessage: null,
+  passwordError: null,
+  passwordSaveMessage: null,
   activePanel: "account" as SettingsPanel,
   consentBadge: true,
 
@@ -250,23 +257,23 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   savePassword: async () => {
     const { passwordDraft } = get();
     if (passwordDraft.newPassword !== passwordDraft.confirmPassword) {
-      set({ error: "새 비밀번호가 일치하지 않습니다." });
+      set({ passwordError: "새 비밀번호가 일치하지 않습니다." });
       return;
     }
-    set({ saving: true, error: null, saveMessage: null });
+    set({ passwordSaving: true, passwordError: null, passwordSaveMessage: null });
     const res = await changePasswordApi({
       currentPassword: passwordDraft.currentPassword,
       newPassword: passwordDraft.newPassword,
     });
     if (res.success) {
-      set({ saving: false, saveMessage: res.message, passwordDraft: { currentPassword: "", newPassword: "", confirmPassword: "" } });
+      set({ passwordSaving: false, passwordSaveMessage: res.message, passwordDraft: { currentPassword: "", newPassword: "", confirmPassword: "" } });
     } else {
-      set({ saving: false, error: res.message });
+      set({ passwordSaving: false, passwordError: res.message });
     }
   },
 
   resetPasswordDraft: () => {
-    set({ passwordDraft: { currentPassword: "", newPassword: "", confirmPassword: "" }, saveMessage: null, error: null });
+    set({ passwordDraft: { currentPassword: "", newPassword: "", confirmPassword: "" }, passwordSaveMessage: null, passwordError: null });
   },
 
   toggleNotification: async (key) => {
@@ -345,4 +352,5 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   },
 
   clearMessage: () => set({ saveMessage: null, error: null }),
+  clearPasswordMessage: () => set({ passwordSaveMessage: null, passwordError: null }),
 }));
