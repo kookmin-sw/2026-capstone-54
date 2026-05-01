@@ -49,6 +49,7 @@ data:
       - model_name: gpt-4o-mini
         litellm_params:
           model: bedrock/us.anthropic.claude-haiku-4-5-20251001-v1:0
+          custom_llm_provider: bedrock
           aws_region_name: os.environ/AWS_REGION_NAME
           order: 2
       # Gemini 폴백은 GEMINI_API_KEY 가 등록되면 활성화. 현재 미등록 → 모델 등록 보류
@@ -62,7 +63,8 @@ data:
           order: 1
       - model_name: gpt-4o
         litellm_params:
-          model: bedrock/us.anthropic.claude-sonnet-4-5-20251001-v1:0
+          model: bedrock/us.anthropic.claude-sonnet-4-5-20250929-v1:0
+          custom_llm_provider: bedrock
           aws_region_name: os.environ/AWS_REGION_NAME
           order: 2
 
@@ -75,8 +77,16 @@ data:
       - model_name: text-embedding-3-small
         litellm_params:
           model: bedrock/amazon.titan-embed-text-v2:0
+          custom_llm_provider: bedrock
           aws_region_name: os.environ/AWS_REGION_NAME
           order: 2
+        model_info:
+          # LiteLLM 의 _filter_model_params 가 embedding health check 시
+          # max_tokens 를 제거하지 않는 버그(상류 미수정)로 인해 Test Connection 에서
+          # Titan embed 가 "extraneous key [max_tokens]" 로 표시됨. 실제 embedding
+          # 호출 (litellm.aembedding) 에는 max_tokens 가 들어가지 않으므로 운영 영향 없음.
+          mode: embedding
+          disable_background_health_check: true
 
     router_settings:
       routing_strategy: simple-shuffle
