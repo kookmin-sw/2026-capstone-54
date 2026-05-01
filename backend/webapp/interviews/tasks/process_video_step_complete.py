@@ -1,4 +1,7 @@
+import traceback as tb_module
+
 import structlog
+from common.tasks.send_error_alert_task import RegisteredSendErrorAlertTask
 from config.celery import app as redis_app
 from config.celery_sqs import app
 from interviews.enums import TranscriptStatus
@@ -6,6 +9,31 @@ from interviews.models import InterviewTurn
 from interviews.services import UpdateRecordingStepService
 
 logger = structlog.get_logger(__name__)
+
+
+def _send_dispatch_failure_alert(*, exc: Exception, source: str) -> None:
+  """SendErrorAlertTask 를 .apply() 로 동기 실행 — broker 무관하게 Slack HTTP 직접 호출.
+
+  .delay() 를 쓰면 알림 task 자체가 같은 broker 를 거치므로, broker 장애가
+  원인인 dispatch 실패에서는 알림 task 도 동일하게 실패한다 (특히 빈 broker URL
+  의 memory:// silent fallback). .apply() 는 현재 프로세스에서 동기 실행하여
+  broker 의존성을 제거한다.
+
+  Slack API 자체가 실패해도 swallow — 무한 재귀 / 로그 폭주 방지.
+  """
+  try:
+    RegisteredSendErrorAlertTask.apply(
+      kwargs={
+        "error_type": type(exc).__name__,
+        "error_message": str(exc),
+        "path": source,
+        "method": "CELERY_TASK",
+        "traceback": tb_module.format_exc(),
+      }
+    )
+  except Exception:
+    logger.exception("send_error_alert_dispatch_failed", source=source)
+
 
 STEP_FIELD_MAP = {
   "video_converter": "scaled_video_key",
@@ -38,8 +66,12 @@ def _dispatch_transcribe_audio(turn_id: str, output_bucket: str, output_key: str
       queue="analysis-stt",
     )
     logger.info("transcribe_audio_dispatched", turn_id=turn_id)
-  except Exception:
+  except Exception as exc:
     logger.exception("transcribe_audio_dispatch_failed", turn_id=turn_id)
+    _send_dispatch_failure_alert(
+      exc=exc,
+      source=f"_dispatch_transcribe_audio (turn_id={turn_id}, queue=analysis-stt)",
+    )
 
 
 @app.task(name="interviews.tasks.process_video_step_complete.process_video_step_complete")
@@ -65,12 +97,16 @@ def process_video_step_complete(
       output_key=output_key,
     ).perform()
     logger.info("step_complete", session_uuid=session_uuid, turn_id=turn_id, step=step)
-  except Exception:
+  except Exception as exc:
     logger.exception(
       "step_complete_failed",
       session_uuid=session_uuid,
       turn_id=turn_id,
       step=step,
+    )
+    _send_dispatch_failure_alert(
+      exc=exc,
+      source=f"process_video_step_complete (session={session_uuid}, turn={turn_id}, step={step})",
     )
     raise
 
