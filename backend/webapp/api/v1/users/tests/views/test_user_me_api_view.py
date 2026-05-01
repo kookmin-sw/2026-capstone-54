@@ -61,3 +61,71 @@ class UserMeAPIViewPropertyTests(TestCase):
       response.status_code,
       [status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN],
     )
+
+
+@override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
+class UserMePatchAPIViewTests(TestCase):
+  """UserMeAPIView PATCH 동작 테스트"""
+
+  def setUp(self):
+    self.client = APIClient()
+    self.url = reverse("user-me")
+    self.user = UserFactory(email="patchme@example.com", name="OldName")
+    token = RefreshToken.for_user(self.user)
+    self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {str(token.access_token)}")
+
+  def test_authenticated_user_can_update_name(self):
+    """인증된 사용자는 PATCH /me 로 name을 수정할 수 있고 변경된 정보가 응답된다"""
+    response = self.client.patch(self.url, data={"name": "NewName"}, format="json")
+
+    self.assertEqual(response.status_code, status.HTTP_200_OK)
+    self.assertEqual(response.data["name"], "NewName")
+    self.assertEqual(response.data["email"], self.user.email)
+
+    self.user.refresh_from_db()
+    self.assertEqual(self.user.name, "NewName")
+
+  def test_blank_name_returns_400(self):
+    """빈 문자열 name으로 PATCH 시 400 응답"""
+    response = self.client.patch(self.url, data={"name": ""}, format="json")
+
+    self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+    self.user.refresh_from_db()
+    self.assertEqual(self.user.name, "OldName")
+
+  def test_too_long_name_returns_400(self):
+    """50자를 초과하는 name 으로 PATCH 시 400 응답"""
+    response = self.client.patch(self.url, data={"name": "x" * 51}, format="json")
+
+    self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+    self.user.refresh_from_db()
+    self.assertEqual(self.user.name, "OldName")
+
+  def test_missing_name_returns_400(self):
+    """name 필드 자체가 없을 때 400 응답"""
+    response = self.client.patch(self.url, data={}, format="json")
+
+    self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+    self.user.refresh_from_db()
+    self.assertEqual(self.user.name, "OldName")
+
+  def test_max_length_name_succeeds(self):
+    """50자 정확히 일치하는 name 은 허용된다"""
+    new_name = "y" * 50
+
+    response = self.client.patch(self.url, data={"name": new_name}, format="json")
+
+    self.assertEqual(response.status_code, status.HTTP_200_OK)
+    self.user.refresh_from_db()
+    self.assertEqual(self.user.name, new_name)
+
+  def test_unauthenticated_user_cannot_patch(self):
+    """비인증 사용자는 PATCH 할 수 없다"""
+    self.client.credentials()
+
+    response = self.client.patch(self.url, data={"name": "X"}, format="json")
+
+    self.assertIn(
+      response.status_code,
+      [status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN],
+    )
