@@ -210,6 +210,9 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
       careerStage: profileDraft.careerStage || undefined,
     });
     if (res.success) {
+      // auth store user name 업데이트 (navbar 즉시 반영)
+      const authUser = useAuthStore.getState().user;
+      if (authUser) useAuthStore.getState().setUser({ ...authUser, name: profileDraft.name });
       // 로컬 data 업데이트
       set((s) => {
         if (!s.data) return { saving: false, saveMessage: res.message };
