@@ -1,4 +1,4 @@
-import { BookOpen, Lock, Zap } from "lucide-react";
+import { BookOpen, GitBranch, LayoutList, Lock, Zap } from "lucide-react";
 import { SetupSection } from "@/shared/ui/SetupSection";
 import { OptionCard } from "@/shared/ui/OptionCard";
 import { InfoTooltip } from "@/shared/ui/InfoTooltip";
@@ -24,6 +24,7 @@ export function InterviewModeSection({
           <OptionCard
             selected={interviewMode === "tail"}
             onClick={() => onModeChange("tail")}
+            icon={<div className="w-8 h-8 rounded-lg bg-[#E0F2FE] flex items-center justify-center"><GitBranch size={16} className="text-[#0284C7]" /></div>}
             title="꼬리질문 방식"
             description="답변 기반 심층 꼬리질문 생성"
             badge={
@@ -44,6 +45,7 @@ export function InterviewModeSection({
               }
               onModeChange("full");
             }}
+            icon={<div className="w-8 h-8 rounded-lg bg-[#E6F7FA] flex items-center justify-center"><LayoutList size={16} className="text-[#0991B2]" /></div>}
             title="전체 프로세스"
             description="면접 전 과정 시뮬레이션"
             badge={
@@ -66,7 +68,12 @@ export function InterviewModeSection({
             icon={<div className="w-8 h-8 rounded-lg bg-[#ECFDF5] flex items-center justify-center"><BookOpen size={16} className="text-[#059669]" /></div>}
             title="연습 모드"
             description="준비 후 직접 시작"
-            badge={<InfoTooltip text="질문 음성이 끝난 후 '말하기 시작' 버튼을 직접 눌러 답변합니다. 자신의 페이스에 맞춰 충분히 생각한 후 답변할 수 있어요." />}
+            badge={
+              <span className="flex items-center gap-1.5">
+                <span className="text-[10px] font-bold text-[#059669] bg-[#ECFDF5] py-px px-2 rounded-full">Free</span>
+                <InfoTooltip text="질문 음성이 끝난 후 '말하기 시작' 버튼을 직접 눌러 답변합니다. 자신의 페이스에 맞춰 충분히 생각한 후 답변할 수 있어요." />
+              </span>
+            }
           />
           <OptionCard
             selected={practiceMode === "real"}
@@ -81,7 +88,12 @@ export function InterviewModeSection({
             icon={<div className="w-8 h-8 rounded-lg bg-[#FFFBEB] flex items-center justify-center"><Zap size={16} className="text-[#D97706]" /></div>}
             title="실전 모드"
             description="랜덤 대기 후 자동 시작"
-            badge={<InfoTooltip text="질문 음성이 끝나면 5~30초 랜덤 대기 후 자동으로 STT가 시작됩니다. 실제 면접의 긴장감을 최대한 재현합니다." />}
+            badge={
+              <span className="flex items-center gap-1.5">
+                <span className="text-[10px] font-bold text-white bg-[#0991B2] py-px px-2 rounded-full">Pro</span>
+                <InfoTooltip text="질문 음성이 끝나면 5~30초 랜덤 대기 후 자동으로 STT가 시작됩니다. 실제 면접의 긴장감을 최대한 재현합니다." />
+              </span>
+            }
           />
         </div>
       </SetupSection>

@@ -7,9 +7,10 @@ interface StepLayoutProps {
   description: string;
   left: ReactNode;
   right: ReactNode;
+  columnClassName?: string;
 }
 
-export function StepLayout({ stepLabel, title, description, left, right }: StepLayoutProps) {
+export function StepLayout({ stepLabel, title, description, left, right, columnClassName = "flex flex-col gap-4" }: StepLayoutProps) {
   return (
     <div>
       {/* Header — full width */}
@@ -21,8 +22,8 @@ export function StepLayout({ stepLabel, title, description, left, right }: StepL
 
       {/* Two-column body */}
       <div className="grid grid-cols-2 gap-8 max-md:grid-cols-1 items-stretch">
-        <div className="flex flex-col gap-4 min-h-[400px] max-h-[520px]">{left}</div>
-        <div className="flex flex-col gap-4 min-h-[400px] max-h-[520px]">{right}</div>
+        <div className={columnClassName}>{left}</div>
+        <div className={columnClassName}>{right}</div>
       </div>
     </div>
   );
