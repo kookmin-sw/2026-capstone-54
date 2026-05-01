@@ -8,22 +8,21 @@ data:
   STORE_MODEL_IN_DB: "True"            # 어드민 UI 에서 모델 추가/수정 가능
   AWS_REGION_NAME: "us-east-1"
 
-  # ── 어드민 UI reverse-proxy mounting ──
-  # backend 의 /admin/llm-gateway/* 경로로 노출 (common/views/llm_gateway_proxy.py).
-  # SERVER_ROOT_PATH: FastAPI root_path 설정 + UI 정적 자산(/_next/...) prefix 자동 재작성.
-  # PROXY_BASE_URL : LiteLLM 이 외부 redirect URL 생성 시 사용 (scheme+host only, prefix 자동 부착).
-  # ⚠️ container filesystem 이 read-only 면 UI 자산 prefix 재작성 실패 → 자산 404.
-  #    이 경우 deployment 에 writable emptyDir 마운트 또는 커스텀 이미지 필요.
-  SERVER_ROOT_PATH: "/admin/llm-gateway"
-  PROXY_BASE_URL: "https://api.mefit.kr"
+  # ── 어드민 UI 노출 ──
+  # 별도 subdomain (llm.mefit.kr) 으로 직접 노출 — Ingress (ingress.yml) 가
+  # Traefik 으로 mefit-llm-gateway:4000 에 직접 forward.
+  # backend Django reverse proxy 는 사용하지 않음 (자산 forwarding 부하 + urllib 한계).
+  # SERVER_ROOT_PATH 미설정 → root path "/" 에서 모든 라우트 + 자산 자연 동작.
+  # PROXY_BASE_URL 은 LiteLLM 의 SSO/OAuth callback URL 생성 시 사용.
+  PROXY_BASE_URL: "https://llm.mefit.kr"
 
   # 아래 값들은 GitHub Environment secrets로 주입됩니다.
   # LITELLM_MASTER_KEY     (sk- prefix 필수)
   # DATABASE_URL           (RDS litellm DB)
   # OPENAI_API_KEY         (게이트웨이가 OpenAI 호출 시 사용할 실키)
   # GEMINI_API_KEY         (Google AI Studio 발급)
-  # UI_USERNAME            (어드민 UI 로그인 ID)
-  # UI_PASSWORD            (어드민 UI 로그인 비밀번호)
+  # UI_USERNAME            (어드민 UI 로그인 ID — 1차 인증)
+  # UI_PASSWORD            (어드민 UI 로그인 비밀번호 — 1차 인증)
   # AWS 자격증명은 EC2 IAM Role 자동 사용 (별도 키 불필요)
 ---
 apiVersion: v1

@@ -46,7 +46,7 @@ jobs:
 
             # LLM Gateway Secret 주입
             # AWS 자격증명은 EC2 인스턴스 프로파일(IAM Role) 자동 사용 → secret 불필요
-            # UI_USERNAME / UI_PASSWORD: Django admin 인증 통과 후 LiteLLM 자체 UI 로그인용
+            # UI_USERNAME / UI_PASSWORD: 별도 subdomain (llm.mefit.kr) 의 LiteLLM UI 로그인 (1차 인증)
             kubectl create secret generic mefit-production-llm-gateway-secret \
               --from-literal=LITELLM_MASTER_KEY="${{ secrets.LITELLM_MASTER_KEY }}" \
               --from-literal=DATABASE_URL="${{ secrets.LITELLM_DATABASE_URL }}" \
@@ -71,9 +71,8 @@ jobs:
             echo "- **네임스페이스:** mefit-backend-production"
             echo "- **클러스터 내부 엔드포인트:** http://mefit-llm-gateway:4000/v1"
             echo ""
-            echo "**어드민 UI 접근:** https://api.mefit.kr/admin/llm-gateway/ui"
-            echo "- 1차: Django admin 인증 (\`is_staff=True\`)"
-            echo "- 2차: LiteLLM UI 로그인 (\`LITELLM_UI_USERNAME\` / \`LITELLM_UI_PASSWORD\` GitHub secrets)"
+            echo "**어드민 UI 접근:** https://llm.mefit.kr/ui (별도 subdomain 직접 노출)"
+            echo "- 인증: LiteLLM UI 로그인 (\`LITELLM_UI_USERNAME\` / \`LITELLM_UI_PASSWORD\` GitHub secrets)"
             echo ""
-            echo "비상시 port-forward: \`kubectl port-forward -n mefit-backend-production svc/mefit-llm-gateway 4000:4000\` → http://localhost:4000/admin/llm-gateway/ui"
+            echo "비상시 port-forward: \`kubectl port-forward -n mefit-backend-production svc/mefit-llm-gateway 4000:4000\` → http://localhost:4000/ui"
           } >> "$GITHUB_STEP_SUMMARY"

@@ -74,6 +74,7 @@ echo "════════════════════════�
 echo "▶ ConfigMap / Service / Deployment 적용 중..."
 kubectl apply -f "${INFRA_DIR}/llm-gateway/configmap.yml"
 kubectl apply -f "${INFRA_DIR}/llm-gateway/service.yml"
+kubectl apply -f "${INFRA_DIR}/llm-gateway/ingress.yml"
 kubectl apply -f "${INFRA_DIR}/llm-gateway/deployment.yml"
 
 # Secret 존재 확인 (외부 주입)
