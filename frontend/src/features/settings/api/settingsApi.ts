@@ -193,10 +193,11 @@ export async function updateProfileApi(payload: {
   careerStage?: string;
 }): Promise<ApiResult> {
   try {
-    await Promise.all([
+    const [nameRes] = await Promise.all([
       updateNameApi(payload.name),
       profileApi.saveMyProfile({ jobCategoryId: payload.jobCategoryId, jobIds: payload.jobIds, careerStage: payload.careerStage }),
     ]);
+    if (!nameRes.success) return nameRes;
     return { success: true, message: "프로필이 저장되었습니다." };
   } catch {
     return { success: false, message: "저장에 실패했습니다." };
