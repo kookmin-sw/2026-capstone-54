@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Loader2, RefreshCw } from "lucide-react";
+import { AlertTriangle, Loader2, RefreshCw, Trophy } from "lucide-react";
 import { useAchievementsStore } from "@/features/achievements";
 import { AchievementCard } from "@/features/achievements";
 import { refreshAchievementsApi } from "@/features/achievements/api/achievementsApi";
@@ -39,7 +39,7 @@ export function AchievementsPage() {
         <div className="flex items-start justify-between mb-8 gap-4">
           <div>
             <div className="inline-flex items-center gap-1.5 text-[11px] font-bold tracking-[1.4px] uppercase text-[#0991B2] bg-[#E6F7FA] py-1 px-3 rounded-full mb-2.5">
-              🏆 도전과제
+              <Trophy size={12} /> 도전과제
             </div>
             <h1 className="text-[clamp(24px,3vw,36px)] font-black tracking-[-0.8px] text-[#0A0A0A] leading-[1.1]">
               내 도전과제
@@ -72,7 +72,7 @@ export function AchievementsPage() {
           </div>
         ) : !data && error ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
-            <span className="text-5xl mb-5">⚠️</span>
+            <AlertTriangle size={48} className="text-[#F59E0B] mb-5" />
             <p className="text-[15px] font-extrabold text-[#0A0A0A] mb-2">불러오기 실패</p>
             <p className="text-sm text-[#9CA3AF]">{error}</p>
           </div>
@@ -85,7 +85,7 @@ export function AchievementsPage() {
             )}
             {data && data.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 text-center">
-                <span className="text-5xl mb-5">🏆</span>
+                <Trophy size={48} className="text-[#0991B2] mb-5" />
                 <p className="text-[15px] font-extrabold text-[#0A0A0A] mb-2">아직 달성한 도전과제가 없어요</p>
                 <p className="text-sm text-[#9CA3AF]">면접 연습을 통해 도전과제를 달성해 보세요</p>
               </div>

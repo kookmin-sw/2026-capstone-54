@@ -22,6 +22,7 @@ export interface SettingsProfile {
 export interface SettingsNotifications {
   streakReminder: boolean;
   streakExpire: boolean;
+  streakReward: boolean;
   reportReady: boolean;
   serviceNotice: boolean;
   marketing: boolean;
@@ -58,6 +59,7 @@ export interface ApiResult {
 const FALLBACK_NOTIFICATIONS: SettingsNotifications = {
   streakReminder: true,
   streakExpire: true,
+  streakReward: true,
   reportReady: true,
   serviceNotice: true,
   marketing: true,
@@ -167,14 +169,35 @@ export async function uploadAvatarApi(file: File): Promise<{ success: boolean; a
   }
 }
 
+/* ── Update Name ── PATCH /api/v1/users/me/ ── */
+export async function updateNameApi(name: string): Promise<ApiResult> {
+  try {
+    const body = new URLSearchParams({ name });
+    await apiRequest("/api/v1/users/me/", {
+      method: "PATCH",
+      auth: true,
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: body.toString(),
+    });
+    return { success: true, message: "이름이 저장되었습니다." };
+  } catch {
+    return { success: false, message: "이름 저장에 실패했습니다." };
+  }
+}
+
 /* ── Update Profile ── POST /api/v1/profiles/me/ ── */
 export async function updateProfileApi(payload: {
+  name: string;
   jobCategoryId: number;
   jobIds: number[];
   careerStage?: string;
 }): Promise<ApiResult> {
   try {
-    await profileApi.saveMyProfile({ jobCategoryId: payload.jobCategoryId, jobIds: payload.jobIds, careerStage: payload.careerStage });
+    const [nameRes] = await Promise.all([
+      updateNameApi(payload.name),
+      profileApi.saveMyProfile({ jobCategoryId: payload.jobCategoryId, jobIds: payload.jobIds, careerStage: payload.careerStage }),
+    ]);
+    if (!nameRes.success) return nameRes;
     return { success: true, message: "프로필이 저장되었습니다." };
   } catch {
     return { success: false, message: "저장에 실패했습니다." };

@@ -34,8 +34,8 @@ export interface JdListItem {
   company: string;
   companyInitial: string;
   companyColor: string;
-  title: string;
   categoryId: number;
+  title: string;
   status: JdListStatus;
   tags: JdTag[];
   registeredAt: string;
@@ -45,9 +45,9 @@ export interface JdListItem {
   raw: UserJobDescription;
 }
 
-export type FilterKey = "all" | "planned" | "applied" | "saved";
-
 export type JdListStats = UserJobDescriptionStats;
+
+export type FilterKey = "all" | "planned" | "applied" | "saved";
 
 interface JdListState {
   items: JdListItem[];
@@ -86,8 +86,8 @@ function transform(item: UserJobDescription): JdListItem {
     company,
     companyInitial: getCompanyInitial(company),
     companyColor: getCompanyColor(company),
-    title,
     categoryId: inferCategoryId(jd.platform || "", title),
+    title,
     status,
     tags,
     registeredAt: getRelativeTime(item.createdAt),

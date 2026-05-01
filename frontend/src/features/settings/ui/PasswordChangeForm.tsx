@@ -104,7 +104,7 @@ export function PasswordChangeForm({
         </p>
       </div>
 
-      <div className="flex items-center justify-end gap-[10px] pt-5 border-t border-[#E5E7EB] mt-1 max-[640px]:flex-col-reverse max-[640px]:items-stretch">
+      <div className="flex items-center justify-end gap-[10px] mt-5 max-[640px]:flex-col-reverse max-[640px]:items-stretch">
         {saveMessage && <span className="text-[12px] font-bold text-[#059669] mr-auto animate-[spFadeUp_0.3s_ease]">✓ {saveMessage}</span>}
         {error && <span className="text-[12px] font-bold text-[#EF4444] mr-auto animate-[spFadeUp_0.3s_ease]">✕ {error}</span>}
         <button className="font-plex-sans-kr text-[14px] font-semibold text-[#6B7280] bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg px-5 py-[10px] cursor-pointer transition-all duration-150 hover:bg-[#F3F4F6] hover:text-[#0A0A0A]" onClick={onReset}>취소</button>
@@ -116,6 +116,7 @@ export function PasswordChangeForm({
           {saving ? <span className="w-[14px] h-[14px] border-2 border-white/40 border-t-white rounded-full animate-[spSpin_0.6s_linear_infinite]" /> : <span>변경하기</span>}
         </button>
       </div>
+      <div className="border-t border-[#E5E7EB] my-5" />
     </>
   );
 }

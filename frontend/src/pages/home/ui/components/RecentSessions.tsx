@@ -41,48 +41,50 @@ export function RecentSessions({ revealed }: RecentSessionsProps) {
   }, []);
 
   return (
-    <>
-      <div className={`hp-sec-head hp-rv${revealed ? " hp-rv-in" : ""}`} style={{ transitionDelay: "275ms" }}>
-        <div className="hp-sec-title">최근 면접 기록</div>
-        <Link to="/interview/results" className="hp-sec-link">전체 보기 →</Link>
+    <div
+      className={`hp-card-white hp-rv${revealed ? " hp-rv-in" : ""}`}
+      style={{ padding: 20, transitionDelay: "275ms", marginBottom: 16 }}
+    >
+      <div className="flex items-center gap-2 mb-3">
+        <h3 className="text-[16px] font-bold text-[#0A0A0A]">최근 면접 기록</h3>
+        <Link to="/interview/results" className="text-[12px] text-[#0991B2] ml-auto">전체 보기 →</Link>
       </div>
-      <div className="hp-session-list">
-        {loading ? (
-          <div className="flex flex-col gap-2">
-            {[0, 1, 2].map((i) => (
-              <div key={i} className="h-[52px] rounded-lg bg-[#F3F4F6] animate-pulse" />
-            ))}
-          </div>
-        ) : sessions.length === 0 ? (
-          <p className="text-[13px] text-[#9CA3AF] py-2">아직 완료된 면접이 없어요</p>
-        ) : (
-          sessions.map((session, i) => (
-            <Link
-              key={session.uuid}
-              to={`/interview/session/${session.uuid}/report`}
-              className={`hp-session-item hp-rv${revealed ? " hp-rv-in" : ""}`}
-              style={{ transitionDelay: `${330 + i * 55}ms` }}
-            >
-              <div className="w-9 h-9 rounded-lg bg-white border border-[#E5E7EB] flex items-center justify-center shrink-0">
-                {session.reportStatus === "completed"
-                  ? <BarChart2 size={16} className="text-[#0991B2]" />
-                  : <ClipboardList size={16} className="text-[#9CA3AF]" />}
+
+      {loading ? (
+        <div className="flex flex-col gap-2">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="h-[52px] rounded-lg bg-[#F3F4F6] animate-pulse" />
+          ))}
+        </div>
+      ) : sessions.length === 0 ? (
+        <p className="text-[13px] text-[#9CA3AF] py-2">아직 완료된 면접이 없어요</p>
+      ) : (
+        sessions.map((session, i) => (
+          <Link
+            key={session.uuid}
+            to={`/interview/session/${session.uuid}/report`}
+            className={`hp-session-item hp-rv${revealed ? " hp-rv-in" : ""}`}
+            style={{ transitionDelay: `${330 + i * 55}ms` }}
+          >
+            <div className="w-9 h-9 rounded-lg bg-white border border-[#E5E7EB] flex items-center justify-center shrink-0">
+              {session.reportStatus === "completed"
+                ? <BarChart2 size={16} className="text-[#0991B2]" />
+                : <ClipboardList size={16} className="text-[#9CA3AF]" />}
+            </div>
+            <div className="hp-si-body">
+              <div className="hp-si-company">
+                {session.jobDescriptionLabel}
+                <span className="hp-badge" style={{ fontSize: 10 }}>
+                  {SESSION_TYPE_LABEL[session.interviewSessionType] ?? session.interviewSessionType}
+                </span>
               </div>
-              <div className="hp-si-body">
-                <div className="hp-si-company">
-                  {session.jobDescriptionLabel}
-                  <span className="hp-badge" style={{ fontSize: 10 }}>
-                    {SESSION_TYPE_LABEL[session.interviewSessionType] ?? session.interviewSessionType}
-                  </span>
-                </div>
-                <div className="hp-si-meta">
-                  {session.resumeTitle} · {DIFFICULTY_LABEL[session.interviewDifficultyLevel] ?? session.interviewDifficultyLevel} · {formatDate(session.createdAt)}
-                </div>
+              <div className="hp-si-meta">
+                {session.resumeTitle} · {DIFFICULTY_LABEL[session.interviewDifficultyLevel] ?? session.interviewDifficultyLevel} · {formatDate(session.createdAt)}
               </div>
-            </Link>
-          ))
-        )}
-      </div>
-    </>
+            </div>
+          </Link>
+        ))
+      )}
+    </div>
   );
 }
