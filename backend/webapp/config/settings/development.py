@@ -18,6 +18,8 @@ DEBUG = True
 ENVIRONMENT = "development"
 
 FLOWER_INTERNAL_URL = "http://flower:5555"
+# LiteLLM Gateway 는 dev docker-compose 에 미포함 — 빈 문자열이면 프록시 view 가 503 반환.
+LLM_GATEWAY_INTERNAL_URL = ""
 
 # ── CORS / CSRF 설정 (개발 환경) ──
 CORS_ALLOWED_ORIGINS = [
