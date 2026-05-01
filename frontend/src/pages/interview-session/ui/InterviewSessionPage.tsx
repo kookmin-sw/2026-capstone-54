@@ -74,6 +74,51 @@ const interviewCoachMarksSteps: CoachMarkStep[] = [
   },
 ];
 
+const INTERVIEW_COACH_MARKS_KEY = "interview-session";
+
+const interviewCoachMarksSteps: CoachMarkStep[] = [
+  {
+    id: "welcome",
+    title: "면접 세션 안내",
+    description: "면접 세션이 시작되었습니다. 주요 기능을 안내해 드리겠습니다.",
+    targetSelector: ".session-header",
+    position: "bottom",
+    align: "center",
+  },
+  {
+    id: "question-panel",
+    title: "질문 패널",
+    description: "여기서 면접관의 질문이 표시됩니다. 질문이 끝나면 답변을 시작하세요.",
+    targetSelector: ".question-panel",
+    position: "top",
+    align: "center",
+  },
+  {
+    id: "action-panel",
+    title: "액션 패널",
+    description: "면접 시작, 답변 제출 등 주요 액션을 여기서 수행합니다.",
+    targetSelector: ".session-action-panel",
+    position: "left",
+    align: "center",
+  },
+  {
+    id: "transcript-panel",
+    title: "대본 패널",
+    description: "당신의 답변이 실시간으로 표시됩니다. 말하기 습관을 확인할 수 있습니다.",
+    targetSelector: ".transcript-panel",
+    position: "left",
+    align: "center",
+  },
+  {
+    id: "behavior-metrics",
+    title: "행동 지표",
+    description: "말하기 속도, 채움말 사용 등 다양한 지표를 실시간으로 확인할 수 있습니다.",
+    targetSelector: ".behavior-metrics",
+    position: "left",
+    align: "center",
+  },
+];
+
 export function InterviewSessionPage() {
   const { interviewSessionUuid } = useParams<{ interviewSessionUuid: string }>();
   const navigate = useNavigate();
