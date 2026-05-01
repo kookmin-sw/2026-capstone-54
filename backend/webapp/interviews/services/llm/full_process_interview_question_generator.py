@@ -3,13 +3,12 @@
 FULL_PROCESS 세션 타입에서 사용한다. 자기소개부터 마무리까지 10개 질문을 한 번에 생성한다.
 """
 
+from interviews.constants import FULL_PROCESS_QUESTION_COUNT
 from interviews.schemas.question_generator_input import QuestionGeneratorInput
 from interviews.services.llm.prompt_registry import PromptRegistry
 from interviews.services.llm.question_generator import QuestionGenerator
 
 _registry = PromptRegistry()
-
-_FULL_PROCESS_QUESTION_COUNT = 10
 
 
 class FullProcessInterviewQuestionGenerator(QuestionGenerator):
@@ -23,4 +22,4 @@ class FullProcessInterviewQuestionGenerator(QuestionGenerator):
     return _registry.get_full_process_prompt()
 
   def _get_questions_count(self, input_data: QuestionGeneratorInput) -> int:
-    return _FULL_PROCESS_QUESTION_COUNT
+    return FULL_PROCESS_QUESTION_COUNT

@@ -15,7 +15,7 @@ from common.services.base_service import BaseService
 from django.conf import settings
 from django.db import transaction
 from django.db.models.functions import Coalesce
-from interviews.constants import FOLLOWUP_ANCHOR_COUNT
+from interviews.constants import FOLLOWUP_ANCHOR_COUNT, FULL_PROCESS_QUESTION_COUNT
 from interviews.enums import (
   InterviewExchangeType,
   InterviewSessionStatus,
@@ -90,7 +90,8 @@ class GenerateInitialQuestionsService(BaseService):
       return self._call_llm_fallback()
 
     # 세션 타입에 따른 청크 수 결정
-    n = FOLLOWUP_ANCHOR_COUNT if session.interview_session_type == InterviewSessionType.FOLLOWUP else 10
+    is_followup = session.interview_session_type == InterviewSessionType.FOLLOWUP
+    n = FOLLOWUP_ANCHOR_COUNT if is_followup else FULL_PROCESS_QUESTION_COUNT
 
     # 랜덤 청크 선택
     selector = RandomChunkSelector()
