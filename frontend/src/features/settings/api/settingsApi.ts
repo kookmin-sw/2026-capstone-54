@@ -22,6 +22,7 @@ export interface SettingsProfile {
 export interface SettingsNotifications {
   streakReminder: boolean;
   streakExpire: boolean;
+  streakReward: boolean;
   reportReady: boolean;
   serviceNotice: boolean;
   marketing: boolean;
@@ -58,6 +59,7 @@ export interface ApiResult {
 const FALLBACK_NOTIFICATIONS: SettingsNotifications = {
   streakReminder: true,
   streakExpire: true,
+  streakReward: true,
   reportReady: true,
   serviceNotice: true,
   marketing: true,
