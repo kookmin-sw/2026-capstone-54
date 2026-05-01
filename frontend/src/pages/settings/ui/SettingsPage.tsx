@@ -48,6 +48,7 @@ export function SettingsPage() {
     setAiDataDraft, saveConsents,
     deleteAccount,
     clearMessage,
+    clearPasswordMessage,
   } = useSettingsStore();
 
   const {
@@ -77,6 +78,13 @@ export function SettingsPage() {
       return () => clearTimeout(t);
     }
   }, [saveMessage, clearMessage]);
+
+  useEffect(() => {
+    if (passwordSaveMessage) {
+      const t = setTimeout(() => clearPasswordMessage(), 3000);
+      return () => clearTimeout(t);
+    }
+  }, [passwordSaveMessage, clearPasswordMessage]);
 
   const pwdStrength = getPwdStrength(passwordDraft.newPassword);
   const pwdMatch = passwordDraft.confirmPassword
