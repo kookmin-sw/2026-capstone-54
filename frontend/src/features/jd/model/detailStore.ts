@@ -48,6 +48,7 @@ interface JdDetailState {
   error: string | null;
 
   fetchJd: (uuid: string) => Promise<void>;
+  silentRefreshJd: (uuid: string) => Promise<void>;
   updateStatus: (next: JdStatus) => Promise<boolean>;
   deleteJd: () => Promise<boolean>;
   clearError: () => void;
@@ -102,6 +103,15 @@ export const useJdDetailStore = create<JdDetailState>()((set, get) => ({
         isLoading: false,
         error: e instanceof Error ? e.message : "채용공고를 찾을 수 없습니다.",
       });
+    }
+  },
+
+  silentRefreshJd: async (uuid) => {
+    try {
+      const raw = await userJobDescriptionApi.retrieve(uuid);
+      set({ jd: toDetail(raw) });
+    } catch {
+      // silent — don't overwrite error state
     }
   },
 

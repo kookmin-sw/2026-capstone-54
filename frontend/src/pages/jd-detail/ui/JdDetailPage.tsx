@@ -38,7 +38,7 @@ export function JdDetailPage() {
   const { uuid } = useParams<{ uuid: string }>();
   const navigate = useNavigate();
   const [liveStatus, setLiveStatus] = useState<JobDescriptionCollectionStatus | null>(null);
-  const { jd, isLoading, isUpdating, error, fetchJd, updateStatus, deleteJd, clearError } =
+  const { jd, isLoading, isUpdating, error, fetchJd, silentRefreshJd, updateStatus, deleteJd, clearError } =
     useJdDetailStore();
 
   useEffect(() => {
@@ -47,6 +47,13 @@ export function JdDetailPage() {
   }, [uuid]);
 
   const sseEnabled = !!uuid && !!jd && !jd.analyzed;
+
+  // SSE 누락 대비 폴링 fallback: 분석 중일 때 5초마다 조용히 재조회
+  useEffect(() => {
+    if (!sseEnabled || !uuid) return;
+    const interval = setInterval(() => { silentRefreshJd(uuid); }, 5000);
+    return () => clearInterval(interval);
+  }, [sseEnabled, uuid, silentRefreshJd]);
 
   useUserJobDescriptionScrapingSse({
     uuid: uuid ?? "",
