@@ -69,24 +69,17 @@ data:
           order: 2
 
       # ── embeddings: text-embedding-3-small ──
+      # 임베딩은 chat 과 달리 vector space 호환성 때문에 모델 간 폴백 불가:
+      # - OpenAI text-embedding-3-small: 1536 차원, OpenAI 학습 분포
+      # - Bedrock Titan embed v2: 1024 차원, Amazon 학습 분포
+      # 두 모델의 벡터는 cosine similarity 비교 자체가 무의미하고, pgvector column
+      # 차원 불일치로 INSERT 실패. 한 번이라도 다른 모델로 저장되면 검색 인덱스가
+      # 영구 오염되므로 단일 모델 (OpenAI) 만 운영. OpenAI 장애 시 임베딩 호출은
+      # 차라리 명확히 실패하도록 두는 것이 데이터 일관성 측면에서 안전.
       - model_name: text-embedding-3-small
         litellm_params:
           model: openai/text-embedding-3-small
           api_key: os.environ/OPENAI_API_KEY
-          order: 1
-      - model_name: text-embedding-3-small
-        litellm_params:
-          model: bedrock/amazon.titan-embed-text-v2:0
-          custom_llm_provider: bedrock
-          aws_region_name: os.environ/AWS_REGION_NAME
-          order: 2
-        model_info:
-          # LiteLLM 의 _filter_model_params 가 embedding health check 시
-          # max_tokens 를 제거하지 않는 버그(상류 미수정)로 인해 Test Connection 에서
-          # Titan embed 가 "extraneous key [max_tokens]" 로 표시됨. 실제 embedding
-          # 호출 (litellm.aembedding) 에는 max_tokens 가 들어가지 않으므로 운영 영향 없음.
-          mode: embedding
-          disable_background_health_check: true
 
     router_settings:
       routing_strategy: simple-shuffle
