@@ -43,7 +43,7 @@ class QuestionGenerator:
 
     structured_llm = llm.with_structured_output(_QuestionsOutputSchema)
 
-    system_prompt = self._get_system_prompt(input_data.question_difficulty_level)
+    system_prompt = self._get_system_prompt(input_data)
     questions_count = self._get_questions_count(input_data)
     prompt = self._build_prompt(system_prompt, input_data, questions_count)
 
@@ -55,7 +55,7 @@ class QuestionGenerator:
     questions = [InterviewQuestion(question=item.question, source=item.source) for item in result.questions]
     return QuestionGeneratorOutput(questions=questions)
 
-  def _get_system_prompt(self, difficulty_level: str) -> str:
+  def _get_system_prompt(self, input_data: QuestionGeneratorInput) -> str:
     raise NotImplementedError
 
   def _get_questions_count(self, input_data: QuestionGeneratorInput) -> int:
@@ -67,11 +67,22 @@ class QuestionGenerator:
     input_data: QuestionGeneratorInput,
     questions_count: int,
   ) -> str:
-    chunks_text = "\n\n".join(chunk.format_for_prompt() for chunk in input_data.chunks)
-    return (
-      f"{system_prompt}\n\n"
-      "다음은 면접 질문 생성에 참고할 정보입니다:\n\n"
-      f"{chunks_text}\n\n"
+    parts: list[str] = [system_prompt, "\n\n"]
+
+    parts.append("다음은 면접 질문 생성에 참고할 정보입니다:\n\n")
+
+    if input_data.jd_chunks:
+      parts.append("## 채용공고 정보\n")
+      for chunk in input_data.jd_chunks:
+        parts.append(f"{chunk.format_for_prompt()}\n\n")
+
+    if input_data.resume_chunks:
+      parts.append("## 이력서 정보\n")
+      for chunk in input_data.resume_chunks:
+        parts.append(f"{chunk.format_for_prompt()}\n\n")
+
+    parts.append(
       f"위 내용을 바탕으로 면접 질문을 정확히 {questions_count}개 생성해주세요.\n"
       '"source" 값은 resume, job_description, unknown 중 하나로 명시하세요.'
     )
+    return "".join(parts)

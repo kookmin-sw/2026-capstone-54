@@ -43,7 +43,7 @@ class Property5QuestionCountPromptTests(unittest.TestCase):
         """
     questions_count = len(chunks)
     input_data = QuestionGeneratorInput(
-      chunks=chunks,
+      resume_chunks=chunks,
       questions_count=questions_count,
       question_difficulty_level="normal",
     )

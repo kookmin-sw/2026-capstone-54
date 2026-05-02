@@ -80,27 +80,30 @@ class GenerateInitialQuestionsService(BaseService):
   def _call_llm(self) -> tuple[QuestionGeneratorOutput, TokenUsageCallback]:
     session = self.interview_session
 
-    # 청크 풀 구성
+    # 이력서·채용공고 청크를 분리 구성
     builder = ChunkPoolBuilder()
     jd = session.user_job_description.job_description if session.user_job_description else None
-    chunk_pool = builder.build(session.resume, jd)
+    resume_chunks = builder._build_resume_chunks(session.resume)
+    jd_chunks = builder._build_jd_chunks(jd)
 
-    # 청크 풀이 비어있으면 기존 방식으로 폴백
-    if not chunk_pool:
+    # 둘 다 비어있으면 기존 방식으로 폴백
+    if not resume_chunks and not jd_chunks:
       return self._call_llm_fallback()
 
-    # 세션 타입에 따른 청크 수 결정
+    # 이력서 청크에서만 n개 랜덤 선택, 채용공고 청크는 전문 전달
     is_followup = session.interview_session_type == InterviewSessionType.FOLLOWUP
     n = FOLLOWUP_ANCHOR_COUNT if is_followup else FULL_PROCESS_QUESTION_COUNT
 
-    # 랜덤 청크 선택
     selector = RandomChunkSelector()
-    selected_chunks = selector.select(chunk_pool, n)
+    selected_resume_chunks = selector.select(resume_chunks, n)
 
     # 청크 기반 질문 생성
     input_data = QuestionGeneratorInput(
-      chunks=selected_chunks,
+      resume_chunks=selected_resume_chunks,
+      jd_chunks=jd_chunks,
       question_difficulty_level=session.interview_difficulty_level,
+      company_name=jd.company if jd else "",
+      job_title=jd.title if jd else "",
     )
     callback = TokenUsageCallback()
 
@@ -115,20 +118,25 @@ class GenerateInitialQuestionsService(BaseService):
   def _call_llm_fallback(self) -> tuple[QuestionGeneratorOutput, TokenUsageCallback]:
     """청크 풀이 비어있을 때 기존 전문 텍스트 기반 방식으로 폴백."""
     session = self.interview_session
+    jd = session.user_job_description.job_description if session.user_job_description else None
 
     resume_content = get_resume_content(session.resume)
     job_description_content = get_job_description_content(session.user_job_description)
 
     # 폴백용 입력: 전문 텍스트를 단일 청크로 변환
-    chunks: list[ChunkItem] = []
+    resume_chunks: list[ChunkItem] = []
+    jd_chunks: list[ChunkItem] = []
     if resume_content.strip():
-      chunks.append(ChunkItem(source_label="이력서", type_label="전문", text=resume_content))
+      resume_chunks.append(ChunkItem(source_label="이력서", type_label="전문", text=resume_content))
     if job_description_content.strip():
-      chunks.append(ChunkItem(source_label="채용공고", type_label="전문", text=job_description_content))
+      jd_chunks.append(ChunkItem(source_label="채용공고", type_label="전문", text=job_description_content))
 
     input_data = QuestionGeneratorInput(
-      chunks=chunks,
+      resume_chunks=resume_chunks,
+      jd_chunks=jd_chunks,
       question_difficulty_level=session.interview_difficulty_level,
+      company_name=jd.company if jd else "",
+      job_title=jd.title if jd else "",
     )
     callback = TokenUsageCallback()
 

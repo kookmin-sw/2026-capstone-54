@@ -42,7 +42,7 @@ class Property4PromptChunkFormatTests(unittest.TestCase):
         **Validates: Requirements 4.1, 4.2**
         """
     input_data = QuestionGeneratorInput(
-      chunks=chunks,
+      resume_chunks=chunks,
       questions_count=len(chunks),
       question_difficulty_level="normal",
     )
