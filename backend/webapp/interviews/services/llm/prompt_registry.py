@@ -8,7 +8,8 @@ class PromptRegistry:
 
   _QUESTION_PROMPTS: dict[str, str] = {
     "friendly": (
-      "당신은 채용 면접을 진행하는 따뜻하고 격려하는 면접관입니다. "
+      "당신은 \"{company_name}\"의 \"{job_title}\"에 대한 면접을 진행하는 실제 면접관입니다. "
+      "따뜻하고 격려하는 태도로 면접을 진행합니다. "
       "당신의 목표는 지원자가 편안한 분위기에서 자신의 경험과 역량을 충분히 보여줄 수 있도록 돕는 것입니다.\n\n"
       "## 면접관의 관점\n"
       "- 지원자가 긴장하지 않도록 부드럽고 친근한 톤을 유지하세요.\n"
@@ -21,7 +22,7 @@ class PromptRegistry:
       "3. 성장 가능성 질문: 지원자가 앞으로 어떤 방향으로 성장하고 싶은지 탐색\n\n"
     ),
     "normal": (
-      "당신은 채용공고의 포지션에 대한 채용 면접을 진행하는 실제 면접관입니다. "
+      "당신은 \"{company_name}\"의 \"{job_title}\"에 대한 면접을 진행하는 실제 면접관입니다. "
       "당신의 목표는 이 지원자가 우리 회사와 팀에 정말 필요한 사람인지 판단하는 것입니다.\n\n"
       "## 면접관의 관점\n"
       "- 채용공고에 명시된 주요업무, 자격요건, 우대사항을 기준으로 지원자를 평가하세요.\n"
@@ -34,7 +35,8 @@ class PromptRegistry:
       "3. 교차 검증 질문: 채용공고 요구사항과 이력서 경험 간 갭을 파악\n\n"
     ),
     "pressure": (
-      "당신은 채용 면접을 진행하는 날카롭고 도전적인 시니어 면접관입니다. "
+      "당신은 \"{company_name}\"의 \"{job_title}\"에 대한 면접을 진행하는 실제 면접관입니다. "
+      "날카롭고 도전적인 시니어 면접관으로서, "
       "당신의 목표는 지원자의 실제 역량 수준을 철저하게 검증하고, "
       "이력서와 답변의 진위 여부를 엄격하게 확인하는 것입니다.\n\n"
       "## 면접관의 관점\n"
@@ -106,10 +108,11 @@ class PromptRegistry:
     "- 각 질문의 source는 resume 또는 job_description으로 명시하세요.\n\n"
   )
 
-  def get_question_prompt(self, difficulty_level: str) -> str:
+  def get_question_prompt(self, difficulty_level: str, company_name: str = "", job_title: str = "") -> str:
     if difficulty_level not in self.VALID_LEVELS:
       raise ValueError(f"지원하지 않는 난이도: {difficulty_level}. 지원 목록: {', '.join(self.VALID_LEVELS)}")
-    return self._QUESTION_PROMPTS[difficulty_level]
+    prompt = self._QUESTION_PROMPTS[difficulty_level]
+    return prompt.format(company_name=company_name or "회사", job_title=job_title or "채용 포지션")
 
   def get_followup_prompt(self, difficulty_level: str) -> str:
     if difficulty_level not in self.VALID_LEVELS:

@@ -17,8 +17,12 @@ class FollowupInterviewQuestionGenerator(QuestionGenerator):
     난이도별 면접관 페르소나 프롬프트를 사용하여 FOLLOWUP_ANCHOR_COUNT개의 앵커 질문을 생성한다.
     """
 
-  def _get_system_prompt(self, difficulty_level: str) -> str:
-    return _registry.get_question_prompt(difficulty_level)
+  def _get_system_prompt(self, input_data: QuestionGeneratorInput) -> str:
+    return _registry.get_question_prompt(
+      input_data.question_difficulty_level,
+      company_name=input_data.company_name,
+      job_title=input_data.job_title,
+    )
 
   def _get_questions_count(self, input_data: QuestionGeneratorInput) -> int:
     return FOLLOWUP_ANCHOR_COUNT

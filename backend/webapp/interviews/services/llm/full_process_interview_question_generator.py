@@ -18,7 +18,7 @@ class FullProcessInterviewQuestionGenerator(QuestionGenerator):
     10개 질문을 일괄 생성한다.
     """
 
-  def _get_system_prompt(self, difficulty_level: str) -> str:
+  def _get_system_prompt(self, input_data: QuestionGeneratorInput) -> str:
     return _registry.get_full_process_prompt()
 
   def _get_questions_count(self, input_data: QuestionGeneratorInput) -> int:
