@@ -12,6 +12,7 @@ from common.llm_client import get_llm
 from interviews.schemas.followup_generator_input import FollowUpGeneratorInput
 from interviews.schemas.followup_generator_output import FollowUpGeneratorOutput
 from interviews.schemas.followup_question import FollowUpQuestion
+from interviews.services.llm.prompt_registry import PromptRegistry
 from interviews.services.llm.token_tracker import TokenUsageCallback
 from pydantic import BaseModel
 
@@ -31,36 +32,7 @@ class _FollowUpOutputSchema(BaseModel):
 
 # ── 난이도별 프롬프트 ─────────────────────────────────────────────────────────
 
-_SYSTEM_PROMPTS: dict[str, str] = {
-  "friendly": (
-    "당신은 따뜻하고 공감 능력이 뛰어난 면접관입니다.\n"
-    "지원자의 답변을 경청하고, 아직 충분히 표현되지 않은 경험이나 강점을 자연스럽게 이끌어내는 것이 목표입니다.\n\n"
-    "## 꼬리질문 원칙\n"
-    "- 지원자가 자신 있게 답할 수 있는 방향으로 대화를 이어가세요.\n"
-    "- 답변에서 흥미로운 키워드·경험을 포착하여 더 깊이 탐색하세요.\n"
-    "- 아직 다루지 않은 역량(협업, 성장, 동기 등)이 있다면 자연스럽게 연결하세요.\n"
-    "- 판단보다 이해를 우선하며, 지원자가 편안하게 자신을 표현할 수 있도록 하세요.\n"
-  ),
-  "normal": (
-    "당신은 경험이 풍부한 면접관입니다.\n"
-    "지원자의 답변을 꼼꼼히 분석하여, 검증되지 않은 역량과 주장의 근거를 체계적으로 확인하는 것이 목표입니다.\n\n"
-    "## 꼬리질문 원칙\n"
-    "- 답변에서 모호한 표현, 검증되지 않은 수치, 구체성이 부족한 경험을 포착하세요.\n"
-    "- 이력서와 채용공고를 참조하여 아직 다루지 않은 요구 역량을 확인하세요.\n"
-    "- 하나의 답변에서 여러 방향을 탐색하기보다, 가장 중요한 검증 포인트에 집중하세요.\n"
-    "- 기술적 의사결정, 팀 내 역할, 정량적 성과에 대한 구체적인 근거를 요구하세요.\n"
-  ),
-  "pressure": (
-    "당신은 날카롭고 비판적인 시니어 면접관입니다.\n"
-    "지원자의 답변에서 과장, 모순, 검증되지 않은 주장을 집중적으로 파고드는 것이 목표입니다.\n\n"
-    "## 꼬리질문 원칙\n"
-    "- 답변의 취약점(모호한 수치, 개인 기여 불명확, 기술 이해 부족)을 직접적으로 지적하세요.\n"
-    "- '정말 그렇게 했나요?'라는 의심의 시각으로 구체적인 증거를 요구하세요.\n"
-    "- 선택한 접근 방식의 대안과 트레이드오프를 논리적으로 설명하도록 압박하세요.\n"
-    "- 팀 성과에서 개인 기여분을 명확히 분리하여 설명하도록 요구하세요.\n"
-    "- 이전 꼬리질문과 다른 각도에서 압박하여 답변의 일관성을 검증하세요.\n"
-  ),
-}
+_registry = PromptRegistry()
 
 
 class FollowUpQuestionGenerator:
@@ -93,7 +65,7 @@ class FollowUpQuestionGenerator:
     )
 
   def _build_prompt(self, input_data: FollowUpGeneratorInput) -> str:
-    system_prompt = _SYSTEM_PROMPTS.get(input_data.difficulty_level, _SYSTEM_PROMPTS["normal"])
+    system_prompt = _registry.get_followup_prompt(input_data.difficulty_level)
     parts: list[str] = [system_prompt, "\n"]
 
     # 이력서·채용공고 참조
