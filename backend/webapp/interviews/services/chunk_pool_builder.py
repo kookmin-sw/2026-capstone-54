@@ -1,7 +1,7 @@
 """ChunkPoolBuilder 서비스.
 
 ResumeEmbedding 테이블과 JobDescription 모델에서 청크를 수집하여
-청크 풀을 구성한다. TEXT, SUMMARY 유형은 제외한다
+청크 풀을 구성한다. TEXT, SUMMARY, BASIC_INFO, CERTIFICATION 유형은 제외한다
 """
 
 from __future__ import annotations
@@ -14,7 +14,7 @@ from resumes.models import ResumeEmbedding
 
 logger = logging.getLogger(__name__)
 
-_EXCLUDED_CHUNK_TYPES = {ChunkType.TEXT, ChunkType.SUMMARY}
+_EXCLUDED_CHUNK_TYPES = {ChunkType.TEXT, ChunkType.SUMMARY, ChunkType.BASIC_INFO, ChunkType.CERTIFICATION}
 
 _JD_FIELD_LABELS: dict[str, str] = {
   "duties": "담당업무",
@@ -33,7 +33,7 @@ class ChunkPoolBuilder:
     return resume_chunks + jd_chunks
 
   def _build_resume_chunks(self, resume) -> list[ChunkItem]:
-    """ResumeEmbedding에서 TEXT/SUMMARY를 제외한 청크를 조회한다."""
+    """ResumeEmbedding에서 TEXT/SUMMARY/BASIC_INFO/CERTIFICATION을 제외한 청크를 조회한다."""
     if resume is None:
       return []
     try:
