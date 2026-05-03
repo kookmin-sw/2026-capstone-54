@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAuthStore } from "@/features/auth";
 import { useNavigate, Link } from "react-router-dom";
+import { getTermsDocumentsApi, getTermsDocumentApi, type TermsDocument } from "@/features/auth/api/termsApi";
+import { Modal } from "@/shared/ui/Modal";
 
 const isValidEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 
@@ -15,11 +17,6 @@ function timingSafeEqual(a: string, b: string): boolean {
   return result === 0;
 }
 
-interface AgreementState {
-  terms: boolean;
-  privacy: boolean;
-}
-
 export function SignUpPage() {
   const navigate = useNavigate();
   const { isLoading, error, signUp, clearError } = useAuthStore();
@@ -30,11 +27,30 @@ export function SignUpPage() {
   const [passwordConfirm, setPasswordConfirm] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [showPwConfirm, setShowPwConfirm] = useState(false);
-  const [agreements, setAgreements] = useState<AgreementState>({
-    terms: false,
-    privacy: false,
-  });
+  const [terms, setTerms] = useState<TermsDocument[]>([]);
+  const [termsLoading, setTermsLoading] = useState(true);
+  const [agreements, setAgreements] = useState<Record<number, boolean>>({});
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalContent, setModalContent] = useState<string | null>(null);
+  const [modalLoading, setModalLoading] = useState(false);
+  const [modalTitle, setModalTitle] = useState("");
+
+  useEffect(() => {
+    getTermsDocumentsApi().then((data) => {
+      setTerms(data);
+      setTermsLoading(false);
+    });
+  }, []);
+
+  const allRequiredAgreed = useMemo(() => {
+    const requiredIds = terms.filter((t) => t.isRequired).map((t) => t.id);
+    return requiredIds.every((id) => agreements[id]);
+  }, [terms, agreements]);
+
+  const allAgreed = useMemo(() => {
+    return terms.length > 0 && terms.every((t) => agreements[t.id]);
+  }, [terms, agreements]);
 
   const validate = (): string | null => {
     if (!name.trim()) return "이름을 입력해주세요.";
@@ -42,8 +58,7 @@ export function SignUpPage() {
     if (!isValidEmail(email)) return "올바른 이메일을 입력해주세요.";
     if (password.length < 8) return "비밀번호는 8자 이상이어야 합니다.";
     if (!timingSafeEqual(password, passwordConfirm)) return "비밀번호가 일치하지 않습니다.";
-    if (!(agreements.terms && agreements.privacy))
-      return "이용약관 및 개인정보처리방침에 동의해주세요.";
+    if (!allRequiredAgreed) return "필수 약관에 모두 동의해주세요.";
     return null;
   };
 
@@ -56,13 +71,26 @@ export function SignUpPage() {
       return;
     }
     setValidationError(null);
-    const ok = await signUp({ name, email, password });
+    const agreedTermsIds = terms.filter((t) => agreements[t.id]).map((t) => t.id);
+    const ok = await signUp({ name, email, password, termsDocumentIds: agreedTermsIds });
     if (ok) navigate("/verify-email");
   };
 
-  const bothAgreed = agreements.terms && agreements.privacy;
-  const handleToggleBoth = (checked: boolean) => {
-    setAgreements({ terms: checked, privacy: checked });
+  const handleToggleAll = (checked: boolean) => {
+    const newAgreements: Record<number, boolean> = {};
+    terms.forEach((t) => {
+      newAgreements[t.id] = checked;
+    });
+    setAgreements(newAgreements);
+  };
+
+  const handleTermClick = async (termId: number, title: string) => {
+    setModalTitle(title);
+    setModalOpen(true);
+    setModalLoading(true);
+    const doc = await getTermsDocumentApi(termId);
+    setModalContent(doc?.content ?? null);
+    setModalLoading(false);
   };
 
   const inputClass =
@@ -168,20 +196,43 @@ export function SignUpPage() {
                 </div>
               </div>
 
-              <label className="flex items-start gap-[10px] text-[13px] text-[#374151] cursor-pointer mb-4">
-                <input
-                  type="checkbox"
-                  className="w-[17px] h-[17px] accent-[#0991B2] rounded-[3px] cursor-pointer shrink-0 mt-[1px]"
-                  checked={bothAgreed}
-                  onChange={(e) => handleToggleBoth(e.target.checked)}
-                />
-                <span>
-                  <a href="#" className="text-[#0991B2] font-bold no-underline hover:underline">이용약관</a>
-                  {" "}및{" "}
-                  <a href="#" className="text-[#0991B2] font-bold no-underline hover:underline">개인정보처리방침</a>
-                  에 동의합니다.
-                </span>
-              </label>
+              {termsLoading ? (
+                <div className="text-[13px] text-[#6B7280] mb-4">약관을 불러오는 중...</div>
+              ) : (
+                <div className="mb-4">
+                  <label className="flex items-start gap-[10px] text-[13px] text-[#374151] cursor-pointer mb-3">
+                    <input
+                      type="checkbox"
+                      className="w-[17px] h-[17px] accent-[#0991B2] rounded-[3px] cursor-pointer shrink-0 mt-[1px]"
+                      checked={allAgreed}
+                      onChange={(e) => handleToggleAll(e.target.checked)}
+                    />
+                    <span className="font-bold">모든 약관에 동의합니다.</span>
+                  </label>
+
+                  {terms.map((term) => (
+                    <label key={term.id} className="flex items-start gap-[10px] text-[13px] text-[#374151] cursor-pointer mb-2 ml-5">
+                      <input
+                        type="checkbox"
+                        className="w-[17px] h-[17px] accent-[#0991B2] rounded-[3px] cursor-pointer shrink-0 mt-[1px]"
+                        checked={agreements[term.id] || false}
+                        onChange={(e) => {
+                          const checked = e.target.checked;
+                          setValidationError(null);
+                          setAgreements((prev) => ({ ...prev, [term.id]: checked }));
+                        }}
+                      />
+                      <span
+                        className="font-bold cursor-pointer hover:underline"
+                        onClick={() => handleTermClick(term.id, term.title)}
+                      >
+                        {term.isRequired && <span className="text-[#EF4444] mr-1">[필수]</span>}
+                        {term.title}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              )}
 
               {(validationError || error) && (
                 <p className="text-[13px] text-[#DC2626] mb-[14px] px-[14px] py-[10px] bg-[#FEF2F2] border border-[#FECACA] rounded-lg" role="alert">
@@ -205,16 +256,24 @@ export function SignUpPage() {
           </div>
         </section>
         </div>
-      </main>
-
-      <footer className="w-full max-w-container mx-auto px-5 py-6 flex justify-center gap-5 md:px-10 md:py-8">
-        {["개인정보처리방침", "이용약관", "쿠키"].map((item) => (
-          <a key={item} href="#" className="text-[11px] text-[#9CA3AF] no-underline transition-[color] duration-200 hover:text-[#6B7280]">
-            {item}
-          </a>
-        ))}
-      </footer>
-    </div>
+            <Modal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={modalTitle}
+        size="lg"
+      >
+        {modalLoading ? (
+          <div className="text-[14px] text-[#6B7280] py-8 text-center">약관을 불러오는 중...</div>
+        ) : modalContent ? (
+          <div
+            className="prose prose-sm max-w-none text-[14px] text-[#0A0A0A] leading-[1.7]"
+            dangerouslySetInnerHTML={{ __html: modalContent }}
+          />
+        ) : (
+          <div className="text-[14px] text-[#6B7280] py-8 text-center">약관 내용을 불러올 수 없습니다.</div>
+        )}
+      </Modal>
+</main>   </div>
   );
 }
 

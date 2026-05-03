@@ -1,22 +1,23 @@
 import { apiRequest } from "@/shared/api/client";
 
-/* ── Types ── */
 export interface TermsDocument {
   id: number;
+  termsType: string;
+  version: number;
   title: string;
-  version: string;
   isRequired: boolean;
+  effectiveAt: string | null;
+  createdAt: string;
   content?: string;
 }
 
 export interface MyConsent {
-  termsDocumentId: number;
-  title: string;
-  version: string;
-  agreedAt: string;
+  id: number;
+  termsDocument: TermsDocument;
+  isAgreed: boolean;
+  createdAt: string;
 }
 
-/* ── GET /api/v1/terms-documents/ ── */
 export async function getTermsDocumentsApi(): Promise<TermsDocument[]> {
   try {
     const res = await apiRequest<TermsDocument[] | { results?: TermsDocument[] }>(
@@ -28,23 +29,36 @@ export async function getTermsDocumentsApi(): Promise<TermsDocument[]> {
   }
 }
 
-/* ── POST /api/v1/terms-documents/consents/ ── */
-export async function postTermsConsentsApi(
-  consents: { termsDocumentId: number; agreed: boolean }[]
-): Promise<{ success: boolean; message: string }> {
+export async function getTermsDocumentApi(id: number): Promise<TermsDocument | null> {
   try {
-    await apiRequest("/api/v1/terms-documents/consents/", {
-      method: "POST",
-      auth: true,
-      body: JSON.stringify({ consents }),
-    });
-    return { success: true, message: "약관 동의가 완료되었습니다." };
+    const res = await apiRequest<TermsDocument>(`/api/v1/terms-documents/${id}/`);
+    return res;
   } catch {
-    return { success: false, message: "약관 동의에 실패했습니다." };
+    return null;
   }
 }
 
-/* ── GET /api/v1/terms-documents/my-consents/ ── */
+export async function postTermsConsentsApi(
+  termsDocumentId: number,
+  isAgreed: boolean
+): Promise<MyConsent[]> {
+  try {
+    const res = await apiRequest<MyConsent[] | { results?: MyConsent[] }>(
+      "/api/v1/terms-documents/consents/",
+      {
+        method: "POST",
+        auth: true,
+        body: JSON.stringify({
+          updates: [{ termsDocumentId, isAgreed }],
+        }),
+      }
+    );
+    return Array.isArray(res) ? res : (res.results ?? []);
+  } catch {
+    return [];
+  }
+}
+
 export async function getMyConsentsApi(): Promise<MyConsent[]> {
   try {
     const res = await apiRequest<MyConsent[] | { results?: MyConsent[] }>(

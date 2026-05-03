@@ -38,14 +38,14 @@ export function SettingsPage() {
   const navigate = useNavigate();
   const {
     data, loading, saving, passwordSaving, error, saveMessage, passwordError, passwordSaveMessage, activePanel,
-    profileDraft, passwordDraft, aiDataDraft,
+    profileDraft, passwordDraft,
     jobCategories, jobCategoriesLoading, availableJobs, availableJobsLoading,
     fetchSettings, setActivePanel,
     loadJobCategories,
     setProfileDraftField, toggleJobId, uploadAvatar, saveProfile, resetProfileDraft,
     setPasswordDraft, savePassword, resetPasswordDraft,
     toggleNotification,
-    setAiDataDraft, saveConsents,
+    toggleConsent,
     deleteAccount,
     clearMessage,
     clearPasswordMessage,
@@ -246,7 +246,6 @@ export function SettingsPage() {
                     {([
                       { key: "streakReminder", title: "스트릭 리마인더", desc: "오늘 면접 연습을 아직 하지 않았을 때 저녁 8시에 알림" },
                       { key: "streakExpire", title: "스트릭 만료 경고", desc: "자정 1시간 전, 오늘 스트릭이 만료될 예정일 때 알림" },
-                      { key: "streakReward", title: "스트릭 보상 수령", desc: "마일스톤 달성 시 보상이 지급되었을 때 알림" },
                       { key: "reportReady", title: "면접 리포트 완성", desc: "AI 면접 리뷰 리포트 생성이 완료되었을 때 알림" },
                     ] as const).map((item) => (
                       <NotificationToggle
@@ -361,50 +360,55 @@ export function SettingsPage() {
 
                 {/* ─── CONSENT PANEL ─── */}
                 <div className={`${activePanel === "consent" ? "block animate-[spFadeUp_0.3s_ease_both]" : "hidden"}`}>
-                  <div className="mb-7">
-                    <h1 className="font-plex-sans-kr text-[26px] font-black tracking-[-0.5px] text-[#0A0A0A] mb-[5px]">동의 관리</h1>
-                    <p className="text-[14px] text-[#6B7280] leading-[1.55]">수집된 데이터의 활용 범위를 직접 관리하세요</p>
-                  </div>
-
-                  <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl px-7 py-7 shadow-[var(--sc)] mb-4 max-[640px]:px-[18px]">
-                    <div className="font-plex-sans-kr text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">
-                      <ShieldCheck size={15} className="text-[#0991B2]" /> 약관 및 개인정보 동의
+                  <div className="flex items-end justify-between gap-3 max-[640px]:flex-col max-[640px]:items-start mb-7">
+                    <div>
+                      <h1 className="font-plex-sans-kr text-[26px] font-black tracking-[-0.5px] text-[#0A0A0A] mb-[5px]">동의 관리</h1>
+                      <p className="text-[14px] text-[#6B7280] leading-[1.55]">약관 동의 현황을 확인하고 변경하세요.</p>
                     </div>
-
-                    <ConsentItem
-                      title="이용약관 동의"
-                      required
-                      description="서비스 이용에 관한 권리·의무 및 규칙에 동의합니다"
-                      version={data.consents.myConsents.find((c) => c.title?.includes("이용약관") || c.title?.toLowerCase().includes("terms"))?.version ?? "v2025-01"}
-                      agreedAt={data.consents.termsAgreedAt}
-                    />
-
-                    <ConsentItem
-                      title="개인정보처리방침 동의"
-                      required
-                      description="수집되는 개인정보의 항목, 목적, 보존 기간에 동의합니다"
-                      version={data.consents.myConsents.find((c) => c.title?.includes("개인정보") || c.title?.toLowerCase().includes("privacy"))?.version ?? "v2025-01"}
-                      agreedAt={data.consents.privacyAgreedAt}
-                    />
-
-                    <ConsentItem
-                      title="AI 학습 데이터 활용 동의"
-                      required={false}
-                      description="면접 영상·음성 데이터를 AI 모델 개선에 활용하는 것에 동의합니다. 동의 시 서비스 품질 향상에 기여하며 추가 스트릭 보상을 받을 수 있어요."
-                      version="v2025-03 업데이트"
-                      checked={aiDataDraft ?? false}
-                      onToggle={() => setAiDataDraft(!aiDataDraft)}
-                    />
+                    <div className="min-h-[18px] text-[12px] font-bold flex items-center gap-2">
+                      {saving && activePanel === "consent" && (
+                        <span className="text-[#6B7280] flex items-center gap-1.5">
+                          <span className="w-[12px] h-[12px] border-2 border-[#9CA3AF]/30 border-t-[#0991B2] rounded-full animate-[spSpin_0.6s_linear_infinite]" />
+                          저장 중...
+                        </span>
+                      )}
+                      {!saving && saveMessage && activePanel === "consent" && (
+                        <span className="text-[#059669] animate-[spFadeUp_0.3s_ease]">✓ {saveMessage}</span>
+                      )}
+                      {!saving && error && activePanel === "consent" && (
+                        <span className="text-[#EF4444] animate-[spFadeUp_0.3s_ease]">✕ {error}</span>
+                      )}
+                    </div>
                   </div>
 
-                  <div className="flex items-center justify-end gap-[10px] pt-5 border-t border-[#E5E7EB] mt-1 max-[640px]:flex-col-reverse max-[640px]:items-stretch">
-                    {saveMessage && activePanel === "consent" && <span className="text-[12px] font-bold text-[#059669] mr-auto animate-[spFadeUp_0.3s_ease]">✓ {saveMessage}</span>}
-                    {error && activePanel === "consent" && <span className="text-[12px] font-bold text-[#EF4444] mr-auto animate-[spFadeUp_0.3s_ease]">✕ {error}</span>}
-                    <button className="font-plex-sans-kr text-[14px] font-semibold text-[#6B7280] bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg px-5 py-[10px] cursor-pointer transition-all duration-150 hover:bg-[#F3F4F6] hover:text-[#0A0A0A]" onClick={() => setAiDataDraft(data.consents.aiDataAgreed)}>취소</button>
-                    <button className="font-plex-sans-kr text-[14px] font-bold text-white bg-[#0A0A0A] border-none rounded-lg px-6 py-[10px] cursor-pointer transition-all duration-150 flex items-center gap-[7px] hover:opacity-85 hover:-translate-y-px disabled:opacity-60 disabled:cursor-not-allowed max-[640px]:justify-center" onClick={saveConsents} disabled={saving}>
-                      {saving ? <span className="w-[14px] h-[14px] border-2 border-white/40 border-t-white rounded-full animate-[spSpin_0.6s_linear_infinite]" /> : <span>저장하기</span>}
-                    </button>
-                  </div>
+                  {data?.consents.allTerms && data.consents.allTerms.length > 0 ? (
+                      <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl px-7 py-7 shadow-[var(--sc)] mb-4 max-[640px]:px-[18px]">
+                        <div className="font-plex-sans-kr text-[14px] font-extrabold tracking-[-0.1px] mb-[18px] flex items-center gap-[7px] text-[#0A0A0A]">
+                          <ShieldCheck size={15} className="text-[#0991B2]" /> 약관 및 개인정보 동의
+                        </div>
+
+                        {data.consents.allTerms.map((term) => {
+                          const consent = data.consents.myConsents.find(c => c.termsDocument.id === term.id);
+                          const isAgreed = consent?.isAgreed ?? false;
+                          return (
+                            <ConsentItem
+                              key={term.id}
+                              termsDocumentId={term.id}
+                              title={term.title}
+                              termsType={term.termsType}
+                              version={term.version}
+                              isRequired={term.isRequired}
+                              effectiveAt={term.effectiveAt ?? undefined}
+                              isAgreed={isAgreed}
+                              onToggle={(id, agreed) => toggleConsent(id, agreed)}
+                              isProPlan={subStatus?.planType === "pro"}
+                            />
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="text-[14px] text-[#6B7280]">약관 정보가 없습니다.</div>
+                    )}
                 </div>
               </>
             ) : null}
