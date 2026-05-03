@@ -35,7 +35,5 @@ class TermsConsentAPIView(BaseAPIView):
     )
 
     consents = service.perform()
-    consent_ids = [consent.id for consent in consents]
-    consents_qs = UserConsent.objects.select_related("terms_document").filter(id__in=consent_ids)
-    response_serializer = UserConsentSerializer(consents_qs, many=True)
+    response_serializer = UserConsentSerializer(consents, many=True)
     return Response(response_serializer.data, status=status.HTTP_200_OK)

@@ -20,16 +20,21 @@ class UserConsentSerializer(serializers.ModelSerializer):
       "created_at",
     ]
 
-  def get_is_agreed(self, obj):
-    return obj.is_agreed()
-
 
 class UserConsentUpdateSerializer(serializers.Serializer):
   terms_document_id = serializers.IntegerField()
   is_agreed = serializers.BooleanField()
 
   def to_internal_value(self, data):
+    terms_document_id = data.get("termsDocumentId")
+    if terms_document_id is None:
+      terms_document_id = data.get("terms_document_id")
+
+    is_agreed = data.get("isAgreed")
+    if is_agreed is None:
+      is_agreed = data.get("is_agreed")
+
     return {
-      "terms_document_id": data.get("termsDocumentId") or data.get("terms_document_id"),
-      "is_agreed": data.get("isAgreed") or data.get("is_agreed"),
+      "terms_document_id": terms_document_id,
+      "is_agreed": is_agreed,
     }
