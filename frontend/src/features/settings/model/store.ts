@@ -327,7 +327,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
           saveMessage: res.message,
           data: s.data ? {
             ...s.data,
-            notifications: res.data,
+            notifications: res.data as SettingsNotifications,
           } : s.data,
         };
       });
