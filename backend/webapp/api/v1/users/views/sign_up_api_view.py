@@ -36,10 +36,11 @@ class SignUpAPIView(BaseAPIView):
       ).perform()
 
       term_ids = data.get("terms_document_ids", [])
+      updates = [{"terms_document_id": term_id, "is_agreed": True} for term_id in term_ids]
       AgreeToTermsDocumentService(
         user=user,
-        terms_document_ids=term_ids,
-        require_all_required_published=True,
+        updates=updates,
+        require_ai_for_free_plan=True,
       ).perform()
 
     response_data = {

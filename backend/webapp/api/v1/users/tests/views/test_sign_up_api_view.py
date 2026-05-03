@@ -1,8 +1,9 @@
+from django.contrib.auth.models import BaseUserManager
 from django.test import override_settings
 from django.urls import reverse
 from hypothesis import given, settings
 from hypothesis import strategies as st
-from hypothesis.extra.django import TestCase
+from hypothesis.extra.django import TransactionTestCase
 from rest_framework import status
 from rest_framework.test import APIClient
 from users.factories import DEFAULT_PASSWORD
@@ -12,8 +13,9 @@ from users.models import EmailVerificationCode, User
 @override_settings(
   EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
   CELERY_TASK_ALWAYS_EAGER=True,
+  CELERY_TASK_EAGER_PROPAGATES=True,
 )
-class SignUpAPIViewPropertyTests(TestCase):
+class SignUpAPIViewPropertyTests(TransactionTestCase):
   """SignUpAPIView property 테스트"""
 
   def setUp(self):
@@ -24,8 +26,6 @@ class SignUpAPIViewPropertyTests(TestCase):
   @settings(max_examples=5, deadline=None)
   def test_sign_up_success_creates_user_and_returns_full_response(self, email):
     """유효한 name/email/password로 회원가입하면 201, User 생성, 완전한 응답 반환, EmailVerificationCode 생성된다."""
-    from django.contrib.auth.models import BaseUserManager
-
     normalized_email = BaseUserManager.normalize_email(email)
     User.objects.filter(email=normalized_email).delete()
 
@@ -94,8 +94,6 @@ class SignUpAPIViewPropertyTests(TestCase):
   @settings(max_examples=5, deadline=None)
   def test_sign_up_fails_with_duplicate_email(self, email):
     """이미 등록된 이메일로 회원가입을 시도하면 4xx 에러가 반환되고 새로운 User가 생성되지 않는다."""
-    from django.contrib.auth.models import BaseUserManager
-
     normalized_email = BaseUserManager.normalize_email(email)
     User.objects.filter(email=normalized_email).delete()
 

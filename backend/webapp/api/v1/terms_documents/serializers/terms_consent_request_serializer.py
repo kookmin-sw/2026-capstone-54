@@ -1,10 +1,7 @@
 from rest_framework import serializers
 
+from .user_consent_serializer import UserConsentUpdateSerializer
+
 
 class TermsConsentRequestSerializer(serializers.Serializer):
-  terms_document_ids = serializers.ListField(
-    child=serializers.IntegerField(),
-    required=True,
-    allow_empty=False,
-    write_only=True,
-  )
+  updates = UserConsentUpdateSerializer(many=True)

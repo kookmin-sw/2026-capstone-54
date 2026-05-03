@@ -1,4 +1,5 @@
 from common.services import BaseService
+from django.db import transaction
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
@@ -17,8 +18,8 @@ class SignUpService(BaseService):
     name = self.kwargs["name"]
 
     user = User.objects.create_user(email=email, password=password, name=name)
-    RegisteredSendVerificationEmailTask.delay(user_id=user.id)
-    RegisteredSendSignUpEventTask.delay(email=email, name=name)
+    transaction.on_commit(lambda: RegisteredSendVerificationEmailTask.delay(user_id=user.id))
+    transaction.on_commit(lambda: RegisteredSendSignUpEventTask.delay(email=email, name=name))
     token = RefreshToken.for_user(user)
 
     return token, user
