@@ -14,7 +14,7 @@ class GrantInitialSubscriptionTicketsService(BaseService):
   """
 
   def execute(self):
-    from subscriptions.services import GetCurrentSubscriptionService
+    from .get_current_subscription_service import GetCurrentSubscriptionService
 
     user = self.user
 
@@ -33,18 +33,12 @@ class GrantInitialSubscriptionTicketsService(BaseService):
       return None
 
     daily_amount = policy.daily_ticket_amount
-    if daily_amount <= 0:
-      logger.info("No tickets to grant for plan=%s (amount=%d)", current_subscription.plan_type, daily_amount)
-      return None
 
     # 사용자 티켓 생성 또는 업데이트
+    # 수량이 0이더라도 레코드를 생성하여 이후 user.ticket 접근 시 예외를 방지합니다.
     user_ticket, created = UserTicket.objects.update_or_create(
       user=user,
       defaults={"daily_count": daily_amount},
-      create_defaults={
-        "daily_count": daily_amount,
-        "purchased_count": 0
-      },
     )
 
     logger.info(
