@@ -246,7 +246,6 @@ export function SettingsPage() {
                     {([
                       { key: "streakReminder", title: "스트릭 리마인더", desc: "오늘 면접 연습을 아직 하지 않았을 때 저녁 8시에 알림" },
                       { key: "streakExpire", title: "스트릭 만료 경고", desc: "자정 1시간 전, 오늘 스트릭이 만료될 예정일 때 알림" },
-                      { key: "streakReward", title: "스트릭 보상 수령", desc: "마일스톤 달성 시 보상이 지급되었을 때 알림" },
                       { key: "reportReady", title: "면접 리포트 완성", desc: "AI 면접 리뷰 리포트 생성이 완료되었을 때 알림" },
                     ] as const).map((item) => (
                       <NotificationToggle

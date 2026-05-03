@@ -318,13 +318,17 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
 
     const res = await updateNotificationsApi({ [key]: newValue });
 
-    if (res.success) {
+    if (res.success && res.data) {
       set((s) => {
         const remaining = s.pendingNotificationRequests - 1;
         return {
           pendingNotificationRequests: remaining,
           saving: remaining > 0,
           saveMessage: res.message,
+          data: s.data ? {
+            ...s.data,
+            notifications: res.data,
+          } : s.data,
         };
       });
     } else {

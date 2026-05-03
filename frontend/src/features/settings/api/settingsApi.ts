@@ -21,7 +21,6 @@ export interface SettingsProfile {
 export interface SettingsNotifications {
   streakReminder: boolean;
   streakExpire: boolean;
-  streakReward: boolean;
   reportReady: boolean;
   serviceNotice: boolean;
   marketing: boolean;
@@ -55,7 +54,6 @@ export interface ApiResult {
 const FALLBACK_NOTIFICATIONS: SettingsNotifications = {
   streakReminder: true,
   streakExpire: true,
-  streakReward: true,
   reportReady: true,
   serviceNotice: true,
   marketing: true,
@@ -202,14 +200,17 @@ export async function changePasswordApi(payload: {
   }
 }
 
-export async function updateNotificationsApi(payload: Partial<SettingsNotifications>): Promise<ApiResult> {
+export async function updateNotificationsApi(payload: Partial<SettingsNotifications>): Promise<{ success: boolean; data?: SettingsNotifications; message: string }> {
   try {
-    await apiRequest("/api/v1/email-notifications/", {
+    const data = await apiRequest<SettingsNotifications>("/api/v1/email-notifications/", {
       method: "PUT", auth: true, body: JSON.stringify(payload),
     });
-    return { success: true, message: "알림 설정이 저장되었습니다." };
-  } catch {
-    return { success: false, message: "저장에 실패했습니다." };
+    return { success: true, data, message: "알림 설정이 저장되었습니다." };
+  } catch (error) {
+    // API 에러 응답에서 상세 메시지 추출
+    const apiError = error as { detail?: string; message?: string };
+    const errorMessage = apiError?.detail || apiError?.message || "저장에 실패했습니다.";
+    return { success: false, message: errorMessage };
   }
 }
 

@@ -34,6 +34,7 @@ export interface ApiError {
   status: number;
   errorCode?: string;
   message?: string;
+  detail?: string;
   fieldErrors?: Record<string, string[]>;
 }
 
