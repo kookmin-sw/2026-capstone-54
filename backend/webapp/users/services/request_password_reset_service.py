@@ -27,7 +27,11 @@ class RequestPasswordResetService(BaseService):
     token = PasswordResetToken.objects.create(user=self.user, expires_at=expires_at)
 
     # Celery 태스크로 이메일 발송 위임
-    RegisteredSendPasswordResetEmailTask.delay(
-      user_id=self.user.id,
-      token_uuid=str(token.token),
+    from django.db import transaction
+
+    transaction.on_commit(
+      lambda: RegisteredSendPasswordResetEmailTask.delay(
+        user_id=self.user.id,
+        token_uuid=str(token.token),
+      )
     )

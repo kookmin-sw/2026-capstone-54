@@ -50,6 +50,19 @@ class BaseTask(Task):
       exc,
       einfo,
     )
+    if not self.name.startswith("common.tasks.send_error_alert_task"):
+      try:
+        from common.tasks.send_error_alert_task import RegisteredSendErrorAlertTask
+
+        RegisteredSendErrorAlertTask.delay(
+          error_type=type(exc).__name__,
+          error_message=str(exc),
+          path=self.name,
+          method="CELERY_TASK",
+          traceback=str(einfo),
+        )
+      except Exception:
+        logger.warning("task_error_alert_failed", task=self.name, exc_info=True)
     super().on_failure(exc, task_id, args, kwargs, einfo)
 
   def on_retry(self, exc, task_id, args, kwargs, einfo):

@@ -25,6 +25,9 @@ from django.conf import settings
 class SendErrorAlertTask(SendSlackMessageTask):
   """5xx 에러를 Slack 에 비동기로 알린다."""
 
+  def on_failure(self, exc, task_id, args, kwargs, einfo):
+    return
+
   def build_channel(self) -> str:
     return getattr(settings, "SLACK_CHANNEL_ERROR", "")
 
