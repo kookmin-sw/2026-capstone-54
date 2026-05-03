@@ -3,7 +3,6 @@ import {
   setTokens,
   clearTokens,
 } from "@/shared/api/client";
-import { getTermsDocumentsApi, postTermsConsentsApi } from "./termsApi";
 
 function parseApiError(err: unknown, fallback: string): string {
   const e = err as { message?: string; fieldErrors?: Record<string, string[]> };
@@ -30,6 +29,7 @@ export interface SignUpPayload {
   name: string;
   email: string;
   password: string;
+  termsDocumentIds?: number[];
 }
 
 export interface SignUpResult {
@@ -40,10 +40,6 @@ export interface SignUpResult {
 
 export async function signUpApi(payload: SignUpPayload): Promise<SignUpResult> {
   try {
-    // 1. 약관 목록 조회
-    const terms = await getTermsDocumentsApi();
-
-    // 2. 회원가입
     const res = await apiRequest<AuthResponse>("/api/v1/users/sign-up/", {
       method: "POST",
       body: JSON.stringify({
@@ -51,16 +47,10 @@ export async function signUpApi(payload: SignUpPayload): Promise<SignUpResult> {
         email: payload.email,
         password1: payload.password,
         password2: payload.password,
+        terms_document_ids: payload.termsDocumentIds ?? [],
       }),
     });
     setTokens(res.access, "");
-
-    // 3. 약관 일괄 동의 (토큰 세팅 후 auth 요청)
-    if (terms.length > 0) {
-      await postTermsConsentsApi(
-        terms.map((t) => ({ termsDocumentId: t.id, agreed: true }))
-      );
-    }
 
     return {
       success: true,

@@ -4,14 +4,14 @@ import {
   uploadAvatarApi,
   updateProfileApi,
   changePasswordApi,
-  updateNotificationsApi,
-  updateConsentsApi,
   deleteInterviewDataApi,
   deleteAccountApi,
+  updateNotificationsApi,
 } from "../api/settingsApi";
 import type { SettingsData, SettingsProfile, SettingsNotifications, JobCategory, Job } from "../api/settingsApi";
 import { profileApi } from "@/shared/api/profileApi";
 import { useAuthStore } from "@/features/auth";
+import { postTermsConsentsApi } from "@/features/auth/api/termsApi";
 
 export type SettingsPanel = "account" | "notifications" | "subscription" | "consent";
 
@@ -47,6 +47,8 @@ interface SettingsState {
   passwordDraft: { currentPassword: string; newPassword: string; confirmPassword: string };
   aiDataDraft: boolean | null;
 
+  consentDrafts: Record<number, boolean>;
+
   /* Actions */
   fetchSettings: () => Promise<void>;
   setActivePanel: (panel: SettingsPanel) => void;
@@ -65,8 +67,8 @@ interface SettingsState {
 
   toggleNotification: (key: keyof SettingsNotifications) => Promise<void>;
 
-  setAiDataDraft: (value: boolean) => void;
-  saveConsents: () => Promise<void>;
+  toggleConsent: (termsDocumentId: number, agreed: boolean) => Promise<void>;
+  setConsentDrafts: (updater: Record<number, boolean> | ((prev: Record<number, boolean>) => Record<number, boolean>)) => void;
 
   deleteInterviewData: () => Promise<void>;
   deleteAccount: () => Promise<void>;
@@ -95,15 +97,27 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   availableJobs: [],
   availableJobsLoading: false,
 
-  profileDraft: EMPTY_PROFILE_DRAFT,
-  passwordDraft: { currentPassword: "", newPassword: "", confirmPassword: "" },
-  aiDataDraft: null,
+    profileDraft: EMPTY_PROFILE_DRAFT,
+    passwordDraft: { currentPassword: "", newPassword: "", confirmPassword: "" },
+    aiDataDraft: null,
+    consentDrafts: {},
 
   fetchSettings: async () => {
     set({ loading: true, error: null });
     const res = await fetchSettingsApi();
     if (res.success && res.data) {
       const profile = res.data.profile;
+      const consentDrafts: Record<number, boolean> = {};
+      const allTerms = res.data.consents.allTerms ?? [];
+      const myConsents = res.data.consents.myConsents ?? [];
+      allTerms.forEach((term) => {
+        const myConsent = myConsents.find(c => c.termsDocument.id === term.id);
+        if (myConsent) {
+          consentDrafts[term.id] = myConsent.isAgreed;
+        } else {
+          consentDrafts[term.id] = false;
+        }
+      });
       set({
         data: res.data,
         loading: false,
@@ -113,7 +127,8 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
           jobIds: profile.jobIds,
           careerStage: profile.careerStage,
         },
-        aiDataDraft: res.data.consents.aiDataAgreed,
+        aiDataDraft: res.data.consents.consentsByType?.["ai_training_data"] ? true : false,
+        consentDrafts,
       });
       // 프로필에 직군이 있으면 해당 직군의 직업 목록을 미리 로드
       if (profile.jobCategoryId) {
@@ -328,20 +343,45 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
     }
   },
 
-  setAiDataDraft: (value) => set({ aiDataDraft: value }),
+  setAiDataDraft: (value: boolean) => set({ aiDataDraft: value }),
 
-  saveConsents: async () => {
-    const aiDataAgreed = get().aiDataDraft ?? false;
-    set({ saving: true, error: null, saveMessage: null });
-    const res = await updateConsentsApi({ aiDataAgreed });
-    if (res.success) {
-      set((s) => ({
-        saving: false,
-        saveMessage: res.message,
-        data: s.data ? { ...s.data, consents: { ...s.data.consents, aiDataAgreed } } : s.data,
-      }));
-    } else {
-      set({ saving: false, error: res.message });
+  toggleConsent: async (termsDocumentId: number, agreed: boolean) => {
+    const { data, consentDrafts } = get();
+    if (!data) return;
+
+    const newDrafts = { ...consentDrafts, [termsDocumentId]: agreed };
+
+    const updatedConsents = data.consents.myConsents.map((c) => ({
+      ...c,
+      isAgreed: newDrafts[c.termsDocument.id] ?? false,
+    }));
+    const newConsentsByType: Record<string, boolean> = {};
+    updatedConsents.forEach((c) => {
+      if (c.termsDocument?.termsType) {
+        newConsentsByType[c.termsDocument.termsType] = c.isAgreed;
+      }
+    });
+
+    set({
+      saving: true,
+      error: null,
+      saveMessage: null,
+      consentDrafts: newDrafts,
+      data: {
+        ...data,
+        consents: {
+          ...data.consents,
+          myConsents: updatedConsents,
+          consentsByType: newConsentsByType,
+        },
+      },
+    });
+
+    try {
+      await postTermsConsentsApi(termsDocumentId, agreed);
+      set({ saving: false, saveMessage: "동의 설정이 저장되었습니다." });
+    } catch {
+      set({ saving: false, error: "저장에 실패했습니다." });
     }
   },
 
@@ -359,4 +399,8 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
 
   clearMessage: () => set({ saveMessage: null, error: null }),
   clearPasswordMessage: () => set({ passwordSaveMessage: null, passwordError: null }),
+
+  setConsentDrafts: (updater) => set((s) => ({
+    consentDrafts: typeof updater === "function" ? updater(s.consentDrafts) : updater,
+  })),
 }));

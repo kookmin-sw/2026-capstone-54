@@ -37,7 +37,7 @@ interface AuthState {
   error: string | null;
   pendingEmail: string | null;
 
-  signUp: (payload: { name: string; email: string; password: string }) => Promise<boolean>;
+  signUp: (payload: { name: string; email: string; password: string; termsDocumentIds?: number[] }) => Promise<boolean>;
   login: (email: string, password: string) => Promise<LoginResult>;
   logout: () => Promise<void>;
   verifyCode: (code: string) => Promise<boolean>;
@@ -59,9 +59,9 @@ export const useAuthStore = create<AuthState>()((set) => ({
   error: null,
   pendingEmail: null,
 
-  signUp: async ({ name, email, password }) => {
+  signUp: async ({ name, email, password, termsDocumentIds }) => {
     set({ isLoading: true, error: null });
-    const res = await signUpApi({ name, email, password });
+    const res = await signUpApi({ name, email, password, termsDocumentIds });
     if (!res.success) {
       set({ isLoading: false, error: res.message });
       return false;

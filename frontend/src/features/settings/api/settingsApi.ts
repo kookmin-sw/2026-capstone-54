@@ -1,12 +1,11 @@
 import { apiRequest } from "@/shared/api/client";
 import { profileApi } from "@/shared/api/profileApi";
 import { getMeApi } from "@/features/auth/api/authApi";
-import { getMyConsentsApi } from "@/features/auth/api/termsApi";
+import { getMyConsentsApi, getTermsDocumentsApi, type MyConsent, type TermsDocument } from "@/features/auth/api/termsApi";
 import type { JobCategory, Job } from "@/shared/api/profileApi";
 
 export type { JobCategory, Job };
 
-/* ── Types ── */
 export interface SettingsProfile {
   name: string;
   email: string;
@@ -36,11 +35,9 @@ export interface SettingsSubscription {
 }
 
 export interface SettingsConsents {
-  termsAgreedAt: string;
-  privacyAgreedAt: string;
-  aiDataAgreed: boolean;
-  // my-consents API 원본 데이터
-  myConsents: { termsDocumentId: number; title: string; version: string; agreedAt: string }[];
+  myConsents: MyConsent[];
+  consentsByType: Record<string, boolean>;
+  allTerms: TermsDocument[];
 }
 
 export interface SettingsData {
@@ -55,7 +52,6 @@ export interface ApiResult {
   message: string;
 }
 
-/* ── Fallback (이메일 알림 API 호출 실패 시 모든 항목 동의 상태로 가정) ── */
 const FALLBACK_NOTIFICATIONS: SettingsNotifications = {
   streakReminder: true,
   streakExpire: true,
@@ -72,22 +68,15 @@ const MOCK_SUBSCRIPTION: SettingsSubscription = {
   nextBillingDate: null,
 };
 
-
-
-/* ── Fetch Settings ──
-   - 사용자 기본정보: GET /api/v1/users/me/
-   - 프로필 (직군/직업): GET /api/v1/profiles/me/
-   - 이메일 알림: GET /api/v1/email-notifications/
-   - 구독: 미구현 → mock fallback
-*/
 export async function fetchSettingsApi(): Promise<{ success: boolean; data?: SettingsData; error?: string }> {
   try {
-    const [me, userProfile, myConsents, avatar, notifications] = await Promise.allSettled([
+    const [me, userProfile, myConsents, avatar, notifications, allTerms] = await Promise.allSettled([
       getMeApi(),
       profileApi.getMyProfile(),
       getMyConsentsApi(),
       profileApi.getAvatar(),
       fetchEmailNotificationsApi(),
+      getTermsDocumentsApi(),
     ]);
 
     const meData = me.status === "fulfilled" ? me.value : null;
@@ -98,6 +87,7 @@ export async function fetchSettingsApi(): Promise<{ success: boolean; data?: Set
       notifications.status === "fulfilled" && notifications.value.success && notifications.value.data
         ? notifications.value.data
         : FALLBACK_NOTIFICATIONS;
+    const termsData = allTerms.status === "fulfilled" ? allTerms.value : [];
 
     const profile: SettingsProfile = {
       name: meData?.name ?? "",
@@ -111,25 +101,17 @@ export async function fetchSettingsApi(): Promise<{ success: boolean; data?: Set
       careerStage: profileData?.careerStage ?? "",
     };
 
-    // my-consents에서 이용약관/개인정보처리방침 동의일 추출
-    const formatDate = (iso: string) => {
-      if (!iso) return "";
-      const d = new Date(iso);
-      return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
-    };
-
-    const termsConsent = consentsData.find((c) =>
-      c.title?.includes("이용약관") || c.title?.toLowerCase().includes("terms")
-    );
-    const privacyConsent = consentsData.find((c) =>
-      c.title?.includes("개인정보") || c.title?.toLowerCase().includes("privacy")
-    );
+    const consentsByType: Record<string, boolean> = {};
+    consentsData.forEach((c) => {
+      if (c.termsDocument?.termsType) {
+        consentsByType[c.termsDocument.termsType] = c.isAgreed;
+      }
+    });
 
     const consents: SettingsConsents = {
-      termsAgreedAt: termsConsent ? formatDate(termsConsent.agreedAt) : "",
-      privacyAgreedAt: privacyConsent ? formatDate(privacyConsent.agreedAt) : "",
-      aiDataAgreed: false,
       myConsents: consentsData,
+      consentsByType,
+      allTerms: termsData,
     };
 
     return {
@@ -146,7 +128,6 @@ export async function fetchSettingsApi(): Promise<{ success: boolean; data?: Set
   }
 }
 
-/* ── Fetch Email Notifications ── GET /api/v1/email-notifications/ ── */
 export async function fetchEmailNotificationsApi(): Promise<{ success: boolean; data?: SettingsNotifications; message?: string }> {
   try {
     const data = await apiRequest<SettingsNotifications>("/api/v1/email-notifications/", {
@@ -159,7 +140,6 @@ export async function fetchEmailNotificationsApi(): Promise<{ success: boolean; 
   }
 }
 
-/* ── Upload Avatar ── */
 export async function uploadAvatarApi(file: File): Promise<{ success: boolean; avatarUrl?: string; message: string }> {
   try {
     const res = await profileApi.uploadAvatar(file);
@@ -204,7 +184,6 @@ export async function updateProfileApi(payload: {
   }
 }
 
-/* ── Change Password ── */
 export async function changePasswordApi(payload: {
   currentPassword: string;
   newPassword: string;
@@ -223,7 +202,6 @@ export async function changePasswordApi(payload: {
   }
 }
 
-/* ── Update Notifications ── PUT /api/v1/email-notifications/ ── */
 export async function updateNotificationsApi(payload: Partial<SettingsNotifications>): Promise<ApiResult> {
   try {
     await apiRequest("/api/v1/email-notifications/", {
@@ -235,7 +213,6 @@ export async function updateNotificationsApi(payload: Partial<SettingsNotificati
   }
 }
 
-/* ── Update Consents ── */
 export async function updateConsentsApi(payload: { aiDataAgreed: boolean }): Promise<ApiResult> {
   try {
     await apiRequest("/api/v1/users/consents/", {
@@ -247,7 +224,6 @@ export async function updateConsentsApi(payload: { aiDataAgreed: boolean }): Pro
   }
 }
 
-/* ── Delete Interview Data ── */
 export async function deleteInterviewDataApi(): Promise<ApiResult> {
   try {
     await apiRequest("/api/v1/users/interview-data/", { method: "DELETE", auth: true });
@@ -257,7 +233,6 @@ export async function deleteInterviewDataApi(): Promise<ApiResult> {
   }
 }
 
-/* ── Delete Account (unregister) ── */
 export async function deleteAccountApi(): Promise<ApiResult> {
   try {
     await apiRequest("/api/v1/users/unregister/", { method: "DELETE", auth: true });
