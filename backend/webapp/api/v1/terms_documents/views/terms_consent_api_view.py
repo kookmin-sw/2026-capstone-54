@@ -10,27 +10,32 @@ from terms_documents.services import AgreeToTermsDocumentService
 
 @extend_schema(tags=["약관"])
 class TermsConsentAPIView(BaseAPIView):
-  """여러 약관에 한 번에 동의한다."""
 
   permission_classes = [IsAuthenticated]
   serializer_class = TermsConsentRequestSerializer
 
   def get_queryset(self):
-    """약관 동의 관련 queryset 기본값을 반환한다."""
     return UserConsent.objects.none()
 
   @extend_schema(
-    summary="약관 일괄 동의",
+    summary="약관 동의 설정",
     request=TermsConsentRequestSerializer,
     responses={200: UserConsentSerializer(many=True)},
   )
   def post(self, request):
-    request_serializer = self.get_serializer(data=request.data)
-    request_serializer.is_valid(raise_exception=True)
-    terms_document_ids = request_serializer.validated_data["terms_document_ids"]
-    consents = AgreeToTermsDocumentService(
+    serializer = self.get_serializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+
+    updates = serializer.validated_data.get("updates", [])
+
+    service = AgreeToTermsDocumentService(
       user=self.current_user,
-      terms_document_ids=terms_document_ids,
-    ).perform()
-    serializer = UserConsentSerializer(consents, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+      updates=updates,
+      require_ai_for_free_plan=True,
+    )
+
+    consents = service.perform()
+    consent_ids = [consent.id for consent in consents]
+    consents_qs = UserConsent.objects.select_related("terms_document").filter(id__in=consent_ids)
+    response_serializer = UserConsentSerializer(consents_qs, many=True)
+    return Response(response_serializer.data, status=status.HTTP_200_OK)
