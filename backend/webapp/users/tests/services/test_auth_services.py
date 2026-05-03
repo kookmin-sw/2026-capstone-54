@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from common.exceptions import UnauthorizedException, ValidationException
-from django.test import TestCase, override_settings
+from django.test import TestCase, TransactionTestCase, override_settings
 from django.utils import timezone
 from rest_framework_simplejwt.tokens import RefreshToken
 from users.factories import DEFAULT_PASSWORD, EmailVerificationCodeFactory, UserFactory
@@ -18,8 +18,9 @@ from users.services import (
 @override_settings(
   EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
   CELERY_TASK_ALWAYS_EAGER=True,
+  CELERY_TASK_EAGER_PROPAGATES=True,
 )
-class SignUpServiceTests(TestCase):
+class SignUpServiceTests(TransactionTestCase):
 
   def test_creates_user(self):
     """SignUpService 실행 시 User가 생성된다"""

@@ -4,6 +4,7 @@ from django.db import transaction
 from django.http import HttpRequest
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
+from django.utils import timezone
 from easymde.widgets import EasyMDEEditor
 from terms_documents.enums import TermsType
 from terms_documents.models import TermsDocument
@@ -82,7 +83,7 @@ class TermsDocumentAdmin(ModelAdmin):
 
   @admin.action(description="선택된 약관 공개하기")
   def make_published(self, request, queryset):
-    queryset.update(published_at="now")
+    queryset.update(published_at=timezone.now())
 
   @admin.action(description="선택된 약관 비공개로 전환")
   def make_unpublished(self, request, queryset):
@@ -94,14 +95,15 @@ class TermsDocumentAdmin(ModelAdmin):
       self.message_user(request, "약관을 선택해주세요.", level="error")
       return
 
-    for terms in queryset:
-      TermsDocument.objects.create(
-        terms_type=terms.terms_type,
-        title=terms.title,
-        content=terms.content,
-        is_required=terms.is_required,
-        effective_at=terms.effective_at,
-      )
+    with transaction.atomic():
+      for terms in queryset:
+        TermsDocument.objects.create(
+          terms_type=terms.terms_type,
+          title=terms.title,
+          content=terms.content,
+          is_required=terms.is_required,
+          effective_at=terms.effective_at,
+        )
     self.message_user(request, f"{queryset.count()}개의 약관이 새 버전으로 복사되었습니다.")
 
   @action(description="기본 약관 생성", url_path="create-default-terms")

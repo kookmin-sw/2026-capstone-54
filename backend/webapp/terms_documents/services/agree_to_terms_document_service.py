@@ -1,4 +1,5 @@
 from common.services import BaseService
+from django.db import transaction
 from django.utils import timezone
 from rest_framework.exceptions import NotFound, ValidationError
 from terms_documents.models import TermsDocument, UserConsent
@@ -10,8 +11,10 @@ class AgreeToTermsDocumentService(BaseService):
     updates = self.kwargs.get("updates", [])
     require_ai_for_free_plan = self.kwargs.get("require_ai_for_free_plan", False)
 
+    # updates가 비어있으면 빈 리스트 반환 (약관 동의 없음)
     if not updates:
-      raise ValidationError(detail="updates가 필요합니다.")
+      all_user_consents = UserConsent.objects.filter(user=self.user).select_related("terms_document")
+      return list(all_user_consents)
 
     now = timezone.now()
     self._handle_updates(updates, now, require_ai_for_free_plan)
@@ -60,10 +63,12 @@ class AgreeToTermsDocumentService(BaseService):
           )
         )
 
-    if to_create:
-      UserConsent.objects.bulk_create(to_create)
-    if to_update:
-      UserConsent.objects.bulk_update(to_update, ["agreed_at", "disagreed_at"])
+    # atomic 트랜잭션으로 bulk 작업 수행
+    with transaction.atomic():
+      if to_create:
+        UserConsent.objects.bulk_create(to_create)
+      if to_update:
+        UserConsent.objects.bulk_update(to_update, ["agreed_at", "disagreed_at"])
 
   def _get_published_terms_by_id(self, terms_document_ids):
     return TermsDocument.objects.published().filter(id__in=terms_document_ids).in_bulk()
