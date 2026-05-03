@@ -63,7 +63,13 @@ class TermsDocumentModelTests(TestCase):
     """서로 다른 terms_type은 각자 하나씩 공개 문서를 가질 수 있는지 확인한다."""
     TermsDocumentFactory(terms_type=TermsType.TERMS_OF_SERVICE, is_published=True)
     TermsDocumentFactory(terms_type=TermsType.PRIVACY_POLICY, is_published=True)
-    self.assertEqual(TermsDocument.objects.published().count(), 2)
+    TermsDocumentFactory(terms_type=TermsType.MARKETING, is_published=True)
+    self.assertEqual(TermsDocument.objects.published().count(), 3)
+
+  def test_marketing_terms_type_exists(self):
+    marketing = TermsDocumentFactory(terms_type=TermsType.MARKETING, is_published=True)
+    self.assertEqual(marketing.terms_type, TermsType.MARKETING)
+    self.assertIn("마케팅", str(marketing))
 
   def test_published_queryset_returns_only_published_documents(self):
     """published() 쿼리셋이 공개된 문서만 반환하고 비공개 문서는 제외하는지 검증한다."""
