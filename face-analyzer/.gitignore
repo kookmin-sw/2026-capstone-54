@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv/
+
+# 테스트 이미지 및 결과 (용량 큼)
+analyzed_frames_*/
+result_*.json
+
+# 모델 캐시
+.model_cache/
+
+# OS
+.DS_Store
+Thumbs.db
+

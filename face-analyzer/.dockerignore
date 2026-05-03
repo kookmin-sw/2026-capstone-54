@@ -1,0 +1,7 @@
+__pycache__
+*.pyc
+.git
+.env
+sample_images/
+*.md
+run_local.py
