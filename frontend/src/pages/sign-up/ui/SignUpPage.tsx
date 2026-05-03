@@ -79,9 +79,7 @@ export function SignUpPage() {
   const handleToggleAll = (checked: boolean) => {
     const newAgreements: Record<number, boolean> = {};
     terms.forEach((t) => {
-      if (t.isRequired || checked) {
-        newAgreements[t.id] = checked;
-      }
+      newAgreements[t.id] = checked;
     });
     setAgreements(newAgreements);
   };
@@ -265,14 +263,14 @@ export function SignUpPage() {
         size="lg"
       >
         {modalLoading ? (
-          <div className="text-[14px] text-[#6B7280] py-8 text-center">약관을 불러오는 � �...</div>
+          <div className="text-[14px] text-[#6B7280] py-8 text-center">약관을 불러오는 중...</div>
         ) : modalContent ? (
           <div
             className="prose prose-sm max-w-none text-[14px] text-[#0A0A0A] leading-[1.7]"
             dangerouslySetInnerHTML={{ __html: modalContent }}
           />
         ) : (
-          <div className="text-[14px] text-[#6B7280] py-8 text-center">약관 내용을 불러오 수 없습니다.</div>
+          <div className="text-[14px] text-[#6B7280] py-8 text-center">약관 내용을 불러올 수 없습니다.</div>
         )}
       </Modal>
 </main>   </div>

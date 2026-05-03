@@ -31,7 +31,7 @@ export async function getTermsDocumentsApi(): Promise<TermsDocument[]> {
 
 export async function getTermsDocumentApi(id: number): Promise<TermsDocument | null> {
   try {
-    const res = await apiRequest<TermsDocument>("/api/v1/terms-documents/" + id + "/");
+    const res = await apiRequest<TermsDocument>(`/api/v1/terms-documents/${id}/`);
     return res;
   } catch {
     return null;

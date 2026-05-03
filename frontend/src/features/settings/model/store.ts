@@ -349,6 +349,9 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
     const { data, consentDrafts } = get();
     if (!data) return;
 
+    const previousData = data;
+    const previousDrafts = consentDrafts;
+
     const newDrafts = { ...consentDrafts, [termsDocumentId]: agreed };
 
     const updatedConsents = data.consents.myConsents.map((c) => ({
@@ -378,10 +381,33 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
     });
 
     try {
-      await postTermsConsentsApi(termsDocumentId, agreed);
-      set({ saving: false, saveMessage: "동의 설정이 저장되었습니다." });
+      const updatedConsentsFromApi = await postTermsConsentsApi(termsDocumentId, agreed);
+      const newConsentsByTypeFromApi: Record<string, boolean> = {};
+      updatedConsentsFromApi.forEach((c) => {
+        if (c.termsDocument?.termsType) {
+          newConsentsByTypeFromApi[c.termsDocument.termsType] = c.isAgreed;
+        }
+      });
+
+      set({
+        saving: false,
+        saveMessage: "동의 설정이 저장되었습니다.",
+        data: {
+          ...data,
+          consents: {
+            ...data.consents,
+            myConsents: updatedConsentsFromApi,
+            consentsByType: newConsentsByTypeFromApi,
+          },
+        },
+      });
     } catch {
-      set({ saving: false, error: "저장에 실패했습니다." });
+      set({
+        saving: false,
+        error: "저장에 실패했습니다.",
+        data: previousData,
+        consentDrafts: previousDrafts,
+      });
     }
   },
 
