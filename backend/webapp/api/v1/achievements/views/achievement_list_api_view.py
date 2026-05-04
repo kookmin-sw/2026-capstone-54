@@ -64,8 +64,12 @@ class AchievementListAPIView(BaseAPIView):
     total = queryset.count()
 
     # 페이지네이션
-    limit = min(int(request.query_params.get("limit", 20)), 100)
-    offset = int(request.query_params.get("offset", 0))
+    try:
+      limit = min(int(request.query_params.get("limit", 20)), 100)
+      offset = int(request.query_params.get("offset", 0))
+    except ValueError:
+      limit = 20
+      offset = 0
     page_queryset = queryset[offset:offset + limit]
 
     # 필터 후 user_achievement 재조회 (페이지 범위)

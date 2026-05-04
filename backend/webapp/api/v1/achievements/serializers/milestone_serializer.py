@@ -29,7 +29,7 @@ class MilestoneSerializer(serializers.ModelSerializer):
     payload = obj.reward_payload
     if payload.get('type') == 'ticket':
       amount = payload.get('amount', 0)
-      return f"티켓 {amount}개"
+      return f"구매 티켓 {amount}개"
     return ""
 
   def get_rewardIcon(self, obj):

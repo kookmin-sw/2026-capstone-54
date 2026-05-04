@@ -67,48 +67,6 @@ class SeedAchievementsService:
         "amount": 5
       },
     },
-    {
-      "code": "streak_3_days",
-      "name": "3일 연속 출석",
-      "description": "3일 연속으로 면접에 참여하세요.",
-      "category": AchievementCategory.STREAK,
-      "condition_type": AchievementConditionType.RULE_GROUP,
-      "condition_payload": {
-        "type": "group",
-        "logic": "AND",
-        "rules": [{
-          "type": "metric_threshold",
-          "metric_key": "streak.current_days",
-          "operator": ">=",
-          "target": 3,
-        }],
-      },
-      "reward_payload": {
-        "type": "ticket",
-        "amount": 3
-      },
-    },
-    {
-      "code": "streak_7_days",
-      "name": "7일 연속 출석",
-      "description": "7일 연속으로 면접에 참여하세요.",
-      "category": AchievementCategory.STREAK,
-      "condition_type": AchievementConditionType.RULE_GROUP,
-      "condition_payload": {
-        "type": "group",
-        "logic": "AND",
-        "rules": [{
-          "type": "metric_threshold",
-          "metric_key": "streak.current_days",
-          "operator": ">=",
-          "target": 7,
-        }],
-      },
-      "reward_payload": {
-        "type": "ticket",
-        "amount": 7
-      },
-    },
   ]
 
   MILESTONE_ACHIEVEMENTS = [

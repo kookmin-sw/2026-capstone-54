@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from django.core.cache import cache
 from django.utils import timezone
 from streaks.models import StreakStatistics
 
@@ -37,6 +38,10 @@ class StreakExpirer:
         stats_to_update,
         fields=["current_streak", "updated_at"],
       )
+
+    # 만료된 사용자의 마일스톤 캐시 무효화
+    for user_id in self.expired_user_ids:
+      cache.delete(f'milestones_user_{user_id}')
 
     return {
       "expired_count": len(stats_to_update),

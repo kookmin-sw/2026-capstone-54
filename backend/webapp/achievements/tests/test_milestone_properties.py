@@ -386,9 +386,9 @@ class MilestonePropertiesTests(TestCase):
     result2 = SeedAchievementsService.seed()
 
     # 검증: 첫 번째 실행은 생성, 두 번째 실행은 스킵
-    self.assertEqual(result1['created'], 9)  # 기본 5개 + 마일스톤 4개 (streak_3, streak_7 중복 스킵)
+    self.assertEqual(result1['created'], 9)  # 기본 3개 + 마일스톤 6개
     self.assertEqual(result2['created'], 0)
-    self.assertEqual(result2['skipped'], 11)
+    self.assertEqual(result2['skipped'], 9)
 
   # Property 11: Active Milestones Only
   @given(
