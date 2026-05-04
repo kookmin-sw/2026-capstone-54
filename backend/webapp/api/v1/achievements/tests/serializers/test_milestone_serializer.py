@@ -5,6 +5,7 @@ from achievements.models import Milestone, UserAchievement
 from api.v1.achievements.serializers import MilestoneSerializer
 from django.contrib.auth import get_user_model
 from django.test import RequestFactory, TestCase
+from django.utils import timezone
 
 User = get_user_model()
 
@@ -71,7 +72,7 @@ class MilestoneSerializerTests(TestCase):
     request = self.factory.get('/')
     request.user = self.user
     serializer = MilestoneSerializer(milestone, context={'request': request})
-    self.assertEqual(serializer.data['reward'], "티켓 7개")
+    self.assertEqual(serializer.data['reward'], "구매 티켓 7개")
 
   def test_get_status_achieved_when_user_has_achievement(self):
     """사용자가 달성한 마일스톤 상태 검증."""
@@ -95,7 +96,7 @@ class MilestoneSerializerTests(TestCase):
         "amount": 7
       },
     )
-    UserAchievement.objects.create(user=self.user, achievement=milestone)
+    UserAchievement.objects.create(user=self.user, achievement=milestone, achieved_at=timezone.now())
 
     request = self.factory.get('/')
     request.user = self.user
@@ -180,7 +181,7 @@ class MilestoneSerializerTests(TestCase):
         "amount": 7
       },
     )
-    UserAchievement.objects.create(user=self.user, achievement=milestone)
+    UserAchievement.objects.create(user=self.user, achievement=milestone, achieved_at=timezone.now())
 
     request = self.factory.get('/')
     request.user = self.user

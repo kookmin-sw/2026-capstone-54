@@ -9,12 +9,12 @@ from django.test import RequestFactory
 from django.utils import timezone
 from hypothesis import given
 from hypothesis import strategies as st
-from hypothesis.extra.django import TestCase
+from hypothesis.extra.django import TransactionTestCase
 
 User = get_user_model()
 
 
-class MilestonePropertiesTests(TestCase):
+class MilestonePropertiesTests(TransactionTestCase):
   """마일스톤 Correctness Properties 테스트."""
 
   def setUp(self):
