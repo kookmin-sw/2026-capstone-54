@@ -24,11 +24,25 @@ export function AchievementsPage() {
   const [refreshMsg, setRefreshMsg] = useState<string | null>(null);
   const observerTarget = useRef<HTMLDivElement>(null);
 
+  // 초기 데이터 로딩 및 URL 파라미터 동기화
   useEffect(() => {
-    fetchAchievements();
+    const params = new URLSearchParams(window.location.search);
+    const category = params.get("category");
+    const status = params.get("status");
+    const rewardClaim = params.get("reward_claim");
+
+    if (category || status || rewardClaim) {
+      useAchievementsStore.getState().setFilters({
+        category: category || null,
+        status: status || null,
+        rewardClaim: rewardClaim || null,
+      });
+    } else {
+      fetchAchievements();
+    }
   }, [fetchAchievements]);
 
-  // URL 쿼리 파라미터 동기화
+  // 필터 변경 시 URL 쿼리 파라미터 동기화
   useEffect(() => {
     const params = new URLSearchParams();
     if (filters.category) params.set("category", filters.category);
@@ -38,22 +52,6 @@ export function AchievementsPage() {
     const newUrl = qs ? `${window.location.pathname}?${qs}` : window.location.pathname;
     window.history.replaceState(null, "", newUrl);
   }, [filters]);
-
-  // URL에서 필터 읽기 (초기 로드)
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const category = params.get("category");
-    const status = params.get("status");
-    const rewardClaim = params.get("reward_claim");
-    if (category || status || rewardClaim) {
-      useAchievementsStore.getState().setFilters({
-        category: category || null,
-        status: status || null,
-        rewardClaim: rewardClaim || null,
-      });
-    }
-     
-  }, []);
 
   // Intersection Observer for infinite scroll
   const handleObserver = useCallback(

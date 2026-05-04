@@ -2,12 +2,13 @@ import { create } from "zustand";
 import { fetchMilestonesApi } from "../api/milestoneApi";
 import type { MilestoneState } from "./types";
 
-export const useMilestoneStore = create<MilestoneState>()((set) => ({
+export const useMilestoneStore = create<MilestoneState>()((set, get) => ({
   data: null,
   loading: false,
   error: null,
 
   fetchMilestones: async () => {
+    if (get().loading) return;
     set({ loading: true, error: null });
     const res = await fetchMilestonesApi();
     if (res.success && res.data) {

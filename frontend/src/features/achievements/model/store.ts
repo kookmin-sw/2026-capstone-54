@@ -56,8 +56,9 @@ export const useAchievementsStore = create<AchievementsState>()((set, get) => ({
   filters: { ...DEFAULT_FILTERS },
 
   fetchAchievements: async () => {
+    if (get().loading) return;
     const { filters, limit } = get();
-    set({ loading: true, error: null, offset: 0, hasMore: true });
+    set({ data: null, loading: true, error: null, offset: 0, hasMore: true });
     const res = await fetchAchievementsApi(filters, limit, 0);
     if (res.success && res.data) {
       const hasMore = res.data.results.length < res.data.total;
