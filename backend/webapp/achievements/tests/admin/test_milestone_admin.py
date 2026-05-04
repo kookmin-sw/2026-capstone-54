@@ -1,6 +1,6 @@
 """마일스톤 Admin 테스트."""
 
-from achievements.admin.milestone_admin import MilestoneQuickAddForm
+from achievements.admin.forms import MilestoneQuickAddForm
 from achievements.enums import AchievementCategory, AchievementConditionType
 from achievements.models import Milestone
 from django.test import TestCase

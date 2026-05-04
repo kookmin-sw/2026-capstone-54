@@ -5,9 +5,11 @@ from achievements.models import Milestone, UserAchievement
 from achievements.services import SeedAchievementsService
 from api.v1.achievements.serializers import MilestoneSerializer
 from django.contrib.auth import get_user_model
-from django.test import RequestFactory, TestCase
+from django.test import RequestFactory
+from django.utils import timezone
 from hypothesis import given
 from hypothesis import strategies as st
+from hypothesis.extra.django import TestCase
 
 User = get_user_model()
 
@@ -103,7 +105,7 @@ class MilestonePropertiesTests(TestCase):
     )
 
     # UserAchievement 생성
-    UserAchievement.objects.create(user=self.user, achievement=milestone)
+    UserAchievement.objects.create(user=self.user, achievement=milestone, achieved_at=timezone.now())
 
     # 검증: status는 "achieved"
     request = self.factory.get('/')
@@ -384,7 +386,7 @@ class MilestonePropertiesTests(TestCase):
     result2 = SeedAchievementsService.seed()
 
     # 검증: 첫 번째 실행은 생성, 두 번째 실행은 스킵
-    self.assertEqual(result1['created'], 11)  # 기본 5개 + 마일스톤 6개
+    self.assertEqual(result1['created'], 9)  # 기본 5개 + 마일스톤 4개 (streak_3, streak_7 중복 스킵)
     self.assertEqual(result2['created'], 0)
     self.assertEqual(result2['skipped'], 11)
 
@@ -522,7 +524,7 @@ class MilestonePropertiesTests(TestCase):
     )
 
     # UserAchievement 생성
-    UserAchievement.objects.create(user=self.user, achievement=milestone)
+    UserAchievement.objects.create(user=self.user, achievement=milestone, achieved_at=timezone.now())
 
     # 검증: rewardIcon 필드 제거
     request = self.factory.get('/')

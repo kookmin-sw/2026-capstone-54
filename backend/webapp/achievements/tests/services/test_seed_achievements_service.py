@@ -13,8 +13,8 @@ class SeedAchievementsServiceTests(TestCase):
     """모든 마일스톤 생성 검증."""
     result = SeedAchievementsService.seed()
 
-    # 기본 업적 5개 + 마일스톤 6개 = 11개
-    self.assertEqual(result['created'], 11)
+    # 기본 업적 5개 + 마일스톤 6개 (streak_3, streak_7 중복으로 4개만 신규) = 9개
+    self.assertEqual(result['created'], 9)
 
     # 마일스톤 확인
     milestones = Milestone.objects.all()
@@ -92,9 +92,9 @@ class SeedAchievementsServiceTests(TestCase):
     result1 = SeedAchievementsService.seed()
     result2 = SeedAchievementsService.seed()
 
-    # 첫 번째 실행: 11개 생성
-    self.assertEqual(result1['created'], 11)
-    self.assertEqual(result1['skipped'], 0)
+    # 첫 번째 실행: 9개 생성 (streak_3, streak_7 중복으로 2개 스킵)
+    self.assertEqual(result1['created'], 9)
+    self.assertEqual(result1['skipped'], 2)
 
     # 두 번째 실행: 0개 생성, 11개 스킵
     self.assertEqual(result2['created'], 0)
@@ -111,10 +111,10 @@ class SeedAchievementsServiceTests(TestCase):
     expected_rewards = {
       "streak_3_days": 3,
       "streak_7_days": 7,
-      "streak_14_days": 14,
-      "streak_30_days": 30,
-      "streak_60_days": 60,
-      "streak_100_days": 100,
+      "streak_14_days": 7,
+      "streak_30_days": 10,
+      "streak_60_days": 20,
+      "streak_100_days": 30,
     }
 
     for code, expected_amount in expected_rewards.items():
