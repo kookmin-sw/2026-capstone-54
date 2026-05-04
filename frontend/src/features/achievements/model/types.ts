@@ -20,3 +20,18 @@ export interface ClaimResponse {
 export interface RefreshResponse {
   createdAchievementsCount: number;
 }
+
+/** 페이지네이션 API 응답 */
+export interface PaginatedAchievements {
+  results: Achievement[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+/** 필터 상태 */
+export interface FilterState {
+  category: string | null;
+  status: string | null;
+  rewardClaim: string | null;
+}

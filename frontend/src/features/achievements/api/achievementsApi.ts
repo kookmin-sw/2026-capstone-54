@@ -1,13 +1,29 @@
 import { apiRequest } from "@/shared/api/client";
-import type { Achievement, ClaimResponse, RefreshResponse } from "../model/types";
+import type { ClaimResponse, FilterState, PaginatedAchievements, RefreshResponse } from "../model/types";
 
-export async function fetchAchievementsApi(): Promise<{
+/** 필터 + 페이지네이션 파라미터를 쿼리 스트링으로 변환 */
+function buildQueryString(filters: FilterState, limit: number, offset: number): string {
+  const params = new URLSearchParams();
+  params.set("limit", String(limit));
+  params.set("offset", String(offset));
+  if (filters.category) params.set("category", filters.category);
+  if (filters.status) params.set("status", filters.status);
+  if (filters.rewardClaim) params.set("reward_claim", filters.rewardClaim);
+  return params.toString();
+}
+
+export async function fetchAchievementsApi(
+  filters: FilterState = { category: null, status: null, rewardClaim: null },
+  limit = 20,
+  offset = 0,
+): Promise<{
   success: boolean;
-  data?: Achievement[];
+  data?: PaginatedAchievements;
   error?: string;
 }> {
   try {
-    const data = await apiRequest<Achievement[]>("/api/v1/achievements/", { auth: true });
+    const qs = buildQueryString(filters, limit, offset);
+    const data = await apiRequest<PaginatedAchievements>(`/api/v1/achievements/?${qs}`, { auth: true });
     return { success: true, data };
   } catch {
     return { success: false, error: "도전과제를 불러오지 못했습니다." };
@@ -43,7 +59,6 @@ export async function refreshAchievementsApi(): Promise<{
     });
     return { success: true, data };
   } catch (err: unknown) {
-    // 429 Too Many Requests
     if (err && typeof err === "object" && "status" in err && (err as { status: number }).status === 429) {
       const retryAfter =
         "retry_after" in err ? (err as { retry_after?: number }).retry_after : undefined;
