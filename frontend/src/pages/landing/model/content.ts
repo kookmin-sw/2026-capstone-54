@@ -299,8 +299,20 @@ export const TESTIMONIALS: Testimonial[] = [
   },
 ];
 
-export const FOOTER_LINKS: FooterColumns = {
-  service: ["면접 시작", "이력서 관리", "채용공고 연동", "스트릭", "요금제"],
-  company: ["소개", "채용", "블로그", "문의"],
-  legal: ["개인정보처리방침", "이용약관", "쿠키 정책", "데이터 수집 동의"],
-};
+export interface FooterLink {
+  label: string;
+  href: string;
+}
+
+export const FOOTER_NAV: FooterLink[] = [
+  { label: "기능", href: "#features" },
+  { label: "이용 방법", href: "#how-to" },
+  { label: "요금제", href: "#pricing" },
+  { label: "면접 후기", href: "#reviews" },
+];
+
+export const FOOTER_LEGAL: FooterLink[] = [
+  { label: "개인정보처리방침", href: "/privacy" },
+  { label: "이용약관", href: "/terms" },
+  { label: "쿠키 정책", href: "/cookie" },
+];
