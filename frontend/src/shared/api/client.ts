@@ -2,6 +2,29 @@ export const BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://api.mefit.
 
 // 단일 인증 전략: access token(in-memory) + refresh token(HttpOnly cookie)
 
+const SESSION_HINT_KEY = "mefit:hasSession";
+
+function safeLocalStorageOp<T>(op: () => T, fallback: T): T {
+  if (typeof window === "undefined") return fallback;
+  try {
+    return op();
+  } catch {
+    return fallback;
+  }
+}
+
+function setSessionHint(): void {
+  safeLocalStorageOp(() => localStorage.setItem(SESSION_HINT_KEY, "1"), undefined);
+}
+
+function clearSessionHint(): void {
+  safeLocalStorageOp(() => localStorage.removeItem(SESSION_HINT_KEY), undefined);
+}
+
+function hasSessionHint(): boolean {
+  return safeLocalStorageOp(() => localStorage.getItem(SESSION_HINT_KEY) === "1", false);
+}
+
 /* ── Token helpers ── */
 export function getAccessToken(): string | null {
   return _accessToken;
@@ -12,9 +35,11 @@ export function getRefreshToken(): string | null {
 export function setTokens(access: string, refresh: string): void {
   void refresh; // refresh 토큰은 HttpOnly cookie로만 관리
   _accessToken = access;
+  setSessionHint();
 }
 export function clearTokens(): void {
   _accessToken = null;
+  clearSessionHint();
 }
 
 let _accessToken: string | null = null;
@@ -229,6 +254,11 @@ export function refreshAccessToken(): Promise<boolean> {
 
 async function _doRefresh(): Promise<boolean> {
   const onRefreshFailed = _onRefreshFailed;
+
+  if (!hasSessionHint()) {
+    return false;
+  }
+
   try {
     const res = await fetch(new URL("/api/v1/users/tokens/refresh/", BASE_URL).toString(), {
       method: "POST",
