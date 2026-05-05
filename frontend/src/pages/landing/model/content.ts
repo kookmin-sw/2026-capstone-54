@@ -23,6 +23,7 @@ export interface FeatureItem {
   title: string;
   desc: string;
   badge?: string;
+  demoVideoUrl?: string | null;
 }
 
 export interface HowToStep {
@@ -79,12 +80,12 @@ export const HERO_STATS: HeroStat[] = [
 ];
 
 export const HERO_ROTATING_KEYWORDS: string[] = [
-  "AI 화상 면접",
-  "이력서 기반 질문",
-  "시선 추적 분석",
-  "꼬리질문 AI",
-  "영역별 점수 리포트",
-  "스트릭 습관 형성",
+  "이력서 기반 맞춤 질문",
+  "꼬리질문 + 전체 프로세스",
+  "친근 · 일반 · 압박 면접관",
+  "표정 · 발화 자동 분석",
+  "영역별 점수 + 강점/개선점",
+  "매일 10·30 티켓 자동 충전",
 ];
 
 export const HERO_ROTATING_KEYWORDS_LONGEST = HERO_ROTATING_KEYWORDS.reduce(
@@ -95,50 +96,43 @@ export const FEATURES: FeatureItem[] = [
   {
     Icon: Video,
     title: "AI 화상 면접",
-    desc: "실시간 화상으로 AI 면접관과 대화. 꼬리질문 방식과 전체 프로세스 방식 중 선택하세요.",
-    badge: "Pro 핵심 기능",
+    desc: "꼬리질문형 5티켓 · 전체 프로세스 8티켓. 친근/일반/압박 3단계 면접관 + 연습/실전 모드.",
+    badge: "Pro 전체 프로세스",
+    demoVideoUrl: null,
   },
   {
     Icon: FileText,
     title: "이력서 분석",
-    desc: "PDF·DOCX 업로드 즉시 AI가 분석해 맞춤 면접 질문을 생성합니다.",
+    desc: "PDF·DOCX 업로드 즉시 텍스트 추출 → 임베딩 → 직무 매칭 질문을 자동 생성합니다.",
   },
   {
     Icon: Eye,
-    title: "시선 추적 분석",
-    desc: "면접 중 시선 이탈 횟수와 집중도를 분석해 자신감 있는 태도를 만들어드립니다.",
+    title: "표정 · 발화 분석",
+    desc: "면접 영상에서 표정 변화와 발화 데이터를 추출해 자신감 있는 태도를 만들어드립니다.",
   },
   {
     Icon: ChartColumnIncreasing,
     title: "AI 리뷰 리포트",
-    desc: "발음·전달력, 논리적 구성, 태도·자신감, 전문 용어 4개 영역 점수를 상세 분석합니다.",
+    desc: "총평 + 영역별 점수 + 질문별 피드백 + 강점/개선점을 2티켓에 받아보세요.",
   },
   {
     Icon: Flame,
-    title: "스트릭 & 통계",
-    desc: "연속 면접 일수와 연간 활동 기록으로 꾸준한 습관을 만들고 성장을 시각화하세요.",
+    title: "스트릭 & 보상",
+    desc: "면접 1회당 최대 5티켓 보상 (하루 5회). 매일 10/30티켓 자동 충전 + 연속 일수 기록.",
   },
 ];
 
 export const HOW_TO_STEPS: HowToStep[] = [
-  {
-    num: "01",
-    title: "면접 설정",
-    desc: "이력서 선택, 면접 유형·시간·모드 설정",
-    label: "1 설정",
-  },
-  {
-    num: "02",
-    title: "사전 환경 점검",
-    desc: "카메라·마이크·네트워크 자동 점검",
-    label: "2 점검",
-  },
-  {
-    num: "03",
-    title: "면접 진행 & 결과 확인",
-    desc: "AI 면접 후 즉시 영역별 점수 리포트 제공",
-    label: "3 면접",
-  },
+  { num: "01", title: "면접 설정", desc: "이력서 + 채용공고 선택, 꼬리질문/전체 프로세스 + 친근/일반/압박 면접관 선택", label: "1 설정" },
+  { num: "02", title: "사전 환경 점검", desc: "카메라·마이크·네트워크 자동 점검", label: "2 점검" },
+  { num: "03", title: "면접 진행 & 분석", desc: "AI 면접 → 표정·발화 분석 → 영역별 점수 리포트 자동 생성", label: "3 결과" },
+];
+
+export const HOW_TO_TAGS: string[] = [
+  "꼬리질문형 (5티켓)",
+  "전체 프로세스 (8티켓·Pro)",
+  "친근 / 일반 / 압박 면접관",
+  "연습 / 실전 (5~30초 랜덤 시작)",
 ];
 
 export const HOW_TO_TAGS: string[] = [
@@ -151,44 +145,46 @@ export const HOW_TO_TAGS: string[] = [
 export const REVIEW_REPORTS: ReviewReportItem[] = [
   {
     num: "01",
-    badge: "발음 / 전달력",
+    badge: "표정 · 발화",
     title: "말하는 방식까지 분석",
-    desc: "답변 명확성, 발음, 속도, 전달력을 점수화해 구체적인 개선 방향을 제시합니다.",
+    desc: "녹화 영상에서 표정 변화와 발화 데이터를 추출해 답변 명확성·속도·전달력을 점수화하고 개선점을 제시합니다.",
     score: 88,
     scoreLabel: "전달력 점수",
   },
   {
     num: "02",
-    title: "영역별 점수 리포트",
-    desc: "발음·전달력 / 논리적 구성 / 태도·자신감 / 전문 용어 활용 4개 영역을 세밀하게 평가합니다.",
+    badge: "영역별 점수",
+    title: "총평 + 카테고리 점수",
+    desc: "총평 점수 + 영역별 카테고리 점수 + 질문별 피드백 + 강점·개선점을 단 2티켓에. (Pro: 녹화 영상 재생 가능)",
     score: 92,
     scoreLabel: "종합 점수",
   },
   {
     num: "03",
-    title: "꼬리질문 AI 대화",
-    desc: "답변에 따라 실시간으로 꼬리질문을 생성. 실제 면접관처럼 자연스러운 대화 흐름을 만듭니다.",
+    badge: "꼬리질문 AI",
+    title: "실전 같은 대화 흐름",
+    desc: "답변 내용에 따라 실시간 꼬리질문 생성. 친근/일반/압박 3단계 면접관이 실제 같은 긴장감을 만듭니다.",
     score: 95,
     scoreLabel: "대화 자연스러움",
   },
 ];
 
 export const PRICING_FREE_ITEMS: PricingItem[] = [
-  { ok: true, text: "월 5회 면접" },
-  { ok: true, text: "기본 AI 리뷰 리포트" },
-  { ok: true, text: "스트릭 기능" },
-  { ok: true, text: "이력서 등록 (최대 2개)" },
-  { ok: false, text: "시선 추적 분석" },
-  { ok: false, text: "상세 AI 리뷰 리포트" },
+  { ok: true, text: "매일 10티켓 자동 충전" },
+  { ok: true, text: "꼬리질문형 면접 + 연습 모드" },
+  { ok: true, text: "AI 분석 리포트 (2티켓/회)" },
+  { ok: true, text: "이력서 3개 · 채용공고 5개" },
+  { ok: false, text: "전체 프로세스 면접 + 실전 모드" },
+  { ok: false, text: "녹화 영상 재생 + 무제한 히스토리" },
 ];
 
 export const PRICING_PRO_ITEMS: PricingItem[] = [
-  { ok: true, text: "무제한 면접" },
-  { ok: true, text: "상세 AI 리뷰 리포트" },
-  { ok: true, text: "시선 추적 분석" },
-  { ok: true, text: "스트릭 보상 2배" },
-  { ok: true, text: "이력서 무제한 등록" },
-  { ok: true, text: "채용공고 연동" },
+  { ok: true, text: "매일 30티켓 자동 충전" },
+  { ok: true, text: "꼬리질문 + 전체 프로세스 면접" },
+  { ok: true, text: "연습 + 실전 모드 (5~30초 랜덤 시작)" },
+  { ok: true, text: "녹화 영상 재생 + 무제한 히스토리" },
+  { ok: true, text: "이력서 · 채용공고 무제한 등록" },
+  { ok: true, text: "면접 완료 보상 최대 15티켓/일" },
 ];
 
 export interface PricingPlanPrice {
@@ -216,28 +212,28 @@ export const WHY_REASONS: WhyReason[] = [
   {
     Icon: Target,
     title: "이력서 기반 맞춤 질문",
-    desc: "이력서를 업로드하면 AI가 직무와 경력에 맞는 맞춤형 질문을 생성합니다. 일반적인 예상 질문이 아닌, 나에게 딱 맞는 질문으로 준비하세요.",
+    desc: "이력서를 업로드하면 AI가 직무와 경력에 맞는 맞춤형 질문을 생성합니다. 일반 예상 질문이 아닌, 나에게 딱 맞는 질문으로 준비하세요.",
     featured: true,
   },
   {
     Icon: Repeat,
     title: "꼬리질문 AI",
-    desc: "답변 내용에 따라 AI가 실시간으로 꼬리질문을 생성해 실제 면접과 똑같은 긴장감을 경험할 수 있습니다.",
+    desc: "답변 내용에 따라 AI가 실시간으로 꼬리질문을 생성합니다. 친근/일반/압박 3단계 면접관으로 실전 긴장감 경험.",
   },
   {
     Icon: Eye,
-    title: "시선 추적 분석",
-    desc: "면접 중 시선 이탈 횟수를 측정해 자신감 있는 면접 태도를 만들 수 있도록 구체적인 피드백을 제공합니다.",
+    title: "표정 · 발화 분석",
+    desc: "면접 녹화에서 표정 변화와 발화 데이터를 추출해 자신감 있는 태도와 전달력을 만들도록 구체적 피드백을 제공합니다.",
   },
   {
     Icon: ChartColumnIncreasing,
     title: "영역별 점수 리포트",
-    desc: "발음·전달력, 논리적 구성, 태도·자신감, 전문 용어 활용 총 4개 영역을 수치로 확인하고 개선하세요.",
+    desc: "총평 점수 + 영역별 카테고리 점수 + 질문별 피드백 + 강점/개선점을 한 번에. 단 2티켓.",
   },
   {
     Icon: Flame,
-    title: "스트릭으로 습관 형성",
-    desc: "연속 면접 일수와 연간 활동 기록으로 꾸준한 면접 연습 습관을 만들고 성장 과정을 시각화하세요.",
+    title: "스트릭 + 티켓 보상",
+    desc: "매일 10(Free)/30(Pro) 티켓 자동 충전 + 면접 완료 시 최대 15티켓 보상. 꾸준히 할수록 더 많이 연습.",
   },
   {
     Icon: Zap,
@@ -247,7 +243,7 @@ export const WHY_REASONS: WhyReason[] = [
   {
     Icon: Building2,
     title: "채용공고 연동",
-    desc: "지원하는 채용공고를 등록하면 해당 직무에 최적화된 면접 질문으로 연습할 수 있습니다.",
+    desc: "지원하는 채용공고를 등록하면 해당 직무에 최적화된 질문이 생성됩니다. Free 5개 / Pro 무제한.",
   },
 ];
 
