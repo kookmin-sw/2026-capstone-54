@@ -6,6 +6,7 @@ import {
   ScrollTrigger,
   useReducedMotion,
 } from "@/shared/lib/animation";
+import { LottiePlayer } from "@/shared/ui";
 import { REVIEW_REPORTS } from "../model/content";
 import { LandingSectionHeader } from "./LandingSectionHeader";
 
@@ -87,13 +88,20 @@ export function ReviewReportSection() {
           title="더 정확한 피드백."
         />
         <div className="flex flex-col gap-[clamp(8px,1.8vh,28px)] md:grid md:grid-cols-3 md:gap-[clamp(14px,2.4vh,36px)]">
-          {REVIEW_REPORTS.map((r) => (
+          {REVIEW_REPORTS.map((r, idx) => (
             <div
               key={r.num}
               data-review-card
               data-cursor-hover
-              className="bg-white rounded-lg border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.06)] transition-[transform,box-shadow,border-color] duration-300 ease-out will-change-transform hover:-translate-y-1 hover:border-[#0991B2]/40 hover:shadow-[0_14px_36px_-12px_rgba(9,145,178,0.28)] p-[clamp(14px,2.2vh,40px)] md:rounded-2xl"
+              className="relative bg-white rounded-lg border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.06)] transition-[transform,box-shadow,border-color] duration-300 ease-out will-change-transform hover:-translate-y-1 hover:border-[#0991B2]/40 hover:shadow-[0_14px_36px_-12px_rgba(9,145,178,0.28)] p-[clamp(14px,2.2vh,40px)] md:rounded-2xl"
             >
+              {idx === 1 && (
+                <LottiePlayer
+                  src="/lottie/review-progress.json"
+                  ariaLabel="영역별 점수 분석 진행 중"
+                  className="absolute top-[clamp(8px,1.6vh,24px)] right-[clamp(8px,1.6vh,24px)] w-[clamp(36px,5vh,72px)] h-[clamp(36px,5vh,72px)] opacity-90"
+                />
+              )}
               <div className="flex items-center gap-[clamp(6px,1.2vh,14px)] mb-[clamp(6px,1.4vh,28px)]">
                 <span aria-hidden="true" className="font-bold text-[#6B7280] text-[clamp(10px,calc(0.85vh+0.25vw),15px)]">
                   {r.num}

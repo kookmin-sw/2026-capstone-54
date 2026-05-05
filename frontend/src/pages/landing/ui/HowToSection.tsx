@@ -5,6 +5,7 @@ import {
   registerGsapPlugins,
   useReducedMotion,
 } from "@/shared/lib/animation";
+import { LottiePlayer } from "@/shared/ui";
 import { HOW_TO_STEPS, HOW_TO_TAGS } from "../model/content";
 import { LandingSectionHeader } from "./LandingSectionHeader";
 
@@ -117,9 +118,11 @@ export function HowToSection() {
             data-cursor-hover
             className="relative bg-[#0A0A0A] rounded-md shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)] flex flex-col justify-center animate-breathe-ring p-[clamp(12px,2vh,36px)] md:rounded-lg"
           >
-            <div className="text-[clamp(18px,calc(1.6vh+0.6vw),32px)] mb-[clamp(4px,0.8vh,16px)]">
-              🎙️
-            </div>
+            <LottiePlayer
+              src="/lottie/howto-voice-wave.json"
+              ariaLabel="음성 파형 애니메이션"
+              className="w-[clamp(40px,6vh,80px)] h-[clamp(40px,6vh,80px)] mb-[clamp(4px,0.8vh,16px)]"
+            />
             <h3 className="font-plex-sans-kr font-extrabold text-white leading-[1.2] text-[clamp(13px,calc(1.4vh+0.6vw),24px)] mb-[clamp(4px,0.8vh,14px)]">
               연습 모드부터 실전 모드까지.
             </h3>

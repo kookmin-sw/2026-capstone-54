@@ -183,9 +183,9 @@ export function HeroSection() {
             className="inline-flex items-center bg-white/70 backdrop-blur-sm border border-[#E5E7EB] rounded-full shadow-sm gap-[clamp(5px,0.8vh,10px)] px-[clamp(10px,1.6vh,18px)] py-[clamp(4px,0.8vh,8px)] mb-[clamp(20px,3.6vh,44px)]"
           >
             <LottiePlayer
-              src="/lottie/hero-pulse.json"
-              ariaLabel="meFit pulse"
-              className="shrink-0 w-[clamp(16px,2vh,22px)] h-[clamp(16px,2vh,22px)]"
+              src="/lottie/hero-ai-brain.json"
+              ariaLabel="AI 면접 두뇌 일러스트"
+              className="shrink-0 w-[clamp(20px,2.6vh,30px)] h-[clamp(20px,2.6vh,30px)]"
             />
             <span className="text-[#6B7280] font-medium leading-none text-[clamp(10px,calc(0.85vh+0.3vw),13px)]">
               지금 한 곳에서:
