@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { lazy, Suspense, useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import {
   gsap,
@@ -8,6 +8,8 @@ import {
 import { LottiePlayer } from "@/shared/ui";
 import { HOW_TO_STEPS, HOW_TO_TAGS } from "../model/content";
 import { LandingSectionHeader } from "./LandingSectionHeader";
+
+const HowToScene3D = lazy(() => import("./HowToScene3D"));
 
 export function HowToSection() {
   const sectionRef = useRef<HTMLElement | null>(null);
@@ -116,28 +118,48 @@ export function HowToSection() {
           <div
             data-howto-dark
             data-cursor-hover
-            className="relative bg-[#0A0A0A] rounded-md shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)] flex flex-col justify-center animate-breathe-ring p-[clamp(12px,2vh,36px)] md:rounded-lg"
+            className="relative bg-[#0A0A0A] rounded-md shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)] flex flex-col justify-end overflow-hidden animate-breathe-ring p-[clamp(12px,2vh,36px)] min-h-[clamp(220px,32vh,420px)] md:rounded-lg"
           >
-            <LottiePlayer
-              src="/lottie/howto-voice-wave.json"
-              ariaLabel="음성 파형 애니메이션"
-              className="w-[clamp(40px,6vh,80px)] h-[clamp(40px,6vh,80px)] mb-[clamp(4px,0.8vh,16px)]"
+            <Suspense fallback={null}>
+              <div
+                aria-hidden="true"
+                className="absolute inset-0 pointer-events-none opacity-90 mix-blend-screen"
+              >
+                <HowToScene3D />
+              </div>
+            </Suspense>
+
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0"
+              style={{
+                background:
+                  "linear-gradient(to top, rgba(10,10,10,0.92) 0%, rgba(10,10,10,0.55) 45%, rgba(10,10,10,0.15) 100%)",
+              }}
             />
-            <h3 className="font-plex-sans-kr font-extrabold text-white leading-[1.2] text-[clamp(13px,calc(1.4vh+0.6vw),24px)] mb-[clamp(4px,0.8vh,14px)]">
-              연습 모드부터 실전 모드까지.
-            </h3>
-            <p className="text-white/65 leading-[1.5] text-[clamp(10px,calc(0.85vh+0.3vw),14px)] mb-[clamp(8px,1.6vh,24px)] line-clamp-3 md:line-clamp-none">
-              준비 완료 버튼으로 시작하는 연습 모드, 5~30초 랜덤 대기 후 자동 시작되는 실전 모드.
-            </p>
-            <div className="flex flex-wrap gap-[clamp(4px,0.8vh,8px)]">
-              {HOW_TO_TAGS.map((tag) => (
-                <span
-                  key={tag}
-                  className="font-semibold text-white/80 bg-white/10 rounded border border-white/12 text-[clamp(9px,calc(0.7vh+0.2vw),12px)] px-[clamp(6px,1vh,14px)] py-[clamp(2px,0.4vh,6px)]"
-                >
-                  {tag}
-                </span>
-              ))}
+
+            <div className="relative z-10">
+              <LottiePlayer
+                src="/lottie/howto-voice-wave.json"
+                ariaLabel="음성 파형 애니메이션"
+                className="w-[clamp(40px,6vh,80px)] h-[clamp(40px,6vh,80px)] mb-[clamp(4px,0.8vh,16px)]"
+              />
+              <h3 className="font-plex-sans-kr font-extrabold text-white leading-[1.2] text-[clamp(13px,calc(1.4vh+0.6vw),24px)] mb-[clamp(4px,0.8vh,14px)]">
+                연습 모드부터 실전 모드까지.
+              </h3>
+              <p className="text-white/65 leading-[1.5] text-[clamp(10px,calc(0.85vh+0.3vw),14px)] mb-[clamp(8px,1.6vh,24px)] line-clamp-3 md:line-clamp-none">
+                준비 완료 버튼으로 시작하는 연습 모드, 5~30초 랜덤 대기 후 자동 시작되는 실전 모드.
+              </p>
+              <div className="flex flex-wrap gap-[clamp(4px,0.8vh,8px)]">
+                {HOW_TO_TAGS.map((tag) => (
+                  <span
+                    key={tag}
+                    className="font-semibold text-white/80 bg-white/10 rounded border border-white/12 text-[clamp(9px,calc(0.7vh+0.2vw),12px)] px-[clamp(6px,1vh,14px)] py-[clamp(2px,0.4vh,6px)]"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
         </div>

@@ -135,13 +135,6 @@ export const HOW_TO_TAGS: string[] = [
   "연습 / 실전 (5~30초 랜덤 시작)",
 ];
 
-export const HOW_TO_TAGS: string[] = [
-  "꼬리질문 방식",
-  "전체 프로세스 방식",
-  "연습 / 실전 모드",
-  "15분 ~ 60분",
-];
-
 export const REVIEW_REPORTS: ReviewReportItem[] = [
   {
     num: "01",
