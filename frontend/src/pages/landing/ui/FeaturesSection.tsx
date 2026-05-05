@@ -1,55 +1,129 @@
-const FEATURES = [
-  { emoji: "🎥", title: "AI 화상 면접", desc: "실시간 화상으로 AI 면접관과 대화. 꼬리질문 방식과 전체 프로세스 방식 중 선택하세요.", badge: "Pro 핵심 기능" },
-  { emoji: "📄", title: "이력서 분석", desc: "PDF·DOCX 업로드 즉시 AI가 분석해 맞춤 면접 질문을 생성합니다." },
-  { emoji: "👁️", title: "시선 추적 분석", desc: "면접 중 시선 이탈 횟수와 집중도를 분석해 자신감 있는 태도를 만들어드립니다." },
-  { emoji: "📊", title: "AI 리뷰 리포트", desc: "발음·전달력, 논리적 구성, 태도·자신감, 전문 용어 4개 영역 점수를 상세 분석합니다." },
-  { emoji: "🔥", title: "스트릭 & 통계", desc: "연속 면접 일수와 연간 활동 기록으로 꾸준한 습관을 만들고 성장을 시각화하세요." },
-];
+import { useRef } from "react";
+import { useGSAP } from "@gsap/react";
+import {
+  gsap,
+  registerGsapPlugins,
+  ScrollTrigger,
+  useReducedMotion,
+} from "@/shared/lib/animation";
+import { FEATURES } from "../model/content";
+import { LandingSectionHeader } from "./LandingSectionHeader";
 
 const [featured, ...rest] = FEATURES;
 
 export function FeaturesSection() {
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const reduced = useReducedMotion();
+
+  useGSAP(
+    () => {
+      if (reduced) return;
+      registerGsapPlugins();
+
+      const cards = sectionRef.current?.querySelectorAll<HTMLElement>(
+        "[data-feature-card]",
+      );
+      if (!cards?.length) return;
+
+      const triggers = ScrollTrigger.batch(Array.from(cards), {
+        start: "top 88%",
+        onEnter: (els) =>
+          gsap.from(els, {
+            y: 32,
+            opacity: 0,
+            duration: 0.7,
+            stagger: 0.08,
+            ease: "power3.out",
+            overwrite: "auto",
+          }),
+      });
+
+      return () => {
+        triggers.forEach((t) => t.kill());
+      };
+    },
+    { scope: sectionRef, dependencies: [reduced] },
+  );
+
   return (
-    <section id="features" className="py-14 px-5 flex justify-center bg-white md:py-20 md:px-10">
+    <section
+      ref={sectionRef}
+      id="features"
+      className="bg-[#F9FAFB]"
+    >
       <div className="max-w-content w-full md:max-w-[1080px]">
-        <div className="text-center mb-8 md:mb-12">
-          <div className="inline-block text-[12px] font-bold text-[#0991B2] bg-[#E6F7FA] rounded px-[14px] py-[5px] mb-[14px] md:text-[13px] md:px-[18px] md:py-[6px]">
-            핵심 기능
-          </div>
-          <h2 className="font-plex-sans-kr text-[28px] font-extrabold text-[#0A0A0A] mb-[10px] md:text-[clamp(32px,4vw,48px)]">
-            면접 준비의 모든 것.
-          </h2>
-          <p className="text-[14px] text-[#6B7280] leading-[1.6] md:text-[15px]">
-            이력서 분석부터 실전 화상 면접, AI 피드백까지 한 플랫폼에서.
-          </p>
-        </div>
+        <LandingSectionHeader
+          eyebrow="핵심 기능"
+          title="면접 준비의 모든 것."
+          subtitle="이력서 분석부터 실전 화상 면접, AI 피드백까지 한 플랫폼에서."
+          spacing="tight"
+        />
 
-        {/* 모바일: 세로 스택 / 데스크탑: 좌우 2컬럼 */}
-        <div className="flex flex-col gap-3 md:flex-row md:gap-4 md:items-stretch">
-          {/* 첫 번째 카드 (다크) */}
-          <div className="bg-[#0A0A0A] rounded-lg px-5 py-6 relative shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)] transition-transform duration-200 hover:-translate-y-0.5 md:flex-1 md:rounded-lg md:px-9 md:py-10 md:flex md:flex-col md:justify-end md:min-h-[480px]">
-            <span className="absolute top-4 right-4 text-[11px] font-bold text-[#0A0A0A] bg-white rounded px-[10px] py-[3px]">
-              {featured.badge}
-            </span>
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center text-[20px] mb-[14px] bg-white/12">
-              {featured.emoji}
+        <div className="flex flex-col gap-[clamp(8px,1.8vh,24px)] md:flex-row md:gap-[clamp(14px,2.4vh,36px)] md:items-stretch">
+          <div
+            data-feature-card
+            data-cursor-hover
+            className="group relative overflow-hidden bg-[#0A0A0A] rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)] transition-[transform,box-shadow] duration-300 ease-out will-change-transform hover:-translate-y-1 hover:shadow-[0_18px_50px_-12px_rgba(9,145,178,0.55),0_0_0_1px_rgba(9,145,178,0.25)] p-[clamp(16px,2.8vh,56px)] md:flex-1 md:rounded-2xl md:p-[clamp(24px,3.6vh,64px)] md:flex md:flex-col md:justify-end"
+          >
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+              style={{
+                background:
+                  "radial-gradient(circle at 30% 20%, rgba(9,145,178,0.35), transparent 55%)",
+              }}
+            />
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 opacity-0 mix-blend-overlay transition-opacity duration-500 group-hover:opacity-30"
+              style={{
+                backgroundImage:
+                  "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/></svg>\")",
+                backgroundSize: "160px 160px",
+              }}
+            />
+
+            {featured.badge && (
+              <span className="absolute top-2.5 right-2.5 z-10 font-bold text-[#0A0A0A] bg-white rounded text-[clamp(9px,calc(0.85vh+0.2vw),14px)] px-[clamp(6px,calc(0.9vh+0.3vw),14px)] py-[clamp(2px,0.5vh,6px)] md:top-5 md:right-5">
+                {featured.badge}
+              </span>
+            )}
+            <div className="relative z-10 rounded-md flex items-center justify-center bg-white/12 transition-colors duration-300 group-hover:bg-[#0991B2]/30 w-[clamp(30px,4.4vh,60px)] h-[clamp(30px,4.4vh,60px)] mb-[clamp(8px,1.6vh,24px)] md:rounded-xl">
+              <featured.Icon
+                className="text-white w-[clamp(15px,2.2vh,30px)] h-[clamp(15px,2.2vh,30px)]"
+                strokeWidth={2}
+                aria-hidden="true"
+              />
             </div>
-            <h3 className="font-plex-sans-kr text-[16px] font-bold text-white mb-2 md:text-[22px]">{featured.title}</h3>
-            <p className="text-[13px] text-white/72 leading-[1.65] md:text-[14px]">{featured.desc}</p>
+            <h3 className="relative z-10 font-plex-sans-kr font-bold text-white text-[clamp(14px,calc(1.6vh+0.7vw),32px)] mb-[clamp(4px,1vh,16px)] leading-tight">
+              {featured.title}
+            </h3>
+            <p className="relative z-10 text-white/72 leading-[1.55] text-[clamp(11px,calc(1vh+0.4vw),20px)]">
+              {featured.desc}
+            </p>
           </div>
 
-          {/* 나머지 카드들 */}
-          <div className="flex flex-col gap-3 md:flex-1 md:grid md:grid-cols-2 md:gap-3">
+          <div className="grid grid-cols-2 gap-[clamp(8px,1.8vh,24px)] md:flex md:flex-col md:flex-1 md:grid md:grid-cols-2 md:gap-[clamp(12px,2vh,28px)]">
             {rest.map((f) => (
               <div
                 key={f.title}
-                className="bg-[#F9FAFB] rounded-lg px-5 py-6 border border-[#E5E7EB] transition-transform duration-200 hover:-translate-y-0.5 md:rounded-lg md:px-6 md:py-7"
+                data-feature-card
+                data-cursor-hover
+                className="group relative bg-white rounded-lg border border-[#E5E7EB] transition-[transform,box-shadow,border-color] duration-300 ease-out will-change-transform hover:-translate-y-1 hover:border-[#0991B2]/40 hover:shadow-[0_14px_36px_-12px_rgba(9,145,178,0.28)] p-[clamp(12px,2vh,40px)] md:rounded-2xl"
               >
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center text-[20px] mb-[14px] bg-white border border-[#E5E7EB]">
-                  {f.emoji}
+                <div className="rounded-md flex items-center justify-center bg-white border border-[#E5E7EB] transition-colors duration-300 group-hover:border-[#0991B2]/50 group-hover:bg-[#E6F7FA] w-[clamp(26px,3.8vh,52px)] h-[clamp(26px,3.8vh,52px)] mb-[clamp(6px,1.4vh,20px)] md:rounded-xl">
+                  <f.Icon
+                    className="text-[#0A0A0A] transition-colors duration-300 group-hover:text-[#0991B2] w-[clamp(13px,1.9vh,26px)] h-[clamp(13px,1.9vh,26px)]"
+                    strokeWidth={2}
+                    aria-hidden="true"
+                  />
                 </div>
-                <h3 className="font-plex-sans-kr text-[16px] font-bold text-[#0A0A0A] mb-2 md:text-[18px]">{f.title}</h3>
-                <p className="text-[13px] text-[#6B7280] leading-[1.65] md:text-[14px]">{f.desc}</p>
+                <h3 className="font-plex-sans-kr font-bold text-[#0A0A0A] text-[clamp(12px,calc(1.2vh+0.45vw),22px)] mb-[clamp(2px,0.6vh,12px)] leading-tight">
+                  {f.title}
+                </h3>
+                <p className="text-[#6B7280] leading-[1.5] text-[clamp(10px,calc(0.9vh+0.35vw),17px)]">
+                  {f.desc}
+                </p>
               </div>
             ))}
           </div>
