@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useGSAP } from "@gsap/react";
 import {
   gsap,
@@ -6,6 +6,7 @@ import {
   ScrollTrigger,
   useReducedMotion,
 } from "@/shared/lib/animation";
+import { Modal } from "@/shared/ui";
 import { FEATURES } from "../model/content";
 import { LandingSectionHeader } from "./LandingSectionHeader";
 
@@ -14,6 +15,7 @@ const [featured, ...rest] = FEATURES;
 export function FeaturesSection() {
   const sectionRef = useRef<HTMLElement | null>(null);
   const reduced = useReducedMotion();
+  const [demoOpen, setDemoOpen] = useState(false);
 
   useGSAP(
     () => {
@@ -60,10 +62,13 @@ export function FeaturesSection() {
         />
 
         <div className="flex flex-col gap-[clamp(8px,1.8vh,24px)] md:flex-row md:gap-[clamp(14px,2.4vh,36px)] md:items-stretch">
-          <div
+          <button
+            type="button"
             data-feature-card
             data-cursor-hover
-            className="group relative overflow-hidden bg-[#0A0A0A] rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)] transition-[transform,box-shadow] duration-300 ease-out will-change-transform hover:-translate-y-1 hover:shadow-[0_18px_50px_-12px_rgba(9,145,178,0.55),0_0_0_1px_rgba(9,145,178,0.25)] p-[clamp(16px,2.8vh,56px)] md:flex-1 md:rounded-2xl md:p-[clamp(24px,3.6vh,64px)] md:flex md:flex-col md:justify-end"
+            onClick={() => setDemoOpen(true)}
+            aria-label={`${featured.title} 시연 영상 열기`}
+            className="group relative overflow-hidden text-left bg-[#0A0A0A] rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)] transition-[transform,box-shadow] duration-300 ease-out will-change-transform hover:-translate-y-1 hover:shadow-[0_18px_50px_-12px_rgba(9,145,178,0.55),0_0_0_1px_rgba(9,145,178,0.25)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0E7490] cursor-pointer p-[clamp(16px,2.8vh,56px)] md:flex-1 md:rounded-2xl md:p-[clamp(24px,3.6vh,64px)] md:flex md:flex-col md:justify-end"
           >
             <div
               aria-hidden="true"
@@ -88,6 +93,19 @@ export function FeaturesSection() {
                 {featured.badge}
               </span>
             )}
+            <span
+              aria-hidden="true"
+              className="absolute z-10 flex items-center justify-center rounded-full bg-white/15 backdrop-blur-sm border border-white/20 transition-[transform,background] duration-300 group-hover:bg-[#0991B2]/35 group-hover:scale-110 w-[clamp(34px,5vh,64px)] h-[clamp(34px,5vh,64px)] bottom-[clamp(12px,2vh,28px)] right-[clamp(12px,2vh,28px)]"
+            >
+              <svg
+                className="text-white w-[clamp(14px,2vh,24px)] h-[clamp(14px,2vh,24px)] ml-[2px]"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            </span>
             <div className="relative z-10 rounded-md flex items-center justify-center bg-white/12 transition-colors duration-300 group-hover:bg-[#0991B2]/30 w-[clamp(30px,4.4vh,60px)] h-[clamp(30px,4.4vh,60px)] mb-[clamp(8px,1.6vh,24px)] md:rounded-xl">
               <featured.Icon
                 className="text-white w-[clamp(15px,2.2vh,30px)] h-[clamp(15px,2.2vh,30px)]"
@@ -101,7 +119,7 @@ export function FeaturesSection() {
             <p className="relative z-10 text-white/72 leading-[1.55] text-[clamp(11px,calc(1vh+0.4vw),20px)]">
               {featured.desc}
             </p>
-          </div>
+          </button>
 
           <div className="grid grid-cols-2 gap-[clamp(8px,1.8vh,24px)] md:flex md:flex-col md:flex-1 md:grid md:grid-cols-2 md:gap-[clamp(12px,2vh,28px)]">
             {rest.map((f) => (
@@ -129,6 +147,45 @@ export function FeaturesSection() {
           </div>
         </div>
       </div>
+
+      <Modal
+        open={demoOpen}
+        onClose={() => setDemoOpen(false)}
+        title={`${featured.title} 시연`}
+        description={featured.desc}
+        size="lg"
+        heightMode="fixed"
+      >
+        {featured.demoVideoUrl ? (
+          <video
+            src={featured.demoVideoUrl}
+            controls
+            playsInline
+            autoPlay
+            className="w-full aspect-video object-contain bg-black rounded-lg"
+          />
+        ) : (
+          <div className="w-full aspect-video bg-[#0A0A0A] rounded-lg flex flex-col items-center justify-center text-center px-6 relative overflow-hidden">
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 opacity-50"
+              style={{
+                background:
+                  "radial-gradient(circle at 30% 30%, rgba(9,145,178,0.4), transparent 60%), radial-gradient(circle at 70% 70%, rgba(6,182,212,0.3), transparent 65%)",
+              }}
+            />
+            <span className="relative z-10 font-bold text-[#0E7490] bg-[#CFFAFE] rounded text-xs px-3 py-1 mb-4">
+              Coming Soon
+            </span>
+            <h3 className="relative z-10 font-plex-sans-kr font-extrabold text-white text-2xl mb-2 md:text-3xl">
+              실제 시연 영상은 곧 공개됩니다
+            </h3>
+            <p className="relative z-10 text-white/70 text-sm leading-relaxed max-w-md md:text-base">
+              화상 면접 진행 흐름, AI 면접관과의 실시간 대화, 분석 리포트까지 한 번에 확인할 수 있는 시연 영상을 준비 중입니다.
+            </p>
+          </div>
+        )}
+      </Modal>
     </section>
   );
 }
