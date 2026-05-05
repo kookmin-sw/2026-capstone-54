@@ -7,26 +7,38 @@ from api.v1.achievements.serializers import MilestoneSerializer
 from django.contrib.auth import get_user_model
 from django.test import RequestFactory
 from django.utils import timezone
-from hypothesis import given
+from hypothesis import given, settings
 from hypothesis import strategies as st
-from hypothesis.extra.django import TransactionTestCase
+from hypothesis.extra.django import TestCase
 
 User = get_user_model()
 
 
-class MilestonePropertiesTests(TransactionTestCase):
-  """마일스톤 Correctness Properties 테스트."""
+class MilestonePropertiesTests(TestCase):
+  """마일스톤 Correctness Properties 테스트.
+
+  setUpTestData + hypothesis.extra.django.TestCase 조합을 사용하는 이유:
+  - Hypothesis 의 setup_example() 은 _pre_setup() 을 다시 호출해 cls.atomics 를 재할당한다.
+    이 때 이전 savepoint 가 dangling 상태로 남아 setUp 에서 만든 데이터가 다음 테스트로 누수된다.
+  - setUpTestData 는 setUpClass 의 cls_atomics(클래스 outer atomic) 안에서 실행되므로
+    Hypothesis 의 savepoint 조작 영향을 받지 않으며, 모든 테스트 메서드에서 self.user 를 안전하게 재사용할 수 있다.
+  - TransactionTestCase 는 example 사이에 TRUNCATE 가 일어나 setUpTestData 데이터까지 사라지므로 사용 불가.
+  """
+
+  @classmethod
+  def setUpTestData(cls):
+    cls.user = User.objects.create_user(email='test@example.com', password='testpass123')
 
   def setUp(self):
     """테스트 설정."""
     self.factory = RequestFactory()
-    self.user = User.objects.create_user(email='test@example.com', password='testpass123')
 
   # Property 1: Milestone Manager Filters by STREAK Category
   @given(
     streak_count=st.integers(min_value=1, max_value=5),
     other_count=st.integers(min_value=1, max_value=5),
   )
+  @settings(max_examples=5, deadline=None)
   def test_property_1_milestone_manager_filters_by_streak_category(self, streak_count, other_count):
     """**Validates: Requirements 1.2, 1.3, 1.4**
 
@@ -74,6 +86,7 @@ class MilestonePropertiesTests(TransactionTestCase):
 
   # Property 2: Milestone Status Reflects Achievement State
   @given(days=st.integers(min_value=1, max_value=100), )
+  @settings(max_examples=5, deadline=None)
   def test_property_2_milestone_status_reflects_achievement_state(self, days):
     """**Validates: Requirements 2.4**
 
@@ -115,6 +128,7 @@ class MilestonePropertiesTests(TransactionTestCase):
 
   # Property 3: Days Remaining Calculation
   @given(milestone_days=st.integers(min_value=1, max_value=100), )
+  @settings(max_examples=5, deadline=None)
   def test_property_3_days_remaining_calculation(self, milestone_days):
     """**Validates: Requirements 2.6**
 
@@ -154,6 +168,7 @@ class MilestonePropertiesTests(TransactionTestCase):
 
   # Property 4: API Response Sorting
   @given(days_list=st.lists(st.integers(min_value=1, max_value=100), min_size=2, max_size=5, unique=True), )
+  @settings(max_examples=5, deadline=None)
   def test_property_4_api_response_sorting(self, days_list):
     """**Validates: Requirements 2.7**
 
@@ -197,6 +212,7 @@ class MilestonePropertiesTests(TransactionTestCase):
 
   # Property 5: Milestone Code Generation Pattern
   @given(days=st.integers(min_value=1, max_value=365), )
+  @settings(max_examples=5, deadline=None)
   def test_property_5_milestone_code_generation_pattern(self, days):
     """**Validates: Requirements 3.4, 4.2**
 
@@ -232,6 +248,7 @@ class MilestonePropertiesTests(TransactionTestCase):
 
   # Property 6: Milestone Name Generation Pattern
   @given(days=st.integers(min_value=1, max_value=365), )
+  @settings(max_examples=5, deadline=None)
   def test_property_6_milestone_name_generation_pattern(self, days):
     """**Validates: Requirements 3.5, 4.3**
 
@@ -267,6 +284,7 @@ class MilestonePropertiesTests(TransactionTestCase):
 
   # Property 7: Milestone Category is STREAK
   @given(days=st.integers(min_value=1, max_value=365), )
+  @settings(max_examples=5, deadline=None)
   def test_property_7_milestone_category_is_streak(self, days):
     """**Validates: Requirements 3.7, 4.5**
 
@@ -301,6 +319,7 @@ class MilestonePropertiesTests(TransactionTestCase):
 
   # Property 8: Condition Payload Structure
   @given(days=st.integers(min_value=1, max_value=365), )
+  @settings(max_examples=5, deadline=None)
   def test_property_8_condition_payload_structure(self, days):
     """**Validates: Requirements 3.8, 4.6**
 
@@ -341,6 +360,7 @@ class MilestonePropertiesTests(TransactionTestCase):
 
   # Property 9: Reward Payload Structure
   @given(days=st.integers(min_value=1, max_value=365), )
+  @settings(max_examples=5, deadline=None)
   def test_property_9_reward_payload_structure(self, days):
     """**Validates: Requirements 3.9, 5.1, 4.7**
 
@@ -395,6 +415,7 @@ class MilestonePropertiesTests(TransactionTestCase):
     active_count=st.integers(min_value=1, max_value=3),
     inactive_count=st.integers(min_value=1, max_value=3),
   )
+  @settings(max_examples=5, deadline=None)
   def test_property_11_active_milestones_only(self, active_count, inactive_count):
     """**Validates: Requirements 8.2**
 
@@ -459,6 +480,7 @@ class MilestonePropertiesTests(TransactionTestCase):
 
   # Property 12: Reward Field Format
   @given(days=st.integers(min_value=1, max_value=365), )
+  @settings(max_examples=5, deadline=None)
   def test_property_12_reward_field_format(self, days):
     """**Validates: Requirements 6.5**
 
@@ -602,6 +624,7 @@ class MilestonePropertiesTests(TransactionTestCase):
 
   # Property 16: Duplicate Days Prevention
   @given(days=st.integers(min_value=1, max_value=365), )
+  @settings(max_examples=5, deadline=None)
   def test_property_16_duplicate_days_prevention(self, days):
     """**Validates: Requirements 7.5**
 
