@@ -1,7 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
-import Lottie, { type LottieRefCurrentProps } from "lottie-react";
+import type { LottieRefCurrentProps } from "lottie-react";
 import { useReducedMotion } from "@/shared/lib/animation";
+
+const Lottie = lazy(() => import("lottie-react"));
 
 interface LottiePlayerProps {
   src: string;
@@ -67,15 +69,19 @@ export function LottiePlayer({
   }
 
   return (
-    <Lottie
-      lottieRef={lottieRef}
-      animationData={data}
-      loop={loop && !reduced}
-      autoplay={autoplay && !reduced}
-      className={className}
-      style={style}
-      role="img"
-      aria-label={ariaLabel}
-    />
+    <Suspense
+      fallback={<div aria-hidden="true" className={className} style={style} />}
+    >
+      <Lottie
+        lottieRef={lottieRef}
+        animationData={data}
+        loop={loop && !reduced}
+        autoplay={autoplay && !reduced}
+        className={className}
+        style={style}
+        role="img"
+        aria-label={ariaLabel}
+      />
+    </Suspense>
   );
 }
