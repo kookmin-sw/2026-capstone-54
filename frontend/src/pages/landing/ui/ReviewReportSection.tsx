@@ -95,11 +95,11 @@ export function ReviewReportSection() {
               className="bg-white rounded-lg border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.06)] transition-[transform,box-shadow,border-color] duration-300 ease-out will-change-transform hover:-translate-y-1 hover:border-[#0991B2]/40 hover:shadow-[0_14px_36px_-12px_rgba(9,145,178,0.28)] p-[clamp(14px,2.2vh,40px)] md:rounded-2xl"
             >
               <div className="flex items-center gap-[clamp(6px,1.2vh,14px)] mb-[clamp(6px,1.4vh,28px)]">
-                <span className="font-bold text-[#D1D5DB] text-[clamp(10px,calc(0.85vh+0.25vw),15px)]">
+                <span aria-hidden="true" className="font-bold text-[#6B7280] text-[clamp(10px,calc(0.85vh+0.25vw),15px)]">
                   {r.num}
                 </span>
                 {r.badge && (
-                  <span className="font-bold text-[#059669] bg-[#ECFDF5] rounded text-[clamp(9px,calc(0.8vh+0.2vw),13px)] px-[clamp(6px,1.2vh,14px)] py-[clamp(2px,0.5vh,6px)]">
+                  <span className="font-bold text-[#047857] bg-[#ECFDF5] rounded text-[clamp(9px,calc(0.8vh+0.2vw),13px)] px-[clamp(6px,1.2vh,14px)] py-[clamp(2px,0.5vh,6px)]">
                     {r.badge}
                   </span>
                 )}
@@ -119,7 +119,7 @@ export function ReviewReportSection() {
                     </span>
                     <span
                       data-score-text
-                      className="font-plex-sans-kr font-bold text-[#0991B2] tabular-nums text-[clamp(10px,calc(0.9vh+0.3vw),17px)]"
+                      className="font-plex-sans-kr font-bold text-[#0E7490] tabular-nums text-[clamp(10px,calc(0.9vh+0.3vw),17px)]"
                     >
                       {reduced ? `${r.score}점` : "0점"}
                     </span>

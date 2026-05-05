@@ -81,11 +81,11 @@ export function PricingSection() {
                 aria-selected={active}
                 data-cursor-hover
                 onClick={() => setCycle(value)}
-                className={`relative font-plex-sans-kr font-semibold rounded-full transition-[background,color] duration-300 cursor-pointer text-[clamp(11px,calc(0.95vh+0.3vw),15px)] px-[clamp(14px,2vh,28px)] py-[clamp(6px,1vh,10px)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0991B2] ${active ? "bg-white text-[#0A0A0A] shadow-[0_1px_3px_rgba(0,0,0,0.08)]" : "bg-transparent text-[#6B7280] hover:text-[#0A0A0A]"}`}
+                className={`relative font-plex-sans-kr font-semibold rounded-full transition-[background,color] duration-300 cursor-pointer text-[clamp(11px,calc(0.95vh+0.3vw),15px)] px-[clamp(14px,2vh,28px)] py-[clamp(6px,1vh,10px)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0E7490] ${active ? "bg-white text-[#0A0A0A] shadow-[0_1px_3px_rgba(0,0,0,0.08)]" : "bg-transparent text-[#4B5563] hover:text-[#0A0A0A]"}`}
               >
                 {value === "monthly" ? "월간 결제" : "연간 결제"}
                 {value === "yearly" && (
-                  <span className="ml-[clamp(4px,0.8vh,8px)] inline-block font-bold text-[#0991B2] bg-[#E6F7FA] rounded text-[clamp(9px,calc(0.7vh+0.2vw),12px)] px-[clamp(4px,0.8vh,8px)] py-[clamp(1px,0.3vh,3px)]">
+                  <span className="ml-[clamp(4px,0.8vh,8px)] inline-block font-bold text-[#0E7490] bg-[#CFFAFE] rounded text-[clamp(9px,calc(0.7vh+0.2vw),12px)] px-[clamp(4px,0.8vh,8px)] py-[clamp(1px,0.3vh,3px)]">
                     -16%
                   </span>
                 )}
@@ -109,9 +109,9 @@ export function PricingSection() {
               {PRICING_FREE_ITEMS.map((item) => (
                 <li
                   key={item.text}
-                  className={`flex items-center gap-[clamp(6px,1.2vh,14px)] text-[clamp(10px,calc(0.95vh+0.35vw),18px)] ${item.ok ? "text-[#0A0A0A]" : "text-[#9CA3AF]"}`}
+                  className={`flex items-center gap-[clamp(6px,1.2vh,14px)] text-[clamp(10px,calc(0.95vh+0.35vw),18px)] ${item.ok ? "text-[#0A0A0A]" : "text-[#6B7280]"}`}
                 >
-                  <span className={`shrink-0 font-bold ${item.ok ? "text-[#059669]" : "text-[#D1D5DB]"}`}>
+                  <span className={`shrink-0 font-bold ${item.ok ? "text-[#047857]" : "text-[#9CA3AF]"}`} aria-hidden="true">
                     {item.ok ? "✓" : "✕"}
                   </span>
                   <span className="truncate">{item.text}</span>

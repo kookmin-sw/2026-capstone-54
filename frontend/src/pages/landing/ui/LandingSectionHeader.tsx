@@ -34,7 +34,7 @@ export function LandingSectionHeader({
       className={`flex flex-col ${ALIGN_CLASS[align]} ${SPACING_CLASS[spacing]} ${className}`}
     >
       {eyebrow && (
-        <div className="inline-block font-bold text-[#0991B2] bg-[#E6F7FA] rounded text-[clamp(10px,calc(0.8vh+0.3vw),15px)] px-[clamp(10px,calc(1vh+0.5vw),22px)] py-[clamp(3px,0.6vh,8px)] mb-[clamp(8px,1.5vh,20px)]">
+        <div className="inline-block font-bold text-[#0E7490] bg-[#CFFAFE] rounded text-[clamp(10px,calc(0.8vh+0.3vw),15px)] px-[clamp(10px,calc(1vh+0.5vw),22px)] py-[clamp(3px,0.6vh,8px)] mb-[clamp(8px,1.5vh,20px)]">
           {eyebrow}
         </div>
       )}

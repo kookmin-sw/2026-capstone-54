@@ -105,7 +105,7 @@ export function HowToSection() {
                     {step.desc}
                   </div>
                 </div>
-                <div className="font-semibold text-[#0991B2] bg-[#E6F7FA] rounded shrink-0 text-[clamp(9px,calc(0.7vh+0.2vw),12px)] px-[clamp(6px,1vh,12px)] py-[clamp(2px,0.4vh,4px)]">
+                <div className="font-semibold text-[#0E7490] bg-[#CFFAFE] rounded shrink-0 text-[clamp(9px,calc(0.7vh+0.2vw),12px)] px-[clamp(6px,1vh,12px)] py-[clamp(2px,0.4vh,4px)]">
                   {step.label}
                 </div>
               </div>
