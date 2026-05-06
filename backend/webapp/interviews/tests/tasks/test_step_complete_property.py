@@ -9,7 +9,6 @@ from interviews.factories import InterviewRecordingFactory
 from interviews.services.update_recording_step_service import UpdateRecordingStepService
 from interviews.tasks.process_video_step_complete import STEP_FIELD_MAP
 
-
 # ---------------------------------------------------------------------------
 # Strategies
 # ---------------------------------------------------------------------------
@@ -21,12 +20,14 @@ non_empty_output_key_strategy = st.text(
   max_size=200,
 )
 
-four_field_strategy = st.fixed_dictionaries({
-  "scaled_video_key": st.text(min_size=0, max_size=50),
-  "frame_prefix": st.text(min_size=0, max_size=50),
-  "scaled_audio_key": st.text(min_size=0, max_size=50),
-  "face_analysis_result_key": st.text(min_size=0, max_size=50),
-})
+four_field_strategy = st.fixed_dictionaries(
+  {
+    "scaled_video_key": st.text(min_size=0, max_size=50),
+    "frame_prefix": st.text(min_size=0, max_size=50),
+    "scaled_audio_key": st.text(min_size=0, max_size=50),
+    "face_analysis_result_key": st.text(min_size=0, max_size=50),
+  }
+)
 
 json_value_strategy = st.recursive(
   st.one_of(
@@ -43,16 +44,18 @@ json_value_strategy = st.recursive(
   max_leaves=20,
 )
 
-face_result_strategy = st.fixed_dictionaries({
-  "metadata": st.dictionaries(st.text(max_size=20), json_value_strategy, min_size=1, max_size=5),
-  "statistics": st.dictionaries(st.text(max_size=20), json_value_strategy, min_size=1, max_size=5),
-  "frames": st.lists(json_value_strategy, min_size=0, max_size=5),
-})
-
+face_result_strategy = st.fixed_dictionaries(
+  {
+    "metadata": st.dictionaries(st.text(max_size=20), json_value_strategy, min_size=1, max_size=5),
+    "statistics": st.dictionaries(st.text(max_size=20), json_value_strategy, min_size=1, max_size=5),
+    "frames": st.lists(json_value_strategy, min_size=0, max_size=5),
+  }
+)
 
 # ---------------------------------------------------------------------------
 # Property 2: Step field mapping round-trip
 # ---------------------------------------------------------------------------
+
 
 # Feature: face-analysis-infra, Property 2: Step field mapping round-trip
 class TestStepFieldMappingRoundTrip(TestCase):
@@ -80,6 +83,7 @@ class TestStepFieldMappingRoundTrip(TestCase):
 # Property 3: All-steps-complete requires all fields filled
 # ---------------------------------------------------------------------------
 
+
 # Feature: face-analysis-infra, Property 3: All-steps-complete requires all fields filled
 class TestAllStepsCompleteProperty(TestCase):
   """4개 필드의 empty/non-empty 조합에 따라 _all_steps_complete 결과를 검증한다."""
@@ -96,18 +100,21 @@ class TestAllStepsCompleteProperty(TestCase):
 
     result = UpdateRecordingStepService._all_steps_complete(recording)
 
-    all_filled = all([
-      fields["scaled_video_key"],
-      fields["frame_prefix"],
-      fields["scaled_audio_key"],
-      fields["face_analysis_result_key"],
-    ])
+    all_filled = all(
+      [
+        fields["scaled_video_key"],
+        fields["frame_prefix"],
+        fields["scaled_audio_key"],
+        fields["face_analysis_result_key"],
+      ]
+    )
     self.assertEqual(result, all_filled)
 
 
 # ---------------------------------------------------------------------------
 # Property 5: Face analysis result JSON preserves full structure
 # ---------------------------------------------------------------------------
+
 
 # Feature: face-analysis-infra, Property 5: Face analysis result JSON preserves full structure
 class TestFaceAnalysisResultJsonPreservation(TestCase):

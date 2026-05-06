@@ -75,9 +75,7 @@ def _dispatch_transcribe_audio(turn_id: str, output_bucket: str, output_key: str
     )
 
 
-def _store_face_analysis_result(
-  session_uuid: str, turn_id: str, output_bucket: str, output_key: str
-) -> None:
+def _store_face_analysis_result(session_uuid: str, turn_id: str, output_bucket: str, output_key: str) -> None:
   """face_analyzer step-complete 후처리: S3에서 결과를 읽어 DB에 저장한다.
 
   오케스트레이션만 담당하며, 각 단계는 별도 서비스에 위임한다.

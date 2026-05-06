@@ -33,7 +33,9 @@ class TestFaceAnalysisPending(TestCase):
     session = InterviewSessionFactory()
     InterviewRecordingFactory(
       interview_session=session,
-      face_analysis_result={"statistics": {"dominant_expression": "neutral"}},
+      face_analysis_result={"statistics": {
+        "dominant_expression": "neutral"
+      }},
     )
 
     self.assertFalse(face_analysis_pending(session))
@@ -43,7 +45,9 @@ class TestFaceAnalysisPending(TestCase):
     session = InterviewSessionFactory()
     InterviewRecordingFactory(
       interview_session=session,
-      face_analysis_result={"statistics": {"dominant_expression": "neutral"}},
+      face_analysis_result={"statistics": {
+        "dominant_expression": "neutral"
+      }},
     )
     InterviewRecordingFactory(
       interview_session=session,
@@ -59,9 +63,7 @@ class TestDispatchReportIfReady(TestCase):
   @patch("interviews.services.regenerate_analysis_report_service.transcripts_pending", return_value=False)
   def test_returns_false_when_face_analysis_pending(self, mock_transcripts):
     """face_analysis 미완료 시 False를 반환한다."""
-    report = InterviewAnalysisReportFactory(
-      interview_analysis_report_status=InterviewAnalysisReportStatus.PENDING,
-    )
+    report = InterviewAnalysisReportFactory(interview_analysis_report_status=InterviewAnalysisReportStatus.PENDING, )
     InterviewRecordingFactory(
       interview_session=report.interview_session,
       face_analysis_result={},
@@ -76,12 +78,12 @@ class TestDispatchReportIfReady(TestCase):
   @patch("interviews.services.regenerate_analysis_report_service.transcripts_pending", return_value=False)
   def test_dispatches_when_all_complete(self, mock_transcripts, mock_bundle, mock_dispatch):
     """face_analysis + transcripts 모두 완료 시 디스패치한다."""
-    report = InterviewAnalysisReportFactory(
-      interview_analysis_report_status=InterviewAnalysisReportStatus.PENDING,
-    )
+    report = InterviewAnalysisReportFactory(interview_analysis_report_status=InterviewAnalysisReportStatus.PENDING, )
     InterviewRecordingFactory(
       interview_session=report.interview_session,
-      face_analysis_result={"statistics": {"dominant_expression": "neutral"}},
+      face_analysis_result={"statistics": {
+        "dominant_expression": "neutral"
+      }},
     )
 
     result = dispatch_report_if_ready(report)

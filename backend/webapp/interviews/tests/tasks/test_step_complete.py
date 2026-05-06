@@ -56,11 +56,25 @@ class TestStoreFaceAnalysisResultService(TestCase):
   def test_stores_full_result_including_frames(self, mock_get_s3):
     """S3에서 JSON을 읽어 frames 포함 전체 결과를 JSONField에 저장한다."""
     result_json = {
-      "metadata": {"total_frames": 2, "analyzer_version": "3.0.0"},
-      "statistics": {"face_detected_rate": 0.9, "dominant_expression": "neutral"},
+      "metadata": {
+        "total_frames": 2,
+        "analyzer_version": "3.0.0"
+      },
+      "statistics": {
+        "face_detected_rate": 0.9,
+        "dominant_expression": "neutral"
+      },
       "frames": [
-        {"frame_id": "f1", "expression": "neutral", "smile_score": 0.1},
-        {"frame_id": "f2", "expression": "positive", "smile_score": 0.8},
+        {
+          "frame_id": "f1",
+          "expression": "neutral",
+          "smile_score": 0.1
+        },
+        {
+          "frame_id": "f2",
+          "expression": "positive",
+          "smile_score": 0.8
+        },
       ],
       "sessionUuid": self.session_uuid,
       "turnId": self.turn_id,

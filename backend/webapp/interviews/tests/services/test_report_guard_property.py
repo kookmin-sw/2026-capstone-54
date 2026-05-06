@@ -7,21 +7,24 @@ from hypothesis.extra.django import TestCase
 from interviews.factories import InterviewRecordingFactory, InterviewSessionFactory
 from interviews.services.regenerate_analysis_report_service import face_analysis_pending
 
-
 # ---------------------------------------------------------------------------
 # Strategies
 # ---------------------------------------------------------------------------
 
 # 비어있지 않은 face_analysis_result dict를 생성하는 전략
-filled_result_strategy = st.fixed_dictionaries({
-  "metadata": st.fixed_dictionaries({
-    "total_frames": st.integers(min_value=1, max_value=100),
-  }),
-  "statistics": st.fixed_dictionaries({
-    "face_detected_rate": st.floats(min_value=0.0, max_value=1.0, allow_nan=False),
-    "dominant_expression": st.sampled_from(["positive", "negative", "neutral"]),
-  }),
-})
+filled_result_strategy = st.fixed_dictionaries(
+  {
+    "metadata": st.fixed_dictionaries({
+      "total_frames": st.integers(min_value=1, max_value=100),
+    }),
+    "statistics": st.fixed_dictionaries(
+      {
+        "face_detected_rate": st.floats(min_value=0.0, max_value=1.0, allow_nan=False),
+        "dominant_expression": st.sampled_from(["positive", "negative", "neutral"]),
+      }
+    ),
+  }
+)
 
 # 각 recording이 빈 dict인지 채워진 dict인지를 나타내는 전략
 # True = 빈 dict (pending), False = 채워진 dict (complete)
