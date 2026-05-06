@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mefit-monitoring
+  labels:
+    name: mefit-monitoring
+    purpose: observability
