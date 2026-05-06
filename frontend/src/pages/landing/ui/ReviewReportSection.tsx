@@ -1,50 +1,147 @@
-const REPORTS = [
-  {
-    num: "01",
-    badge: "발음 / 전달력",
-    title: "말하는 방식까지 분석",
-    desc: "답변 명확성, 발음, 속도, 전달력을 점수화해 구체적인 개선 방향을 제시합니다.",
-  },
-  {
-    num: "02",
-    title: "영역별 점수 리포트",
-    desc: "발음·전달력 / 논리적 구성 / 태도·자신감 / 전문 용어 활용 4개 영역을 세밀하게 평가합니다.",
-  },
-  {
-    num: "03",
-    title: "꼬리질문 AI 대화",
-    desc: "답변에 따라 실시간으로 꼬리질문을 생성. 실제 면접관처럼 자연스러운 대화 흐름을 만듭니다.",
-  },
-];
+import { useRef } from "react";
+import { useGSAP } from "@gsap/react";
+import {
+  gsap,
+  registerGsapPlugins,
+  ScrollTrigger,
+  useReducedMotion,
+} from "@/shared/lib/animation";
+import { LottiePlayer } from "@/shared/ui";
+import { REVIEW_REPORTS } from "../model/content";
+import { LandingSectionHeader } from "./LandingSectionHeader";
 
 export function ReviewReportSection() {
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const reduced = useReducedMotion();
+
+  useGSAP(
+    () => {
+      if (reduced) return;
+      registerGsapPlugins();
+
+      const cards = sectionRef.current?.querySelectorAll<HTMLElement>(
+        "[data-review-card]",
+      );
+      if (!cards?.length) return;
+
+      const triggers = ScrollTrigger.batch(Array.from(cards), {
+        start: "top 88%",
+        onEnter: (els) => {
+          gsap.from(els, {
+            y: 32,
+            opacity: 0,
+            duration: 0.7,
+            stagger: 0.14,
+            ease: "power3.out",
+            overwrite: "auto",
+          });
+
+          els.forEach((card) => {
+            const bar = card.querySelector<HTMLElement>("[data-score-bar]");
+            const text = card.querySelector<HTMLElement>("[data-score-text]");
+            if (!bar) return;
+            const score = Number(bar.dataset.score);
+            if (!Number.isFinite(score)) return;
+
+            gsap.fromTo(
+              bar,
+              { width: "0%" },
+              {
+                width: `${score}%`,
+                duration: 1.4,
+                delay: 0.45,
+                ease: "power2.out",
+              },
+            );
+
+            if (text) {
+              const counter = { val: 0 };
+              gsap.to(counter, {
+                val: score,
+                duration: 1.4,
+                delay: 0.45,
+                ease: "power2.out",
+                onUpdate: () => {
+                  text.textContent = `${Math.round(counter.val)}점`;
+                },
+              });
+            }
+          });
+        },
+      });
+
+      return () => {
+        triggers.forEach((t) => t.kill());
+      };
+    },
+    { scope: sectionRef, dependencies: [reduced] },
+  );
+
   return (
-    <section className="py-16 px-5 flex justify-center bg-[#F9FAFB] md:py-25 md:px-10">
+    <section
+      ref={sectionRef}
+      className="bg-[#F9FAFB]"
+    >
       <div className="max-w-content w-full md:max-w-[1080px]">
-        <div className="text-center mb-8 md:mb-14">
-          <div className="inline-block text-[12px] font-bold text-[#0991B2] bg-[#E6F7FA] rounded px-[14px] py-[5px] mb-[14px] md:text-[13px] md:px-[18px] md:py-[6px] md:mb-[18px]">
-            AI 리뷰 리포트
-          </div>
-          <h2 className="font-plex-sans-kr text-[clamp(24px,7vw,36px)] font-extrabold text-[#0A0A0A] md:text-[clamp(32px,4vw,52px)]">
-            면접 후, 더 정확한 피드백.
-          </h2>
-        </div>
-        <div className="flex flex-col gap-3 md:grid md:grid-cols-3 md:gap-4">
-          {REPORTS.map((r) => (
+        <LandingSectionHeader
+          eyebrow="AI 리뷰 리포트"
+          title="더 정확한 피드백."
+        />
+        <div className="flex flex-col gap-[clamp(8px,1.8vh,28px)] md:grid md:grid-cols-3 md:gap-[clamp(14px,2.4vh,36px)]">
+          {REVIEW_REPORTS.map((r, idx) => (
             <div
               key={r.num}
-              className="bg-white rounded-lg px-6 py-7 border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.06)] transition-transform duration-200 hover:-translate-y-0.5 md:rounded-lg md:px-8 md:py-9"
+              data-review-card
+              data-cursor-hover
+              className="relative bg-white rounded-lg border border-[#E5E7EB] shadow-[0_1px_3px_rgba(0,0,0,0.06)] transition-[transform,box-shadow,border-color] duration-300 ease-out will-change-transform hover:-translate-y-1 hover:border-[#0991B2]/40 hover:shadow-[0_14px_36px_-12px_rgba(9,145,178,0.28)] p-[clamp(14px,2.2vh,40px)] md:rounded-2xl"
             >
-              <div className="flex items-center gap-[10px] mb-4 md:mb-5">
-                <span className="text-[12px] font-bold text-[#D1D5DB] md:text-[13px]">{r.num}</span>
+              {idx === 1 && (
+                <LottiePlayer
+                  src="/lottie/review-progress.json"
+                  ariaLabel="영역별 점수 분석 진행 중"
+                  className="absolute top-[clamp(8px,1.6vh,24px)] right-[clamp(8px,1.6vh,24px)] w-[clamp(36px,5vh,72px)] h-[clamp(36px,5vh,72px)] opacity-90"
+                />
+              )}
+              <div className="flex items-center gap-[clamp(6px,1.2vh,14px)] mb-[clamp(6px,1.4vh,28px)]">
+                <span aria-hidden="true" className="font-bold text-[#6B7280] text-[clamp(10px,calc(0.85vh+0.25vw),15px)]">
+                  {r.num}
+                </span>
                 {r.badge && (
-                  <span className="text-[11px] font-bold text-[#059669] bg-[#ECFDF5] rounded px-[10px] py-[3px] md:text-[11px] md:px-3 md:py-1">
+                  <span className="font-bold text-[#047857] bg-[#ECFDF5] rounded text-[clamp(9px,calc(0.8vh+0.2vw),13px)] px-[clamp(6px,1.2vh,14px)] py-[clamp(2px,0.5vh,6px)]">
                     {r.badge}
                   </span>
                 )}
               </div>
-              <h3 className="font-plex-sans-kr text-[16px] font-bold text-[#0A0A0A] mb-2 md:text-[18px] md:mb-3">{r.title}</h3>
-              <p className="text-[13px] text-[#6B7280] leading-[1.7] md:text-[14px]">{r.desc}</p>
+              <h3 className="font-plex-sans-kr font-bold text-[#0A0A0A] text-[clamp(12px,calc(1.2vh+0.45vw),22px)] mb-[clamp(4px,1vh,16px)] leading-tight">
+                {r.title}
+              </h3>
+              <p className="text-[#6B7280] leading-[1.6] text-[clamp(10px,calc(0.9vh+0.35vw),17px)] line-clamp-3 md:line-clamp-none">
+                {r.desc}
+              </p>
+
+              {r.score != null && (
+                <div className="mt-[clamp(8px,1.8vh,32px)]">
+                  <div className="flex items-center justify-between mb-[clamp(2px,0.5vh,8px)]">
+                    <span className="font-semibold text-[#6B7280] text-[clamp(9px,calc(0.8vh+0.2vw),14px)]">
+                      {r.scoreLabel ?? "분석 점수"}
+                    </span>
+                    <span
+                      data-score-text
+                      className="font-plex-sans-kr font-bold text-[#0E7490] tabular-nums text-[clamp(10px,calc(0.9vh+0.3vw),17px)]"
+                    >
+                      {reduced ? `${r.score}점` : "0점"}
+                    </span>
+                  </div>
+                  <div className="w-full bg-[#E5E7EB] rounded-full overflow-hidden h-[clamp(3px,0.6vh,8px)]">
+                    <div
+                      data-score-bar
+                      data-score={r.score}
+                      style={{ width: reduced ? `${r.score}%` : "0%" }}
+                      className="h-full bg-gradient-to-r from-[#0991B2] to-[#06B6D4] rounded-full"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           ))}
         </div>

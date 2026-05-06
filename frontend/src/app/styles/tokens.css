@@ -68,7 +68,9 @@
   --color-mefit-overlay-black-40: rgba(0,0,0,0.40);
 
   /* ── 폰트 패밀리 ── */
-  --font-family-plex-sans-kr: 'IBM Plex Sans KR', sans-serif;
+  --font-family-display:      'Inter Tight', 'Pretendard Variable', 'Pretendard', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-family-sans:         'Pretendard Variable', 'Pretendard', 'Inter Tight', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-family-plex-sans-kr: var(--font-family-display);
 
   /* ── 폰트 크기 ── */
   --font-size-2xs:  11px;

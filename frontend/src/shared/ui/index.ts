@@ -18,3 +18,5 @@ export { SearchInput } from "./SearchInput";
 export { TicketIcon } from "./TicketIcon";
 export { CoachMarks } from "./CoachMarks";
 export type { CoachMarkStep, CoachMarksProps } from "./CoachMarks";
+export { MarqueeRow } from "./MarqueeRow";
+export { LottiePlayer } from "./LottiePlayer";
