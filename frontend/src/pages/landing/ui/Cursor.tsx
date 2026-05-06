@@ -81,43 +81,46 @@ export function Cursor() {
       gsap.to(ring, { scale: 1, duration: 0.2 });
     };
 
+    // event delegation: mouseover/mouseout(bubbling) + relatedTarget으로 hoverable 경계만 감지
+    const onPointerOver = (event: MouseEvent) => {
+      const target = event.target instanceof Element
+        ? event.target.closest<HTMLElement>(HOVERABLE_SELECTOR)
+        : null;
+      if (!target) return;
+      const related = event.relatedTarget instanceof Element
+        ? event.relatedTarget.closest<HTMLElement>(HOVERABLE_SELECTOR)
+        : null;
+      if (related === target) return;
+      onEnterHoverable();
+    };
+    const onPointerOut = (event: MouseEvent) => {
+      const target = event.target instanceof Element
+        ? event.target.closest<HTMLElement>(HOVERABLE_SELECTOR)
+        : null;
+      if (!target) return;
+      const related = event.relatedTarget instanceof Element
+        ? event.relatedTarget.closest<HTMLElement>(HOVERABLE_SELECTOR)
+        : null;
+      if (related === target) return;
+      onLeaveHoverable();
+    };
+
     window.addEventListener("mousemove", onMove);
     document.addEventListener("mouseleave", onDocumentLeave);
     document.addEventListener("mouseenter", onDocumentEnter);
     window.addEventListener("mousedown", onMouseDown);
     window.addEventListener("mouseup", onMouseUp);
-
-    const attachHoverHandlers = () => {
-      const elements = document.querySelectorAll<HTMLElement>(HOVERABLE_SELECTOR);
-      elements.forEach((el) => {
-        el.addEventListener("mouseenter", onEnterHoverable);
-        el.addEventListener("mouseleave", onLeaveHoverable);
-      });
-      return elements;
-    };
-
-    let attached = attachHoverHandlers();
-
-    const observer = new MutationObserver(() => {
-      attached.forEach((el) => {
-        el.removeEventListener("mouseenter", onEnterHoverable);
-        el.removeEventListener("mouseleave", onLeaveHoverable);
-      });
-      attached = attachHoverHandlers();
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
+    document.addEventListener("mouseover", onPointerOver);
+    document.addEventListener("mouseout", onPointerOut);
 
     return () => {
-      observer.disconnect();
       window.removeEventListener("mousemove", onMove);
       document.removeEventListener("mouseleave", onDocumentLeave);
       document.removeEventListener("mouseenter", onDocumentEnter);
       window.removeEventListener("mousedown", onMouseDown);
       window.removeEventListener("mouseup", onMouseUp);
-      attached.forEach((el) => {
-        el.removeEventListener("mouseenter", onEnterHoverable);
-        el.removeEventListener("mouseleave", onLeaveHoverable);
-      });
+      document.removeEventListener("mouseover", onPointerOver);
+      document.removeEventListener("mouseout", onPointerOut);
       document.body.style.cursor = previousCursor;
       gsap.killTweensOf([dot, ring]);
     };

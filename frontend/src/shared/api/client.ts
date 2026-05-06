@@ -22,7 +22,8 @@ function clearSessionHint(): void {
 }
 
 function hasSessionHint(): boolean {
-  return safeLocalStorageOp(() => localStorage.getItem(SESSION_HINT_KEY) === "1", false);
+  // 힌트는 최적화용이므로 localStorage 실패 시에도 refresh 쿠키 인증 시도를 허용 (fallback: true)
+  return safeLocalStorageOp(() => localStorage.getItem(SESSION_HINT_KEY) === "1", true);
 }
 
 /* ── Token helpers ── */
