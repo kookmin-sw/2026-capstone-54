@@ -78,6 +78,14 @@ export interface InterviewAnalysisReport {
   errorMessage: string;
   createdAt: string;
   updatedAt: string;
+  // 면접 개요
+  companyName: string;
+  positionTitle: string;
+  interviewDate: string | null;
+  durationSeconds: number | null;
+  difficultyLevel: InterviewDifficultyLevel;
+  totalQuestions: number;
+  totalFollowupQuestions: number;
 }
 
 // ── Request / Response ──
