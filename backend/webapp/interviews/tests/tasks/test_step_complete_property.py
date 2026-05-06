@@ -111,20 +111,40 @@ class TestAllStepsCompleteProperty(TestCase):
 
 # Feature: face-analysis-infra, Property 5: Face analysis result JSON preserves full structure
 class TestFaceAnalysisResultJsonPreservation(TestCase):
-  """face_analyzer 결과 JSON이 frames 포함 전체 구조로 보존되는지 검증한다."""
+  """face_analyzer 결과 JSON이 StoreFaceAnalysisResultService를 통해 DB에 저장된 후에도 전체 구조가 보존되는지 검증한다."""
 
   @given(result_json=face_result_strategy)
   @settings(max_examples=100, deadline=None)
   def test_face_analysis_result_json_preserves_full_structure(self, result_json):
     """**Validates: Requirements 4.1**"""
-    import copy
+    import json
+    from io import BytesIO
+    from unittest.mock import MagicMock, patch
 
-    original = copy.deepcopy(result_json)
+    from interviews.factories import InterviewRecordingFactory
+    from interviews.services.store_face_analysis_result_service import StoreFaceAnalysisResultService
 
-    # 저장 시 변환 없이 그대로 저장됨을 검증
-    self.assertIn("metadata", original)
-    self.assertIn("statistics", original)
-    self.assertIn("frames", original)
-    self.assertEqual(original["metadata"], result_json["metadata"])
-    self.assertEqual(original["statistics"], result_json["statistics"])
-    self.assertEqual(original["frames"], result_json["frames"])
+    recording = InterviewRecordingFactory()
+
+    mock_s3 = MagicMock()
+    mock_s3.get_object.return_value = {
+      "Body": BytesIO(json.dumps(result_json).encode("utf-8")),
+    }
+
+    with patch(
+      "interviews.services.store_face_analysis_result_service.get_video_s3_client",
+      return_value=mock_s3,
+    ):
+      StoreFaceAnalysisResultService(
+        session_uuid=str(recording.interview_session_id),
+        turn_id=str(recording.interview_turn_id),
+        output_bucket="test-bucket",
+        output_key="test-key",
+      ).perform()
+
+    recording.refresh_from_db()
+    stored = recording.face_analysis_result
+
+    self.assertEqual(stored.get("metadata"), result_json["metadata"])
+    self.assertEqual(stored.get("statistics"), result_json["statistics"])
+    self.assertEqual(stored.get("frames"), result_json["frames"])

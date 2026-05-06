@@ -140,7 +140,7 @@ def process_video_step_complete(
   if step == "audio_extractor":
     _dispatch_transcribe_audio(turn_id=turn_id, output_bucket=output_bucket, output_key=output_key)
 
-  if step == "face_analyzer":
+  elif step == "face_analyzer":
     _store_face_analysis_result(
       session_uuid=session_uuid,
       turn_id=turn_id,
