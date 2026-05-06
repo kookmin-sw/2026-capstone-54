@@ -5,6 +5,12 @@ from django.utils import timezone
 from streaks.models import StreakLog, StreakStatistics
 
 
+def _invalidate_milestone_cache(user_id: int) -> None:
+  """마일스톤 캐시 무효화 (순환 import 방지를 위해 지연 import)."""
+  from django.core.cache import cache
+  cache.delete(f'milestones_user_{user_id}')
+
+
 class StreakCalculator:
   """통계 계산만 담당 ( interview_results_count > 0 기준)."""
 
@@ -18,6 +24,7 @@ class StreakCalculator:
     stats, _ = StreakStatistics.objects.get_or_create(user=self.user)
 
     self._apply_stats(stats, participated_logs, self.today)
+    _invalidate_milestone_cache(self.user.id)
     return stats
 
   @staticmethod

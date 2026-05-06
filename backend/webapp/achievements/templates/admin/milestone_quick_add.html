@@ -1,0 +1,48 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}마일스톤 빠른 추가 - 관리자{% endblock %}
+
+{% block content %}
+<div id="content-main">
+  <h1>마일스톤 빠른 추가</h1>
+
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-row">
+      <div>
+        {{ form.days.label_tag }}
+        {{ form.days }}
+        {% if form.days.errors %}
+          <ul class="errorlist">
+            {% for error in form.days.errors %}
+              <li>{{ error }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+        <p class="help">{{ form.days.help_text }}</p>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div>
+        {{ form.reward_amount.label_tag }}
+        {{ form.reward_amount }}
+        {% if form.reward_amount.errors %}
+          <ul class="errorlist">
+            {% for error in form.reward_amount.errors %}
+              <li>{{ error }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+        <p class="help">{{ form.reward_amount.help_text }}</p>
+      </div>
+    </div>
+
+    <div class="submit-row">
+      <input type="submit" value="마일스톤 생성" class="default">
+      <a href="{% url 'admin:achievements_milestone_changelist' %}" class="button">취소</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
