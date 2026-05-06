@@ -7,7 +7,7 @@ from interviews.models import InterviewRecording
 
 logger = logging.getLogger(__name__)
 
-STEP_FIELDS = frozenset({"scaled_video_key", "frame_prefix", "audio_key", "scaled_audio_key"})
+STEP_FIELDS = frozenset({"scaled_video_key", "frame_prefix", "audio_key", "scaled_audio_key", "face_analysis_result_key"})
 
 
 class UpdateRecordingStepService(BaseService):
@@ -62,4 +62,5 @@ class UpdateRecordingStepService(BaseService):
       recording.scaled_video_key,
       recording.frame_prefix,
       recording.scaled_audio_key,
+      recording.face_analysis_result_key,
     ])

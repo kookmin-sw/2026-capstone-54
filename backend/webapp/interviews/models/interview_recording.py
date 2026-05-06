@@ -56,5 +56,8 @@ class InterviewRecording(BaseModelWithUUID):
   audio_key = models.CharField(max_length=500, blank=True, default="", verbose_name="음성 S3 키")
   scaled_audio_key = models.CharField(max_length=500, blank=True, default="", verbose_name="스케일 음성 S3 키")
 
+  face_analysis_result_key = models.CharField(max_length=500, blank=True, default="", verbose_name="표정 분석 결과 S3 키")
+  face_analysis_result = models.JSONField(default=dict, blank=True, verbose_name="표정 분석 결과")
+
   def __str__(self):
     return f"InterviewRecording {self.pk} [{self.media_type}] ({self.status})"
