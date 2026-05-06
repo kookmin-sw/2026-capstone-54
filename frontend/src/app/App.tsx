@@ -78,7 +78,6 @@ function App() {
         <Route path="/sign-up" element={<SignUpPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
-        <Route path="/dev/overview-preview" element={<InterviewOverviewPreview />} />
 
         {/* ── 보호 라우트 (로그인 필요) ── */}
         <Route path="/verify-email" element={<ProtectedRoute><VerifyEmailPage /></ProtectedRoute>} />
