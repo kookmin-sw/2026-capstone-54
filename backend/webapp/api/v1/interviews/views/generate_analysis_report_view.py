@@ -40,7 +40,12 @@ class GenerateAnalysisReportView(BaseAPIView):
 
     self._validate_and_use_tickets(interview_session)
 
-    report, created = InterviewAnalysisReport.objects.get_or_create(interview_session=interview_session, )
+    report, created = InterviewAnalysisReport.objects.get_or_create(interview_session=interview_session)
+    report = (
+      InterviewAnalysisReport.objects.select_related("interview_session__user_job_description__job_description", ).get(
+        pk=report.pk
+      )
+    )
 
     from interviews.services.regenerate_analysis_report_service import (
       dispatch_report_if_ready,
