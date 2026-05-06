@@ -76,20 +76,23 @@ destinations:
 # ─── Features ────────────────────────────────────────────────────────────────
 
 # Pod / 컨테이너 메모리, kube-state-metrics, kubelet cAdvisor 등 K8s 코어 메트릭
+# 차트 v4: collector 명시 필수 (없으면 helm 검증 실패).
 clusterMetrics:
   enabled: true
-  # 더 짧은 retention 원하면 scrapeInterval 늘려서 metric 수 감소시킬 수 있음
-  # 기본 60s (global.scrapeInterval) → 무료등급 series 한도 안에서 충분
+  collector: alloy-metrics
 
 # OOMKilled / Evicted / FailedScheduling 등 K8s 이벤트를 Loki 로 전송
 # → Grafana Explore 에서 {cluster="mefit-prod-k3s"} 쿼리로 확인
+# 이벤트는 중복 방지 위해 singleton collector 필수.
 clusterEvents:
   enabled: true
+  collector: alloy-singleton
 
 # node-exporter 기반 호스트 메트릭 (node_memory_MemAvailable_bytes 등)
 # t3.small 노드 메모리 압박 추적의 핵심
 hostMetrics:
   enabled: true
+  collector: alloy-metrics
   linuxHosts:
     enabled: true
 
