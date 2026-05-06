@@ -45,10 +45,7 @@ def analyze_local_folder(
         }
 
     logger.info("Found %d images in %s", len(image_paths), folder_path)
-
-    results = [
-        _safe_analyze(path) for path in image_paths
-    ]
+    results = [_safe_analyze(path) for path in image_paths]
     stats = compute_statistics(results)
 
     return {
@@ -99,7 +96,6 @@ def analyze_s3_images(
 
 
 def _safe_analyze(path: str) -> FrameAnalysisResult:
-    """단일 이미지 분석 (예외 안전)."""
     frame_id = os.path.basename(path)
     try:
         return analyze_frame_from_path(frame_id, path)
@@ -115,10 +111,4 @@ def _build_metadata(total_frames: int) -> Dict[str, Any]:
         "analyzer_version": "3.0.0",
         "model": "MediaPipe Face Landmarker (blendshapes, 3.7MB)",
         "expressions": ["positive", "negative", "neutral", "no_face"],
-        "expression_rules": {
-            "positive": "smile_score >= SMILE_THRESHOLD (웃는 표정)",
-            "negative": "frown_score >= FROWN_THRESHOLD or brow_down_score >= BROW_DOWN_THRESHOLD (찡그린/우는 표정)",
-            "neutral": "위 조건 모두 해당 안 됨 (무표정/차분)",
-            "no_face": "얼굴 미감지 또는 화면에 완전히 들어오지 않음",
-        },
     }

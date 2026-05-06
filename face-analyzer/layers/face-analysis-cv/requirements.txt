@@ -1,0 +1,4 @@
+# Layer D-2: opencv + numpy + Pillow (이미지 처리)
+opencv-python-headless==4.10.0.84
+numpy>=1.26,<2.0
+Pillow>=10.0

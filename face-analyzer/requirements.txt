@@ -1,5 +1,6 @@
+# 로컬 개발용 (uv add로 관리)
+# Lambda Layer용은 layers/face-analysis/requirements.txt 참조
 mediapipe==0.10.14
 opencv-python-headless==4.10.0.84
 numpy>=1.26,<2.0
-boto3>=1.34
 Pillow>=10.0

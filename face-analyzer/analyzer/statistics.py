@@ -68,7 +68,6 @@ def compute_statistics(results: List[FrameAnalysisResult]) -> Dict[str, Any]:
         "expression_distribution": expression_distribution,
         "dominant_expression": dominant_expression,
         "avg_scores": avg_scores,
-        "head_pose_stats": head_pose_stats,
         "expression_change_count": expr_changes,
         "expression_change_rate": round(expr_changes / max(total - 1, 1), 4),
     }

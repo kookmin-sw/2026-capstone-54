@@ -1,0 +1,9 @@
+# Layer D-1: mediapipe + protobuf (핵심 분석 엔진)
+mediapipe==0.10.14
+protobuf>=4.25.3,<5
+absl-py
+attrs
+flatbuffers
+sounddevice
+cffi
+pycparser

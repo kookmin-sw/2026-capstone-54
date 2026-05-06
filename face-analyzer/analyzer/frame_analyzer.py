@@ -11,8 +11,8 @@ MediaPipe Face Landmarker를 사용하여 하나의 이미지를 분석합니다
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass, field
-from typing import Dict, Optional
+from dataclasses import dataclass
+from typing import Optional
 
 import cv2
 import numpy as np
@@ -27,7 +27,11 @@ _NO_FACE = "no_face"
 
 @dataclass
 class FrameAnalysisResult:
-    """단일 프레임 분석 결과."""
+    """단일 프레임 분석 결과.
+
+    head_pose, blendshapes는 DB 저장 용량 최적화를 위해 제외한다.
+    표정 분류에 필요한 5개 score와 분류 결과만 보존한다.
+    """
 
     frame_id: str
     expression: str  # positive / negative / neutral / no_face
@@ -38,9 +42,7 @@ class FrameAnalysisResult:
     brow_down_score: float
     jaw_open_score: float
     eye_squint_score: float
-    head_pose: Dict[str, float]
     face_area_ratio: float
-    blendshapes: Dict[str, float] = field(default_factory=dict)
     error: Optional[str] = None
 
 
@@ -59,12 +61,6 @@ def _analyze_frame_inner(frame_id: str, image_bgr: np.ndarray) -> FrameAnalysisR
     if not face.detected:
         return _no_face_result(frame_id, error="No face detected")
 
-    head_pose = {
-        "yaw": face.head_yaw,
-        "pitch": face.head_pitch,
-        "roll": face.head_roll,
-    }
-
     if not face.fully_visible:
         return FrameAnalysisResult(
             frame_id=frame_id,
@@ -76,9 +72,7 @@ def _analyze_frame_inner(frame_id: str, image_bgr: np.ndarray) -> FrameAnalysisR
             brow_down_score=face.brow_down_score,
             jaw_open_score=face.jaw_open_score,
             eye_squint_score=face.eye_squint_score,
-            head_pose=head_pose,
             face_area_ratio=face.face_area_ratio,
-            blendshapes=face.blendshapes,
             error="Face not fully visible in frame",
         )
 
@@ -97,9 +91,7 @@ def _analyze_frame_inner(frame_id: str, image_bgr: np.ndarray) -> FrameAnalysisR
         brow_down_score=face.brow_down_score,
         jaw_open_score=face.jaw_open_score,
         eye_squint_score=face.eye_squint_score,
-        head_pose=head_pose,
         face_area_ratio=face.face_area_ratio,
-        blendshapes=face.blendshapes,
     )
 
 
@@ -122,7 +114,6 @@ def _no_face_result(frame_id: str, error: str = "") -> FrameAnalysisResult:
         brow_down_score=0.0,
         jaw_open_score=0.0,
         eye_squint_score=0.0,
-        head_pose={"yaw": 0.0, "pitch": 0.0, "roll": 0.0},
         face_area_ratio=0.0,
         error=error,
     )

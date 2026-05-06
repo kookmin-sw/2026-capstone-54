@@ -16,7 +16,9 @@ result_*.json
 # 모델 캐시
 .model_cache/
 
+# 빌드 시 복사되는 공통 모듈 (analysis-video에서 가져옴)
+mefit_video_common/
+
 # OS
 .DS_Store
 Thumbs.db
-
