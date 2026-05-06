@@ -51,10 +51,12 @@ json_value_strategy = st.recursive(
   max_leaves=20,
 )
 
+_pg_safe_text = st.text(alphabet=st.characters(blacklist_characters="\x00"), max_size=20)
+
 face_result_strategy = st.fixed_dictionaries(
   {
-    "metadata": st.dictionaries(st.text(max_size=20), json_value_strategy, min_size=1, max_size=5),
-    "statistics": st.dictionaries(st.text(max_size=20), json_value_strategy, min_size=1, max_size=5),
+    "metadata": st.dictionaries(_pg_safe_text, json_value_strategy, min_size=1, max_size=5),
+    "statistics": st.dictionaries(_pg_safe_text, json_value_strategy, min_size=1, max_size=5),
     "frames": st.lists(json_value_strategy, min_size=0, max_size=5),
   }
 )
