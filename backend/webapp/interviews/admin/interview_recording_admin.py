@@ -66,6 +66,8 @@ class InterviewRecordingAdmin(ModelAdmin):
           "frame_prefix",
           "audio_key",
           "scaled_audio_key",
+          "face_analysis_result_key",
+          "face_analysis_result",
         ),
       },
     ),
