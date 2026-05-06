@@ -7,6 +7,7 @@ import { RadarChart } from "./RadarChart";
 import { ScoreGauge } from "./ScoreGauge";
 import { StrengthsImprovements } from "./StrengthsImprovements";
 import { QuestionFeedbackList } from "./QuestionFeedbackList";
+import { InterviewOverview } from "./InterviewOverview";
 
 const GRADE_COLOR: Record<string, string> = {
   Excellent: "text-[#059669]", Good: "text-[#0991B2]", Average: "text-[#D97706]",
@@ -86,6 +87,8 @@ export function InterviewReportPage() {
 
         {isCompleted && report && (
           <>
+            <InterviewOverview report={report} />
+
             <div className="bg-white border border-[#E5E7EB] rounded-2xl p-6 shadow-sm mb-4 flex flex-col sm:flex-row items-center gap-6">
               <div className="shrink-0 w-40"><ScoreGauge score={report.overallScore ?? 0} /></div>
               <div className="flex-1 text-center sm:text-left">
