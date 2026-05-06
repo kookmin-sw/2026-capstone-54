@@ -22,7 +22,14 @@ class TermsConsentAPIViewTests(TestCase):
     terms = TermsDocumentFactory(is_published=True)
     url = reverse("terms-document-consents")
 
-    response = self.client.post(url, data={"terms_document_ids": [terms.id]}, format="json")
+    response = self.client.post(
+      url,
+      data={"updates": [{
+        "terms_document_id": terms.id,
+        "is_agreed": True
+      }]},
+      format="json",
+    )
 
     self.assertEqual(response.status_code, status.HTTP_200_OK)
     self.assertEqual(len(response.data), 1)
@@ -33,8 +40,22 @@ class TermsConsentAPIViewTests(TestCase):
     terms = TermsDocumentFactory(is_published=True)
     url = reverse("terms-document-consents")
 
-    self.client.post(url, data={"terms_document_ids": [terms.id]}, format="json")
-    self.client.post(url, data={"terms_document_ids": [terms.id]}, format="json")
+    self.client.post(
+      url,
+      data={"updates": [{
+        "terms_document_id": terms.id,
+        "is_agreed": True
+      }]},
+      format="json",
+    )
+    self.client.post(
+      url,
+      data={"updates": [{
+        "terms_document_id": terms.id,
+        "is_agreed": True
+      }]},
+      format="json",
+    )
 
     self.assertEqual(UserConsent.objects.filter(user=self.user, terms_document=terms).count(), 1)
 
@@ -43,7 +64,14 @@ class TermsConsentAPIViewTests(TestCase):
     terms = TermsDocumentFactory(is_published=False)
     url = reverse("terms-document-consents")
 
-    response = self.client.post(url, data={"terms_document_ids": [terms.id]}, format="json")
+    response = self.client.post(
+      url,
+      data={"updates": [{
+        "terms_document_id": terms.id,
+        "is_agreed": True
+      }]},
+      format="json",
+    )
 
     self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
@@ -53,6 +81,13 @@ class TermsConsentAPIViewTests(TestCase):
     terms = TermsDocumentFactory(is_published=True)
     url = reverse("terms-document-consents")
 
-    response = self.client.post(url, data={"terms_document_ids": [terms.id]}, format="json")
+    response = self.client.post(
+      url,
+      data={"updates": [{
+        "terms_document_id": terms.id,
+        "is_agreed": True
+      }]},
+      format="json",
+    )
 
     self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)

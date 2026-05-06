@@ -67,47 +67,32 @@ class SeedAchievementsService:
         "amount": 5
       },
     },
+  ]
+
+  MILESTONE_ACHIEVEMENTS = [
     {
-      "code": "streak_3_days",
-      "name": "3일 연속 출석",
-      "description": "3일 연속으로 면접에 참여하세요.",
-      "category": AchievementCategory.STREAK,
-      "condition_type": AchievementConditionType.RULE_GROUP,
-      "condition_payload": {
-        "type": "group",
-        "logic": "AND",
-        "rules": [{
-          "type": "metric_threshold",
-          "metric_key": "streak.current_days",
-          "operator": ">=",
-          "target": 3,
-        }],
-      },
-      "reward_payload": {
-        "type": "ticket",
-        "amount": 3
-      },
+      "days": 3,
+      "reward": 3
     },
     {
-      "code": "streak_7_days",
-      "name": "7일 연속 출석",
-      "description": "7일 연속으로 면접에 참여하세요.",
-      "category": AchievementCategory.STREAK,
-      "condition_type": AchievementConditionType.RULE_GROUP,
-      "condition_payload": {
-        "type": "group",
-        "logic": "AND",
-        "rules": [{
-          "type": "metric_threshold",
-          "metric_key": "streak.current_days",
-          "operator": ">=",
-          "target": 7,
-        }],
-      },
-      "reward_payload": {
-        "type": "ticket",
-        "amount": 7
-      },
+      "days": 7,
+      "reward": 5
+    },
+    {
+      "days": 14,
+      "reward": 7
+    },
+    {
+      "days": 30,
+      "reward": 10
+    },
+    {
+      "days": 60,
+      "reward": 20
+    },
+    {
+      "days": 100,
+      "reward": 30
     },
   ]
 
@@ -135,4 +120,53 @@ class SeedAchievementsService:
       else:
         skipped_count += 1
 
+    # 마일스톤 업적 생성
+    milestone_created, milestone_skipped = cls._create_milestone_achievements()
+    created_count += milestone_created
+    skipped_count += milestone_skipped
+
     return {"created": created_count, "skipped": skipped_count}
+
+  @classmethod
+  def _create_milestone_achievements(cls) -> tuple:
+    """마일스톤 업적 생성."""
+    created_count = 0
+    skipped_count = 0
+
+    for milestone in cls.MILESTONE_ACHIEVEMENTS:
+      days = milestone['days']
+      reward = milestone['reward']
+      code = f"streak_{days}_days"
+
+      _, created = Achievement.objects.get_or_create(
+        code=code,
+        defaults={
+          "name": f"{days}일 연속 출석",
+          "description": f"{days}일 연속으로 면접에 참여하세요.",
+          "category": AchievementCategory.STREAK,
+          "condition_type": AchievementConditionType.RULE_GROUP,
+          "condition_payload": {
+            "type": "group",
+            "logic": "AND",
+            "rules": [
+              {
+                "type": "metric_threshold",
+                "metric_key": "streak.current_days",
+                "operator": ">=",
+                "target": days,
+              }
+            ],
+          },
+          "reward_payload": {
+            "type": "ticket",
+            "amount": reward,
+          },
+        },
+      )
+
+      if created:
+        created_count += 1
+      else:
+        skipped_count += 1
+
+    return created_count, skipped_count

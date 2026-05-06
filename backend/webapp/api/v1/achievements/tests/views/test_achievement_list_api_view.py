@@ -24,8 +24,8 @@ class AchievementListAPIViewTests(TestCase):
     response = self.client.get(self.url)
 
     self.assertEqual(response.status_code, status.HTTP_200_OK)
-    self.assertEqual(len(response.data), 1)
-    self.assertTrue(response.data[0]["is_achieved"])
+    self.assertEqual(len(response.data["results"]), 1)
+    self.assertTrue(response.data["results"][0]["is_achieved"])
 
   def test_can_claim_reward_is_true_for_achieved_unclaimed(self):
     """달성했지만 아직 보상을 수령하지 않은 업적은 can_claim_reward=True를 반환한다."""
@@ -35,7 +35,7 @@ class AchievementListAPIViewTests(TestCase):
     response = self.client.get(self.url)
 
     self.assertEqual(response.status_code, status.HTTP_200_OK)
-    item = next((d for d in response.data if d["code"] == achievement.code), None)
+    item = next((d for d in response.data["results"] if d["code"] == achievement.code), None)
     self.assertIsNotNone(item, f"Achievement with code {achievement.code} not found in response")
     self.assertTrue(item["can_claim_reward"])
 
@@ -51,7 +51,7 @@ class AchievementListAPIViewTests(TestCase):
     response = self.client.get(self.url)
 
     self.assertEqual(response.status_code, status.HTTP_200_OK)
-    item = next((d for d in response.data if d["code"] == achievement.code), None)
+    item = next((d for d in response.data["results"] if d["code"] == achievement.code), None)
     self.assertIsNotNone(item, f"Achievement with code {achievement.code} not found in response")
     self.assertFalse(item["can_claim_reward"])
 
@@ -63,7 +63,7 @@ class AchievementListAPIViewTests(TestCase):
     response = self.client.get(self.url)
 
     self.assertEqual(response.status_code, status.HTTP_200_OK)
-    item = next((d for d in response.data if d["code"] == achievement.code), None)
+    item = next((d for d in response.data["results"] if d["code"] == achievement.code), None)
     self.assertIsNotNone(item, f"Achievement with code {achievement.code} not found in response")
     self.assertFalse(item["can_claim_reward"])
     self.assertFalse(item["is_achieved"])

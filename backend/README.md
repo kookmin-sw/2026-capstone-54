@@ -73,3 +73,40 @@ docker compose up
 > ```
 >
 > 이후 `docker compose up` 시 Redis가 `mefit-local` 네트워크에 자동으로 참여합니다.
+
+## 테스트 실행
+
+### 전체 테스트 실행
+
+```bash
+docker-compose exec webapp python manage.py test --keepdb
+```
+
+### 특정 모듈 테스트 실행
+
+```bash
+docker-compose exec webapp python manage.py test subscriptions.tests.services.test_grant_initial_subscription_tickets_service --keepdb
+```
+
+### 특정 테스트 클래스 실행
+
+```bash
+docker-compose exec webapp python manage.py test subscriptions.tests.services.test_grant_initial_subscription_tickets_service.GrantInitialSubscriptionTicketsServiceTests --keepdb
+```
+
+### 특정 테스트 메서드 실행
+
+```bash
+docker-compose exec webapp python manage.py test subscriptions.tests.services.test_grant_initial_subscription_tickets_service.GrantInitialSubscriptionTicketsServiceTests.test_grants_initial_tickets_for_free_plan --keepdb
+```
+
+### 상세 출력과 함께 테스트 실행
+
+```bash
+docker-compose exec webapp python manage.py test --keepdb -v 2
+```
+
+> **`--keepdb` 옵션**
+>
+> 테스트 데이터베이스를 테스트 완료 후에도 유지합니다.
+> 이를 통해 다음 테스트 실행 시 데이터베이스 생성 시간을 단축할 수 있습니다.

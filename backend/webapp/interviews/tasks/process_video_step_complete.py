@@ -40,6 +40,7 @@ STEP_FIELD_MAP = {
   "frame_extractor": "frame_prefix",
   "audio_extractor": "audio_key",
   "audio_scaler": "scaled_audio_key",
+  "face_analyzer": "face_analysis_result_key",
 }
 
 
@@ -71,6 +72,30 @@ def _dispatch_transcribe_audio(turn_id: str, output_bucket: str, output_key: str
     _send_dispatch_failure_alert(
       exc=exc,
       source=f"_dispatch_transcribe_audio (turn_id={turn_id}, queue=analysis-stt)",
+    )
+
+
+def _store_face_analysis_result(session_uuid: str, turn_id: str, output_bucket: str, output_key: str) -> None:
+  """face_analyzer step-complete 후처리: S3에서 결과를 읽어 DB에 저장한다.
+
+  오케스트레이션만 담당하며, 각 단계는 별도 서비스에 위임한다.
+  실패 시 알림을 보내되 예외를 전파하지 않는다.
+  """
+  from interviews.services.store_face_analysis_result_service import StoreFaceAnalysisResultService
+
+  try:
+    StoreFaceAnalysisResultService(
+      session_uuid=session_uuid,
+      turn_id=turn_id,
+      output_bucket=output_bucket,
+      output_key=output_key,
+    ).perform()
+    logger.info("face_analysis_result_stored", session_uuid=session_uuid, turn_id=turn_id)
+  except Exception as exc:
+    logger.exception("face_analysis_result_store_failed", session_uuid=session_uuid, turn_id=turn_id)
+    _send_dispatch_failure_alert(
+      exc=exc,
+      source=f"_store_face_analysis_result (session={session_uuid}, turn={turn_id})",
     )
 
 
@@ -112,3 +137,11 @@ def process_video_step_complete(
 
   if step == "audio_extractor":
     _dispatch_transcribe_audio(turn_id=turn_id, output_bucket=output_bucket, output_key=output_key)
+
+  elif step == "face_analyzer":
+    _store_face_analysis_result(
+      session_uuid=session_uuid,
+      turn_id=turn_id,
+      output_bucket=output_bucket,
+      output_key=output_key,
+    )

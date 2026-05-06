@@ -37,6 +37,15 @@ def transcripts_pending(interview_session) -> bool:
   ).exists()
 
 
+def face_analysis_pending(interview_session) -> bool:
+  """세션의 face_analysis가 아직 완료되지 않은 recording이 있는지 여부."""
+  from interviews.models import InterviewRecording
+  return InterviewRecording.objects.filter(
+    interview_session=interview_session,
+    face_analysis_result={},
+  ).exists()
+
+
 def dispatch_report_if_ready(report: InterviewAnalysisReport) -> bool:
   """STT 가 모두 완료된 경우에만 LLM 분석을 dispatch 한다.
 
@@ -46,6 +55,8 @@ def dispatch_report_if_ready(report: InterviewAnalysisReport) -> bool:
     반환: dispatch 했으면 True, 보류했으면 False.
     """
   if transcripts_pending(report.interview_session):
+    return False
+  if face_analysis_pending(report.interview_session):
     return False
 
   updated = InterviewAnalysisReport.objects.filter(

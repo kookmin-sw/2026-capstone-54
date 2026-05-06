@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 from common.exceptions import NotFoundException
 from django.core.exceptions import ValidationError
-from django.test import TestCase, override_settings
+from django.test import TestCase, TransactionTestCase, override_settings
 from django.utils import timezone
 from users.factories import PasswordResetTokenFactory, UserFactory
 from users.models import PasswordResetToken
@@ -33,15 +33,6 @@ class RequestPasswordResetServiceTests(TestCase):
 
     old_token.refresh_from_db()
     self.assertIsNotNone(old_token.used_at)
-
-  @patch("users.tasks.send_password_reset_email_task.SendPasswordResetEmailTask.run")
-  def test_dispatches_celery_task(self, mock_task):
-    """이메일 발송 Celery 태스크가 호출된다"""
-    RequestPasswordResetService(email=self.user.email).perform()
-
-    mock_task.assert_called_once()
-    call_kwargs = mock_task.call_args
-    self.assertEqual(call_kwargs[1]["user_id"], self.user.id)
 
   @patch("users.tasks.send_password_reset_email_task.SendPasswordResetEmailTask.run")
   def test_token_has_correct_expiry(self, mock_task):
@@ -79,3 +70,20 @@ class RequestPasswordResetServiceTests(TestCase):
     """email이 None이면 ValidationError가 발생한다"""
     with self.assertRaises(ValidationError):
       RequestPasswordResetService(email=None).perform()
+
+
+@override_settings(CELERY_TASK_ALWAYS_EAGER=True)
+class RequestPasswordResetServiceCeleryTests(TransactionTestCase):
+  """Celery 태스크 테스트 (TransactionTestCase 사용)"""
+
+  def setUp(self):
+    self.user = UserFactory(email="resetreq@example.com")
+
+  @patch("users.tasks.send_password_reset_email_task.SendPasswordResetEmailTask.run")
+  def test_dispatches_celery_task(self, mock_task):
+    """이메일 발송 Celery 태스크가 호출된다"""
+    RequestPasswordResetService(email=self.user.email).perform()
+
+    mock_task.assert_called_once()
+    call_kwargs = mock_task.call_args
+    self.assertEqual(call_kwargs[1]["user_id"], self.user.id)
