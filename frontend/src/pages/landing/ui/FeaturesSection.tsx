@@ -31,7 +31,6 @@ export function FeaturesSection() {
         start: "top 88%",
         onEnter: (els) =>
           gsap.from(els, {
-            y: 32,
             opacity: 0,
             duration: 0.7,
             stagger: 0.08,
@@ -61,14 +60,14 @@ export function FeaturesSection() {
           spacing="tight"
         />
 
-        <div className="flex flex-col gap-[clamp(8px,1.8vh,24px)] md:flex-row md:gap-[clamp(14px,2.4vh,36px)] md:items-stretch">
+        <div className="grid grid-cols-2 gap-[clamp(8px,1.4vh,16px)] md:grid-cols-4 md:grid-rows-2 md:gap-[clamp(10px,1.4vh,18px)] md:items-start">
           <button
             type="button"
             data-feature-card
             data-cursor-hover
             onClick={() => setDemoOpen(true)}
             aria-label={`${featured.title} 시연 영상 열기`}
-            className="group relative overflow-hidden text-left bg-[#0A0A0A] rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)] transition-[transform,box-shadow] duration-300 ease-out will-change-transform hover:-translate-y-1 hover:shadow-[0_18px_50px_-12px_rgba(9,145,178,0.55),0_0_0_1px_rgba(9,145,178,0.25)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0E7490] cursor-pointer p-[clamp(16px,2.8vh,56px)] md:flex-1 md:rounded-2xl md:p-[clamp(24px,3.6vh,64px)] md:flex md:flex-col md:justify-end"
+            className="col-span-2 md:col-span-2 md:row-span-2 md:self-stretch group relative overflow-hidden text-left bg-[#0A0A0A] rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)] transition-[transform,box-shadow] duration-300 ease-out will-change-transform hover:-translate-y-1 hover:shadow-[0_18px_50px_-12px_rgba(9,145,178,0.55),0_0_0_1px_rgba(9,145,178,0.25)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0E7490] cursor-pointer flex flex-col p-[clamp(16px,2.8vh,40px)] md:rounded-2xl md:p-[clamp(20px,2.8vh,40px)]"
           >
             <div
               aria-hidden="true"
@@ -106,45 +105,43 @@ export function FeaturesSection() {
                 <path d="M8 5v14l11-7z" />
               </svg>
             </span>
-            <div className="relative z-10 rounded-md flex items-center justify-center bg-white/12 transition-colors duration-300 group-hover:bg-[#0991B2]/30 w-[clamp(30px,4.4vh,60px)] h-[clamp(30px,4.4vh,60px)] mb-[clamp(8px,1.6vh,24px)] md:rounded-xl">
+            <div className="relative z-10 rounded-md flex items-center justify-center bg-white/12 transition-colors duration-300 group-hover:bg-[#0991B2]/30 w-[clamp(26px,3.8vh,52px)] h-[clamp(26px,3.8vh,52px)] mb-[clamp(6px,1.4vh,20px)] md:rounded-xl">
               <featured.Icon
-                className="text-white w-[clamp(15px,2.2vh,30px)] h-[clamp(15px,2.2vh,30px)]"
+                className="text-white w-[clamp(13px,1.9vh,26px)] h-[clamp(13px,1.9vh,26px)]"
                 strokeWidth={2}
                 aria-hidden="true"
               />
             </div>
-            <h3 className="relative z-10 font-plex-sans-kr font-bold text-white text-[clamp(14px,calc(1.6vh+0.7vw),32px)] mb-[clamp(4px,1vh,16px)] leading-tight">
+            <h3 className="relative z-10 font-plex-sans-kr font-bold text-white text-[clamp(12px,calc(1.2vh+0.45vw),22px)] mb-[clamp(2px,0.6vh,12px)] leading-tight">
               {featured.title}
             </h3>
-            <p className="relative z-10 text-white/72 leading-[1.55] text-[clamp(11px,calc(1vh+0.4vw),20px)]">
+            <p className="relative z-10 text-white/72 leading-[1.55] text-[clamp(10px,calc(0.9vh+0.35vw),17px)]">
               {featured.desc}
             </p>
           </button>
 
-          <div className="grid grid-cols-2 gap-[clamp(8px,1.8vh,24px)] md:flex md:flex-col md:flex-1 md:grid md:grid-cols-2 md:gap-[clamp(12px,2vh,28px)]">
-            {rest.map((f) => (
-              <div
-                key={f.title}
-                data-feature-card
-                data-cursor-hover
-                className="group relative bg-white rounded-lg border border-[#E5E7EB] transition-[transform,box-shadow,border-color] duration-300 ease-out will-change-transform hover:-translate-y-1 hover:border-[#0991B2]/40 hover:shadow-[0_14px_36px_-12px_rgba(9,145,178,0.28)] p-[clamp(12px,2vh,40px)] md:rounded-2xl"
-              >
-                <div className="rounded-md flex items-center justify-center bg-white border border-[#E5E7EB] transition-colors duration-300 group-hover:border-[#0991B2]/50 group-hover:bg-[#E6F7FA] w-[clamp(26px,3.8vh,52px)] h-[clamp(26px,3.8vh,52px)] mb-[clamp(6px,1.4vh,20px)] md:rounded-xl">
-                  <f.Icon
-                    className="text-[#0A0A0A] transition-colors duration-300 group-hover:text-[#0991B2] w-[clamp(13px,1.9vh,26px)] h-[clamp(13px,1.9vh,26px)]"
-                    strokeWidth={2}
-                    aria-hidden="true"
-                  />
-                </div>
-                <h3 className="font-plex-sans-kr font-bold text-[#0A0A0A] text-[clamp(12px,calc(1.2vh+0.45vw),22px)] mb-[clamp(2px,0.6vh,12px)] leading-tight">
-                  {f.title}
-                </h3>
-                <p className="text-[#6B7280] leading-[1.5] text-[clamp(10px,calc(0.9vh+0.35vw),17px)]">
-                  {f.desc}
-                </p>
+          {rest.map((f) => (
+            <div
+              key={f.title}
+              data-feature-card
+              data-cursor-hover
+              className="group relative bg-white rounded-lg border border-[#E5E7EB] transition-[transform,box-shadow,border-color] duration-300 ease-out will-change-transform hover:-translate-y-1 hover:border-[#0991B2]/40 hover:shadow-[0_14px_36px_-12px_rgba(9,145,178,0.28)] p-[clamp(12px,2vh,40px)] md:rounded-2xl flex flex-col"
+            >
+              <div className="rounded-md flex items-center justify-center bg-white border border-[#E5E7EB] transition-colors duration-300 group-hover:border-[#0991B2]/50 group-hover:bg-[#E6F7FA] w-[clamp(26px,3.8vh,52px)] h-[clamp(26px,3.8vh,52px)] mb-[clamp(6px,1.4vh,20px)] md:rounded-xl">
+                <f.Icon
+                  className="text-[#0A0A0A] transition-colors duration-300 group-hover:text-[#0991B2] w-[clamp(13px,1.9vh,26px)] h-[clamp(13px,1.9vh,26px)]"
+                  strokeWidth={2}
+                  aria-hidden="true"
+                />
               </div>
-            ))}
-          </div>
+              <h3 className="font-plex-sans-kr font-bold text-[#0A0A0A] text-[clamp(12px,calc(1.2vh+0.45vw),22px)] mb-[clamp(2px,0.6vh,12px)] leading-tight">
+                {f.title}
+              </h3>
+              <p className="text-[#6B7280] leading-[1.5] text-[clamp(10px,calc(0.9vh+0.35vw),17px)]">
+                {f.desc}
+              </p>
+            </div>
+          ))}
         </div>
       </div>
 
