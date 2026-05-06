@@ -10,8 +10,8 @@ function formatDate(iso: string | null): string {
   if (!iso) return "-";
   const d = new Date(iso);
   const yyyy = d.getFullYear();
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = d.getMonth() + 1;
+  const dd = d.getDate();
   const hh = String(d.getHours()).padStart(2, "0");
   const mi = String(d.getMinutes()).padStart(2, "0");
   return `${yyyy}. ${mm}. ${dd}. ${hh}:${mi}`;
@@ -56,8 +56,8 @@ export function InterviewOverview({ report }: Props) {
         면접 개요
       </h2>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-8 gap-y-4">
-        {items.map((item, i) => (
-          <div key={i}>
+        {items.map((item) => (
+          <div key={item.label}>
             <p className="text-[13px] text-[#9CA3AF] mb-0.5">{item.label}</p>
             <p className="text-[13px] font-semibold text-[#1F2937]">{item.value}</p>
           </div>
