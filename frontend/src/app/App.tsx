@@ -21,7 +21,6 @@ import { InterviewSetupPage } from "@/pages/interview-setup";
 import { InterviewPreCheckPage } from "@/pages/interview-precheck";
 import { InterviewSessionPage } from "@/pages/interview-session";
 import { InterviewReportPage } from "@/pages/interview-report";
-import { InterviewOverviewPreview } from "@/pages/interview-report/ui/InterviewOverviewPreview";
 import { InterviewResultsPage } from "@/pages/interview-results";
 import { SettingsPage } from "@/pages/settings";
 import { StreakPage } from "@/pages/streak";
