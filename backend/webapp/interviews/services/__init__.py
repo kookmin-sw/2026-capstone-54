@@ -21,6 +21,7 @@ from .regenerate_analysis_report_service import (
 )
 from .resume_interview_session_service import ResumeInterviewSessionService
 from .save_behavior_analysis_service import SaveBehaviorAnalysisService
+from .store_face_analysis_result_service import StoreFaceAnalysisResultService
 from .submit_answer_and_generate_followup_service import (
   SubmitAnswerAndGenerateFollowupService,
 )
@@ -42,6 +43,7 @@ __all__ = [
   "RecordInterviewHeartbeatService",
   "ResumeInterviewSessionService",
   "SaveBehaviorAnalysisService",
+  "StoreFaceAnalysisResultService",
   "SubmitAnswerAndGenerateFollowupService",
   "SubmitAnswerForFullProcessService",
   "TakeoverInterviewSessionService",
