@@ -73,10 +73,12 @@ function buildCalendarDoneMap(logs: StreakLogEntry[]): Record<string, Record<num
 
 function buildMilestones(currentStreak: number): StreakMilestone[] {
   const MILESTONES = [
-    { days: 7,  reward: "시선 추적 5회 제공",       rewardIcon: "👁️" },
-    { days: 14, reward: "시선 추적 3회 제공",        rewardIcon: "🔥" },
-    { days: 30, reward: "실전 모드 5회 제공",        rewardIcon: "⚡" },
-    { days: 60, reward: "상세 리포트 PDF 10회 제공", rewardIcon: "📄" },
+    { days: 3,  reward: "티켓 3개",   rewardIcon: "🎫" },
+    { days: 7,  reward: "티켓 7개",   rewardIcon: "🎫" },
+    { days: 14, reward: "티켓 14개",  rewardIcon: "🎫" },
+    { days: 30, reward: "티켓 30개",  rewardIcon: "🎫" },
+    { days: 60, reward: "티켓 60개",  rewardIcon: "🎫" },
+    { days: 100, reward: "티켓 100개", rewardIcon: "🎫" },
   ];
   return MILESTONES.map((m) => {
     const daysRemaining = Math.max(0, m.days - currentStreak);
@@ -87,12 +89,14 @@ function buildMilestones(currentStreak: number): StreakMilestone[] {
 }
 
 function buildNextReward(currentStreak: number): StreakNextReward {
-  const TARGETS = [7, 14, 30, 60];
+  const TARGETS = [3, 7, 14, 30, 60, 100];
   const REWARDS = [
-    { reward: "시선 추적 5회", detail: "7일 연속 달성 시 시선 추적 분석 5회를 무료로 받을 수 있어요." },
-    { reward: "시선 추적 3회", detail: "14일 연속 달성 시 시선 추적 분석 3회를 무료로 받을 수 있어요." },
-    { reward: "실전 모드 5회", detail: "30일 연속 달성 시 실전 모드 5회를 무료로 받을 수 있어요." },
-    { reward: "상세 리포트 PDF 10회", detail: "60일 연속 달성 시 상세 리포트 PDF 10회를 무료로 받을 수 있어요." },
+    { reward: "티켓 3개", detail: "3일 연속 달성 시 티켓 3개를 받을 수 있어요." },
+    { reward: "티켓 7개", detail: "7일 연속 달성 시 티켓 7개를 받을 수 있어요." },
+    { reward: "티켓 14개", detail: "14일 연속 달성 시 티켓 14개를 받을 수 있어요." },
+    { reward: "티켓 30개", detail: "30일 연속 달성 시 티켓 30개를 받을 수 있어요." },
+    { reward: "티켓 60개", detail: "60일 연속 달성 시 티켓 60개를 받을 수 있어요." },
+    { reward: "티켓 100개", detail: "100일 연속 달성 시 티켓 100개를 받을 수 있어요." },
   ];
   const idx = TARGETS.findIndex((t) => currentStreak < t);
   const target = idx === -1 ? TARGETS[TARGETS.length - 1] : TARGETS[idx];

@@ -3,7 +3,7 @@ import { useStreakStore } from "@/features/streak";
 import { StreakHero } from "./components/StreakHero";
 import { StreakCalendar } from "./components/StreakCalendar";
 import { NextReward } from "./components/NextReward";
-import { Milestones } from "./components/Milestones";
+import { Milestones } from "@/features/milestones";
 import { RewardHistory } from "./components/RewardHistory";
 
 export function StreakPage() {
@@ -70,7 +70,7 @@ export function StreakPage() {
               revealed={revealed}
             />
 
-            <Milestones milestones={data.milestones} revealed={revealed} />
+            <Milestones fallbackData={data.milestones} revealed={revealed} />
 
             <RewardHistory rewardHistory={data.rewardHistory} revealed={revealed} />
           </div>

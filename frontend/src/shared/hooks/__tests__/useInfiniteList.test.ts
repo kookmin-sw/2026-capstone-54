@@ -16,6 +16,7 @@ describe("useInfiniteList", () => {
     // Stub IntersectionObserver (not used in explicit loadMore tests)
     // @ts-expect-error — overriding global
     global.IntersectionObserver = class {
+      constructor(_callback: unknown, _options?: unknown) { void _callback; void _options; }
       observe() { /* noop */ }
       unobserve() { /* noop */ }
       disconnect() { /* noop */ }
