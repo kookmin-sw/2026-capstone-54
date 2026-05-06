@@ -29,6 +29,9 @@ ARG PORT=8000
 ENV PORT=${PORT} \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
+    PYTHONIOENCODING=utf-8 \
+    LANG=C.UTF-8 \
+    LC_ALL=C.UTF-8 \
     PATH="/app/.venv/bin:$PATH"
 
 # 런타임 최소 의존성만 포함
