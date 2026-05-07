@@ -25,15 +25,3 @@ class EmailNotificationType(models.TextChoices):
   @classmethod
   def opted_out_field(cls, value: str) -> str:
     return f"{value}_opted_out_at"
-
-  @classmethod
-  def camel_case_key(cls, value: str) -> str:
-    parts = value.split("_")
-    return parts[0] + "".join(word.capitalize() for word in parts[1:])
-
-  @classmethod
-  def from_camel_case(cls, camel_key: str) -> "EmailNotificationType | None":
-    for member in cls:
-      if cls.camel_case_key(member.value) == camel_key:
-        return member
-    return None
