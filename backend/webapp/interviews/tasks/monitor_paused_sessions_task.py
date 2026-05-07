@@ -33,6 +33,7 @@ class MonitorPausedSessionsTask(BaseScheduledTask):
     cutoff = now - HEARTBEAT_TIMEOUT
     candidates = InterviewSession.objects.filter(
       interview_session_status=InterviewSessionStatus.IN_PROGRESS,
+      total_questions__gt=0,
     ).filter(Q(last_heartbeat_at__lt=cutoff)
              | Q(last_heartbeat_at__isnull=True, created_at__lt=cutoff))
     paused_count = 0
@@ -48,9 +49,12 @@ class MonitorPausedSessionsTask(BaseScheduledTask):
       interview_session_status=InterviewSessionStatus.PAUSED,
       paused_at__isnull=False,
       paused_at__lt=cutoff,
+      total_questions__gt=0,
     )
     finished_count = 0
     for session in candidates.iterator():
+      if not session.is_completion_eligible():
+        continue
       session.mark_completed()
       finished_count += 1
     return finished_count

@@ -30,6 +30,12 @@ class FinishInterviewView(BaseAPIView):
     if interview_session.interview_session_status != InterviewSessionStatus.IN_PROGRESS:
       raise ValidationException(detail="진행 중인 세션만 종료할 수 있습니다.")
 
+    if not interview_session.is_completion_eligible():
+      raise ValidationException(
+        error_code="INTERVIEW_NOT_COMPLETED",
+        detail="모든 질문에 답변을 완료해야 면접을 종료할 수 있습니다.",
+      )
+
     interview_session.mark_completed()
     StreakStatisticsService(user=interview_session.user).record_participation()
 

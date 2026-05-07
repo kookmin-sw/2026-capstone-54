@@ -17,6 +17,7 @@ class MonitorPausedSessionsTaskTests(TestCase):
     session = InterviewSessionFactory(
       user=user,
       interview_session_status=InterviewSessionStatus.IN_PROGRESS,
+      total_questions=5,  # Make session eligible for processing
     )
     session.last_heartbeat_at = timezone.now() - timezone.timedelta(seconds=180)
     session.save(update_fields=["last_heartbeat_at"])
@@ -62,7 +63,11 @@ class MonitorPausedSessionsTaskTests(TestCase):
     session = InterviewSessionFactory(
       user=user,
       interview_session_status=InterviewSessionStatus.IN_PROGRESS,
+      total_questions=5,  # Make session eligible for processing
     )
+    # Create turns with answers to make session completion-eligible
+    from interviews.factories import InterviewTurnFactory
+    InterviewTurnFactory.create_batch(5, interview_session=session, answer="Sample answer")
     session.mark_paused(reason="heartbeat_timeout")
     session.refresh_from_db()
     session.paused_at = timezone.now() - timezone.timedelta(minutes=45)

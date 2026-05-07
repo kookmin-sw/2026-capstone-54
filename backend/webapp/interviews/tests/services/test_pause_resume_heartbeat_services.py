@@ -21,7 +21,11 @@ class PauseInterviewSessionServiceTests(TestCase):
     self.session = InterviewSessionFactory(
       user=self.user,
       interview_session_status=InterviewSessionStatus.IN_PROGRESS,
+      total_questions=5,  # Make session completable for testing
     )
+    # Create some turns with answers to make it completion-eligible
+    from interviews.factories import InterviewTurnFactory
+    InterviewTurnFactory.create_batch(5, interview_session=self.session, answer="Sample answer")
 
   def test_transitions_in_progress_to_paused(self):
     """IN_PROGRESS 세션을 PAUSED 로 전환한다."""
@@ -71,7 +75,11 @@ class ResumeInterviewSessionServiceTests(TestCase):
     self.session = InterviewSessionFactory(
       user=self.user,
       interview_session_status=InterviewSessionStatus.IN_PROGRESS,
+      total_questions=5,  # Make session completable for testing
     )
+    # Create some turns with answers to make it completion-eligible
+    from interviews.factories import InterviewTurnFactory
+    InterviewTurnFactory.create_batch(5, interview_session=self.session, answer="Sample answer")
     self.session.mark_paused(reason="user_left_window")
 
   def test_transitions_paused_to_in_progress(self):

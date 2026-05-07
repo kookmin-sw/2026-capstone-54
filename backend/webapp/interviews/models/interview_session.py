@@ -106,7 +106,18 @@ class InterviewSession(BaseModelWithUUID):
   def __str__(self):
     return f"InterviewSession #{self.pk} [{self.get_interview_session_status_display()}]"
 
+  def is_completion_eligible(self) -> bool:
+    """시작된 세션(total_questions > 0)이고 모든 turn 에 답변이 있을 때 True 를 반환한다."""
+    if self.total_questions == 0:
+      return False
+    if self.turns.count() != self.total_questions:
+      return False
+    return not self.turns.filter(answer="").exists()
+
   def mark_completed(self) -> None:
+    """면접 세션을 COMPLETED 로 변경한다 (is_completion_eligible 위반 시 ValueError)."""
+    if not self.is_completion_eligible():
+      raise ValueError("모든 요구 질문에 답변이 완료되지 않은 세션은 종료할 수 없습니다.")
     self.interview_session_status = InterviewSessionStatus.COMPLETED
     self.save(update_fields=["interview_session_status", "updated_at"])
 

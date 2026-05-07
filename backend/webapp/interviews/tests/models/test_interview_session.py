@@ -3,26 +3,89 @@ from datetime import timedelta
 from django.test import TestCase
 from django.utils import timezone
 from interviews.enums import InterviewSessionStatus, InterviewSessionType
-from interviews.factories import InterviewSessionFactory
+from interviews.factories import InterviewSessionFactory, InterviewTurnFactory
 
 
 class InterviewSessionMarkCompletedTests(TestCase):
   """InterviewSession.mark_completed 테스트"""
 
+  def _build_completed_session(self):
+    session = InterviewSessionFactory(
+      interview_session_status=InterviewSessionStatus.IN_PROGRESS,
+      total_questions=2,
+    )
+    InterviewTurnFactory(interview_session=session, answer="답변1", turn_number=1)
+    InterviewTurnFactory(interview_session=session, answer="답변2", turn_number=2)
+    return session
+
   def test_mark_completed_sets_status_to_completed(self):
     """mark_completed 호출 시 상태가 completed로 변경된다."""
-    session = InterviewSessionFactory(interview_session_status=InterviewSessionStatus.IN_PROGRESS)
+    session = self._build_completed_session()
     session.mark_completed()
     session.refresh_from_db()
     self.assertEqual(session.interview_session_status, InterviewSessionStatus.COMPLETED)
 
   def test_mark_completed_persists_to_db(self):
     """mark_completed는 DB에 저장된다."""
-    session = InterviewSessionFactory()
+    session = self._build_completed_session()
     session.mark_completed()
     from interviews.models import InterviewSession
     updated = InterviewSession.objects.get(pk=session.pk)
     self.assertEqual(updated.interview_session_status, InterviewSessionStatus.COMPLETED)
+
+  def test_mark_completed_raises_when_not_started(self):
+    """total_questions=0 인 세션 (시작되지 않음) 은 ValueError 로 거부된다."""
+    session = InterviewSessionFactory(
+      interview_session_status=InterviewSessionStatus.IN_PROGRESS,
+      total_questions=0,
+    )
+    with self.assertRaises(ValueError):
+      session.mark_completed()
+
+  def test_mark_completed_raises_when_unanswered_turns_exist(self):
+    """미답변 turn 이 남아있으면 ValueError 로 거부된다."""
+    session = InterviewSessionFactory(
+      interview_session_status=InterviewSessionStatus.IN_PROGRESS,
+      total_questions=2,
+    )
+    InterviewTurnFactory(interview_session=session, answer="답변1", turn_number=1)
+    InterviewTurnFactory(interview_session=session, answer="", turn_number=2)
+    with self.assertRaises(ValueError):
+      session.mark_completed()
+
+  def test_mark_completed_does_not_persist_when_invariant_fails(self):
+    """invariant 위반 시 DB 상태가 변경되지 않는다."""
+    session = InterviewSessionFactory(
+      interview_session_status=InterviewSessionStatus.IN_PROGRESS,
+      total_questions=0,
+    )
+    with self.assertRaises(ValueError):
+      session.mark_completed()
+    session.refresh_from_db()
+    self.assertEqual(session.interview_session_status, InterviewSessionStatus.IN_PROGRESS)
+
+
+class InterviewSessionIsCompletionEligibleTests(TestCase):
+  """InterviewSession.is_completion_eligible 테스트"""
+
+  def test_returns_false_when_total_questions_is_zero(self):
+    """total_questions=0 인 세션은 종료 불가."""
+    session = InterviewSessionFactory(total_questions=0)
+    self.assertFalse(session.is_completion_eligible())
+
+  def test_returns_false_when_unanswered_turns_exist(self):
+    """미답변 turn 이 하나라도 있으면 종료 불가."""
+    session = InterviewSessionFactory(total_questions=2)
+    InterviewTurnFactory(interview_session=session, answer="답변1", turn_number=1)
+    InterviewTurnFactory(interview_session=session, answer="", turn_number=2)
+    self.assertFalse(session.is_completion_eligible())
+
+  def test_returns_true_when_all_turns_answered(self):
+    """모든 turn 에 답변이 있고 시작된 세션은 종료 가능."""
+    session = InterviewSessionFactory(total_questions=2)
+    InterviewTurnFactory(interview_session=session, answer="답변1", turn_number=1)
+    InterviewTurnFactory(interview_session=session, answer="답변2", turn_number=2)
+    self.assertTrue(session.is_completion_eligible())
 
 
 class InterviewSessionStrTests(TestCase):
