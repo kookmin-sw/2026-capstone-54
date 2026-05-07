@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { BarChart2, ClipboardList } from "lucide-react";
+import { BarChart2 } from "lucide-react";
 import { interviewApi, SESSION_TYPE_LABEL, DIFFICULTY_LABEL } from "@/features/interview-session";
 import type { InterviewSessionListItem } from "@/features/interview-session";
 
@@ -25,7 +25,11 @@ export function RecentSessions({ revealed }: RecentSessionsProps) {
 
   useEffect(() => {
     interviewApi.getMyInterviews(1).then((data) => {
-      setSessions(data.results.filter((s) => s.interviewSessionStatus === "completed").slice(0, 3));
+      setSessions(
+        data.results
+          .filter((s) => s.interviewSessionStatus === "completed" && s.reportStatus === "completed")
+          .slice(0, 3)
+      );
     }).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
@@ -55,10 +59,8 @@ export function RecentSessions({ revealed }: RecentSessionsProps) {
             className={`hp-job-item no-underline hp-rv${revealed ? " hp-rv-in" : ""}`}
             style={{ transitionDelay: `${330 + i * 55}ms`, color: "inherit" }}
           >
-            <div className="w-7 h-7 shrink-0 flex items-center justify-center">
-              {session.reportStatus === "completed"
-                ? <BarChart2 size={16} className="text-[#0991B2]" />
-                : <ClipboardList size={16} className="text-[#9CA3AF]" />}
+            <div className="w-7 h-7 shrink-0 rounded-lg bg-[#E6F7FA] flex items-center justify-center">
+              <BarChart2 size={16} className="text-[#0991B2]" />
             </div>
             <div className="hp-job-body">
               <div className="hp-job-name flex items-center gap-1.5">
