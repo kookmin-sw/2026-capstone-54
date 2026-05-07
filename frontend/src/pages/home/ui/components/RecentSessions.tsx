@@ -1,19 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { BarChart2, ClipboardList } from "lucide-react";
-import { interviewApi } from "@/features/interview-session";
+import { interviewApi, SESSION_TYPE_LABEL, DIFFICULTY_LABEL } from "@/features/interview-session";
 import type { InterviewSessionListItem } from "@/features/interview-session";
-
-const SESSION_TYPE_LABEL: Record<string, string> = {
-  followup: "꼬리질문",
-  full_process: "전체 프로세스",
-};
-
-const DIFFICULTY_LABEL: Record<string, string> = {
-  friendly: "편안한",
-  normal: "일반",
-  pressure: "압박",
-};
 
 function formatDate(dateStr: string): string {
   const date = new Date(dateStr);

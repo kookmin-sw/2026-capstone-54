@@ -37,7 +37,13 @@ export function SessionCard({ session: s, isGenerating, onContinue, onViewReport
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap mb-1">
             <span className="text-[13px] font-bold text-[#0A0A0A]">{SESSION_TYPE_LABEL[s.interviewSessionType] ?? s.interviewSessionType}</span>
-            <span className="text-[10px] font-semibold py-px px-2 rounded-full border border-[#E5E7EB] bg-white text-[#6B7280]">
+            <span className={`text-[10px] font-semibold py-px px-2 rounded-full border ${
+              s.interviewDifficultyLevel === "friendly"
+                ? "border-[#A7F3D0] bg-[#ECFDF5] text-[#059669]"
+                : s.interviewDifficultyLevel === "pressure"
+                  ? "border-[#FECACA] bg-[#FEF2F2] text-[#DC2626]"
+                  : "border-[#BAE6FD] bg-[#E6F7FA] text-[#0991B2]"
+            }`}>
               {DIFFICULTY_LABEL[s.interviewDifficultyLevel] ?? s.interviewDifficultyLevel}
             </span>
             {isInProgress && (

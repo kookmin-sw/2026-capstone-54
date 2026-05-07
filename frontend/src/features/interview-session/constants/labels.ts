@@ -4,9 +4,9 @@ export const SESSION_TYPE_LABEL: Record<string, string> = {
 };
 
 export const DIFFICULTY_LABEL: Record<string, string> = {
-  friendly: "친근",
-  normal: "일반",
-  pressure: "압박",
+  friendly: "친근한 면접관",
+  normal: "일반 면접관",
+  pressure: "압박 면접관",
 };
 
 export const REPORT_STATUS_BADGE: Record<string, { label: string; cls: string }> = {
