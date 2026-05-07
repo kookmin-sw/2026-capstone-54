@@ -1,6 +1,6 @@
 /** 답변 제출: followup과 full_process 응답 형식이 다르기 때문에 분기 처리. */
 import { interviewApi } from "../../api/interviewApi";
-import type { InterviewTurn, SubmitAnswerFollowupResponse } from "../../api/types";
+import type { InterviewTurn, SubmitAnswerFollowupResponse, TurnMetrics } from "../../api/types";
 import type { InterviewPhase, InterviewSessionStore } from "../types";
 
 type Get = () => InterviewSessionStore;
@@ -13,6 +13,7 @@ export async function submitInterviewAnswer(
   turnPk: number,
   answer: string,
   speechSegments?: { text: string; startMs: number; endMs: number }[],
+  turnMetrics?: TurnMetrics,
 ) {
   const { interviewSession, interviewTurns, currentInterviewTurnIndex } = get();
   if (!interviewSession) return;
@@ -21,8 +22,15 @@ export async function submitInterviewAnswer(
   const nextPhase: InterviewPhase = isFollowup ? "generating_followup" : "submitting";
   set({ interviewPhase: nextPhase });
 
+  const metricsForTurn = turnMetrics ?? {
+    gazeAwayCount: 0,
+    headAwayCount: 0,
+    speechRateSps: null,
+    pillarWordCounts: {},
+  };
+
   const turnsWithAnswer = interviewTurns.map((t) =>
-    t.id === turnPk ? { ...t, answer } : t,
+    t.id === turnPk ? { ...t, answer, ...metricsForTurn } : t,
   );
 
   try {
@@ -31,6 +39,7 @@ export async function submitInterviewAnswer(
       turnPk,
       answer,
       speechSegments,
+      turnMetrics,
     );
 
     if (isFollowup) {

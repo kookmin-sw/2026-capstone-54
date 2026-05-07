@@ -128,6 +128,8 @@ export function InterviewSessionPage() {
     avatarSpeak: (text: string) => { avatarRef.current?.speak("", text).catch(() => {}); },
     startVideoAnalysis: video.startVideoAnalysis,
     stopVideoAnalysis: video.stopVideoAnalysis,
+    startTurnCounting: video.startTurnCounting,
+    stopTurnCounting: video.stopTurnCounting,
     resetWarnings: video.resetWarnings,
     navigate,
   });
@@ -139,7 +141,17 @@ export function InterviewSessionPage() {
   const difficultyLabel = { friendly: "친근한 면접관", normal: "일반 면접관", pressure: "압박 면접관" }[interviewSession?.interviewDifficultyLevel ?? "normal"] ?? "일반 면접관";
   
   const [showFinishModal, setShowFinishModal] = useState(false);
-  const [speechMetrics, setSpeechMetrics] = useState({ wpm: 0, fillerCount: 0, badWordCount: 0, pauseWarnings: 0, highlightedHtml: "" });
+  const [speechMetrics, setSpeechMetrics] = useState({
+    wpm: 0,
+    fillerCount: 0,
+    badWordCount: 0,
+    pauseWarnings: 0,
+    highlightedHtml: "",
+    speechRateSps: 0,
+    pillarWordCounts: {} as Record<string, number>,
+    syllableCount: 0,
+    durationSeconds: 0,
+  });
   const [showCoachMarks, setShowCoachMarks] = useState(false);
   const [coachMarksStep, setCoachMarksStep] = useState(0);
   const [coachMarksCompleted, setCoachMarksCompleted] = useState(false);
@@ -230,7 +242,11 @@ export function InterviewSessionPage() {
 
   const handleSubmitAnswer = () => {
     const answer = (finalText + " " + interimText).trim();
-    machine.handleSubmit(answer, sttSegments);
+    const finalSpeechMetrics = speechAnalyzerRef.current.analyze(answer, "ko-KR", true);
+    machine.handleSubmit(answer, sttSegments, {
+      speechRateSps: finalSpeechMetrics.speechRateSps,
+      pillarWordCounts: finalSpeechMetrics.pillarWordCounts,
+    });
   };
 
   const handleFinishConfirm = () => {

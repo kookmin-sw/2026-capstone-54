@@ -11,6 +11,7 @@ import type {
   PaginatedResponse,
   InterviewSessionListItem,
   BehaviorAnalysis,
+  TurnMetrics,
 } from "./types";
 
 const BASE = "/api/v1/interviews/interview-sessions";
@@ -46,6 +47,7 @@ export const interviewApi = {
     turnPk: number,
     answer: string,
     speechSegments?: { text: string; startMs: number; endMs: number }[],
+    turnMetrics?: TurnMetrics,
   ) =>
     apiRequest<SubmitAnswerResponse>(
       `${BASE}/${interviewSessionUuid}/turns/${turnPk}/answer/`,
@@ -54,6 +56,10 @@ export const interviewApi = {
         body: JSON.stringify({
           answer,
           speech_segments: speechSegments ?? [],
+          gaze_away_count: turnMetrics?.gazeAwayCount ?? 0,
+          head_away_count: turnMetrics?.headAwayCount ?? 0,
+          speech_rate_sps: turnMetrics?.speechRateSps ?? null,
+          pillar_word_counts: turnMetrics?.pillarWordCounts ?? {},
         }),
         auth: true,
         headers: ownerHeaders(),
