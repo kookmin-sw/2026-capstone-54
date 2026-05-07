@@ -23,19 +23,23 @@ function createProvider(difficulty: InterviewDifficultyLevel): IAvatarProvider {
 export function AvatarSection({ difficulty, onReady, className = "" }: AvatarSectionProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const providerRef = useRef<IAvatarProvider | null>(null);
+  const onReadyRef = useRef(onReady);
+  useEffect(() => {
+    onReadyRef.current = onReady;
+  });
 
   useEffect(() => {
     if (!containerRef.current || difficulty === undefined) return;
     const provider = createProvider(difficulty);
     providerRef.current = provider;
     provider.initialize(containerRef.current).then(() => {
-      onReady?.(provider);
+      onReadyRef.current?.(provider);
     });
     return () => {
       provider.destroy();
       providerRef.current = null;
     };
-  }, [difficulty]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [difficulty]);  
 
   return (
     <div
