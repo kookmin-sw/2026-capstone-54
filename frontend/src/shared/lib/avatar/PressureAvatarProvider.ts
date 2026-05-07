@@ -69,7 +69,7 @@ export class PressureAvatarProvider implements IAvatarProvider {
     const bodyWrapper = document.createElement("div");
     bodyWrapper.id = "pressure-body-wrapper";
     bodyWrapper.className = "pressure-container relative w-56 h-56 shrink-0";
-    bodyWrapper.innerHTML = this.buildHairHTML() + this.buildFaceHTML() + this.buildBodyHTML();
+    bodyWrapper.appendChild(this.parseStaticHTML(this.buildHairHTML() + this.buildFaceHTML() + this.buildBodyHTML()));
 
     const status = document.createElement("div");
     status.id = "pressure-status";
@@ -190,6 +190,16 @@ export class PressureAvatarProvider implements IAvatarProvider {
     `;
   }
  
+  private parseStaticHTML(html: string): DocumentFragment {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, "text/html");
+    const fragment = document.createDocumentFragment();
+    Array.from(doc.body.childNodes).forEach((node) =>
+      fragment.appendChild(document.adoptNode(node))
+    );
+    return fragment;
+  }
+
   private startBlinking() {
     const blink = () => {
       if (this.isDestroyed || !this.container) return;

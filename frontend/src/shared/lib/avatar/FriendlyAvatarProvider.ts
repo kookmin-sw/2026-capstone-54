@@ -58,7 +58,7 @@ export class FriendlyAvatarProvider implements IAvatarProvider {
     const bodyWrapper = document.createElement("div");
     bodyWrapper.id = "friendly-body-wrapper";
     bodyWrapper.className = "friendly-container relative w-56 h-56 shrink-0";
-    bodyWrapper.innerHTML = this.buildHairHTML() + this.buildFaceHTML() + this.buildBodyHTML();
+    bodyWrapper.appendChild(this.parseStaticHTML(this.buildHairHTML() + this.buildFaceHTML() + this.buildBodyHTML()));
 
     const status = document.createElement("div");
     status.id = "friendly-status";
@@ -170,6 +170,16 @@ export class FriendlyAvatarProvider implements IAvatarProvider {
         </svg>
       </div>
     `;
+  }
+
+  private parseStaticHTML(html: string): DocumentFragment {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, "text/html");
+    const fragment = document.createDocumentFragment();
+    Array.from(doc.body.childNodes).forEach((node) =>
+      fragment.appendChild(document.adoptNode(node))
+    );
+    return fragment;
   }
 
   private startBlinking() {
