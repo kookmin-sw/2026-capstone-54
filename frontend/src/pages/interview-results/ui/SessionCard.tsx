@@ -1,5 +1,5 @@
 import { Loader2, FileText, Plus, ChevronRight, Play, Mic, BarChart2, ClipboardList } from "lucide-react";
-import { SESSION_TYPE_LABEL, DIFFICULTY_LABEL, REPORT_STATUS_BADGE } from "@/features/interview-session";
+import { SESSION_TYPE_LABEL, DIFFICULTY_STYLE, REPORT_STATUS_BADGE } from "@/features/interview-session";
 import type { InterviewSessionListItem } from "@/features/interview-session";
 import { formatDateTime } from "@/shared/lib/format/date";
 
@@ -38,13 +38,9 @@ export function SessionCard({ session: s, isGenerating, onContinue, onViewReport
           <div className="flex items-center gap-1.5 flex-wrap mb-1">
             <span className="text-[13px] font-bold text-[#0A0A0A]">{SESSION_TYPE_LABEL[s.interviewSessionType] ?? s.interviewSessionType}</span>
             <span className={`text-[10px] font-semibold py-px px-2 rounded-full border ${
-              s.interviewDifficultyLevel === "friendly"
-                ? "border-[#A7F3D0] bg-[#ECFDF5] text-[#059669]"
-                : s.interviewDifficultyLevel === "pressure"
-                  ? "border-[#FECACA] bg-[#FEF2F2] text-[#DC2626]"
-                  : "border-[#BAE6FD] bg-[#E6F7FA] text-[#0991B2]"
+              (DIFFICULTY_STYLE[s.interviewDifficultyLevel] ?? DIFFICULTY_STYLE.normal).cls
             }`}>
-              {DIFFICULTY_LABEL[s.interviewDifficultyLevel] ?? s.interviewDifficultyLevel}
+              {(DIFFICULTY_STYLE[s.interviewDifficultyLevel] ?? DIFFICULTY_STYLE.normal).label}
             </span>
             {isInProgress && (
               <span className="text-[10px] font-bold py-px px-2 rounded-full border border-[#FED7AA] bg-[#FFF7ED] text-[#D97706]">

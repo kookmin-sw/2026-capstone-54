@@ -1,10 +1,5 @@
 import type { InterviewAnalysisReport } from "@/features/interview-session";
-
-const DIFFICULTY_STYLE: Record<string, { label: string; cls: string }> = {
-  friendly: { label: "친근한 면접관", cls: "border-[#A7F3D0] bg-[#ECFDF5] text-[#059669]" },
-  normal:   { label: "일반 면접관",   cls: "border-[#BAE6FD] bg-[#E6F7FA] text-[#0991B2]" },
-  pressure: { label: "압박 면접관",   cls: "border-[#FECACA] bg-[#FEF2F2] text-[#DC2626]" },
-};
+import { DIFFICULTY_STYLE } from "@/features/interview-session";
 
 function formatDate(iso: string | null): string {
   if (!iso) return "-";

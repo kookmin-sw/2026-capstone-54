@@ -9,6 +9,12 @@ export const DIFFICULTY_LABEL: Record<string, string> = {
   pressure: "압박 면접관",
 };
 
+export const DIFFICULTY_STYLE: Record<string, { label: string; cls: string }> = {
+  friendly: { label: "친근한 면접관", cls: "border-[#A7F3D0] bg-[#ECFDF5] text-[#059669]" },
+  normal:   { label: "일반 면접관",   cls: "border-[#BAE6FD] bg-[#E6F7FA] text-[#0991B2]" },
+  pressure: { label: "압박 면접관",   cls: "border-[#FECACA] bg-[#FEF2F2] text-[#DC2626]" },
+};
+
 export const REPORT_STATUS_BADGE: Record<string, { label: string; cls: string }> = {
   pending:    { label: "리포트 대기",   cls: "text-[#D97706] bg-[#FFF7ED] border-[#FED7AA]" },
   generating: { label: "리포트 생성 중", cls: "text-[#0991B2] bg-[#E6F7FA] border-[#BAE6FD]" },
