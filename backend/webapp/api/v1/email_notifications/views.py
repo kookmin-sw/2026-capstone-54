@@ -1,7 +1,6 @@
 from common.permissions import IsAuthenticated
 from common.views import BaseAPIView
 from drf_spectacular.utils import extend_schema
-from notifications.enums import EmailNotificationType
 from notifications.services import (
   GetUserEmailNotificationSettingsService,
   UpdateUserEmailNotificationSettingsService,
@@ -44,13 +43,7 @@ class EmailNotificationSettingsAPIView(BaseAPIView):
     request_serializer = UpdateEmailNotificationSettingsRequestSerializer(data=request.data)
     request_serializer.is_valid(raise_exception=True)
 
-    consents: dict[str, bool] = {}
-    for key, value in request_serializer.validated_data.items():
-      member = EmailNotificationType.__dict__.get(key.upper())
-      if member is None:
-        continue
-      consents[member.value] = value
-
+    consents = request_serializer.validated_data
     settings = UpdateUserEmailNotificationSettingsService(
       user=self.current_user,
       consents=consents,
