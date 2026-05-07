@@ -37,17 +37,6 @@ def compute_statistics(results: List[FrameAnalysisResult]) -> Dict[str, Any]:
             "eye_squint": round(_mean([r.eye_squint_score for r in faced]), 4),
         }
 
-    head_pose_stats = {}
-    if faced:
-        yaws = [r.head_pose["yaw"] for r in faced]
-        pitches = [r.head_pose["pitch"] for r in faced]
-        rolls = [r.head_pose["roll"] for r in faced]
-        head_pose_stats = {
-            "yaw": {"mean": round(_mean(yaws), 2), "std": round(_std(yaws), 2)},
-            "pitch": {"mean": round(_mean(pitches), 2), "std": round(_std(pitches), 2)},
-            "roll": {"mean": round(_mean(rolls), 2), "std": round(_std(rolls), 2)},
-        }
-
     expr_changes = sum(
         1 for i in range(1, total)
         if results[i].expression != results[i - 1].expression
