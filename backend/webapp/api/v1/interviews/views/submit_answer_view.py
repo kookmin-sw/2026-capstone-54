@@ -38,10 +38,21 @@ class SubmitAnswerView(BaseAPIView):
     serializer.is_valid(raise_exception=True)
     answer = serializer.validated_data.get("answer", "")
     speech_segments = serializer.validated_data.get("speech_segments", [])
+    gaze_away_count = serializer.validated_data.get("gaze_away_count", 0)
+    head_away_count = serializer.validated_data.get("head_away_count", 0)
+    speech_rate_sps = serializer.validated_data.get("speech_rate_sps", None)
+    pillar_word_counts = serializer.validated_data.get("pillar_word_counts", {})
 
+    update_fields = []
     if speech_segments:
       interview_turn.speech_segments = speech_segments
-      interview_turn.save(update_fields=["speech_segments"])
+      update_fields.append("speech_segments")
+    interview_turn.gaze_away_count = gaze_away_count
+    interview_turn.head_away_count = head_away_count
+    interview_turn.speech_rate_sps = speech_rate_sps
+    interview_turn.pillar_word_counts = pillar_word_counts
+    update_fields.extend(["gaze_away_count", "head_away_count", "speech_rate_sps", "pillar_word_counts"])
+    interview_turn.save(update_fields=update_fields)
 
     if interview_session.interview_session_type == InterviewSessionType.FOLLOWUP:
       result = SubmitAnswerAndGenerateFollowupService(

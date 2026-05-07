@@ -8,3 +8,11 @@ class SubmitAnswerSerializer(serializers.Serializer):
     required=False,
     default=list,
   )
+  gaze_away_count = serializers.IntegerField(required=False, min_value=0, default=0)
+  head_away_count = serializers.IntegerField(required=False, min_value=0, default=0)
+  speech_rate_sps = serializers.FloatField(required=False, min_value=0.0, allow_null=True, default=None)
+  pillar_word_counts = serializers.DictField(
+    child=serializers.IntegerField(min_value=0),
+    required=False,
+    default=dict,
+  )
