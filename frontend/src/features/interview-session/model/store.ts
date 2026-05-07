@@ -18,8 +18,8 @@ export const useInterviewSessionStore = create<InterviewSessionStore>((set, get)
   loadInterviewTurns: (uuid) => loadInterviewTurns(set, uuid),
   startInterview: (uuid) => startInterview(set, uuid),
   finishInterview: (uuid) => finishInterview(set, uuid),
-  submitInterviewAnswer: (uuid, turnPk, answer, speechSegments) =>
-    submitInterviewAnswer(set, get, uuid, turnPk, answer, speechSegments),
+  submitInterviewAnswer: (uuid, turnPk, answer, speechSegments, turnMetrics) =>
+    submitInterviewAnswer(set, get, uuid, turnPk, answer, speechSegments, turnMetrics),
   startReportPolling: (uuid) => startReportPolling(set, uuid),
   applyTakeover: (uuid) => applyTakeover(set, uuid),
   setTakeoverModalOpen: (open) => set({ takeoverModalOpen: open }),

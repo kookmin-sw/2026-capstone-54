@@ -2,6 +2,7 @@ import type {
   InterviewSession,
   InterviewTurn,
   InterviewAnalysisReport,
+  TurnMetrics,
 } from "../api/types";
 
 export type InterviewPhase =
@@ -42,6 +43,7 @@ export interface InterviewSessionActions {
     turnPk: number,
     answer: string,
     speechSegments?: { text: string; startMs: number; endMs: number }[],
+    turnMetrics?: TurnMetrics,
   ) => Promise<void>;
   finishInterview: (uuid: string) => Promise<void>;
   startReportPolling: (uuid: string) => void;

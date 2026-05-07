@@ -75,6 +75,7 @@ export async function startInterview(set: Set, interviewSessionUuid: string) {
     const interviewTurns = response.turns;
     const firstTurn = interviewTurns[0] ?? null;
     set({
+      interviewSession: response.interviewSession,
       interviewTurns,
       currentInterviewTurnIndex: 0,
       currentInterviewTurn: firstTurn,
