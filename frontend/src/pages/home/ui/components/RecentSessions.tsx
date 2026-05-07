@@ -63,22 +63,22 @@ export function RecentSessions({ revealed }: RecentSessionsProps) {
           <Link
             key={session.uuid}
             to={`/interview/session/${session.uuid}/report`}
-            className={`hp-session-item hp-rv${revealed ? " hp-rv-in" : ""}`}
-            style={{ transitionDelay: `${330 + i * 55}ms` }}
+            className={`hp-job-item no-underline hp-rv${revealed ? " hp-rv-in" : ""}`}
+            style={{ transitionDelay: `${330 + i * 55}ms`, color: "inherit" }}
           >
-            <div className="w-9 h-9 rounded-lg bg-white border border-[#E5E7EB] flex items-center justify-center shrink-0">
+            <div className="w-7 h-7 shrink-0 flex items-center justify-center">
               {session.reportStatus === "completed"
                 ? <BarChart2 size={16} className="text-[#0991B2]" />
                 : <ClipboardList size={16} className="text-[#9CA3AF]" />}
             </div>
-            <div className="hp-si-body">
-              <div className="hp-si-company">
+            <div className="hp-job-body">
+              <div className="hp-job-name flex items-center gap-1.5">
                 {session.jobDescriptionLabel}
                 <span className="hp-badge" style={{ fontSize: 10 }}>
                   {SESSION_TYPE_LABEL[session.interviewSessionType] ?? session.interviewSessionType}
                 </span>
               </div>
-              <div className="hp-si-meta">
+              <div className="hp-job-sub">
                 {session.resumeTitle} · {DIFFICULTY_LABEL[session.interviewDifficultyLevel] ?? session.interviewDifficultyLevel} · {formatDate(session.createdAt)}
               </div>
             </div>
