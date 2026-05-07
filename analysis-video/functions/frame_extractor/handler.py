@@ -1,5 +1,8 @@
 import glob
+import json
 import os
+
+import boto3
 
 from mefit_video_common.config import FRAME_BUCKET
 from mefit_video_common.event_parser import parse_s3_records
@@ -9,6 +12,37 @@ from mefit_video_common.s3_client import download_to_tmp, upload_from_tmp
 from mefit_video_common.celery_publisher import publish_step_complete
 
 log = get_logger(__name__)
+
+
+def _publish_face_trigger(
+    session_uuid: str, turn_id: str, frame_bucket: str, frame_prefix: str
+) -> None:
+    """Face_Trigger_SQS에 face_analyzer 트리거 메시지를 발행한다."""
+    face_trigger_sqs_url = os.environ.get("FACE_TRIGGER_SQS_URL", "")
+    if not face_trigger_sqs_url:
+        log.info("face_trigger_skip", reason="FACE_TRIGGER_SQS_URL not set")
+        return
+
+    message = {
+        "frameBucket": frame_bucket,
+        "framePrefix": frame_prefix,
+        "sessionUuid": session_uuid,
+        "turnId": turn_id,
+    }
+
+    try:
+        sqs = boto3.client("sqs", region_name=os.environ.get("REGION", "us-east-1"))
+        sqs.send_message(
+            QueueUrl=face_trigger_sqs_url,
+            MessageBody=json.dumps(message),
+        )
+        log.info("face_trigger_published", session_uuid=session_uuid, turn_id=turn_id)
+    except Exception:
+        log.exception(
+            "face_trigger_publish_failed",
+            session_uuid=session_uuid,
+            turn_id=turn_id,
+        )
 
 
 def handler(event, context):
@@ -55,6 +89,13 @@ def _process(bucket, key):
             step="frame_extractor",
             output_bucket=FRAME_BUCKET,
             output_key=frame_prefix,
+        )
+
+        _publish_face_trigger(
+            session_uuid=parts[0],
+            turn_id=parts[1],
+            frame_bucket=FRAME_BUCKET,
+            frame_prefix=frame_prefix,
         )
 
     os.rmdir(tmp_dir)

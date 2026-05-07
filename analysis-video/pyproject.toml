@@ -5,4 +5,8 @@ description = "MeFit 면접 영상·음성 후처리 Lambda 함수"
 requires-python = ">=3.14"
 
 [project.optional-dependencies]
-dev = ["pytest", "boto3-stubs", "mypy"]
+dev = ["pytest", "hypothesis", "boto3-stubs", "mypy"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["functions", "layers/common/python"]
