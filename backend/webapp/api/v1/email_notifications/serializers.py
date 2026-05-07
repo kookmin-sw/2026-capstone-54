@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 
 class EmailNotificationSettingsResponseSerializer(serializers.Serializer):
-  """프론트엔드 응답용. UserEmailNotificationSettings.to_consent_dict() 의 결과를 camelCase 로 직렬화."""
+  """프론트엔드 응답용. UserEmailNotificationSettings.to_consent_dict() 의 결과를 snake_case 로 직렬화."""
 
   streak_reminder = serializers.BooleanField()
   streak_expire = serializers.BooleanField()
