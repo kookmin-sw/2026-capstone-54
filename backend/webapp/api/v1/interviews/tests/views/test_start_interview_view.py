@@ -47,6 +47,68 @@ class StartInterviewViewTests(TestCase):
     self.assertIn("owner_token", response.data)
     self.assertIn("owner_version", response.data)
     self.assertIn("ws_ticket", response.data)
+    self.assertIn("interview_session", response.data)
+
+  @patch("api.v1.interviews.views.start_interview_view.GenerateInitialQuestionsService")
+  def test_response_session_includes_uuid_and_type(self, MockService):
+    """응답의 interview_session 은 uuid 와 type 등 핵심 필드를 포함한다."""
+    MockService.return_value.perform.return_value = []
+
+    response = self.client.post(self.url)
+
+    self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+    self.assertEqual(response.data["interview_session"]["uuid"], str(self.session.pk))
+    self.assertEqual(response.data["interview_session"]["interview_session_type"], InterviewSessionType.FOLLOWUP)
+
+  @patch("api.v1.interviews.views.start_interview_view.GenerateInitialQuestionsService")
+  def test_response_session_total_questions_reflects_generated_count(self, MockService):
+    """응답의 interview_session.total_questions 는 service 가 채운 turn 수를 반영한다."""
+
+    def perform_side_effect():
+      self.session.total_questions = 3
+      self.session.save(update_fields=["total_questions"])
+      return InterviewTurnFactory.create_batch(3, interview_session=self.session)
+
+    MockService.return_value.perform.side_effect = perform_side_effect
+
+    response = self.client.post(self.url)
+
+    self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+    self.assertEqual(response.data["interview_session"]["total_questions"], 3)
+
+  @patch("api.v1.interviews.views.start_interview_view.GenerateInitialQuestionsService")
+  def test_followup_session_estimated_total_is_total_questions_times_four(self, MockService):
+    """FOLLOWUP 세션의 estimated_total_questions = total_questions * (1 + MAX_FOLLOWUP_PER_ANCHOR=3)."""
+
+    def perform_side_effect():
+      self.session.total_questions = 2
+      self.session.save(update_fields=["total_questions"])
+      return InterviewTurnFactory.create_batch(2, interview_session=self.session)
+
+    MockService.return_value.perform.side_effect = perform_side_effect
+
+    response = self.client.post(self.url)
+
+    self.assertEqual(response.data["interview_session"]["estimated_total_questions"], 8)
+
+  @patch("api.v1.interviews.views.start_interview_view.GenerateInitialQuestionsService")
+  def test_full_process_session_estimated_total_equals_total_questions(self, MockService):
+    """FULL_PROCESS 세션의 estimated_total_questions 는 total_questions 와 동일하다."""
+    self.session.interview_session_type = InterviewSessionType.FULL_PROCESS
+    self.session.save(update_fields=["interview_session_type"])
+    SubscriptionFactory.create(user=self.user, pro=True)
+
+    def perform_side_effect():
+      self.session.total_questions = 5
+      self.session.save(update_fields=["total_questions"])
+      return InterviewTurnFactory.create_batch(5, interview_session=self.session)
+
+    MockService.return_value.perform.side_effect = perform_side_effect
+
+    response = self.client.post(self.url)
+
+    self.assertEqual(response.data["interview_session"]["total_questions"], 5)
+    self.assertEqual(response.data["interview_session"]["estimated_total_questions"], 5)
 
   @patch("api.v1.interviews.views.start_interview_view.GenerateInitialQuestionsService")
   def test_service_called_with_correct_session(self, MockService):

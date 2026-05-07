@@ -19,6 +19,9 @@ class InterviewTurnAdmin(ModelAdmin):
     "question_source",
     "turn_number",
     "has_answer",
+    "gaze_away_count",
+    "head_away_count",
+    "speech_rate_sps_display",
     "transcript_status",
     "transcript_source",
     "created_at",
@@ -32,7 +35,7 @@ class InterviewTurnAdmin(ModelAdmin):
   list_select_related = ("interview_session", )
   search_fields = ("question", "answer", "transcript_text", "interview_session__user__email")
   ordering = ("-created_at", )
-  readonly_fields = ("pk", "created_at", "updated_at")
+  readonly_fields = ("pk", "created_at", "updated_at", "pillar_words_summary")
   actions = ["bulk_redispatch_transcribes"]
   actions_row = ["redispatch_transcribe"]
 
@@ -56,6 +59,17 @@ class InterviewTurnAdmin(ModelAdmin):
       ),
     }),
     (
+      "행동/발화 메트릭", {
+        "fields": (
+          "gaze_away_count",
+          "head_away_count",
+          "speech_rate_sps",
+          "pillar_words_summary",
+          "pillar_word_counts",
+        ),
+      }
+    ),
+    (
       "STT (백엔드 음성 인식 결과)", {
         "fields": (
           "transcript_status",
@@ -77,6 +91,24 @@ class InterviewTurnAdmin(ModelAdmin):
   @admin.display(boolean=True, description="답변 여부")
   def has_answer(self, obj: InterviewTurn) -> bool:
     return bool(obj.answer)
+
+  @admin.display(description="발화 속도(음절/초)", ordering="speech_rate_sps")
+  def speech_rate_sps_display(self, obj: InterviewTurn) -> str:
+    if obj.speech_rate_sps is None:
+      return "—"
+    return f"{obj.speech_rate_sps:.2f}"
+
+  @admin.display(description="필러 단어 요약")
+  def pillar_words_summary(self, obj: InterviewTurn) -> str:
+    counts: dict = obj.pillar_word_counts or {}
+    if not counts:
+      return "—"
+    sorted_items = sorted(counts.items(), key=lambda kv: kv[1], reverse=True)
+    head = ", ".join(f"{word}({count})" for word, count in sorted_items[:3])
+    remaining = len(sorted_items) - 3
+    if remaining > 0:
+      return f"{head} 외 {remaining}종"
+    return head
 
   @admin.action(description="선택한 턴 STT 재생성 (analysis-stt 재dispatch)")
   def bulk_redispatch_transcribes(self, request: HttpRequest, queryset):

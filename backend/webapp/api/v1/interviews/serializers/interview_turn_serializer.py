@@ -18,6 +18,10 @@ class InterviewTurnSerializer(serializers.ModelSerializer):
       "speech_segments",
       "turn_number",
       "followup_order",
+      "gaze_away_count",
+      "head_away_count",
+      "speech_rate_sps",
+      "pillar_word_counts",
       "created_at",
     )
     read_only_fields = fields

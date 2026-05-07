@@ -2,7 +2,7 @@
 
 import secrets
 
-from api.v1.interviews.serializers import InterviewTurnSerializer
+from api.v1.interviews.serializers import InterviewSessionSerializer, InterviewTurnSerializer
 from common.exceptions import PermissionDeniedException, ValidationException
 from common.permissions import IsEmailVerified
 from common.views import BaseAPIView
@@ -53,9 +53,12 @@ class StartInterviewView(BaseAPIView):
     ws_ticket = secrets.token_urlsafe(32)
     cache.set(f"ws_ticket:{ws_ticket}", self.current_user.pk, timeout=WS_TICKET_TTL_SECONDS)
 
+    interview_session.refresh_from_db(fields=["total_questions"])
+
     return Response(
       {
         "turns": InterviewTurnSerializer(interview_turns, many=True).data,
+        "interview_session": InterviewSessionSerializer(interview_session).data,
         "owner_token": ownership["owner_token"],
         "owner_version": ownership["owner_version"],
         "ws_ticket": ws_ticket,
