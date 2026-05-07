@@ -161,7 +161,7 @@ export function HeroSection() {
             className="inline-flex items-center bg-white/80 backdrop-blur-sm border border-[#E5E7EB] rounded-full font-[600] text-[#374151] leading-none shadow-sm gap-[clamp(5px,0.8vh,8px)] px-[clamp(10px,1.6vh,16px)] py-[clamp(4px,0.8vh,7px)] text-[clamp(10px,calc(0.9vh+0.3vw),13px)] mb-[clamp(12px,2.4vh,28px)]"
           >
             <span className="rounded-full bg-[#059669] inline-block shrink-0 animate-pulse-soft w-[clamp(6px,0.9vh,8px)] h-[clamp(6px,0.9vh,8px)]" />
-            수천 명이 meFit으로 면접 준비 중
+            모두가 미핏으로 면접 준비 중
           </div>
           <h1
             ref={headlineRef}
