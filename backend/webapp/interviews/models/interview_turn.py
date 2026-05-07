@@ -19,6 +19,12 @@ class InterviewTurn(BaseModel):
     - 앵커1-FU2 → turn_number=1, followup_order=2
     - 앵커2 → turn_number=2, followup_order=NULL
     - 앵커2-FU1 → turn_number=2, followup_order=1
+
+    ── 행동/발화 메트릭 ──
+    gaze_away_count, head_away_count, speech_rate_sps, pillar_word_counts 는 frontend 가
+    turn 종료 시점에 한 번 전송한다. InterviewRecording 은 InterviewTurn 과 1:1 대응이므로
+    메트릭은 turn 에만 저장한다 (recording 측 중복 저장 없음). 측정은 녹화 시작 ~ 종료 구간으로
+    한정되며, 녹화 미사용 turn 에서는 기본값(0 / null / {}) 이 유지된다.
     """
 
   class Meta(BaseModel.Meta):
@@ -105,6 +111,32 @@ class InterviewTurn(BaseModel):
     default="",
     verbose_name="STT 텍스트",
     help_text="audio 의 객관적 STT 결과 (analysis-stt worker 가 채움). user 의 answer 와 별개.",
+  )
+
+  gaze_away_count = models.PositiveIntegerField(
+    default=0,
+    verbose_name="시선 이탈 횟수",
+    help_text="녹화 중 사용자의 시선이 정면에서 이탈한 누적 횟수 (false→true 전이 단위).",
+  )
+
+  head_away_count = models.PositiveIntegerField(
+    default=0,
+    verbose_name="고개 이탈 횟수",
+    help_text="녹화 중 사용자의 고개가 정면에서 이탈한 누적 횟수 (false→true 전이 단위).",
+  )
+
+  speech_rate_sps = models.FloatField(
+    null=True,
+    blank=True,
+    verbose_name="발화 속도 (음절/초)",
+    help_text="총 음절 수 / 총 발화 시간(초). 측정 불가 시 null.",
+  )
+
+  pillar_word_counts = models.JSONField(
+    default=dict,
+    blank=True,
+    verbose_name="필러 단어 사용 빈도",
+    help_text="발화 중 사용된 필러 단어별 사용 횟수. 예: {\"음\": 5, \"어\": 3, \"근데\": 1}",
   )
 
   def __str__(self):
