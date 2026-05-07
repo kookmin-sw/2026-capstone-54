@@ -56,84 +56,9 @@ export class FriendlyAvatarProvider implements IAvatarProvider {
     wrapper.style.background = "#080f1a";
     wrapper.innerHTML = `
       <div id="friendly-body-wrapper" class="friendly-container relative w-56 h-56 shrink-0">
-        <div class="absolute -top-8 -left-4 -z-10"
-          style="width:256px; height:144px; background:linear-gradient(180deg,#7B5236 0%,#5a3a20 100%); border-radius:100px 100px 30px 30px;"></div>
-        <div class="absolute -z-10"
-          style="width:18px; height:26px; background:linear-gradient(160deg,#e8b89a,#c07a50); border-radius:50%; top:38%; left:-6px; box-shadow:inset 3px 0 6px rgba(160,80,30,0.3);">
-          <div style="position:absolute; top:25%; left:20%; width:8px; height:14px; background:rgba(160,80,30,0.2); border-radius:50%;"></div>
-        </div>
-        <div class="absolute -z-10"
-          style="width:18px; height:26px; background:linear-gradient(160deg,#e8b89a,#c07a50); border-radius:50%; top:38%; right:-6px; box-shadow:inset -3px 0 6px rgba(160,80,30,0.3);">
-          <div style="position:absolute; top:25%; right:20%; width:8px; height:14px; background:rgba(160,80,30,0.2); border-radius:50%;"></div>
-        </div>
-        <div id="friendly-face" class="friendly-face w-full h-full rounded-[42%] flex flex-col items-center relative overflow-hidden transition-all duration-300">
-          <div class="absolute top-[42%] left-[8%] w-12 h-7 rounded-full blur-lg opacity-50" style="background:#e07050;"></div>
-          <div class="absolute top-[42%] right-[8%] w-12 h-7 rounded-full blur-lg opacity-50" style="background:#e07050;"></div>
-          <div class="absolute top-[24%] w-full flex justify-between px-10">
-            <svg width="32" height="12" viewBox="0 0 32 12"><path d="M 2 10 Q 8 1 30 4" stroke="#5a3a20" stroke-width="3.5" fill="none" stroke-linecap="round"/></svg>
-            <svg width="32" height="12" viewBox="0 0 32 12"><path d="M 30 10 Q 24 1 2 4" stroke="#5a3a20" stroke-width="3.5" fill="none" stroke-linecap="round"/></svg>
-          </div>
-          <div class="absolute top-[33%] w-full flex justify-between px-10">
-            <div class="friendly-eye w-9 h-10 bg-white rounded-full relative overflow-hidden shadow-md">
-              <div class="absolute bottom-1 right-1 w-6 h-7 rounded-full" style="background:#3d2010;">
-                <div class="absolute top-1 right-1 w-2 h-2 bg-white rounded-full opacity-90"></div>
-                <div class="absolute bottom-1 left-0.5 w-1 h-1 bg-white rounded-full opacity-50"></div>
-              </div>
-            </div>
-            <div class="friendly-eye w-9 h-10 bg-white rounded-full relative overflow-hidden shadow-md">
-              <div class="absolute bottom-1 left-1 w-6 h-7 rounded-full" style="background:#3d2010;">
-                <div class="absolute top-1 left-1 w-2 h-2 bg-white rounded-full opacity-90"></div>
-                <div class="absolute bottom-1 right-0.5 w-1 h-1 bg-white rounded-full opacity-50"></div>
-              </div>
-            </div>
-          </div>
-          <div class="absolute top-[54%] left-1/2 -translate-x-1/2"
-            style="width:0; height:0; border-left:5px solid transparent; border-right:5px solid transparent; border-top:7px solid rgba(160,80,40,0.25);"></div>
-          <div class="absolute top-[65%] w-full flex justify-center">
-            <div id="friendly-mouth" class="relative overflow-hidden transition-all duration-75"
-              style="width:38px; height:10px; border-radius:0 0 20px 20px; background:#7a2020;">
-              <div class="absolute top-0 w-full h-[25%]" style="background:rgba(255,255,255,0.85);"></div>
-              <div class="absolute bottom-0 w-full h-[40%] rounded-full" style="background:#c06060; transform:translateY(40%);"></div>
-            </div>
-          </div>
-          <svg class="absolute top-0 left-0 w-full h-20" viewBox="0 0 100 40" preserveAspectRatio="none">
-            <path d="M 0 0 L 100 0 L 100 15 Q 75 35 50 20 Q 25 35 0 15 Z" fill="#7B5236"/>
-          </svg>
-        </div>
-        <div class="absolute pointer-events-none" style="top:-32px; left:-16px; width:256px; height:144px; z-index:1;">
-          <svg width="256" height="144" viewBox="0 0 256 144" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="f-fg-hair-grad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#7B5236"/>
-                <stop offset="100%" stop-color="#5a3a20"/>
-              </linearGradient>
-              <clipPath id="f-hair-shape-clip">
-                <path d="M 100 0 L 156 0 Q 256 0 256 100 L 256 114 Q 256 144 226 144 L 30 144 Q 0 144 0 114 L 0 100 Q 0 0 100 0 Z"/>
-              </clipPath>
-            </defs>
-            <g clip-path="url(#f-hair-shape-clip)">
-              <path d="M 0 0 L 256 0 L 256 108 Q 240 98 224 106 Q 208 114 192 104 Q 176 94 160 103 Q 144 112 128 72 Q 112 112 96 103 Q 80 94 64 104 Q 48 114 32 106 Q 16 98 0 108 Z" fill="url(#f-fg-hair-grad)"/>
-            </g>
-          </svg>
-        </div>
-        <div class="absolute pointer-events-none" style="bottom:-100px; left:50%; transform:translateX(-50%); width:280px; height:110px; z-index:-1;">
-          <svg width="280" height="110" viewBox="0 0 280 110" xmlns="http://www.w3.org/2000/svg">
-            <path d="M 0 50 Q 0 30 24 26 L 95 18 L 140 32 L 185 18 L 256 26 Q 280 30 280 50 L 280 110 L 0 110 Z" fill="#4a5e3a"/>
-            <path d="M 0 50 Q 0 30 24 26 L 95 18 L 85 34 L 28 44 Q 10 48 0 58 Z" fill="#3d4f30"/>
-            <path d="M 280 50 Q 280 30 256 26 L 185 18 L 195 34 L 252 44 Q 270 48 280 58 Z" fill="#3d4f30"/>
-            <path d="M 105 75 Q 140 70 175 75 L 175 110 L 105 110 Z" fill="#3d4f30" opacity="0.5"/>
-            <line x1="140" y1="46" x2="140" y2="110" stroke="#3d4f30" stroke-width="2"/>
-            <rect x="134" y="46" width="12" height="7" rx="2" fill="#6b7280"/>
-            <rect x="116" y="0" width="48" height="40" rx="8" fill="#d4956a"/>
-            <path d="M 140 34 L 100 20 L 92 34 L 130 46 Z" fill="#4a5e3a"/>
-            <path d="M 140 34 L 180 20 L 188 34 L 150 46 Z" fill="#4a5e3a"/>
-            <path d="M 130 46 L 140 56 L 150 46 L 140 34 Z" fill="#c07a50"/>
-            <line x1="128" y1="46" x2="120" y2="72" stroke="#3d4f30" stroke-width="2.5" stroke-linecap="round"/>
-            <line x1="152" y1="46" x2="160" y2="72" stroke="#3d4f30" stroke-width="2.5" stroke-linecap="round"/>
-            <circle cx="120" cy="73" r="3" fill="#2d3a22"/>
-            <circle cx="160" cy="73" r="3" fill="#2d3a22"/>
-          </svg>
-        </div>
+        ${this.buildHairHTML()}
+        ${this.buildFaceHTML()}
+        ${this.buildBodyHTML()}
       </div>
       <div id="friendly-status" class="mt-28 px-5 py-2 rounded-full border text-sm font-medium flex items-center gap-2.5"
         style="background:rgba(59,130,246,0.1); border-color:rgba(59,130,246,0.2); color:#93c5fd;">
@@ -142,6 +67,99 @@ export class FriendlyAvatarProvider implements IAvatarProvider {
       </div>
     `;
     return wrapper;
+  }
+
+  private buildHairHTML(): string {
+    return `
+      <div class="absolute -top-8 -left-4 -z-10"
+        style="width:256px; height:144px; background:linear-gradient(180deg,#7B5236 0%,#5a3a20 100%); border-radius:100px 100px 30px 30px;"></div>
+      <div class="absolute -z-10"
+        style="width:18px; height:26px; background:linear-gradient(160deg,#e8b89a,#c07a50); border-radius:50%; top:38%; left:-6px; box-shadow:inset 3px 0 6px rgba(160,80,30,0.3);">
+        <div style="position:absolute; top:25%; left:20%; width:8px; height:14px; background:rgba(160,80,30,0.2); border-radius:50%;"></div>
+      </div>
+      <div class="absolute -z-10"
+        style="width:18px; height:26px; background:linear-gradient(160deg,#e8b89a,#c07a50); border-radius:50%; top:38%; right:-6px; box-shadow:inset -3px 0 6px rgba(160,80,30,0.3);">
+        <div style="position:absolute; top:25%; right:20%; width:8px; height:14px; background:rgba(160,80,30,0.2); border-radius:50%;"></div>
+      </div>
+      <div class="absolute pointer-events-none" style="top:-32px; left:-16px; width:256px; height:144px; z-index:1;">
+        <svg width="256" height="144" viewBox="0 0 256 144" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="f-fg-hair-grad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#7B5236"/>
+              <stop offset="100%" stop-color="#5a3a20"/>
+            </linearGradient>
+            <clipPath id="f-hair-shape-clip">
+              <path d="M 100 0 L 156 0 Q 256 0 256 100 L 256 114 Q 256 144 226 144 L 30 144 Q 0 144 0 114 L 0 100 Q 0 0 100 0 Z"/>
+            </clipPath>
+          </defs>
+          <g clip-path="url(#f-hair-shape-clip)">
+            <path d="M 0 0 L 256 0 L 256 108 Q 240 98 224 106 Q 208 114 192 104 Q 176 94 160 103 Q 144 112 128 72 Q 112 112 96 103 Q 80 94 64 104 Q 48 114 32 106 Q 16 98 0 108 Z" fill="url(#f-fg-hair-grad)"/>
+          </g>
+        </svg>
+      </div>
+    `;
+  }
+
+  private buildFaceHTML(): string {
+    return `
+      <div id="friendly-face" class="friendly-face w-full h-full rounded-[42%] flex flex-col items-center relative overflow-hidden transition-all duration-300">
+        <div class="absolute top-[42%] left-[8%] w-12 h-7 rounded-full blur-lg opacity-50" style="background:#e07050;"></div>
+        <div class="absolute top-[42%] right-[8%] w-12 h-7 rounded-full blur-lg opacity-50" style="background:#e07050;"></div>
+        <div class="absolute top-[24%] w-full flex justify-between px-10">
+          <svg width="32" height="12" viewBox="0 0 32 12"><path d="M 2 10 Q 8 1 30 4" stroke="#5a3a20" stroke-width="3.5" fill="none" stroke-linecap="round"/></svg>
+          <svg width="32" height="12" viewBox="0 0 32 12"><path d="M 30 10 Q 24 1 2 4" stroke="#5a3a20" stroke-width="3.5" fill="none" stroke-linecap="round"/></svg>
+        </div>
+        <div class="absolute top-[33%] w-full flex justify-between px-10">
+          <div class="friendly-eye w-9 h-10 bg-white rounded-full relative overflow-hidden shadow-md">
+            <div class="absolute bottom-1 right-1 w-6 h-7 rounded-full" style="background:#3d2010;">
+              <div class="absolute top-1 right-1 w-2 h-2 bg-white rounded-full opacity-90"></div>
+              <div class="absolute bottom-1 left-0.5 w-1 h-1 bg-white rounded-full opacity-50"></div>
+            </div>
+          </div>
+          <div class="friendly-eye w-9 h-10 bg-white rounded-full relative overflow-hidden shadow-md">
+            <div class="absolute bottom-1 left-1 w-6 h-7 rounded-full" style="background:#3d2010;">
+              <div class="absolute top-1 left-1 w-2 h-2 bg-white rounded-full opacity-90"></div>
+              <div class="absolute bottom-1 right-0.5 w-1 h-1 bg-white rounded-full opacity-50"></div>
+            </div>
+          </div>
+        </div>
+        <div class="absolute top-[54%] left-1/2 -translate-x-1/2"
+          style="width:0; height:0; border-left:5px solid transparent; border-right:5px solid transparent; border-top:7px solid rgba(160,80,40,0.25);"></div>
+        <div class="absolute top-[65%] w-full flex justify-center">
+          <div id="friendly-mouth" class="relative overflow-hidden transition-all duration-75"
+            style="width:38px; height:10px; border-radius:0 0 20px 20px; background:#7a2020;">
+            <div class="absolute top-0 w-full h-[25%]" style="background:rgba(255,255,255,0.85);"></div>
+            <div class="absolute bottom-0 w-full h-[40%] rounded-full" style="background:#c06060; transform:translateY(40%);"></div>
+          </div>
+        </div>
+        <svg class="absolute top-0 left-0 w-full h-20" viewBox="0 0 100 40" preserveAspectRatio="none">
+          <path d="M 0 0 L 100 0 L 100 15 Q 75 35 50 20 Q 25 35 0 15 Z" fill="#7B5236"/>
+        </svg>
+      </div>
+    `;
+  }
+
+  private buildBodyHTML(): string {
+    return `
+      <div class="absolute pointer-events-none" style="bottom:-100px; left:50%; transform:translateX(-50%); width:280px; height:110px; z-index:-1;">
+        <svg width="280" height="110" viewBox="0 0 280 110" xmlns="http://www.w3.org/2000/svg">
+          <path d="M 0 50 Q 0 30 24 26 L 95 18 L 140 32 L 185 18 L 256 26 Q 280 30 280 50 L 280 110 L 0 110 Z" fill="#4a5e3a"/>
+          <path d="M 0 50 Q 0 30 24 26 L 95 18 L 85 34 L 28 44 Q 10 48 0 58 Z" fill="#3d4f30"/>
+          <path d="M 280 50 Q 280 30 256 26 L 185 18 L 195 34 L 252 44 Q 270 48 280 58 Z" fill="#3d4f30"/>
+          <path d="M 105 75 Q 140 70 175 75 L 175 110 L 105 110 Z" fill="#3d4f30" opacity="0.5"/>
+          <line x1="140" y1="46" x2="140" y2="110" stroke="#3d4f30" stroke-width="2"/>
+          <rect x="134" y="46" width="12" height="7" rx="2" fill="#6b7280"/>
+          <rect x="116" y="0" width="48" height="40" rx="8" fill="#d4956a"/>
+          <path d="M 140 34 L 100 20 L 92 34 L 130 46 Z" fill="#4a5e3a"/>
+          <path d="M 140 34 L 180 20 L 188 34 L 150 46 Z" fill="#4a5e3a"/>
+          <path d="M 130 46 L 140 56 L 150 46 L 140 34 Z" fill="#c07a50"/>
+          <line x1="128" y1="46" x2="120" y2="72" stroke="#3d4f30" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="152" y1="46" x2="160" y2="72" stroke="#3d4f30" stroke-width="2.5" stroke-linecap="round"/>
+          <circle cx="120" cy="73" r="3" fill="#2d3a22"/>
+          <circle cx="160" cy="73" r="3" fill="#2d3a22"/>
+        </svg>
+      </div>
+    `;
   }
 
   private startBlinking() {

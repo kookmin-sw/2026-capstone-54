@@ -50,138 +50,112 @@ export class PrettyAvatarProvider implements IAvatarProvider {
     wrapper.style.background = "#080f1a";
     wrapper.innerHTML = `
       <div id="avatar-body-wrapper" class="avatar-container relative w-56 h-56 shrink-0">
-
-        <!-- 뒤 머리카락: 타원형 -->
-        <div class="absolute -z-10"
-          style="width:260px; height:200px; top:-36px; left:-18px; background:linear-gradient(180deg,#2d3748 0%,#1a202c 100%); border-radius:50%;"></div>
-
-        <!-- 귀 왼쪽 -->
-        <div class="absolute -z-10"
-          style="width:18px; height:26px; background:linear-gradient(160deg,#ffcba4,#e8a87c); border-radius:50%; top:38%; left:-6px; box-shadow:inset 3px 0 6px rgba(200,100,50,0.3);">
-          <div style="position:absolute; top:25%; left:20%; width:8px; height:14px; background:rgba(200,100,50,0.2); border-radius:50%;"></div>
-        </div>
-        <!-- 귀 오른쪽 -->
-        <div class="absolute -z-10"
-          style="width:18px; height:26px; background:linear-gradient(160deg,#ffcba4,#e8a87c); border-radius:50%; top:38%; right:-6px; box-shadow:inset -3px 0 6px rgba(200,100,50,0.3);">
-          <div style="position:absolute; top:25%; right:20%; width:8px; height:14px; background:rgba(200,100,50,0.2); border-radius:50%;"></div>
-        </div>
-
-        <!-- 얼굴 -->
-        <div id="pretty-face" class="pretty-face w-full h-full rounded-[45%] flex flex-col items-center relative overflow-hidden transition-all duration-300">
-          <!-- 볼터치 -->
-          <div class="absolute top-[35%] left-[15%] w-10 h-6 bg-rose-400/30 rounded-full blur-md"></div>
-          <div class="absolute top-[35%] right-[15%] w-10 h-6 bg-rose-400/30 rounded-full blur-md"></div>
-
-          <!-- 눈썹: 자연스러운 아치형, 머리카락과 같은 색 -->
-          <div class="absolute top-[26%] w-full flex justify-between px-11">
-            <svg width="28" height="10" viewBox="0 0 28 10">
-              <path d="M 2 8 Q 8 1 26 4" stroke="#2d3748" stroke-width="3" fill="none" stroke-linecap="round"/>
-            </svg>
-            <svg width="28" height="10" viewBox="0 0 28 10">
-              <path d="M 26 8 Q 20 1 2 4" stroke="#2d3748" stroke-width="3" fill="none" stroke-linecap="round"/>
-            </svg>
-          </div>
-
-          <!-- 눈 -->
-          <div class="absolute top-[33%] w-full flex justify-between px-12">
-            <div class="pretty-eye w-7 h-9 bg-white rounded-[50%] relative overflow-hidden shadow-inner">
-              <div class="absolute bottom-1 right-1 w-4 h-5 bg-slate-800 rounded-full">
-                <div class="absolute top-1 left-1 w-1.5 h-1.5 bg-white rounded-full"></div>
-              </div>
-            </div>
-            <div class="pretty-eye w-7 h-9 bg-white rounded-[50%] relative overflow-hidden shadow-inner">
-              <div class="absolute bottom-1 left-1 w-4 h-5 bg-slate-800 rounded-full">
-                <div class="absolute top-1 left-1 w-1.5 h-1.5 bg-white rounded-full"></div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 안경 -->
-          <div class="absolute top-[30%] w-full flex justify-between px-8 pointer-events-none opacity-70">
-            <div class="w-14 h-14 border-[3px] border-amber-600/60 rounded-[40%]"></div>
-            <div class="absolute w-5 h-1 bg-amber-600/60 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></div>
-            <div class="w-14 h-14 border-[3px] border-amber-600/60 rounded-[40%]"></div>
-          </div>
-
-          <!-- 코 -->
-          <div class="absolute top-[50%] left-1/2 -translate-x-1/2"
-            style="width:14px; height:10px; border-radius:50%; background:rgba(200,120,70,0.2); box-shadow:inset 0 2px 4px rgba(180,90,40,0.3);">
-            <div class="absolute" style="width:4px; height:4px; border-radius:50%; background:rgba(160,80,30,0.35); bottom:1px; left:1px;"></div>
-            <div class="absolute" style="width:4px; height:4px; border-radius:50%; background:rgba(160,80,30,0.35); bottom:1px; right:1px;"></div>
-          </div>
-
-          <!-- 입 -->
-          <div class="absolute top-[62%] w-full flex justify-center">
-            <div id="pretty-mouth" class="w-8 h-2 bg-[#881337] rounded-full transition-all duration-75 relative overflow-hidden">
-              <div class="absolute top-0 w-full h-[30%] bg-white/90"></div>
-              <div class="absolute bottom-0 w-full h-[40%] bg-rose-400/80 rounded-full transform translate-y-1/2"></div>
-            </div>
-          </div>
-
-          <!-- 얼굴 위 머리카락 마스크 (7:3 가르마) -->
-          <svg class="absolute top-0 left-0 w-full h-20" viewBox="0 0 100 40" preserveAspectRatio="none">
-            <path d="M 0 0 L 100 0 L 100 12 C 85 10 75 6 70 14 C 60 4 30 10 0 12 Z" fill="#1a202c"/>
-          </svg>
-        </div>
-
-        <!-- 앞머리 SVG -->
-        <div class="absolute pointer-events-none" style="top:-36px; left:-18px; width:260px; height:200px; z-index:1;">
-          <svg width="260" height="200" viewBox="0 0 260 200" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="fg-hair-grad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#2d3748"/>
-                <stop offset="100%" stop-color="#1e2a3a"/>
-              </linearGradient>
-              <clipPath id="hair-oval-clip">
-                <ellipse cx="130" cy="100" rx="130" ry="100"/>
-              </clipPath>
-            </defs>
-            <g clip-path="url(#hair-oval-clip)">
-              <path d="
-                M 0 0 L 260 0 L 260 115
-                C 230 108 210 96 182 65
-                C 155 95 120 112 80 118
-                C 50 122 25 118 0 115
-                Z
-              " fill="url(#fg-hair-grad)"/>
-            </g>
-          </svg>
-        </div>
-
-        <!-- 목 + 셔츠 SVG 통합 -->
-        <div class="absolute pointer-events-none" style="bottom:-90px; left:50%; transform:translateX(-50%); width:240px; height:100px; z-index:-1;">
-          <svg width="240" height="100" viewBox="0 0 240 100" xmlns="http://www.w3.org/2000/svg">
-            <!-- 셔츠 몸통 -->
-            <path d="M 0 40 Q 0 25 20 22 L 80 18 L 120 28 L 160 18 L 220 22 Q 240 25 240 40 L 240 100 L 0 100 Z" fill="#f1f5f9"/>
-            <!-- 셔츠 음영 -->
-            <path d="M 0 40 Q 0 25 20 22 L 80 18 L 120 28 L 160 18 L 220 22 Q 240 25 240 40 L 240 50 Q 200 42 120 44 Q 40 42 0 50 Z" fill="#e2e8f0"/>
-            <!-- 목 -->
-            <rect x="100" y="0" width="40" height="35" rx="6" fill="#e6bca0"/>
-            <!-- 카라 왼쪽 날개 -->
-            <path d="M 120 28 L 80 18 L 72 32 L 112 38 Z" fill="#f8fafc"/>
-            <path d="M 120 28 L 80 18 L 72 32 L 112 38 Z" fill="none" stroke="#e2e8f0" stroke-width="1"/>
-            <!-- 카라 오른쪽 날개 -->
-            <path d="M 120 28 L 160 18 L 168 32 L 128 38 Z" fill="#f8fafc"/>
-            <path d="M 120 28 L 160 18 L 168 32 L 128 38 Z" fill="none" stroke="#e2e8f0" stroke-width="1"/>
-            <!-- 카라 중앙 V -->
-            <path d="M 112 38 L 120 50 L 128 38 Z" fill="#8f8f8fff"/>
-            <!-- 단추 -->
-            <circle cx="120" cy="56" r="3" fill="#cbd5e1"/>
-            <circle cx="120" cy="70" r="3" fill="#cbd5e1"/>
-            <circle cx="120" cy="84" r="3" fill="#cbd5e1"/>
-            <!-- 셔츠 중앙선 -->
-            <line x1="120" y1="50" x2="120" y2="100" stroke="#e2e8f0" stroke-width="1"/>
-          </svg>
-        </div>
+        ${this.buildHairHTML()}
+        ${this.buildFaceHTML()}
+        ${this.buildBodyHTML()}
       </div>
-
       <div id="avatar-status" class="mt-28 px-5 py-2 rounded-full bg-slate-800/80 border border-white/5 text-sm text-slate-300 font-medium flex items-center gap-2.5">
         <span class="w-2 h-2 rounded-full bg-slate-500"></span>
         <span class="status-text">AI 면접관 대기 중</span>
       </div>
     `;
-
     return wrapper;
+  }
+
+  private buildHairHTML(): string {
+    return `
+      <div class="absolute -z-10"
+        style="width:260px; height:200px; top:-36px; left:-18px; background:linear-gradient(180deg,#2d3748 0%,#1a202c 100%); border-radius:50%;"></div>
+      <div class="absolute -z-10"
+        style="width:18px; height:26px; background:linear-gradient(160deg,#ffcba4,#e8a87c); border-radius:50%; top:38%; left:-6px; box-shadow:inset 3px 0 6px rgba(200,100,50,0.3);">
+        <div style="position:absolute; top:25%; left:20%; width:8px; height:14px; background:rgba(200,100,50,0.2); border-radius:50%;"></div>
+      </div>
+      <div class="absolute -z-10"
+        style="width:18px; height:26px; background:linear-gradient(160deg,#ffcba4,#e8a87c); border-radius:50%; top:38%; right:-6px; box-shadow:inset -3px 0 6px rgba(200,100,50,0.3);">
+        <div style="position:absolute; top:25%; right:20%; width:8px; height:14px; background:rgba(200,100,50,0.2); border-radius:50%;"></div>
+      </div>
+      <div class="absolute pointer-events-none" style="top:-36px; left:-18px; width:260px; height:200px; z-index:1;">
+        <svg width="260" height="200" viewBox="0 0 260 200" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="fg-hair-grad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#2d3748"/>
+              <stop offset="100%" stop-color="#1e2a3a"/>
+            </linearGradient>
+            <clipPath id="hair-oval-clip">
+              <ellipse cx="130" cy="100" rx="130" ry="100"/>
+            </clipPath>
+          </defs>
+          <g clip-path="url(#hair-oval-clip)">
+            <path d="M 0 0 L 260 0 L 260 115 C 230 108 210 96 182 65 C 155 95 120 112 80 118 C 50 122 25 118 0 115 Z" fill="url(#fg-hair-grad)"/>
+          </g>
+        </svg>
+      </div>
+    `;
+  }
+
+  private buildFaceHTML(): string {
+    return `
+      <div id="pretty-face" class="pretty-face w-full h-full rounded-[45%] flex flex-col items-center relative overflow-hidden transition-all duration-300">
+        <div class="absolute top-[35%] left-[15%] w-10 h-6 bg-rose-400/30 rounded-full blur-md"></div>
+        <div class="absolute top-[35%] right-[15%] w-10 h-6 bg-rose-400/30 rounded-full blur-md"></div>
+        <div class="absolute top-[26%] w-full flex justify-between px-11">
+          <svg width="28" height="10" viewBox="0 0 28 10"><path d="M 2 8 Q 8 1 26 4" stroke="#2d3748" stroke-width="3" fill="none" stroke-linecap="round"/></svg>
+          <svg width="28" height="10" viewBox="0 0 28 10"><path d="M 26 8 Q 20 1 2 4" stroke="#2d3748" stroke-width="3" fill="none" stroke-linecap="round"/></svg>
+        </div>
+        <div class="absolute top-[33%] w-full flex justify-between px-12">
+          <div class="pretty-eye w-7 h-9 bg-white rounded-[50%] relative overflow-hidden shadow-inner">
+            <div class="absolute bottom-1 right-1 w-4 h-5 bg-slate-800 rounded-full">
+              <div class="absolute top-1 left-1 w-1.5 h-1.5 bg-white rounded-full"></div>
+            </div>
+          </div>
+          <div class="pretty-eye w-7 h-9 bg-white rounded-[50%] relative overflow-hidden shadow-inner">
+            <div class="absolute bottom-1 left-1 w-4 h-5 bg-slate-800 rounded-full">
+              <div class="absolute top-1 left-1 w-1.5 h-1.5 bg-white rounded-full"></div>
+            </div>
+          </div>
+        </div>
+        <div class="absolute top-[30%] w-full flex justify-between px-8 pointer-events-none opacity-70">
+          <div class="w-14 h-14 border-[3px] border-amber-600/60 rounded-[40%]"></div>
+          <div class="absolute w-5 h-1 bg-amber-600/60 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></div>
+          <div class="w-14 h-14 border-[3px] border-amber-600/60 rounded-[40%]"></div>
+        </div>
+        <div class="absolute top-[50%] left-1/2 -translate-x-1/2"
+          style="width:14px; height:10px; border-radius:50%; background:rgba(200,120,70,0.2); box-shadow:inset 0 2px 4px rgba(180,90,40,0.3);">
+          <div class="absolute" style="width:4px; height:4px; border-radius:50%; background:rgba(160,80,30,0.35); bottom:1px; left:1px;"></div>
+          <div class="absolute" style="width:4px; height:4px; border-radius:50%; background:rgba(160,80,30,0.35); bottom:1px; right:1px;"></div>
+        </div>
+        <div class="absolute top-[62%] w-full flex justify-center">
+          <div id="pretty-mouth" class="w-8 h-2 bg-[#881337] rounded-full transition-all duration-75 relative overflow-hidden">
+            <div class="absolute top-0 w-full h-[30%] bg-white/90"></div>
+            <div class="absolute bottom-0 w-full h-[40%] bg-rose-400/80 rounded-full transform translate-y-1/2"></div>
+          </div>
+        </div>
+        <svg class="absolute top-0 left-0 w-full h-20" viewBox="0 0 100 40" preserveAspectRatio="none">
+          <path d="M 0 0 L 100 0 L 100 12 C 85 10 75 6 70 14 C 60 4 30 10 0 12 Z" fill="#1a202c"/>
+        </svg>
+      </div>
+    `;
+  }
+
+  private buildBodyHTML(): string {
+    return `
+      <div class="absolute pointer-events-none" style="bottom:-90px; left:50%; transform:translateX(-50%); width:240px; height:100px; z-index:-1;">
+        <svg width="240" height="100" viewBox="0 0 240 100" xmlns="http://www.w3.org/2000/svg">
+          <path d="M 0 40 Q 0 25 20 22 L 80 18 L 120 28 L 160 18 L 220 22 Q 240 25 240 40 L 240 100 L 0 100 Z" fill="#f1f5f9"/>
+          <path d="M 0 40 Q 0 25 20 22 L 80 18 L 120 28 L 160 18 L 220 22 Q 240 25 240 40 L 240 50 Q 200 42 120 44 Q 40 42 0 50 Z" fill="#e2e8f0"/>
+          <rect x="100" y="0" width="40" height="35" rx="6" fill="#e6bca0"/>
+          <path d="M 120 28 L 80 18 L 72 32 L 112 38 Z" fill="#f8fafc"/>
+          <path d="M 120 28 L 80 18 L 72 32 L 112 38 Z" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+          <path d="M 120 28 L 160 18 L 168 32 L 128 38 Z" fill="#f8fafc"/>
+          <path d="M 120 28 L 160 18 L 168 32 L 128 38 Z" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+          <path d="M 112 38 L 120 50 L 128 38 Z" fill="#8f8f8fff"/>
+          <circle cx="120" cy="56" r="3" fill="#cbd5e1"/>
+          <circle cx="120" cy="70" r="3" fill="#cbd5e1"/>
+          <circle cx="120" cy="84" r="3" fill="#cbd5e1"/>
+          <line x1="120" y1="50" x2="120" y2="100" stroke="#e2e8f0" stroke-width="1"/>
+        </svg>
+      </div>
+    `;
   }
 
   private startBlinking() {
