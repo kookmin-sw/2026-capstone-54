@@ -1,37 +1,32 @@
-## Welcome to GitHub Pages
+---
+layout: default
+title: meFit · 54팀
+---
 
-You can use the [editor on GitHub](https://github.com/kookmin-sw/cap-template/edit/master/index.md) to maintain and preview the content for your website in Markdown files.
+# meFit · 54팀
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+**未fit, meFit. 이력서·채용공고 기반 AI 가상 면접과 음성·영상 분석 리포트로 면접 준비를 완성하는 플랫폼.**
 
-### Markdown
+국민대학교 캡스톤 2026 · 54팀
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+> ⚡ 인터랙티브 팀 페이지가 React + Vite로 빌드되어 `github-page` 브랜치에서 호스팅됩니다.
+>
+> Repository Settings → Pages → Source 를 `github-page` 브랜치로 설정하면 아래 인터랙티브 페이지가 노출됩니다:
+>
+> **[https://kookmin-sw.github.io/2026-capstone-54/](https://kookmin-sw.github.io/2026-capstone-54/)**
 
-```markdown
-Syntax highlighted code block
+## 빠른 링크
 
-# Header 1
-## Header 2
-### Header 3
+- [사이트 (mefit.kr)](https://mefit.kr)
+- [API 서버 (api.mefit.kr)](https://api.mefit.kr)
+- [팀 GitHub](https://github.com/kmu-aws-capstone-team-4)
+- [README](./README.md)
 
-- Bulleted
-- List
+## 팀원
 
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
-```
-
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
-
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/kookmin-sw/cap-template/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://help.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
+| 이름 | 역할 |
+|---|---|
+| 김신건 | PM |
+| 김석준 | Backend |
+| 김유진 | Backend |
+| 이주현 | Frontend |

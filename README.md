@@ -1,77 +1,84 @@
 [![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/Lvs6kcL8)
-# Welcome to GitHub
 
-캡스톤 팀 생성을 축하합니다.
+<div align="center">
 
-## 팀소개 및 페이지를 꾸며주세요.
+# 미핏 · 54팀
 
-- 프로젝트 소개
-  - 프로젝트 설치방법 및 데모, 사용방법, 프리뷰등을 readme.md에 작성.
-  - Api나 사용방법등 내용이 많을경우 wiki에 꾸미고 링크 추가.
+**未fit, meFit. 이력서·채용공고 기반 AI 가상 면접과 음성·영상 분석 리포트로 면접 준비를 완성하는 플랫폼.**
 
-- 팀페이지 꾸미기
-  - 프로젝트 소개 및 팀원 소개
-  - index.md 예시보고 수정.
+국민대학교 캡스톤 2026 · 54팀
 
-- GitHub Pages 리파지토리 Settings > Options > GitHub Pages 
-  - Source를 marster branch
-  - Theme Chooser에서 태마선택
-  - 수정후 팀페이지 확인하여 점검.
+[**팀 페이지 (GitHub Pages)**](https://kookmin-sw.github.io/2026-capstone-54/) ·
+[**사이트**](https://mefit.kr) ·
+[**API 서버**](https://api.mefit.kr) ·
+[**팀 GitHub**](https://github.com/kmu-aws-capstone-team-4)
 
-**팀페이지 주소** -> https://kookmin-sw.github.io/ '{{자신의 리파지토리 아이디}}'
+</div>
 
-**예시)** 2023년 0조  https://kookmin-sw.github.io/capstone-2023-00/
+---
 
+## 1. 프로젝트 소개
 
-## 내용에 아래와 같은 내용들을 추가하세요.
+**meFit (미핏)** 은 사용자가 자신의 이력서와 지원할 채용공고를 입력하면, AI가 두 정보를 결합해 실제 면접관처럼 맞춤형 질문을 던지고 답변을 음성·영상으로 녹화 후 종합 분석 리포트를 자동 생성하는 가상 면접 플랫폼입니다.
 
-### 1. 프로잭트 소개
+### 핵심 기능 3가지
 
-프로젝트
+| 기능 | 설명 |
+|---|---|
+| **이력서 + 채용공고 수집/분석** | PDF·DOCX 업로드 또는 URL 입력 → LangChain + OpenAI 로 자동 파싱 |
+| **꼬리질문 면접 + 전체 프로세스 면접** | FOLLOWUP / FULL_PROCESS · EASY/MEDIUM/HARD · 친근/일반/압박 면접관 |
+| **종합 분석 리포트** | LLM 채점 + 음성/표정 분석 |
 
-### 2. 소개 영상
+### 부가 기능
 
-프로젝트 소개하는 영상을 추가하세요
+- 스트릭 & 도전과제 (게이미피케이션)
+- 이메일 알림 시스템
+- 티켓 재화 기반 사용 횟수 관리
 
-### 3. 팀 소개
+## 2. 소개 영상
 
-팀을 소개하세요.
+> 추가 예정
 
-팀원정보 및 담당이나 사진 및 SNS를 이용하여 소개하세요.
+## 3. 팀 소개
 
-### 4. 사용법
+| 이름 | 역할 | 담당 |
+|---|---|---|
+| **김신건** | PM | 프로젝트 매니징 · 전체 아키텍처 · AI/Infra/Backend 전반 |
+| **김석준** | Backend | Django · 채용공고, 표정 분석 파이프라인 |
+| **김유진** | Backend | Django · 면접 질문 생성 및 분석 파이프라인 |
+| **이주현** | Frontend | Frontend 개발 및 디자인 전반 |
 
-소스코드제출시 설치법이나 사용법을 작성하세요.
+## 4. 기술 스택
 
-### 5. 기타
+**프론트엔드** React 19 · Vite · Bun · TypeScript · Tailwind CSS 4 · Zustand · MediaRecorder API
+**백엔드** Django 6 · DRF · Celery · Channels · LangChain · Pydantic · LiteLLM
+**AI / ML** OpenAI GPT-4o · GPT-4o Vision · Embedding · MediaPipe (face-analyzer) · Whisper STT
+**인프라** AWS EC2 + k3s · Traefik · RDS PostgreSQL · S3 · SNS/SQS · Lambda 5종
+**관측** Grafana · Prometheus · Loki · Flower · TokenUsage 추적
+**CI/CD** GitHub Actions · Docker Hub · deploy.sh 무중단 배포
 
-추가적인 내용은 자유롭게 작성하세요.
+## 5. 마이크로서비스
 
+| 서비스 | 역할 |
+|---|---|
+| `backend` | Django API + 비즈니스 로직 + WebSocket/SSE |
+| `frontend` | React 19 사용자 UI |
+| `analysis-resume` | 이력서 텍스트 추출 + 임베딩 + LLM 파싱 |
+| `analysis-stt` | 면접 발화 STT (Whisper) |
+| `interview-analysis-report` | 면접 종합 분석 리포트 (LangChain + Hypothesis) |
+| `voice-api` | TTS (FastAPI + edge-tts) |
+| `face-analyzer` | 표정 분석 (MediaPipe Lambda) |
+| `scraping` | 채용공고 자동 수집 (Playwright) |
+| `infra` | k3s 매니페스트 + 배포 스크립트 |
 
-## Markdown을 사용하여 내용꾸미기
+## 6. 사용법
 
-Markdown은 작문을 스타일링하기위한 가볍고 사용하기 쉬운 구문입니다. 여기에는 다음을위한 규칙이 포함됩니다.
+### 사용자
 
-```markdown
-Syntax highlighted code block
+1. [`https://mefit.kr`](https://mefit.kr) 방문 → 회원가입 → 이메일 인증 → 직무/경력 입력
+2. 이력서 업로드 (PDF/DOCX) 또는 텍스트 입력
+3. 채용공고 URL 입력 (사람인/잡코리아/잡플래닛 등) 또는 직접 입력
+4. 면접 모드 + 난이도 선택 → Precheck → 면접 시작
+5. 면접 종료 후 분석 리포트 생성 클릭 → 점수 + 음성/표정 분석 확인
 
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
-```
-
-자세한 내용은 [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
-
-### Support or Contact
-
-readme 파일 생성에 추가적인 도움이 필요하면 [도움말](https://help.github.com/articles/about-readmes/) 이나 [contact support](https://github.com/contact) 을 이용하세요.
+© 2026 meFit (미핏) · 김신건 · 김석준 · 김유진 · 이주현
