@@ -41,7 +41,7 @@ jobs:
 
       - name: Build
         env:
-          VITE_BASE_PATH: /
+          VITE_BASE_PATH: /2026-capstone-54/
         run: bun run build
 
       - name: Add SPA fallback (404.html)
