@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { SelectableCard } from "@/shared/ui/SelectableCard";
 import { CompanyIcon } from "@/shared/ui/CompanyIcon";
 
@@ -24,8 +25,11 @@ export function JdSavedTab({ jdList, jdListLoading, selectedJdId, onSelectJd }: 
 
   if (jdList.length === 0) {
     return (
-      <div className="p-4 text-center text-[13px] text-[#6B7280] border border-dashed border-[#E5E7EB] rounded-lg">
-        등록된 채용공고가 없어요. 먼저 채용공고를 업로드해 주세요.
+      <div className="py-4 px-6 text-center text-[13px] text-[#6B7280] border border-dashed border-[#E5E7EB] rounded-lg">
+        <div>아직 등록된 채용공고가 없어요.</div>
+        <Link to="/jd" className="mt-1.5 inline-block text-[#0991B2] font-semibold underline underline-offset-2 hover:opacity-75">
+          채용공고 추가하기 →
+        </Link>
       </div>
     );
   }

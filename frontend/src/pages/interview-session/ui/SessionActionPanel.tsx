@@ -65,12 +65,12 @@ export function SessionActionPanel({
 
   useEffect(() => {
     if (!shouldWarn) {
-      setWarnVisible(false); // eslint-disable-line react-hooks/set-state-in-effect -- reset on mode change
+      setWarnVisible(false); // eslint-disable-line react-hooks/set-state-in-effect
       if (warnTimerRef.current) { clearTimeout(warnTimerRef.current); warnTimerRef.current = null; }
       return;
     }
     if (audioLevel >= AUDIO_WARN_THRESHOLD) {
-      setWarnVisible(true);  
+      setWarnVisible(true);
       if (warnTimerRef.current) clearTimeout(warnTimerRef.current);
       warnTimerRef.current = setTimeout(() => {
         setWarnVisible(false);
@@ -85,12 +85,12 @@ export function SessionActionPanel({
   const showLoading = mode === "loading" || mode === "starting" || (mode === "not_started" && isModelLoading);
 
   return (
-    <div className={`shrink-0 p-4 border-b border-white/10 flex flex-col gap-2 ${className || ""}`}>
+    <div className={`shrink-0 p-4 border-b border-[#0991B2]/15 flex flex-col gap-2 ${className || ""}`}>
       {(mode === "loading" || mode === "not_started" || mode === "starting") && (
         <button
           onClick={onStart}
           disabled={mode !== "not_started" || isModelLoading}
-          className="w-full py-3 rounded-xl font-bold text-base bg-indigo-600 hover:bg-indigo-500 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+          className="w-full py-3 rounded-xl font-bold text-base bg-[#06B6D4] hover:bg-[#22D3EE] text-white transition-colors disabled:opacity-50 flex items-center justify-center gap-2 shadow-[0_2px_12px_rgba(6,182,212,0.35)]"
         >
           {showLoading
             ? <><Loader2 size={16} className="animate-spin" /> 준비 중...</>
@@ -99,8 +99,8 @@ export function SessionActionPanel({
       )}
 
       {mode === "real_tts_playing" && (
-        <div className="w-full py-3 rounded-xl bg-indigo-500/10 border border-indigo-500/30 text-center">
-          <p className="text-indigo-300 text-xs font-semibold flex items-center justify-center gap-1.5">
+        <div className="w-full py-3 rounded-xl bg-[#0991B2]/10 border border-[#0991B2]/30 text-center">
+          <p className="text-[#06B6D4] text-xs font-semibold flex items-center justify-center gap-1.5">
             <Loader2 size={12} className="animate-spin" /> 질문 음성 재생 중...
           </p>
         </div>
@@ -114,13 +114,13 @@ export function SessionActionPanel({
       )}
 
       {mode === "practice_tts_playing" && (
-        <button disabled className="w-full py-3 rounded-xl font-bold text-base bg-green-600 transition-colors opacity-50 flex items-center justify-center gap-2">
+        <button disabled className="w-full py-3 rounded-xl font-bold text-base bg-[#06B6D4] transition-colors opacity-50 flex items-center justify-center gap-2 text-white">
           <Loader2 size={14} className="animate-spin" /> 질문 음성 재생 중...
         </button>
       )}
 
       {mode === "preparing_record" && (
-        <button disabled className="w-full py-3 rounded-xl font-bold text-base bg-green-600 transition-colors opacity-50 flex items-center justify-center gap-2">
+        <button disabled className="w-full py-3 rounded-xl font-bold text-base bg-[#06B6D4] transition-colors opacity-50 flex items-center justify-center gap-2 text-white">
           <Loader2 size={14} className="animate-spin" /> 녹화 준비 중...
         </button>
       )}
@@ -128,7 +128,7 @@ export function SessionActionPanel({
       {mode === "practice_ready" && (
         <button
           onClick={onPracticeStart}
-          className="w-full py-3 rounded-xl font-bold text-base bg-green-600 hover:bg-green-500 transition-colors flex items-center justify-center gap-2"
+          className="w-full py-3 rounded-xl font-bold text-base bg-emerald-600 hover:bg-emerald-500 text-white transition-colors flex items-center justify-center gap-2 shadow-[0_2px_12px_rgba(5,150,105,0.3)]"
         >
           말하기 시작
         </button>
@@ -140,14 +140,14 @@ export function SessionActionPanel({
         <button
           onClick={onSubmitAnswer}
           disabled={!hasAnswer}
-          className="w-full py-3 rounded-xl font-bold text-base bg-indigo-600 hover:bg-indigo-500 transition-colors disabled:opacity-40 flex items-center justify-center gap-2"
+          className="w-full py-3 rounded-xl font-bold text-base bg-[#06B6D4] hover:bg-[#22D3EE] text-white transition-colors disabled:opacity-40 flex items-center justify-center gap-2 shadow-[0_2px_12px_rgba(6,182,212,0.35)]"
         >
           답변 제출
         </button>
       )}
 
       {mode === "submitting" && (
-        <button disabled className="w-full py-3 rounded-xl font-bold text-base bg-indigo-600 opacity-50 flex items-center justify-center gap-2">
+        <button disabled className="w-full py-3 rounded-xl font-bold text-base bg-[#06B6D4] opacity-50 text-white flex items-center justify-center gap-2">
           <Loader2 size={16} className="animate-spin" />
           {interviewPhase === "generating_followup" ? "꼬리질문 생성 중..." : interviewPhase === "submitting" ? "제출 중..." : "답변 저장 중..."}
         </button>

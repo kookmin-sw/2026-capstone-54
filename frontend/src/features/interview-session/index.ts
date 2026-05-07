@@ -24,7 +24,7 @@ export type {
   BehaviorAnalysis,
 } from "./api/types";
 
-export { SESSION_TYPE_LABEL, DIFFICULTY_LABEL, REPORT_STATUS_BADGE } from "./constants/labels";
+export { SESSION_TYPE_LABEL, DIFFICULTY_LABEL, DIFFICULTY_STYLE, REPORT_STATUS_BADGE } from "./constants/labels";
 
 export { AvatarSection } from "./ui/AvatarSection";
 export { QuestionPanel } from "./ui/QuestionPanel";

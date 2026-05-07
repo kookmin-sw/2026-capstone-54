@@ -1,10 +1,5 @@
 import type { InterviewAnalysisReport } from "@/features/interview-session";
-
-const DIFFICULTY_KO: Record<string, string> = {
-  friendly: "친근한 면접관",
-  normal: "일반 면접관",
-  pressure: "압박 면접관",
-};
+import { DIFFICULTY_STYLE } from "@/features/interview-session";
 
 function formatDate(iso: string | null): string {
   if (!iso) return "-";
@@ -34,7 +29,13 @@ export function InterviewOverview({ report }: Props) {
     { label: "지원 회사", value: report.companyName || "-" },
     { label: "채용 포지션", value: report.positionTitle || "-" },
     { label: "소요시간", value: formatDuration(report.durationSeconds) },
-    { label: "면접 난이도", value: DIFFICULTY_KO[report.difficultyLevel] ?? report.difficultyLevel },
+    { label: "면접 난이도", value: (
+      <span className={`text-[11px] font-semibold py-0.5 px-2 rounded-full border ${
+        (DIFFICULTY_STYLE[report.difficultyLevel] ?? DIFFICULTY_STYLE.normal).cls
+      }`}>
+        {(DIFFICULTY_STYLE[report.difficultyLevel] ?? { label: report.difficultyLevel }).label}
+      </span>
+    )},
     {
       label: "총 질문 수",
       value: (
