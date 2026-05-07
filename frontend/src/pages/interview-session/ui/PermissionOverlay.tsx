@@ -45,7 +45,7 @@ export function PermissionOverlay({ onReload, onGoResults }: PermissionOverlayPr
             </p>
           </div>
           <div className="flex flex-col gap-3">
-            <button onClick={onReload} className="w-full h-12 rounded-[10px] bg-[#0991B2] text-white font-bold text-[14px] hover:opacity-90 transition-opacity">
+            <button onClick={onReload} className="w-full h-12 rounded-[10px] bg-[#06B6D4] text-white font-bold text-[14px] hover:bg-[#22D3EE] transition-colors">
               권한 허용 후 새로고침
             </button>
             <button onClick={onGoResults} className="w-full h-12 rounded-[10px] bg-[#374151] text-white font-semibold text-[14px] hover:bg-[#4B5563] transition-colors">

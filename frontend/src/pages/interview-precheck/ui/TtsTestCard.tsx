@@ -1,5 +1,6 @@
 /** 면접관 TTS 음성 테스트 카드 (다크 테마). */
 import { useEffect, useRef, useState } from "react";
+import { Volume2 } from "lucide-react";
 import {
   getAccessToken,
 } from "@/shared/api/client";
@@ -37,7 +38,7 @@ export function TtsTestCard() {
   return (
     <div className="bg-slate-800/60 border border-white/10 rounded-xl p-5">
       <div className="flex items-center gap-2 mb-3">
-        <span className="text-lg">🔊</span>
+        <Volume2 size={18} className="text-slate-400 shrink-0" />
         <h3 className="text-[14px] font-extrabold text-slate-200">면접관 음성 테스트</h3>
       </div>
       <p className="text-[12px] text-slate-400 leading-[1.5] mb-3">버튼을 눌러 음성이 잘 들리는지 확인하세요.</p>

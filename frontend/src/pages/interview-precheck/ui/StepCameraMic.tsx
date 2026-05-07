@@ -1,4 +1,5 @@
 import type { RefObject } from "react";
+import { Camera, Mic, Ban, User, CheckCircle2, XCircle } from "lucide-react";
 import type { CameraInfo, MicInfo, CheckStatus } from "@/features/interview-precheck";
 
 interface StepCameraMicProps {
@@ -46,9 +47,14 @@ export function StepCameraMic({
               {cameraStream ? (
                 <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover -scale-x-100" />
               ) : (
-                <div className="text-center text-slate-600">
-                  <div className="text-[32px] mb-1.5">{cameraStatus === "fail" ? "🚫" : "👤"}</div>
-                  <div className="text-[12px] font-medium">{cameraStatus === "fail" ? "카메라 권한 차단됨" : "카메라 연결 중"}</div>
+                <div className="text-center text-slate-600 flex flex-col items-center gap-2">
+                  {cameraStatus === "fail"
+                    ? <Ban size={32} className="text-red-500/70" />
+                    : <User size={32} className="text-slate-600" />
+                  }
+                  <div className="text-[12px] font-medium">
+                    {cameraStatus === "fail" ? "카메라 권한 차단됨" : "카메라 연결 중"}
+                  </div>
                 </div>
               )}
               {cameraStream && (
@@ -75,7 +81,10 @@ export function StepCameraMic({
         <div className="flex flex-col gap-4">
           {step1Checked && (
             <div className={`rounded-xl p-3 flex items-center gap-2.5 ${anyDenied ? "bg-red-500/10 border border-red-500/20" : "bg-emerald-500/10 border border-emerald-500/20"}`}>
-              <span className="text-sm shrink-0">{anyDenied ? "🚫" : "✅"}</span>
+              {anyDenied
+                ? <XCircle size={16} className="text-red-400 shrink-0" />
+                : <CheckCircle2 size={16} className="text-emerald-400 shrink-0" />
+              }
               <div className="text-[13px] text-slate-200 leading-[1.5]">
                 {anyDenied
                   ? <strong className="font-bold text-red-400">{camDenied && micDenied ? "카메라 및 마이크 권한 차단" : camDenied ? "카메라 권한 차단" : "마이크 권한 차단"}</strong>
@@ -86,7 +95,9 @@ export function StepCameraMic({
 
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-slate-800/60 border border-white/10 rounded-xl p-4 text-center">
-              <div className="text-[20px] mb-1">📷</div>
+              <div className="flex justify-center mb-2">
+                <Camera size={20} className="text-slate-400" />
+              </div>
               <div className="text-[13px] font-extrabold text-slate-200 mb-1">카메라</div>
               <div className="text-[12px] font-semibold">{statusText(cameraStatus, "정상 감지")}</div>
               <div className="text-[10px] text-slate-500 mt-1">
@@ -94,7 +105,9 @@ export function StepCameraMic({
               </div>
             </div>
             <div className="bg-slate-800/60 border border-white/10 rounded-xl p-4 text-center">
-              <div className="text-[20px] mb-1">🎙️</div>
+              <div className="flex justify-center mb-2">
+                <Mic size={20} className="text-slate-400" />
+              </div>
               <div className="text-[13px] font-extrabold text-slate-200 mb-1">마이크</div>
               <div className="text-[12px] font-semibold">{statusText(micStatus, "정상 감지")}</div>
               <div className="text-[10px] text-slate-500 mt-1">
@@ -117,7 +130,7 @@ export function StepCameraMic({
 
           <div className="flex gap-3 mt-auto">
             <button className="flex-1 py-3 rounded-xl font-bold text-[13px] text-slate-400 bg-transparent border border-white/10 hover:bg-white/5 transition-colors cursor-pointer" onClick={onBack}>닫기</button>
-            <button disabled={!step1Ok} onClick={onNext} className="flex-1 py-3 rounded-xl font-bold text-[13px] text-white bg-indigo-600 hover:bg-indigo-500 transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer">
+            <button disabled={!step1Ok} onClick={onNext} className="flex-1 py-3 rounded-xl font-bold text-[13px] text-white bg-[#06B6D4] hover:bg-[#22D3EE] transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer">
               {step1Checked ? (step1Ok ? "다음 →" : "권한 필요") : "점검 중..."}
             </button>
           </div>

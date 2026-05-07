@@ -292,7 +292,14 @@ export function InterviewSessionPage() {
             </div>
           )}
           <div className="flex-1 relative min-h-0">
-            <AvatarSection onReady={(a) => { avatarRef.current = a; }} className="absolute inset-0 w-full h-full" />
+            {interviewSession?.interviewDifficultyLevel && (
+              <AvatarSection
+                key={interviewSession.interviewDifficultyLevel}
+                difficulty={interviewSession.interviewDifficultyLevel}
+                onReady={(a) => { avatarRef.current = a; }}
+                className="absolute inset-0 w-full h-full"
+              />
+            )}
           </div>
           <div className="shrink-0 px-6 pb-5 pt-4 border-t border-white/5 bg-[#080f1a]/80">
              <QuestionPanel
