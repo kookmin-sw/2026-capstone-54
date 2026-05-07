@@ -14,7 +14,15 @@ export class PrettyAvatarProvider implements IAvatarProvider {
 
   async initialize(container: HTMLElement): Promise<void> {
     this.container = container;
+    this.injectStyles();
+    const wrapper = this.buildHTML();
+    container.appendChild(wrapper);
+    this.avatarWrapper = wrapper.querySelector("#avatar-body-wrapper");
+    this.mouthElement = wrapper.querySelector("#pretty-mouth");
+    this.startBlinking();
+  }
 
+  private injectStyles(): void {
     const styleId = "pretty-avatar-style";
     if (!document.getElementById(styleId)) {
       const styleEl = document.createElement("style");
@@ -34,7 +42,9 @@ export class PrettyAvatarProvider implements IAvatarProvider {
       `;
       document.head.appendChild(styleEl);
     }
+  }
 
+  private buildHTML(): HTMLElement {
     const wrapper = document.createElement("div");
     wrapper.className = "w-full h-full flex flex-col items-center justify-center relative overflow-hidden text-center";
     wrapper.style.background = "#080f1a";
@@ -171,10 +181,7 @@ export class PrettyAvatarProvider implements IAvatarProvider {
       </div>
     `;
 
-    container.appendChild(wrapper);
-    this.avatarWrapper = wrapper.querySelector("#avatar-body-wrapper");
-    this.mouthElement = wrapper.querySelector("#pretty-mouth");
-    this.startBlinking();
+    return wrapper;
   }
 
   private startBlinking() {
@@ -185,7 +192,10 @@ export class PrettyAvatarProvider implements IAvatarProvider {
       setTimeout(() => {
         if (!this.isDestroyed) eyes.forEach((e) => (e.style.transform = "scaleY(1)"));
       }, 150);
-      this.blinkTimeoutId = window.setTimeout(blink, Math.random() * 4000 + 2000);
+      const buf = new Uint32Array(1);
+      crypto.getRandomValues(buf);
+      const delay = (buf[0] / 0xFFFFFFFF) * 4000 + 2000;
+      this.blinkTimeoutId = window.setTimeout(blink, delay);
     };
     blink();
   }

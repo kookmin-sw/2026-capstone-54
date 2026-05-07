@@ -14,6 +14,15 @@ export class PressureAvatarProvider implements IAvatarProvider {
  
   async initialize(container: HTMLElement): Promise<void> {
     this.container = container;
+    this.injectStyles();
+    const wrapper = this.buildHTML();
+    container.appendChild(wrapper);
+    this.avatarWrapper = wrapper.querySelector("#pressure-body-wrapper");
+    this.mouthElement = wrapper.querySelector("#pressure-mouth");
+    this.startBlinking();
+  }
+
+  private injectStyles(): void {
     const styleId = "pressure-avatar-style";
     if (!document.getElementById(styleId)) {
       const styleEl = document.createElement("style");
@@ -50,6 +59,9 @@ export class PressureAvatarProvider implements IAvatarProvider {
       document.head.appendChild(styleEl);
     }
  
+  }
+
+  private buildHTML(): HTMLElement {
     const wrapper = document.createElement("div");
     wrapper.className = "w-full h-full flex flex-col items-center justify-center relative overflow-hidden";
     wrapper.style.background = "#080f1a";
@@ -193,10 +205,7 @@ export class PressureAvatarProvider implements IAvatarProvider {
       <span class="status-text">AI 면접관 대기 중</span>
     </div>`;
  
-    container.appendChild(wrapper);
-    this.avatarWrapper = wrapper.querySelector("#pressure-body-wrapper");
-    this.mouthElement = wrapper.querySelector("#pressure-mouth");
-    this.startBlinking();
+    return wrapper;
   }
  
   private startBlinking() {
@@ -207,7 +216,10 @@ export class PressureAvatarProvider implements IAvatarProvider {
       setTimeout(() => {
         if (!this.isDestroyed) eyes.forEach((e) => (e.style.transform = "scaleY(1)"));
       }, 100);
-      this.blinkTimeoutId = window.setTimeout(blink, Math.random() * 6000 + 3000);
+      const buf = new Uint32Array(1);
+      crypto.getRandomValues(buf);
+      const delay = (buf[0] / 0xFFFFFFFF) * 6000 + 3000;
+      this.blinkTimeoutId = window.setTimeout(blink, delay);
     };
     blink();
   }
