@@ -65,17 +65,28 @@ export class PressureAvatarProvider implements IAvatarProvider {
     const wrapper = document.createElement("div");
     wrapper.className = "w-full h-full flex flex-col items-center justify-center relative overflow-hidden";
     wrapper.style.background = "#080f1a";
-    wrapper.innerHTML = `
-    <div id="pressure-body-wrapper" class="pressure-container relative w-56 h-56 shrink-0">
-      ${this.buildHairHTML()}
-      ${this.buildFaceHTML()}
-      ${this.buildBodyHTML()}
-    </div>
-    <div id="pressure-status" class="mt-28 px-5 py-2 rounded-full border text-sm font-medium flex items-center gap-2.5"
-      style="background:rgba(239,68,68,0.08); border-color:rgba(239,68,68,0.2); color:#fca5a5;">
-      <span class="w-2 h-2 rounded-full" style="background:#475569;"></span>
-      <span class="status-text">AI 면접관 대기 중</span>
-    </div>`;
+
+    const bodyWrapper = document.createElement("div");
+    bodyWrapper.id = "pressure-body-wrapper";
+    bodyWrapper.className = "pressure-container relative w-56 h-56 shrink-0";
+    bodyWrapper.innerHTML = this.buildHairHTML() + this.buildFaceHTML() + this.buildBodyHTML();
+
+    const status = document.createElement("div");
+    status.id = "pressure-status";
+    status.className = "mt-28 px-5 py-2 rounded-full border text-sm font-medium flex items-center gap-2.5";
+    status.setAttribute("style", "background:rgba(239,68,68,0.08); border-color:rgba(239,68,68,0.2); color:#fca5a5;");
+
+    const dot = document.createElement("span");
+    dot.className = "w-2 h-2 rounded-full";
+    dot.setAttribute("style", "background:#475569;");
+
+    const statusText = document.createElement("span");
+    statusText.className = "status-text";
+    statusText.textContent = "AI 면접관 대기 중";
+
+    status.append(dot, statusText);
+    wrapper.append(bodyWrapper, status);
+
     return wrapper;
   }
 

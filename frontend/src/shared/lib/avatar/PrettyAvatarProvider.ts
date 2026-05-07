@@ -48,17 +48,26 @@ export class PrettyAvatarProvider implements IAvatarProvider {
     const wrapper = document.createElement("div");
     wrapper.className = "w-full h-full flex flex-col items-center justify-center relative overflow-hidden text-center";
     wrapper.style.background = "#080f1a";
-    wrapper.innerHTML = `
-      <div id="avatar-body-wrapper" class="avatar-container relative w-56 h-56 shrink-0">
-        ${this.buildHairHTML()}
-        ${this.buildFaceHTML()}
-        ${this.buildBodyHTML()}
-      </div>
-      <div id="avatar-status" class="mt-28 px-5 py-2 rounded-full bg-slate-800/80 border border-white/5 text-sm text-slate-300 font-medium flex items-center gap-2.5">
-        <span class="w-2 h-2 rounded-full bg-slate-500"></span>
-        <span class="status-text">AI 면접관 대기 중</span>
-      </div>
-    `;
+
+    const bodyWrapper = document.createElement("div");
+    bodyWrapper.id = "avatar-body-wrapper";
+    bodyWrapper.className = "avatar-container relative w-56 h-56 shrink-0";
+    bodyWrapper.innerHTML = this.buildHairHTML() + this.buildFaceHTML() + this.buildBodyHTML();
+
+    const status = document.createElement("div");
+    status.id = "avatar-status";
+    status.className = "mt-28 px-5 py-2 rounded-full bg-slate-800/80 border border-white/5 text-sm text-slate-300 font-medium flex items-center gap-2.5";
+
+    const dot = document.createElement("span");
+    dot.className = "w-2 h-2 rounded-full bg-slate-500";
+
+    const statusText = document.createElement("span");
+    statusText.className = "status-text";
+    statusText.textContent = "AI 면접관 대기 중";
+
+    status.append(dot, statusText);
+    wrapper.append(bodyWrapper, status);
+
     return wrapper;
   }
 
