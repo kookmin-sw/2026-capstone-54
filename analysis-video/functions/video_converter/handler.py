@@ -8,19 +8,31 @@ from mefit_video_common.celery_publisher import publish_step_complete
 
 log = get_logger(__name__)
 
+# S3 업로드 + cleanup에 필요한 여유 시간 (초)
+_BUFFER_SECONDS = 30
+
 
 def handler(event, context):
     for bucket, key in parse_s3_records(event):
         try:
-            _process(bucket, key)
+            _process(bucket, key, context)
         except RuntimeError as e:
             log.error("skipped_corrupt_file", key=key, error=str(e)[:200])
             continue
 
 
-def _process(bucket, key):
+def _get_ffmpeg_timeout(context) -> int:
+    """Lambda 잔여 시간에서 버퍼를 뺀 값을 ffmpeg timeout으로 사용"""
+    remaining_ms = context.get_remaining_time_in_millis()
+    return max(remaining_ms // 1000 - _BUFFER_SECONDS, 60)
+
+
+def _process(bucket, key, context):
     input_path = download_to_tmp(bucket, key)
     output_path = input_path.rsplit(".", 1)[0] + ".mp4"
+
+    ffmpeg_timeout = _get_ffmpeg_timeout(context)
+    log.info("ffmpeg_timeout_calculated", timeout=ffmpeg_timeout, key=key)
 
     run_ffmpeg(
         [
@@ -41,6 +53,7 @@ def _process(bucket, key):
             output_path,
         ],
         description=f"convert {key}",
+        timeout=ffmpeg_timeout,
     )
 
     output_key = key.rsplit(".", 1)[0] + ".mp4"
