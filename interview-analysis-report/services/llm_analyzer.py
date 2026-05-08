@@ -14,7 +14,7 @@ from dataclasses import dataclass, field
 
 from langchain_openai import ChatOpenAI
 
-from config import OPENAI_API_KEY, OPENAI_MODEL
+from config import OPENAI_API_KEY, OPENAI_BASE_URL, OPENAI_MODEL
 from utils.token_tracker import TokenUsageCallback, calculate_cost
 
 logger = logging.getLogger(__name__)
@@ -89,6 +89,7 @@ class LLMAnalyzer:
         self._llm = ChatOpenAI(
             model=OPENAI_MODEL,
             api_key=OPENAI_API_KEY,
+            base_url=OPENAI_BASE_URL,
             temperature=0.3,
             callbacks=[self._token_callback],
         )

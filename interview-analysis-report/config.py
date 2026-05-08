@@ -33,6 +33,10 @@ DATABASE_URL: str = os.getenv(
 # ── OpenAI ───────────────────────────────────────
 OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
 OPENAI_MODEL: str = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+# LLM Gateway (LiteLLM) base URL.
+# - 비어 있으면 OpenAI 직통 (로컬 개발 기본값)
+# - 설정 시 게이트웨이 경유 (운영 K3s = "http://mefit-llm-gateway:4000/v1")
+OPENAI_BASE_URL: str | None = os.getenv("OPENAI_BASE_URL", "") or None
 
 # ── S3 / 파일 스토리지 ───────────────────────────
 # 개발: S3_ENDPOINT_URL=http://mefit-s3mock:9090  (mefit-local 네트워크 내 S3Mock)
