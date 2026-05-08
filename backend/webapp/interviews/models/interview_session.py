@@ -5,6 +5,11 @@ from django.conf import settings
 from django.contrib.contenttypes.fields import GenericRelation
 from django.db import models
 from django.utils import timezone
+from interviews.constants import (
+  FOLLOWUP_ANCHOR_COUNT,
+  FULL_PROCESS_QUESTION_COUNT,
+  MAX_FOLLOWUP_PER_ANCHOR,
+)
 from interviews.enums import (
   InterviewDifficultyLevel,
   InterviewPracticeMode,
@@ -106,11 +111,25 @@ class InterviewSession(BaseModelWithUUID):
   def __str__(self):
     return f"InterviewSession #{self.pk} [{self.get_interview_session_status_display()}]"
 
+  def get_expected_total_questions(self) -> int:
+    """세션 타입별 상수 수식을 통한 기대 총 질문 수.
+
+    - FULL_PROCESS: FULL_PROCESS_QUESTION_COUNT (자기소개~마무리 고정 10문항)
+    - FOLLOWUP: FOLLOWUP_ANCHOR_COUNT * (1 + MAX_FOLLOWUP_PER_ANCHOR)
+                  = 앵커 + 앵커당 최대 꼬리질문 수
+    """
+    if self.interview_session_type == InterviewSessionType.FULL_PROCESS:
+      return FULL_PROCESS_QUESTION_COUNT
+    if self.interview_session_type == InterviewSessionType.FOLLOWUP:
+      return FOLLOWUP_ANCHOR_COUNT * (1 + MAX_FOLLOWUP_PER_ANCHOR)
+    return 0
+
   def is_completion_eligible(self) -> bool:
-    """시작된 세션(total_questions > 0)이고 모든 turn 에 답변이 있을 때 True 를 반환한다."""
-    if self.total_questions == 0:
+    """상수 수식으로 도출한 기대 질문 수만큼 turn 이 생성되고 모든 turn 에 답변이 있을 때 True."""
+    expected = self.get_expected_total_questions()
+    if expected == 0:
       return False
-    if self.turns.count() != self.total_questions:
+    if self.turns.count() != expected:
       return False
     return not self.turns.filter(answer="").exists()
 
