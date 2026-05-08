@@ -4,9 +4,15 @@ export const SESSION_TYPE_LABEL: Record<string, string> = {
 };
 
 export const DIFFICULTY_LABEL: Record<string, string> = {
-  friendly: "친근",
-  normal: "일반",
-  pressure: "압박",
+  friendly: "친근한 면접관",
+  normal: "일반 면접관",
+  pressure: "압박 면접관",
+};
+
+export const DIFFICULTY_STYLE: Record<string, { label: string; cls: string }> = {
+  friendly: { label: "친근한 면접관", cls: "border-[#A7F3D0] bg-[#ECFDF5] text-[#059669]" },
+  normal:   { label: "일반 면접관",   cls: "border-[#BAE6FD] bg-[#E6F7FA] text-[#0991B2]" },
+  pressure: { label: "압박 면접관",   cls: "border-[#FECACA] bg-[#FEF2F2] text-[#DC2626]" },
 };
 
 export const REPORT_STATUS_BADGE: Record<string, { label: string; cls: string }> = {

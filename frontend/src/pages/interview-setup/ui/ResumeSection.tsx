@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { SetupSection } from "@/shared/ui/SetupSection";
 import { SelectableCard } from "@/shared/ui/SelectableCard";
 import { FileText, PencilLine } from "lucide-react";
@@ -36,8 +37,11 @@ export function ResumeSection({
       {resumesLoading ? (
         <div className="p-4 text-center text-[13px] text-[#9CA3AF]">이력서 목록을 불러오는 중...</div>
       ) : resumes.length === 0 ? (
-        <div className="p-4 text-center text-[13px] text-[#6B7280] border border-dashed border-[#E5E7EB] rounded-lg">
-          등록된 이력서가 없어요. 먼저 이력서를 업로드해 주세요.
+        <div className="py-4 px-6 text-center text-[13px] text-[#6B7280] border border-dashed border-[#E5E7EB] rounded-lg">
+          <div>아직 등록된 이력서가 없어요.</div>
+          <Link to="/resume/new" className="mt-1.5 inline-block text-[#0991B2] font-semibold underline underline-offset-2 hover:opacity-75">
+            이력서 추가하기 →
+          </Link>
         </div>
       ) : (
         <div className="flex flex-col gap-[7px] flex-1 overflow-y-auto min-h-0">

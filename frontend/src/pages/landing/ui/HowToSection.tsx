@@ -40,16 +40,6 @@ export function HowToSection() {
         0,
       );
 
-      tl.from(
-        "[data-step-card]",
-        {
-          x: -32,
-          opacity: 0,
-          duration: 0.6,
-          stagger: 0.16,
-        },
-        0.2,
-      );
 
       tl.from(
         "[data-howto-dark]",
@@ -70,7 +60,7 @@ export function HowToSection() {
       id="how-to"
       className="bg-white"
     >
-      <div className="max-w-content w-full md:max-w-[1080px]">
+      <div className="max-w-content w-full md:max-w-[1080px] mx-auto">
         <LandingSectionHeader
           eyebrow="이용 방법"
           title={
@@ -83,12 +73,12 @@ export function HowToSection() {
           spacing="tight"
         />
 
-        <div className="flex flex-col gap-[clamp(8px,1.6vh,20px)] md:grid md:grid-cols-[5fr_4fr] md:gap-[clamp(20px,3vh,32px)] md:items-stretch">
-          <div className="relative flex flex-col gap-[clamp(6px,1.2vh,16px)] px-[clamp(8px,1.4vh,20px)] md:px-0">
+        <div className="flex flex-col items-stretch gap-[clamp(8px,1.6vh,20px)] md:grid md:grid-cols-[5fr_4fr] md:gap-[clamp(20px,3vh,32px)] md:items-stretch">
+          <div className="relative flex flex-col gap-[clamp(6px,1.2vh,16px)] w-full order-1 md:order-1">
             <span
               data-howto-line
               aria-hidden="true"
-              className="absolute left-[calc(clamp(8px,1.4vh,20px)+clamp(20px,2.8vh,38px))] top-[clamp(14px,2vh,24px)] bottom-[clamp(14px,2vh,24px)] w-[2px] bg-gradient-to-b from-[#0991B2] via-[#06B6D4] to-[#0991B2]/30 rounded-full md:left-[clamp(20px,2.8vh,38px)]"
+              className="absolute left-[clamp(20px,2.8vh,38px)] top-[clamp(14px,2vh,24px)] bottom-[clamp(14px,2vh,24px)] w-[2px] bg-gradient-to-b from-[#0991B2] via-[#06B6D4] to-[#0991B2]/30 rounded-full"
             />
             {HOW_TO_STEPS.map((step) => (
               <div
@@ -118,7 +108,7 @@ export function HowToSection() {
           <div
             data-howto-dark
             data-cursor-hover
-            className="relative bg-[#0A0A0A] rounded-md shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)] flex flex-col justify-end overflow-hidden animate-breathe-ring p-[clamp(12px,2vh,36px)] min-h-[clamp(220px,32vh,420px)] md:rounded-lg"
+            className="relative bg-[#0A0A0A] rounded-md shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)] flex flex-col justify-end overflow-hidden animate-breathe-ring p-[clamp(12px,2vh,36px)] min-h-[clamp(220px,32vh,420px)] w-full order-2 md:order-2 md:rounded-lg"
           >
             <Suspense fallback={null}>
               <div

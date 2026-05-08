@@ -2,7 +2,8 @@ import { useState, useEffect, useMemo } from "react";
 import { useAuthStore } from "@/features/auth";
 import { useNavigate, Link } from "react-router-dom";
 import { getTermsDocumentsApi, getTermsDocumentApi, type TermsDocument } from "@/features/auth/api/termsApi";
-import { Modal } from "@/shared/ui/Modal";
+import { Modal, PasswordChecklist } from "@/shared/ui";
+import { validatePassword } from "@/shared/lib/validatePassword";
 
 const isValidEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 
@@ -43,8 +44,7 @@ export function SignUpPage() {
     });
   }, []);
 
-  const allRequiredAgreed = useMemo(() => {
-    const requiredIds = terms.filter((t) => t.isRequired).map((t) => t.id);
+  const allRequiredAgreed = useMemo(() => {    const requiredIds = terms.filter((t) => t.isRequired).map((t) => t.id);
     return requiredIds.every((id) => agreements[id]);
   }, [terms, agreements]);
 
@@ -56,7 +56,8 @@ export function SignUpPage() {
     if (!name.trim()) return "이름을 입력해주세요.";
     if (!email.trim()) return "올바른 이메일을 입력해주세요.";
     if (!isValidEmail(email)) return "올바른 이메일을 입력해주세요.";
-    if (password.length < 8) return "비밀번호는 8자 이상이어야 합니다.";
+    const pwError = validatePassword(password);
+    if (pwError) return pwError;
     if (!timingSafeEqual(password, passwordConfirm)) return "비밀번호가 일치하지 않습니다.";
     if (!allRequiredAgreed) return "필수 약관에 모두 동의해주세요.";
     return null;
@@ -126,8 +127,7 @@ export function SignUpPage() {
             여정
           </h1>
           <p className="text-[14px] text-[#6B7280] leading-[1.7] mb-6 text-center md:text-left md:text-[15px]">
-            이메일 하나로 시작하는 AI 면접 코치.
-            <br className="hidden md:block" />
+            <span className="hidden md:inline">이메일 하나로 시작하는 AI 면접 코치.<br /></span>
             3단계만 거치면 바로 연습할 수 있어요.
           </p>
 
@@ -179,11 +179,12 @@ export function SignUpPage() {
               <div className="mb-4 md:mb-[18px]">
                 <label className="block text-[13px] font-semibold text-[#374151] mb-1.5" htmlFor="su-pw">비밀번호</label>
                 <div className="relative">
-                  <input id="su-pw" className={inputClass} type={showPw ? "text" : "password"} placeholder="8자 이상" value={password} onChange={(e) => setPassword(e.target.value)} />
+                  <input id="su-pw" className={inputClass} type={showPw ? "text" : "password"} placeholder="대·소문자·숫자·특수문자 포함 8자 이상" value={password} onChange={(e) => setPassword(e.target.value)} />
                   <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 bg-none border-none cursor-pointer text-[#9CA3AF] p-1 flex items-center justify-center hover:text-[#6B7280]" onClick={() => setShowPw(!showPw)} aria-label={showPw ? "비밀번호 숨기기" : "비밀번호 보기"}>
                     {showPw ? <EyeOff /> : <EyeOn />}
                   </button>
                 </div>
+                <PasswordChecklist password={password} />
               </div>
 
               <div className="mb-4 md:mb-[18px]">
@@ -243,7 +244,7 @@ export function SignUpPage() {
               <button
                 type="submit"
                 className="w-full py-[15px] bg-[#0A0A0A] text-white font-plex-sans-kr text-[15px] font-bold border-none rounded-lg cursor-pointer transition-opacity duration-200 hover:enabled:opacity-85 disabled:opacity-50 disabled:cursor-not-allowed md:py-4 md:text-[16px]"
-                disabled={isLoading}
+                disabled={isLoading || !name.trim() || !isValidEmail(email) || validatePassword(password) !== null || !timingSafeEqual(password, passwordConfirm) || !allRequiredAgreed}
               >
                 {isLoading ? "처리 중..." : "가입하기 →"}
               </button>

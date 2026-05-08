@@ -1,4 +1,5 @@
 import type { CheckStatus } from "@/features/interview-precheck";
+import { Globe, Zap } from "lucide-react";
 
 interface StepBrowserEnvProps {
   networkStatus: CheckStatus;
@@ -57,13 +58,17 @@ export function StepBrowserEnv({
         <div className="flex flex-col gap-4">
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-slate-800/60 border border-white/10 rounded-xl p-4 text-center">
-              <div className="text-[20px] mb-1">🌐</div>
+              <div className="flex justify-center mb-2">
+                <Globe size={20} className="text-slate-400" />
+              </div>
               <div className="text-[13px] font-extrabold text-slate-200 mb-1">네트워크</div>
               <div className="text-[12px] font-semibold">{statusText(networkStatus, "정상 연결")}</div>
               <div className="text-[10px] text-slate-500 mt-1">{networkStatus === "ok" ? `응답 ${networkLatency}` : "측정 중"}</div>
             </div>
             <div className="bg-slate-800/60 border border-white/10 rounded-xl p-4 text-center">
-              <div className="text-[20px] mb-1">⚡</div>
+              <div className="flex justify-center mb-2">
+                <Zap size={20} className="text-slate-400" />
+              </div>
               <div className="text-[13px] font-extrabold text-slate-200 mb-1">GPU 가속</div>
               <div className="text-[12px] font-semibold">{statusText(gpuStatus, "활성화")}</div>
               <div className="text-[10px] text-slate-500 mt-1 line-clamp-1">{gpuStatus === "ok" && gpuInfo ? gpuInfo : gpuStatus === "fail" ? "소프트웨어" : "확인 중"}</div>
@@ -84,7 +89,7 @@ export function StepBrowserEnv({
 
           <div className="flex gap-3 mt-auto">
             <button className="flex-1 py-3 rounded-xl font-bold text-[13px] text-slate-400 bg-transparent border border-white/10 hover:bg-white/5 transition-colors cursor-pointer" onClick={onBack}>← 이전</button>
-            <button disabled={!step2Ok} onClick={onNext} className="flex-1 py-3 rounded-xl font-bold text-[13px] text-white bg-indigo-600 hover:bg-indigo-500 transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer">
+            <button disabled={!step2Ok} onClick={onNext} className="flex-1 py-3 rounded-xl font-bold text-[13px] text-white bg-[#06B6D4] hover:bg-[#22D3EE] transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer">
               {step2Checked ? (step2Ok ? "다음 →" : "네트워크 필요") : "점검 중..."}
             </button>
           </div>

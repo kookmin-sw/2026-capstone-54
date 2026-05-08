@@ -3,10 +3,11 @@ import { MoreVertical, Edit2, Trash2 } from "lucide-react";
 import {
   AnalysisProgress,
   ResumeStatusBadge,
-  ResumeTypeIcon,
   type ResumeListItem,
 } from "@/features/resume";
 import { formatDateTime } from "@/shared/lib/format/date";
+import { CATEGORY_STYLE } from "@/shared/ui/categoryIconStyle";
+import { inferCategoryId } from "@/shared/ui/inferCategoryId";
 
 interface ResumeCardProps {
   resume: ResumeListItem;
@@ -28,6 +29,8 @@ export function ResumeCard({ resume, onDetail, onEdit, onDelete }: ResumeCardPro
   }, [menuOpen]);
 
   const isProcessing = resume.analysisStatus === "processing" || resume.analysisStatus === "pending";
+  const categoryId = inferCategoryId(resume.resumeJobCategory?.name ?? "", resume.title ?? "");
+  const { Icon, color, bgColor } = CATEGORY_STYLE[categoryId] ?? CATEGORY_STYLE[0];
 
   return (
     <div
@@ -35,8 +38,8 @@ export function ResumeCard({ resume, onDetail, onEdit, onDelete }: ResumeCardPro
       className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-lg p-5 flex flex-col gap-3 shadow-[0_1px_3px_rgba(0,0,0,0.06)] hover:border-[#0991B2] transition-colors cursor-pointer"
     >
       <div className="flex items-start gap-3">
-        <div className="w-10 h-10 rounded-lg bg-white border border-[#E5E7EB] flex items-center justify-center shrink-0">
-          <ResumeTypeIcon type={resume.type} size={18} className="text-[#0991B2]" />
+        <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${bgColor}`}>
+          <Icon size={18} className={color} />
         </div>
 
         <div className="flex-1 min-w-0">

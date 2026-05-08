@@ -20,3 +20,4 @@ export { CoachMarks } from "./CoachMarks";
 export type { CoachMarkStep, CoachMarksProps } from "./CoachMarks";
 export { MarqueeRow } from "./MarqueeRow";
 export { LottiePlayer } from "./LottiePlayer";
+export { PasswordChecklist } from "./PasswordChecklist";
