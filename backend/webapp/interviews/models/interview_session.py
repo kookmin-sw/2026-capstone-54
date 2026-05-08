@@ -4,6 +4,7 @@ from common.models import BaseModelWithUUID
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericRelation
 from django.db import models
+from django.db.models import Count, Q
 from django.utils import timezone
 from interviews.constants import (
   FOLLOWUP_ANCHOR_COUNT,
@@ -17,6 +18,10 @@ from interviews.enums import (
   InterviewSessionType,
   InterviewSttMode,
 )
+
+
+class InterviewSessionCompletionNotEligibleError(ValueError):
+  pass
 
 
 class InterviewSession(BaseModelWithUUID):
@@ -129,14 +134,16 @@ class InterviewSession(BaseModelWithUUID):
     expected = self.get_expected_total_questions()
     if expected == 0:
       return False
-    if self.turns.count() != expected:
-      return False
-    return not self.turns.filter(answer="").exists()
+    stats = self.turns.aggregate(
+      total=Count("id"),
+      unanswered=Count("id", filter=Q(answer="")),
+    )
+    return stats["total"] == expected and stats["unanswered"] == 0
 
   def mark_completed(self) -> None:
     """면접 세션을 COMPLETED 로 변경한다 (is_completion_eligible 위반 시 ValueError)."""
     if not self.is_completion_eligible():
-      raise ValueError("모든 요구 질문에 답변이 완료되지 않은 세션은 종료할 수 없습니다.")
+      raise InterviewSessionCompletionNotEligibleError("모든 요구 질문에 답변이 완료되지 않은 세션은 종료할 수 없습니다.")
     self.interview_session_status = InterviewSessionStatus.COMPLETED
     self.save(update_fields=["interview_session_status", "updated_at"])
 
