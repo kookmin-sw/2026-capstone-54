@@ -123,6 +123,8 @@ class InterviewRecordingTable(Base):
     audio_key = Column(String(500), default="")
     scaled_audio_key = Column(String(500), default="")
     duration_ms = Column(Integer, nullable=True)
+    face_analysis_result_key = Column(String(500), default="")
+    face_analysis_result = Column(JSONB, default=dict)
 
 
 class InterviewBehaviorAnalysisTable(Base):

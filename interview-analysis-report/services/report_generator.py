@@ -23,6 +23,7 @@ from db.models import (
 )
 from services.llm_analyzer import AnalysisContext, ExchangeData, LLMAnalyzer
 from services.voice_analysis_invoker import VoiceAnalysisInvoker
+from services.video_analysis_aggregator import VideoAnalysisAggregator
 from sqlalchemy import case, Integer
 from utils.content_loader import get_job_description_content, get_resume_content
 
@@ -35,6 +36,7 @@ class ReportGeneratorService:
     def __init__(self) -> None:
         self._analyzer = LLMAnalyzer()
         self._voice_invoker = VoiceAnalysisInvoker()
+        self._video_aggregator = VideoAnalysisAggregator()
 
     def generate(self, report_id: int, bundle_url: str = "") -> None:
         try:
@@ -112,7 +114,23 @@ class ReportGeneratorService:
             # 7) LLM 분석 실행
             result = self._analyzer.analyze(context)
 
-            # 7) 결과를 AnalysisReport에 저장
+            # 8) 영상 분석 집계 (face_analysis_result → video_score + 면접태도)
+            video_result = None
+            try:
+                video_result = self._video_aggregator.aggregate(str(session_id))
+                if video_result.video_score > 0:
+                    # category_scores에 "면접태도" append
+                    result.category_scores.append({
+                        "category": "면접태도",
+                        "score": video_result.video_score,
+                        "comment": video_result.video_analysis_comment,
+                    })
+                    logger.info("영상 분석 집계 완료: video_score=%d", video_result.video_score)
+            except Exception:
+                logger.exception("영상 분석 집계 실패 — 면접태도 카테고리 없이 진행")
+
+            # 9) 결과를 AnalysisReport에 저장
+            # 9) 결과를 AnalysisReport에 저장
             report.interview_analysis_report_status = "completed"
             report.overall_score = result.overall_score
             report.overall_grade = result.overall_grade
@@ -123,7 +141,7 @@ class ReportGeneratorService:
             report.improvement_areas = result.improvement_areas
             report.updated_at = datetime.utcnow()
 
-            # 8) TokenUsage 별도 저장 (GenericForeignKey: InterviewAnalysisReport)
+            # 10) TokenUsage 별도 저장 (GenericForeignKey: InterviewAnalysisReport)
             content_type = (
                 session.query(DjangoContentTypeTable)
                 .filter_by(app_label="interviews", model="interviewanalysisreport")
