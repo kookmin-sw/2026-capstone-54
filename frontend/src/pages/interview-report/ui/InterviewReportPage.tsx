@@ -12,6 +12,7 @@ import { AudioAnalysisSection } from "./AudioAnalysisSection";
 import { VideoAnalysisSection } from "./VideoAnalysisSection";
 import { GRADE_BADGE } from "./constants";
 import { PrintLeftSlot, PrintRightSlot } from "./PrintOnlyContent";
+import "./InterviewReportPage.print.css";
 
 const SECTIONS = [
   { id: "overview", label: "면접 개요" },
