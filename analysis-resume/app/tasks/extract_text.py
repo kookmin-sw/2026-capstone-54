@@ -44,7 +44,11 @@ def _read_pdf_bytes(storage_path: str) -> bytes:
 def extract_text_from_pdf(pdf_bytes: bytes) -> str:
   reader = PdfReader(io.BytesIO(pdf_bytes))
   pages = [page.extract_text() or "" for page in reader.pages]
-  return "\n".join(pages).strip()
+  text = "\n".join(pages).strip()
+  # pypdf 가 일부 PDF 에서 NUL(0x00) 바이트를 포함한 텍스트를 반환할 수 있다.
+  # PostgreSQL text 필드는 NUL 바이트를 허용하지 않으므로 제거한다.
+  text = text.replace("\x00", "")
+  return text
 
 
 @app.task(bind=True, name="analysis_resume.tasks.extract_text", max_retries=2, default_retry_delay=30)
