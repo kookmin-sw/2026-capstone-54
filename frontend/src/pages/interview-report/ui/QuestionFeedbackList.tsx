@@ -35,20 +35,20 @@ export function QuestionFeedbackList({
     <div className="report-card overflow-hidden">
       {/* Header */}
       <div className="p-5 border-b border-gray-100">
-        <p className="text-[11px] font-semibold tracking-[.08em] uppercase text-[#9CA3AF] mb-0.5">질문별 상세 피드백</p>
+        <p className="text-[15px] font-bold text-[#374151] mb-0.5">질문별 상세 피드백</p>
         <p className="text-[13px] text-[#9CA3AF]">총 {feedbacks.length}개 질문</p>
       </div>
 
       {/* Tab bar */}
-      <div className="flex border-b border-gray-100 overflow-x-auto">
+      <div className="flex overflow-x-auto overflow-y-hidden scrollbar-thin">
         {feedbacks.map((qf, i) => (
           <button
             key={qf.turnId ?? i}
             onClick={() => setActiveTab(i)}
-            className={`flex items-center gap-1.5 px-4 py-2.5 shrink-0 text-[12px] font-medium border-b-2 -mb-px transition-colors whitespace-nowrap ${
+            className={`flex items-center gap-1.5 px-4 py-4 shrink-0 text-[12px] font-medium transition-colors whitespace-nowrap ${
               activeTab === i
-                ? "text-[#0991B2] border-[#0991B2] font-semibold"
-                : "text-[#9CA3AF] border-transparent hover:text-[#374151]"
+                ? "text-[#0991B2] font-semibold"
+                : "text-[#9CA3AF] hover:text-[#374151]"
             }`}
           >
             <span className={`inline-flex items-center justify-center w-5 h-5 rounded-md text-[10px] font-bold shrink-0 ${
@@ -66,54 +66,34 @@ export function QuestionFeedbackList({
       {/* Active panel */}
       {activeFeedback && (
         <div className="p-5 space-y-4">
-          {/* Question & Answer */}
-          <div className="space-y-2">
-            {/* 메타 배지 */}
-            <div className="flex flex-wrap gap-1.5 mb-1">
-              {activeFeedback.turnType && (
-                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#E6F7FA] text-[#0991B2]">
-                  {activeFeedback.turnType === "initial" ? "초기질문" : "꼬리질문"}
-                </span>
-              )}
-              {activeFeedback.questionSource && activeFeedback.questionSource !== "" && (
-                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#F3F4F6] text-[#6B7280]">
-                  {activeFeedback.questionSource === "job_posting" ? "채용공고 기반" : activeFeedback.questionSource === "resume" ? "이력서 기반" : activeFeedback.questionSource}
-                </span>
-              )}
-              {(() => {
-                const fr = activeFeedback.fillerWordRatio ?? 0;
-                const gr = activeFeedback.gazeDeviationRatio ?? 0;
-                let stabilityLabel = "긴장";
-                let stabilityCls = "bg-red-50 text-red-600";
-                if (fr < 0.05 && gr < 0.15) { stabilityLabel = "안정"; stabilityCls = "bg-[#DCFCE7] text-[#15803D]"; }
-                else if (fr < 0.10 && gr < 0.30) { stabilityLabel = "보통"; stabilityCls = "bg-amber-50 text-amber-600"; }
-                return (
-                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${stabilityCls}`}>
-                    {stabilityLabel}
-                  </span>
-                );
-              })()}
+          {/* 영상 + Q&A 가로 배치 */}
+          <div className="flex flex-col sm:flex-row gap-4">
+            {/* 영상 (좌측) */}
+            <div className="sm:w-1/2 shrink-0">
+              <InteractiveTimeline
+                recordingId={recording?.recordingId}
+                mediaType={recording?.mediaType}
+                speechData={behaviorAnalysis?.speechData ?? null}
+                speechSegments={speechSegments}
+              />
             </div>
 
-            <div className="bg-[#F9FAFB] rounded-xl p-3">
-              <p className="text-[12px] font-semibold text-[#9CA3AF] mb-1">Q.</p>
-              <p className="text-[13px] text-[#374151]">{activeFeedback.question}</p>
-            </div>
-            {turnAnswerMap[activeFeedback.turnId] && (
-              <div className="bg-[#E6F7FA]/50 rounded-xl p-3 border border-[rgba(9,145,178,0.15)]">
-                <p className="text-[12px] font-semibold text-[#06B6D4] mb-1">A.</p>
-                <p className="text-[13px] text-[#374151]">{turnAnswerMap[activeFeedback.turnId]}</p>
+            {/* Q&A (우측) */}
+            <div className="flex-1 space-y-2">
+
+
+              <div className="bg-[#F9FAFB] rounded-xl p-3">
+                <p className="text-[20px] font-bold text-[#0891B2] mb-1 italic" style={{ fontFamily: "'Inter Tight', sans-serif" }}>Q.</p>
+                <p className="text-[13px] text-[#374151]">{activeFeedback.question}</p>
               </div>
-            )}
+              {turnAnswerMap[activeFeedback.turnId] && (
+                <div className="bg-[#F9FAFB] rounded-xl p-3">
+                  <p className="text-[20px] font-bold text-[#0891B2] mb-1 italic" style={{ fontFamily: "'Inter Tight', sans-serif" }}>A.</p>
+                  <p className="text-[13px] text-[#374151]">{turnAnswerMap[activeFeedback.turnId]}</p>
+                </div>
+              )}
+            </div>
           </div>
-
-          {/* Timeline */}
-          <InteractiveTimeline
-            recordingId={recording?.recordingId}
-            mediaType={recording?.mediaType}
-            speechData={behaviorAnalysis?.speechData ?? null}
-            speechSegments={speechSegments}
-          />
 
           {/* Strengths & Improvements */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -127,12 +107,12 @@ export function QuestionFeedbackList({
                 ))}
               </ul>
             </div>
-            <div className="bg-amber-50/60 rounded-xl p-3 border border-amber-100/50">
-              <p className="text-[12px] font-semibold text-amber-600 mb-1.5">개선할 점</p>
+            <div className="bg-[#FDF6E3]/60 rounded-xl p-3 border border-[#E9B63B]/20">
+              <p className="text-[12px] font-semibold text-[#E9B63B] mb-1.5">개선할 점</p>
               <ul className="space-y-1">
                 {activeFeedback.improvements.map((s, j) => (
                   <li key={j} className="text-[12px] text-[#374151] flex items-start gap-1.5">
-                    <span className="text-amber-400 shrink-0 mt-0.5">·</span>{s}
+                    <span className="text-[#E9B63B] shrink-0 mt-0.5">·</span>{s}
                   </li>
                 ))}
               </ul>
@@ -173,25 +153,25 @@ function TurnMetricCards({ feedback }: { feedback: InterviewQuestionFeedback }) 
     : spm >= 260 && spm <= 350
     ? { label: "적절", cls: "bg-[#DCFCE7] text-[#15803D]" }
     : spm > 350
-    ? { label: "빠름", cls: "bg-amber-50 text-amber-600" }
-    : { label: "느림", cls: "bg-amber-50 text-amber-600" };
+    ? { label: "빠름", cls: "bg-[#FDF6E3] text-[#E9B63B]" }
+    : { label: "느림", cls: "bg-[#FDF6E3] text-[#E9B63B]" };
 
   const fillerBadge = fillerRatio < 0.05
     ? { label: "양호", cls: "bg-[#DCFCE7] text-[#15803D]" }
     : fillerRatio < 0.10
-    ? { label: "보통", cls: "bg-amber-50 text-amber-600" }
+    ? { label: "보통", cls: "bg-[#FDF6E3] text-[#E9B63B]" }
     : { label: "개선 필요", cls: "bg-red-50 text-red-600" };
 
   const silenceBadge = silenceRatio < 0.20
     ? { label: "적절", cls: "bg-[#DCFCE7] text-[#15803D]" }
     : silenceRatio < 0.30
-    ? { label: "조금 많음", cls: "bg-amber-50 text-amber-600" }
+    ? { label: "조금 많음", cls: "bg-[#FDF6E3] text-[#E9B63B]" }
     : { label: "너무 깁니다", cls: "bg-red-50 text-red-600" };
 
   const gazeBadge = gazeCount < 5
     ? { label: "안정", cls: "bg-[#DCFCE7] text-[#15803D]" }
     : gazeCount < 12
-    ? { label: "불안정", cls: "bg-amber-50 text-amber-600" }
+    ? { label: "불안정", cls: "bg-[#FDF6E3] text-[#E9B63B]" }
     : { label: "주의", cls: "bg-red-50 text-red-600" };
 
   return (
@@ -206,7 +186,7 @@ function TurnMetricCards({ feedback }: { feedback: InterviewQuestionFeedback }) 
 
       {/* 필러워드 */}
       <div className="bg-[#F9FAFB] rounded-xl p-3 flex flex-col items-center text-center">
-        <AlertTriangle size={14} className="text-amber-500 mb-1.5" />
+        <AlertTriangle size={14} className="text-[#E9B63B] mb-1.5" />
         <p className="text-[11px] text-[#6B7280] mb-1">필러워드</p>
         <p className="text-[13px] font-bold text-[#374151] tabular-nums">
           {fillerCount}회 · {(fillerRatio * 100).toFixed(1)}%

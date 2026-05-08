@@ -51,8 +51,8 @@ export function InterviewOverview({ report }: Props) {
   ];
 
   return (
-    <div className="report-card p-5">
-      <p className="text-[11px] font-semibold tracking-[.08em] uppercase text-[#9CA3AF] mb-4">
+    <div className="report-card p-7">
+      <p className="text-[15px] font-bold text-[#374151] mb-4">
         면접 개요
       </p>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-8 gap-y-4">

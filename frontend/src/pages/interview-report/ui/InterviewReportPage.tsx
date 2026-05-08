@@ -168,9 +168,9 @@ export function InterviewReportPage() {
 
               {/* 종합 평가 */}
               <section id="summary" className="scroll-mt-20">
-                <div className="report-card-hi p-5">
+                <div className="report-card-hi p-7">
                   <div className="flex items-center justify-between mb-4">
-                    <p className="text-[11px] font-semibold tracking-[.08em] uppercase text-[#9CA3AF]">종합 평가</p>
+                    <p className="text-[15px] font-bold text-[#374151]">종합 평가</p>
                     <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${gradeBadge.bg} ${gradeBadge.text}`}>
                       {gradeBadge.label}
                     </span>
@@ -180,7 +180,9 @@ export function InterviewReportPage() {
                       <ScoreGauge score={report.overallScore ?? 0} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[13px] text-[#4B5563] leading-relaxed mb-3">{report.overallComment}</p>
+                      <p className="text-[13px] text-[#4B5563] leading-relaxed mb-3">
+                        {[report.overallComment, report.audioAnalysisComment, report.videoAnalysisComment].filter(Boolean).join(" ")}
+                      </p>
                       <div className="flex flex-wrap gap-2">
                         {report.durationSeconds && report.durationSeconds > 0 && (
                           <div className="flex items-center gap-1.5 text-[12px] text-[#6B7280] bg-[#F9FAFB] px-2.5 py-1 rounded-lg border border-gray-100">
@@ -201,8 +203,8 @@ export function InterviewReportPage() {
               {/* 역량 분석 */}
               {report.categoryScores.length > 0 && (
                 <section id="capabilities" className="scroll-mt-20">
-                  <div className="report-card p-6">
-                    <p className="text-[11px] font-semibold tracking-[.08em] uppercase text-[#9CA3AF] mb-5">역량 분석</p>
+                  <div className="report-card p-8">
+                    <p className="text-[15px] font-bold text-[#374151] mb-5">역량 분석</p>
                     <div className="flex flex-col sm:flex-row items-stretch gap-8">
                       <div className="w-full sm:w-1/3 shrink-0 flex items-center justify-center overflow-hidden">
                         <RadarChart scores={report.categoryScores} />
@@ -238,7 +240,6 @@ export function InterviewReportPage() {
               <section id="audio-section" className="scroll-mt-20">
                 <AudioAnalysisSection
                   audioAnalysisResult={report.audioAnalysisResult}
-                  audioAnalysisComment={report.audioAnalysisComment}
                 />
               </section>
 

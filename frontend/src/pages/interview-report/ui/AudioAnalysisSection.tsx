@@ -3,32 +3,31 @@ import type { AudioAnalysisResult } from "@/features/interview-session/api/types
 
 interface AudioAnalysisSectionProps {
   audioAnalysisResult?: AudioAnalysisResult | null;
-  audioAnalysisComment?: string;
 }
 
 function getSpmBadge(spm: number) {
   if (spm === 0) return { label: "—", cls: "bg-[#F3F4F6] text-[#9CA3AF]" };
   if (spm >= 260 && spm <= 350) return { label: "적절해요", cls: "bg-[#DCFCE7] text-[#15803D]" };
-  if (spm > 350) return { label: "빠릅니다", cls: "bg-amber-50 text-amber-600" };
-  return { label: "느립니다", cls: "bg-amber-50 text-amber-600" };
+  if (spm > 350) return { label: "빠릅니다", cls: "bg-[#FDF6E3] text-[#E9B63B]" };
+  return { label: "느립니다", cls: "bg-[#FDF6E3] text-[#E9B63B]" };
 }
 
 function getFillerBadge(ratio: number) {
   if (ratio < 0.05) return { label: "양호", cls: "bg-[#DCFCE7] text-[#15803D]" };
-  if (ratio < 0.10) return { label: "보통", cls: "bg-amber-50 text-amber-600" };
+  if (ratio < 0.10) return { label: "보통", cls: "bg-[#FDF6E3] text-[#E9B63B]" };
   return { label: "개선 필요", cls: "bg-red-50 text-red-600" };
 }
 
 function getSilenceBadge(ratio: number) {
   if (ratio < 0.20) return { label: "자연스러워요", cls: "bg-[#DCFCE7] text-[#15803D]" };
-  if (ratio < 0.30) return { label: "조금 많음", cls: "bg-amber-50 text-amber-600" };
+  if (ratio < 0.30) return { label: "조금 많음", cls: "bg-[#FDF6E3] text-[#E9B63B]" };
   return { label: "너무 깁니다", cls: "bg-red-50 text-red-600" };
 }
 
 function getVolumeBadge(dbfs: number | null) {
   if (dbfs === null || dbfs === 0) return { label: "—", cls: "bg-[#F3F4F6] text-[#9CA3AF]" };
   if (dbfs >= -30 && dbfs <= -10) return { label: "안정적이에요", cls: "bg-[#DCFCE7] text-[#15803D]" };
-  return { label: "불안정합니다", cls: "bg-amber-50 text-amber-600" };
+  return { label: "불안정합니다", cls: "bg-[#FDF6E3] text-[#E9B63B]" };
 }
 
 function getPerTurnFillerBadge(ratio: number) {
@@ -37,7 +36,7 @@ function getPerTurnFillerBadge(ratio: number) {
   return { label: "개선 필요", cls: "bg-red-50 text-red-600" };
 }
 
-export function AudioAnalysisSection({ audioAnalysisResult, audioAnalysisComment }: AudioAnalysisSectionProps) {
+export function AudioAnalysisSection({ audioAnalysisResult }: AudioAnalysisSectionProps) {
   const summary = audioAnalysisResult?.summary;
   const perTurn = audioAnalysisResult?.perTurn ?? [];
   const hasData = !!summary && (summary.avgSpeechRateSpm > 0 || summary.avgSilenceRatio > 0);
@@ -48,23 +47,20 @@ export function AudioAnalysisSection({ audioAnalysisResult, audioAnalysisComment
   const volumeBadge = getVolumeBadge(summary?.avgVolumeDbfs ?? null);
 
   return (
-    <div className="report-card p-5">
-      <p className="text-[11px] font-semibold tracking-[.08em] uppercase text-[#9CA3AF] mb-4">음성 분석 종합</p>
+    <div className="report-card p-7">
+      <p className="text-[15px] font-bold text-[#374151] mb-4">음성 분석 종합</p>
 
-      {audioAnalysisComment && hasData && (
-        <p className="text-[12px] text-[#6B7280] leading-relaxed mb-4">{audioAnalysisComment}</p>
-      )}
+
 
       {/* 4개 지표 카드 */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
         {/* 말하기 속도 */}
         <div className="bg-[#F9FAFB] rounded-2xl p-4 flex flex-col items-center text-center">
-          <div className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center mb-2.5">
-            <Mic size={16} className="text-emerald-500" />
+          <div className="w-9 h-9 rounded-xl bg-[#E6F7FA] flex items-center justify-center mb-2.5">
+            <Mic size={16} className="text-[#0E7490]" />
           </div>
           <p className="text-[12px] font-semibold text-[#4B5563] mb-1">말하기 속도</p>
-          <span className={`text-[11px] font-bold px-3 py-1 rounded-full mb-2 ${spmBadge.cls}`}>{spmBadge.label}</span>
-          <p className="text-[11px] text-[#9CA3AF] leading-snug">분당 음절 수 기준</p>
+          <span className={`text-[13px] font-bold px-4 py-1.5 rounded-full mb-2 ${spmBadge.cls}`}>{spmBadge.label}</span>
           <p className="text-[11px] text-[#374151] font-semibold mt-2 tabular-nums">
             {hasData ? `${summary!.avgSpeechRateSpm} SPM` : "— SPM"}
           </p>
@@ -72,12 +68,11 @@ export function AudioAnalysisSection({ audioAnalysisResult, audioAnalysisComment
 
         {/* 필러워드 */}
         <div className="bg-[#F9FAFB] rounded-2xl p-4 flex flex-col items-center text-center">
-          <div className="w-9 h-9 rounded-xl bg-amber-50 flex items-center justify-center mb-2.5">
-            <AlertTriangle size={16} className="text-amber-500" />
+          <div className="w-9 h-9 rounded-xl bg-[#E6F7FA] flex items-center justify-center mb-2.5">
+            <AlertTriangle size={16} className="text-[#0C7A8A]" />
           </div>
           <p className="text-[12px] font-semibold text-[#4B5563] mb-1">필러워드</p>
-          <span className={`text-[11px] font-bold px-3 py-1 rounded-full mb-2 ${fillerBadge.cls}`}>{fillerBadge.label}</span>
-          <p className="text-[11px] text-[#9CA3AF] leading-snug">5% 미만 권장</p>
+          <span className={`text-[13px] font-bold px-4 py-1.5 rounded-full mb-2 ${fillerBadge.cls}`}>{fillerBadge.label}</span>
           <p className="text-[11px] text-[#374151] font-semibold mt-2 tabular-nums">
             {hasData ? `전체 ${(summary!.totalFillerWordRatio * 100).toFixed(1)}%` : "— %"}
           </p>
@@ -85,12 +80,11 @@ export function AudioAnalysisSection({ audioAnalysisResult, audioAnalysisComment
 
         {/* 묵음 구간 */}
         <div className="bg-[#F9FAFB] rounded-2xl p-4 flex flex-col items-center text-center">
-          <div className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center mb-2.5">
-            <VolumeX size={16} className="text-emerald-500" />
+          <div className="w-9 h-9 rounded-xl bg-[#E6F7FA] flex items-center justify-center mb-2.5">
+            <VolumeX size={16} className="text-[#0A6577]" />
           </div>
           <p className="text-[12px] font-semibold text-[#4B5563] mb-1">묵음 구간</p>
-          <span className={`text-[11px] font-bold px-3 py-1 rounded-full mb-2 ${silenceBadge.cls}`}>{silenceBadge.label}</span>
-          <p className="text-[11px] text-[#9CA3AF] leading-snug">20% 미만 자연스러움</p>
+          <span className={`text-[13px] font-bold px-4 py-1.5 rounded-full mb-2 ${silenceBadge.cls}`}>{silenceBadge.label}</span>
           <p className="text-[11px] text-[#374151] font-semibold mt-2 tabular-nums">
             {hasData ? `평균 ${(summary!.avgSilenceRatio * 100).toFixed(0)}%` : "— %"}
           </p>
@@ -98,12 +92,11 @@ export function AudioAnalysisSection({ audioAnalysisResult, audioAnalysisComment
 
         {/* 목소리 크기 */}
         <div className="bg-[#F9FAFB] rounded-2xl p-4 flex flex-col items-center text-center">
-          <div className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center mb-2.5">
-            <Volume2 size={16} className="text-emerald-500" />
+          <div className="w-9 h-9 rounded-xl bg-[#E6F7FA] flex items-center justify-center mb-2.5">
+            <Volume2 size={16} className="text-[#155E75]" />
           </div>
           <p className="text-[12px] font-semibold text-[#4B5563] mb-1">목소리 크기</p>
-          <span className={`text-[11px] font-bold px-3 py-1 rounded-full mb-2 ${volumeBadge.cls}`}>{volumeBadge.label}</span>
-          <p className="text-[11px] text-[#9CA3AF] leading-snug">-30~-10 dBFS 안정</p>
+          <span className={`text-[13px] font-bold px-4 py-1.5 rounded-full mb-2 ${volumeBadge.cls}`}>{volumeBadge.label}</span>
           <p className="text-[11px] text-[#374151] font-semibold mt-2 tabular-nums">
             {hasData && summary!.avgVolumeDbfs !== 0 ? `${summary!.avgVolumeDbfs} dBFS` : "—"}
           </p>

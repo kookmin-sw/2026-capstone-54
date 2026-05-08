@@ -31,14 +31,14 @@ export function ScoreGauge({ score }: { score: number }) {
   return (
     <div ref={ref} className="relative flex-shrink-0">
       <div
-        className="w-[92px] h-[92px] rounded-full flex items-center justify-center"
+        className="w-[120px] h-[120px] rounded-full flex items-center justify-center"
         style={{
-          background: `conic-gradient(#0991B2 0% ${animatedPct}%, #E5E7EB ${animatedPct}% 100%)`,
+          background: `conic-gradient(#0891B2 0% ${animatedPct}%, #E5E7EB ${animatedPct}% 100%)`,
         }}
       >
-        <div className="w-[70px] h-[70px] rounded-full bg-white flex flex-col items-center justify-center shadow-[0_1px_4px_rgba(0,0,0,.08)]">
-          <span className="text-[24px] font-bold text-[#0991B2] tabular-nums">{animatedScore}</span>
-          <span className="text-[11px] text-[#9CA3AF] -mt-0.5">/ 100</span>
+        <div className="w-[92px] h-[92px] rounded-full bg-white flex flex-col items-center justify-center shadow-[0_1px_4px_rgba(0,0,0,.08)]">
+          <span className="text-[32px] font-bold text-[#0891B2] tabular-nums">{animatedScore}</span>
+          <span className="text-[12px] text-[#9CA3AF] -mt-0.5">/ 100</span>
         </div>
       </div>
       <span className={`absolute -top-1 -right-2 text-[11px] font-bold px-1.5 py-0.5 rounded-full ${badge.bg} ${badge.text}`}>

@@ -9,13 +9,13 @@ interface VideoAnalysisProps {
 
 function getGazeOverallBadge(ratio: number) {
   if (ratio < 0.15) return { label: "전체 안정", cls: "bg-[#DCFCE7] text-[#15803D]" };
-  if (ratio < 0.30) return { label: "보통", cls: "bg-amber-50 text-amber-600" };
+  if (ratio < 0.30) return { label: "보통", cls: "bg-[#FDF6E3] text-[#E9B63B]" };
   return { label: "주의 필요", cls: "bg-red-50 text-red-600" };
 }
 
 function getGazeTurnBadge(count: number) {
   if (count < 5) return { label: "안정", cls: "bg-[#DCFCE7] text-[#15803D]" };
-  if (count < 12) return { label: "불안정", cls: "bg-amber-50 text-amber-600" };
+  if (count < 12) return { label: "불안정", cls: "bg-[#FDF6E3] text-[#E9B63B]" };
   return { label: "주의", cls: "bg-red-50 text-red-600" };
 }
 
@@ -48,15 +48,15 @@ export function VideoAnalysisSection({ summary, questionFeedbacks = [] }: VideoA
   const totalGazeCount = turnGazeData.reduce((sum, t) => sum + t.count, 0);
 
   return (
-    <div className="report-card p-5">
-      <p className="text-[11px] font-semibold tracking-[.08em] uppercase text-[#9CA3AF] mb-4">영상 분석 종합</p>
+    <div className="report-card p-7">
+      <p className="text-[15px] font-bold text-[#374151] mb-4">영상 분석 종합</p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* 표정 분포 */}
         <div className="bg-[#F9FAFB] rounded-2xl p-4 flex flex-col items-start">
           <div className="flex items-center gap-2 w-full mb-3">
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
-              <Smile size={16} className="text-emerald-500" />
+            <div className="w-9 h-9 rounded-xl bg-[#E6F7FA] flex items-center justify-center shrink-0">
+              <Smile size={16} className="text-[#0E7490]" />
             </div>
             <p className="text-[13px] font-semibold text-[#374151]">표정 분포</p>
             <span className={`ml-auto text-[11px] font-bold px-2.5 py-0.5 rounded-full ${
@@ -114,7 +114,7 @@ export function VideoAnalysisSection({ summary, questionFeedbacks = [] }: VideoA
                   <span className="text-[11px] text-[#6B7280] tabular-nums shrink-0">{neutral}%</span>
                 </div>
                 <div className="flex items-center gap-3 rounded-xl px-3 py-2 bg-white border border-gray-100">
-                  <span className="text-[11px] font-semibold text-amber-600 px-2.5 py-0.5 rounded-full border border-amber-100 bg-amber-50 shrink-0">부정</span>
+                  <span className="text-[11px] font-semibold text-[#E9B63B] px-2.5 py-0.5 rounded-full border border-[#E9B63B]/20 bg-[#FDF6E3] shrink-0">부정</span>
                   <p className="flex-1 text-[12px] text-[#6B7280]">긴장한 순간이 일부 있었으나 전반적으로 양호합니다.</p>
                   <span className="text-[11px] text-[#6B7280] tabular-nums shrink-0">{negative}%</span>
                 </div>
