@@ -1,6 +1,5 @@
 import type { LucideIcon } from "lucide-react";
 import {
-  Building2,
   ChartColumnIncreasing,
   Eye,
   FileText,
