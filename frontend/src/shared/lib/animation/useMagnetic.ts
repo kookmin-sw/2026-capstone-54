@@ -7,12 +7,14 @@ interface UseMagneticOptions {
   strength?: number;
   scale?: number;
   duration?: number;
+  maxXRatio?: number;
+  maxYRatio?: number;
 }
 
 export function useMagnetic<T extends HTMLElement>(
   options: UseMagneticOptions = {},
 ): RefObject<T | null> {
-  const { strength = 0.35, scale = 1.04, duration = 0.4 } = options;
+  const { strength = 0.35, scale = 1.04, duration = 0.4, maxXRatio = 0.15, maxYRatio = 0.4 } = options;
   const ref = useRef<T | null>(null);
   const reduced = useReducedMotion();
 
@@ -26,8 +28,10 @@ export function useMagnetic<T extends HTMLElement>(
       const rect = element.getBoundingClientRect();
       const cx = rect.left + rect.width / 2;
       const cy = rect.top + rect.height / 2;
-      const dx = (event.clientX - cx) * strength;
-      const dy = (event.clientY - cy) * strength;
+      const maxX = rect.width * maxXRatio;
+      const maxY = rect.height * maxYRatio;
+      const dx = Math.max(-maxX, Math.min(maxX, (event.clientX - cx) * strength));
+      const dy = Math.max(-maxY, Math.min(maxY, (event.clientY - cy) * strength));
       gsap.to(element, { x: dx, y: dy, scale, duration, ease: "power3.out" });
     };
 
@@ -42,7 +46,7 @@ export function useMagnetic<T extends HTMLElement>(
       element.removeEventListener("mouseleave", handleLeave);
       gsap.killTweensOf(element);
     };
-  }, [strength, scale, duration, reduced]);
+  }, [strength, scale, duration, maxXRatio, maxYRatio, reduced]);
 
   return ref;
 }

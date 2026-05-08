@@ -12,6 +12,7 @@ import type { SettingsData, SettingsProfile, SettingsNotifications, JobCategory,
 import { profileApi } from "@/shared/api/profileApi";
 import { useAuthStore } from "@/features/auth";
 import { postTermsConsentsApi } from "@/features/auth/api/termsApi";
+import { validatePassword } from "@/shared/lib/validatePassword";
 
 export type SettingsPanel = "account" | "notifications" | "subscription" | "consent";
 
@@ -277,6 +278,9 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
 
   savePassword: async () => {
     const { passwordDraft } = get();
+    const pw = passwordDraft.newPassword;
+    const pwError = validatePassword(pw);
+    if (pwError) { set({ passwordError: pwError }); return; }
     if (passwordDraft.newPassword !== passwordDraft.confirmPassword) {
       set({ passwordError: "새 비밀번호가 일치하지 않습니다." });
       return;

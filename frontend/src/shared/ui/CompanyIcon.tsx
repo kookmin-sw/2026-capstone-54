@@ -1,32 +1,47 @@
 /**
  * 회사/JD 아이콘 컴포넌트.
- * platform·title 키워드로 직군 카테고리를 추론하고,
- * categoryIconStyle 의 CATEGORY_STYLE 과 동일한 아이콘·색상을 렌더링한다.
+ * Building 아이콘을 공통으로 사용하고,
+ * seed(id 또는 title)를 해시해서 항상 동일한 항목은 동일한 색상을 표시한다.
  */
-import { CATEGORY_STYLE } from "./categoryIconStyle";
-import { inferCategoryId } from "./inferCategoryId";
+import { Building } from "lucide-react";
 
 export type CompanyIconSize = 14 | 16 | 18 | 20 | 22 | 24;
 
 interface CompanyIconProps {
-  platform?: string;
-  title?: string;
-  /** 카테고리 id를 직접 지정할 경우 platform/title 추론보다 우선 */
-  categoryId?: number;
+  /** 색상 결정에 사용할 고유 식별자 (jd id 등) */
+  seed?: string | number;
   size?: CompanyIconSize;
 }
 
-/**
- * 회사/JD 아이콘.
- * categoryId를 직접 넘기면 JobCategorySelector 와 완전히 동일한 아이콘·색상을 사용한다.
- */
-export function CompanyIcon({ platform = "", title = "", categoryId, size = 16 }: CompanyIconProps) {
-  const id = categoryId ?? inferCategoryId(platform, title);
-  const { Icon, color, bgColor } = CATEGORY_STYLE[id] ?? CATEGORY_STYLE[0];
+const PALETTES: Array<{ color: string; bgColor: string }> = [
+  { color: "#0991B2", bgColor: "#E6F7FA" }, // teal
+  { color: "#059669", bgColor: "#ECFDF5" }, // green
+  { color: "#8B5CF6", bgColor: "#F5F3FF" }, // violet
+  { color: "#F59E0B", bgColor: "#FFFBEB" }, // amber
+  { color: "#EC4899", bgColor: "#FDF2F8" }, // pink
+  { color: "#3B82F6", bgColor: "#EFF6FF" }, // blue
+  { color: "#EF4444", bgColor: "#FEF2F2" }, // red
+  { color: "#14B8A6", bgColor: "#F0FDFA" }, // teal-500
+];
+
+function hashSeed(seed: string | number): number {
+  const str = String(seed);
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash * 31 + str.charCodeAt(i)) >>> 0;
+  }
+  return hash;
+}
+
+export function CompanyIcon({ seed = 0, size = 16 }: CompanyIconProps) {
+  const { color, bgColor } = PALETTES[hashSeed(seed) % PALETTES.length];
 
   return (
-    <div className={`w-full h-full flex items-center justify-center rounded-lg ${bgColor}`}>
-      <Icon size={size} className={color} />
+    <div
+      className="w-full h-full flex items-center justify-center rounded-lg"
+      style={{ background: bgColor }}
+    >
+      <Building size={size} style={{ color }} />
     </div>
   );
 }

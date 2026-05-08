@@ -10,28 +10,6 @@ import { JobCategorySelector } from "./JobCategorySelector";
 import { JOB_STATUS_OPTIONS } from "@/features/onboarding";
 import type { SettingsPanel } from "@/features/settings";
 
-/* ── Password strength helper ── */
-const PWD_STATES = [
-  { width: "25%", color: "#EF4444", label: "약함 — 더 길게 작성해주세요" },
-  { width: "50%", color: "#F97316", label: "보통 — 숫자를 추가하세요" },
-  { width: "75%", color: "#F59E0B", label: "강함 — 특수문자를 추가하면 완벽해요" },
-  { width: "100%", color: "#10B981", label: "매우 강함 ✓" },
-];
-
-function calcPwdScore(val: string): number {
-  return [
-    val.length >= 8,
-    val.length >= 12,
-    /[A-Za-z]/.test(val) && /[0-9]/.test(val),
-    /[^A-Za-z0-9]/.test(val),
-  ].filter(Boolean).length;
-}
-
-function getPwdStrength(val: string): { width: string; color: string; label: string } {
-  if (!val) return { width: "0%", color: "#9CA3AF", label: "8자 이상, 영문+숫자+특수문자 포함 권장" };
-  return PWD_STATES[Math.min(calcPwdScore(val) - 1, 3)] ?? PWD_STATES[0];
-}
-
 const inputClass = "font-plex-sans-kr text-[14px] text-[#0A0A0A] bg-white border-[1.5px] border-[#E5E7EB] rounded-lg px-[14px] py-[10px] outline-none transition-[border-color,box-shadow] duration-[180ms] w-full placeholder-[#9CA3AF] focus:border-[#0991B2] focus:shadow-[0_0_0_3px_rgba(9,145,178,0.1)] read-only:opacity-50 read-only:cursor-not-allowed read-only:bg-[#F9FAFB]";
 
 export function SettingsPage() {
@@ -86,7 +64,6 @@ export function SettingsPage() {
     }
   }, [passwordSaveMessage, clearPasswordMessage]);
 
-  const pwdStrength = getPwdStrength(passwordDraft.newPassword);
   const pwdMatch = passwordDraft.confirmPassword
     ? passwordDraft.newPassword === passwordDraft.confirmPassword
     : null;
@@ -200,7 +177,6 @@ export function SettingsPage() {
                   {/* 비밀번호 변경 */}
                   <PasswordChangeForm
                     passwordDraft={passwordDraft}
-                    pwdStrength={pwdStrength}
                     pwdMatch={pwdMatch}
                     inputClass={inputClass}
                     saving={passwordSaving}

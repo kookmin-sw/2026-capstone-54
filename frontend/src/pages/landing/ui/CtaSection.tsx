@@ -2,8 +2,8 @@ import { Button } from "@/shared/ui";
 import { useMagnetic } from "@/shared/lib/animation";
 
 export function CtaSection() {
-  const primaryRef = useMagnetic<HTMLDivElement>({ strength: 0.35, scale: 1.04 });
-  const secondaryRef = useMagnetic<HTMLDivElement>({ strength: 0.3, scale: 1.03 });
+  const primaryRef = useMagnetic<HTMLDivElement>({ strength: 0.35, scale: 1.04, maxXRatio: 0.03 });
+  const secondaryRef = useMagnetic<HTMLDivElement>({ strength: 0.3, scale: 1.03, maxXRatio: 0.03 });
 
   return (
     <section className="bg-[#F9FAFB]">

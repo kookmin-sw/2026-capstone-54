@@ -153,7 +153,7 @@ export function AchievementsPage() {
             )}
             {data && data.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 text-center">
-                <Trophy size={48} className="text-[#0991B2] mb-5" />
+                <div className="text-[40px] mb-4">🏆</div>
                 <p className="text-[15px] font-extrabold text-[#0A0A0A] mb-2">
                   {filters.category || filters.status || filters.rewardClaim
                     ? "조건에 맞는 도전과제가 없어요"
