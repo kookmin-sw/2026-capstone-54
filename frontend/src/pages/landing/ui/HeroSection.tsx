@@ -204,7 +204,7 @@ export function HeroSection() {
                 <span
                   key={kw}
                   data-rotating-keyword
-                  className="absolute left-0 top-0 whitespace-nowrap font-plex-sans-kr font-bold text-[#0991B2] text-[clamp(11px,calc(0.9vh+0.35vw),14px)]"
+                  className="absolute left-0 inset-y-0 flex items-center whitespace-nowrap font-plex-sans-kr font-bold text-[#0991B2] text-[clamp(11px,calc(0.9vh+0.35vw),14px)]"
                 >
                   {kw}
                 </span>
