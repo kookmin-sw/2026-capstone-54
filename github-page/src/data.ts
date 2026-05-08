@@ -275,7 +275,7 @@ export const architecture: ArchCategory[] = [
     items: [
       "React 19 + Vite + Bun + TypeScript",
       "Zustand · React Router 7 · Tailwind 4",
-      "면접 세션을 상태 머신으로 관리",
+      "면접 세션을 useReducer 상태 머신으로 관리",
       "Feature-Sliced Design 아키텍처",
     ],
   },
