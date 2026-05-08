@@ -1,3 +1,4 @@
+import { X } from "lucide-react";
 import { useAchievementsStore } from "../model/store";
 import { SelectFilter } from "@/shared/ui/SelectFilter";
 
@@ -23,7 +24,10 @@ const REWARD_CLAIM_OPTIONS = [
 ];
 
 export function FilterUI() {
-  const { filters, setFilters } = useAchievementsStore();
+  const { filters, setFilters, clearFilters } = useAchievementsStore();
+
+  const hasActiveFilters =
+    filters.category !== null || filters.status !== null || filters.rewardClaim !== null;
 
   return (
     <div className="flex flex-wrap items-center gap-2 mb-6">
@@ -44,6 +48,15 @@ export function FilterUI() {
         options={REWARD_CLAIM_OPTIONS}
         onChange={(v) => setFilters({ rewardClaim: v || null })}
       />
+      {hasActiveFilters && (
+        <button
+          onClick={clearFilters}
+          className="inline-flex items-center gap-1 text-sm text-[#6B7280] hover:text-[#0A0A0A] transition-colors"
+        >
+          <X size={14} />
+          필터 초기화
+        </button>
+      )}
     </div>
   );
 }
