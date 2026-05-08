@@ -265,7 +265,7 @@ export const architecture: ArchCategory[] = [
     items: [
       "Django 6 + DRF 3.16 (Python 3.12+)",
       "Celery default / analysis / scraping 큐 분리",
-      "AWS SQS를 구동하는 Celery Worker",
+      "AWS SQS를 구독하는 Celery Worker",
       "Channels: WebSocket(면접) + SSE(분석 상태 실시간 업데이트)",
       "LangChain + OpenAI GPT-4o 기반 AI 로직",
     ],
