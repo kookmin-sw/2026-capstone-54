@@ -10,8 +10,14 @@ function SentView({ email, onRetry }: { email: string; onRetry: () => void }) {
         <Mail size={24} className="text-[#0991B2]" />
       </div>
       <p className="text-[15px] font-bold text-[#0A0A0A] mb-2">이메일을 확인해주세요</p>
-      <p className="text-[13px] text-[#6B7280] mb-1"><span className="font-semibold text-[#0A0A0A]">{email}</span></p>
-      <p className="text-[13px] text-[#6B7280] mb-6">비밀번호 재설정 링크를 발송했어요.</p>
+      <p className="text-[13px] text-[#6B7280] mb-4">비밀번호 재설정 링크를 아래 주소로 발송했어요.</p>
+
+      {/* 이메일 박스 */}
+      <div className="flex items-center justify-center gap-[10px] bg-white border border-[#E5E7EB] rounded-lg px-4 py-[13px] mb-6">
+        <Mail size={14} className="text-[#0991B2] shrink-0" />
+        <span className="text-[13px] font-semibold text-[#0A0A0A] truncate">{email}</span>
+      </div>
+
       <button type="button" className="w-full py-[13px] text-[13px] font-semibold text-[#6B7280] bg-white border border-[#E5E7EB] rounded-lg cursor-pointer transition-[color,background] duration-200 hover:text-[#0A0A0A] hover:bg-[#F3F4F6]" onClick={onRetry}>
         다른 이메일로 재시도
       </button>

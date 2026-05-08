@@ -277,6 +277,12 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
 
   savePassword: async () => {
     const { passwordDraft } = get();
+    const pw = passwordDraft.newPassword;
+    if (pw.length < 8) { set({ passwordError: "비밀번호는 8자 이상이어야 합니다." }); return; }
+    if (!/[A-Z]/.test(pw)) { set({ passwordError: "비밀번호에 대문자를 포함해야 합니다." }); return; }
+    if (!/[a-z]/.test(pw)) { set({ passwordError: "비밀번호에 소문자를 포함해야 합니다." }); return; }
+    if (!/[0-9]/.test(pw)) { set({ passwordError: "비밀번호에 숫자를 포함해야 합니다." }); return; }
+    if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(pw)) { set({ passwordError: "비밀번호에 특수문자를 포함해야 합니다." }); return; }
     if (passwordDraft.newPassword !== passwordDraft.confirmPassword) {
       set({ passwordError: "새 비밀번호가 일치하지 않습니다." });
       return;

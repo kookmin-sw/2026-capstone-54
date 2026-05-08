@@ -1,9 +1,18 @@
 import { KeyRound, Lock } from "lucide-react";
 import { Link } from "react-router-dom";
+import { PasswordChecklist } from "@/shared/ui";
+
+function validatePassword(pw: string): string | null {
+  if (pw.length < 8) return "비밀번호는 8자 이상이어야 합니다.";
+  if (!/[A-Z]/.test(pw)) return "비밀번호에 대문자를 포함해야 합니다.";
+  if (!/[a-z]/.test(pw)) return "비밀번호에 소문자를 포함해야 합니다.";
+  if (!/[0-9]/.test(pw)) return "비밀번호에 숫자를 포함해야 합니다.";
+  if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(pw)) return "비밀번호에 특수문자를 포함해야 합니다.";
+  return null;
+}
 
 interface PasswordChangeFormProps {
   passwordDraft: { currentPassword: string; newPassword: string; confirmPassword: string };
-  pwdStrength: { width: string; color: string; label: string };
   pwdMatch: boolean | null;
   inputClass: string;
   saving: boolean;
@@ -20,7 +29,6 @@ interface PasswordChangeFormProps {
 
 export function PasswordChangeForm({
   passwordDraft,
-  pwdStrength,
   pwdMatch,
   inputClass,
   saving,
@@ -68,12 +76,9 @@ export function PasswordChangeForm({
               className={inputClass}
               value={passwordDraft.newPassword}
               onChange={(e) => onSetPassword("newPassword", e.target.value)}
-              placeholder="새 비밀번호를 입력하세요"
+              placeholder="대·소문자·숫자·특수문자 포함 8자 이상"
             />
-            <div className="h-1 bg-[#E5E7EB] rounded-full mt-2 overflow-hidden">
-              <div className="h-full rounded-full transition-[width_0.4s_ease,background_0.3s]" style={{ width: pwdStrength.width, background: pwdStrength.color }} />
-            </div>
-            <p className="text-[11px] font-semibold mt-1 transition-[color] duration-300" style={{ color: pwdStrength.color }}>{pwdStrength.label}</p>
+            <PasswordChecklist password={passwordDraft.newPassword} />
           </div>
           <div className="flex flex-col gap-[5px]">
             <label className="font-plex-sans-kr text-[12px] font-bold text-[#0A0A0A] tracking-[0.1px] flex items-center gap-1">
@@ -111,7 +116,7 @@ export function PasswordChangeForm({
         <button
           className="font-plex-sans-kr text-[14px] font-bold text-white bg-[#0A0A0A] border-none rounded-lg px-6 py-[10px] cursor-pointer transition-all duration-150 flex items-center gap-[7px] hover:opacity-85 hover:-translate-y-px disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0 max-[640px]:justify-center"
           onClick={onSave}
-          disabled={saving || !passwordDraft.currentPassword || !passwordDraft.newPassword || pwdMatch !== true}
+          disabled={saving || !passwordDraft.currentPassword || !passwordDraft.newPassword || validatePassword(passwordDraft.newPassword) !== null || pwdMatch !== true}
         >
           {saving ? <span className="w-[14px] h-[14px] border-2 border-white/40 border-t-white rounded-full animate-[spSpin_0.6s_linear_infinite]" /> : <span>변경하기</span>}
         </button>

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Eye, EyeOff, KeyRound } from "lucide-react";
 import { confirmPasswordResetApi } from "@/features/auth/api/authApi";
+import { PasswordChecklist } from "@/shared/ui";
 
 const INPUT_CLS = "w-full py-[13px] px-4 pr-11 bg-white border border-[#E5E7EB] rounded-lg text-[14px] text-[#0A0A0A] font-plex-sans-kr outline-none transition-[border-color] duration-200 placeholder-[#9CA3AF] focus:border-[#0991B2] md:py-[14px]";
 const TOGGLE_BTN_CLS = "absolute right-3 top-1/2 -translate-y-1/2 bg-none border-none cursor-pointer text-[#9CA3AF] p-1 flex items-center justify-center hover:text-[#6B7280]";
@@ -60,10 +61,20 @@ export function ResetPasswordPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
+  const validatePassword = (pw: string): string | null => {
+    if (pw.length < 8) return "비밀번호는 8자 이상이어야 합니다.";
+    if (!/[A-Z]/.test(pw)) return "비밀번호에 대문자를 포함해야 합니다.";
+    if (!/[a-z]/.test(pw)) return "비밀번호에 소문자를 포함해야 합니다.";
+    if (!/[0-9]/.test(pw)) return "비밀번호에 숫자를 포함해야 합니다.";
+    if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(pw)) return "비밀번호에 특수문자를 포함해야 합니다.";
+    return null;
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
-    if (newPw.length < 8) { setError("비밀번호는 8자 이상이어야 합니다."); return; }
+    const pwError = validatePassword(newPw);
+    if (pwError) { setError(pwError); return; }
     if (newPw !== confirmPw) { setError("비밀번호가 일치하지 않습니다."); return; }
     setIsLoading(true);
     const result = await confirmPasswordResetApi({ token, newPassword: newPw });
@@ -98,14 +109,15 @@ export function ResetPasswordPage() {
               <form onSubmit={handleSubmit} noValidate>
                 <div className="mb-4 md:mb-[18px]">
                   <label className="block text-[13px] font-semibold text-[#374151] mb-1.5" htmlFor="rp-pw">새 비밀번호</label>
-                  <SecureInput id="rp-pw" value={newPw} show={showPw} placeholder="8자 이상 입력하세요" onChange={setNewPw} onToggle={() => setShowPw(!showPw)} />
+                  <SecureInput id="rp-pw" value={newPw} show={showPw} placeholder="대·소문자·숫자·특수문자 포함 8자 이상" onChange={setNewPw} onToggle={() => setShowPw(!showPw)} />
+                  <PasswordChecklist password={newPw} />
                 </div>
                 <div className="mb-4 md:mb-[18px]">
                   <label className="block text-[13px] font-semibold text-[#374151] mb-1.5" htmlFor="rp-pw-confirm">비밀번호 확인</label>
                   <SecureInput id="rp-pw-confirm" value={confirmPw} show={showConfirmPw} placeholder="비밀번호를 다시 입력하세요" onChange={setConfirmPw} onToggle={() => setShowConfirmPw(!showConfirmPw)} />
                 </div>
                 {error && <p className="text-[13px] text-[#DC2626] mb-[14px] px-[14px] py-[10px] bg-[#FEF2F2] border border-[#FECACA] rounded-lg" role="alert">{error}</p>}
-                <button type="submit" className="w-full py-[15px] bg-[#0A0A0A] text-white font-plex-sans-kr text-[15px] font-bold border-none rounded-lg cursor-pointer transition-opacity duration-200 hover:enabled:opacity-85 disabled:opacity-50 disabled:cursor-not-allowed md:py-4 md:text-[16px]" disabled={isLoading}>
+                <button type="submit" className="w-full py-[15px] bg-[#0A0A0A] text-white font-plex-sans-kr text-[15px] font-bold border-none rounded-lg cursor-pointer transition-opacity duration-200 hover:enabled:opacity-85 disabled:opacity-50 disabled:cursor-not-allowed md:py-4 md:text-[16px]" disabled={isLoading || validatePassword(newPw) !== null || !confirmPw || newPw !== confirmPw}>
                   {isLoading ? "변경 중..." : "비밀번호 변경하기 →"}
                 </button>
               </form>
