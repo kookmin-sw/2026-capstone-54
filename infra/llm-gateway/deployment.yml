@@ -24,10 +24,9 @@ spec:
         prometheus.io/port: "4000"
         prometheus.io/path: "/metrics"
     spec:
-      # replicas:2 × (request 512Mi, limit 1Gi) → 두 replica 합산 시 t3.small RAM 한도 초과.
-      # EC2 IAM Role 의 Bedrock 접근도 m5.large 의 metadata-access 설정에 의존하므로 m5.large 에 핀.
       nodeSelector:
         nodepool: heavy
+      priorityClassName: mefit-production-standard
       containers:
         - name: litellm
           image: ghcr.io/berriai/litellm-database:main-stable
@@ -70,7 +69,7 @@ spec:
               memory: 512Mi
             limits:
               cpu: 500m
-              memory: 1536Mi
+              memory: 1280Mi
       volumes:
         - name: config
           configMap:

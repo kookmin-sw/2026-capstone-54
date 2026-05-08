@@ -6,7 +6,6 @@ metadata:
   labels:
     app: mefit-production-celery-beat
 spec:
-  # Beat는 반드시 1개만 실행 (중복 스케줄 방지)
   replicas: 1
   strategy:
     type: Recreate
@@ -18,6 +17,9 @@ spec:
       labels:
         app: mefit-production-celery-beat
     spec:
+      nodeSelector:
+        nodepool: heavy
+      priorityClassName: mefit-production-standard
       imagePullSecrets:
         - name: mefit-production-dockerhub
       containers:

@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mefit-production-redis
+  namespace: mefit-backend-production
+  labels:
+    app: mefit-production-redis
+spec:
+  serviceName: mefit-production-redis
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mefit-production-redis
+  template:
+    metadata:
+      labels:
+        app: mefit-production-redis
+    spec:
+      nodeSelector:
+        nodepool: heavy
+      priorityClassName: mefit-production-critical
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: redis
+          image: redis:8-alpine
+          args:
+            - "redis-server"
+            - "--maxmemory"
+            - "180mb"
+            - "--maxmemory-policy"
+            - "noeviction"
+            - "--appendonly"
+            - "no"
+            - "--save"
+            - "600 100"
+            - "--dir"
+            - "/data"
+          ports:
+            - containerPort: 6379
+              name: redis
+          readinessProbe:
+            exec:
+              command: ["redis-cli", "ping"]
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            exec:
+              command: ["redis-cli", "ping"]
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+  volumeClaimTemplates:
+    - metadata:
+        name: redis-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: mefit-production-redis
+  namespace: mefit-backend-production
+spec:
+  maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: mefit-production-redis
