@@ -240,7 +240,7 @@ export function HeroSection() {
           {HERO_STATS.map((s) => (
             <div
               key={s.label}
-              className="bg-white/85 backdrop-blur-sm rounded-lg text-center border border-[#E5E7EB] px-[clamp(4px,0.8vh,12px)] py-[clamp(8px,1.4vh,18px)] md:bg-transparent md:backdrop-blur-none md:border-none md:rounded-none md:p-0"
+              className="bg-white/85 backdrop-blur-sm rounded-lg text-center px-[clamp(4px,0.8vh,12px)] py-[clamp(8px,1.4vh,18px)] md:bg-transparent md:backdrop-blur-none md:rounded-none md:p-0"
             >
               <StatValue stat={s} />
               <div className="text-[#6B7280] font-medium leading-tight text-[clamp(10px,calc(0.75vh+0.25vw),13px)]">
