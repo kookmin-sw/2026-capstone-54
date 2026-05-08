@@ -48,6 +48,10 @@ class InterviewTurnTable(Base):
     question = Column(Text)
     answer = Column(Text)
     question_source = Column(String(20), default="")
+    gaze_away_count = Column(Integer, default=0)
+    head_away_count = Column(Integer, default=0)
+    speech_rate_sps = Column(Numeric(10, 4), nullable=True)
+    pillar_word_counts = Column(JSONB, default=dict)
 
 
 class AnalysisReportTable(Base):
@@ -68,6 +72,16 @@ class AnalysisReportTable(Base):
     question_feedbacks = Column(JSONB, default=list)
     strengths = Column(JSONB, default=list)
     improvement_areas = Column(JSONB, default=list)
+    # 컴포넌트 점수
+    content_score = Column(Integer, nullable=True)
+    video_score = Column(Integer, nullable=True)
+    audio_score = Column(Integer, nullable=True)
+    # 영상 분석
+    video_analysis_result = Column(JSONB, default=dict)
+    video_analysis_comment = Column(String(2000), default="")
+    # 음성 분석
+    audio_analysis_result = Column(JSONB, default=dict)
+    audio_analysis_comment = Column(String(2000), default="")
 
 
 class TokenUsageTable(Base):
