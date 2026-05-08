@@ -43,7 +43,7 @@ export function JobStatus({ revealed }: JobStatusProps) {
           return (
             <Link key={jd.uuid} to={`/jd/${jd.uuid}`} className="hp-job-item no-underline">
               <div className="w-7 h-7 shrink-0">
-                <CompanyIcon categoryId={jd.categoryId} size={16} />
+                <CompanyIcon seed={jd.uuid} size={16} />
               </div>
               <div className="hp-job-body">
                 <div className="hp-job-name">{jd.company}</div>
