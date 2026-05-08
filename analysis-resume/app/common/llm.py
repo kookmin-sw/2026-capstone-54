@@ -112,6 +112,7 @@ def _get_structured_llm():
   base = ChatOpenAI(
     model=config.OPENAI_LLM_MODEL,
     openai_api_key=config.OPENAI_API_KEY,
+    base_url=config.OPENAI_BASE_URL,
     temperature=0,
   )
   # include_raw=True: 호출 결과가 {"raw": AIMessage, "parsed": ParsedResumeData, "parsing_error": ...}
