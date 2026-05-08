@@ -12,6 +12,7 @@ from common.permissions import IsEmailVerified
 from common.views import BaseAPIView
 from drf_spectacular.utils import extend_schema
 from interviews.enums import InterviewSessionStatus
+from interviews.models import InterviewSessionCompletionNotEligibleError
 from interviews.services import get_interview_session_for_user
 from rest_framework.response import Response
 from streaks.services import StreakStatisticsService
@@ -30,7 +31,13 @@ class FinishInterviewView(BaseAPIView):
     if interview_session.interview_session_status != InterviewSessionStatus.IN_PROGRESS:
       raise ValidationException(detail="진행 중인 세션만 종료할 수 있습니다.")
 
-    interview_session.mark_completed()
+    try:
+      interview_session.mark_completed()
+    except InterviewSessionCompletionNotEligibleError as exc:
+      raise ValidationException(
+        error_code="INTERVIEW_NOT_COMPLETED",
+        detail=str(exc),
+      )
     StreakStatisticsService(user=interview_session.user).record_participation()
 
     return Response(InterviewSessionSerializer(interview_session).data)

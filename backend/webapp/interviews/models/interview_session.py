@@ -4,7 +4,13 @@ from common.models import BaseModelWithUUID
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericRelation
 from django.db import models
+from django.db.models import Count, Q
 from django.utils import timezone
+from interviews.constants import (
+  FOLLOWUP_ANCHOR_COUNT,
+  FULL_PROCESS_QUESTION_COUNT,
+  MAX_FOLLOWUP_PER_ANCHOR,
+)
 from interviews.enums import (
   InterviewDifficultyLevel,
   InterviewPracticeMode,
@@ -12,6 +18,10 @@ from interviews.enums import (
   InterviewSessionType,
   InterviewSttMode,
 )
+
+
+class InterviewSessionCompletionNotEligibleError(ValueError):
+  pass
 
 
 class InterviewSession(BaseModelWithUUID):
@@ -106,7 +116,34 @@ class InterviewSession(BaseModelWithUUID):
   def __str__(self):
     return f"InterviewSession #{self.pk} [{self.get_interview_session_status_display()}]"
 
+  def get_expected_total_questions(self) -> int:
+    """세션 타입별 상수 수식을 통한 기대 총 질문 수.
+
+    - FULL_PROCESS: FULL_PROCESS_QUESTION_COUNT (자기소개~마무리 고정 10문항)
+    - FOLLOWUP: FOLLOWUP_ANCHOR_COUNT * (1 + MAX_FOLLOWUP_PER_ANCHOR)
+                  = 앵커 + 앵커당 최대 꼬리질문 수
+    """
+    if self.interview_session_type == InterviewSessionType.FULL_PROCESS:
+      return FULL_PROCESS_QUESTION_COUNT
+    if self.interview_session_type == InterviewSessionType.FOLLOWUP:
+      return FOLLOWUP_ANCHOR_COUNT * (1 + MAX_FOLLOWUP_PER_ANCHOR)
+    return 0
+
+  def is_completion_eligible(self) -> bool:
+    """상수 수식으로 도출한 기대 질문 수만큼 turn 이 생성되고 모든 turn 에 답변이 있을 때 True."""
+    expected = self.get_expected_total_questions()
+    if expected == 0:
+      return False
+    stats = self.turns.aggregate(
+      total=Count("id"),
+      unanswered=Count("id", filter=Q(answer="")),
+    )
+    return stats["total"] == expected and stats["unanswered"] == 0
+
   def mark_completed(self) -> None:
+    """면접 세션을 COMPLETED 로 변경한다 (is_completion_eligible 위반 시 ValueError)."""
+    if not self.is_completion_eligible():
+      raise InterviewSessionCompletionNotEligibleError("모든 요구 질문에 답변이 완료되지 않은 세션은 종료할 수 없습니다.")
     self.interview_session_status = InterviewSessionStatus.COMPLETED
     self.save(update_fields=["interview_session_status", "updated_at"])
 

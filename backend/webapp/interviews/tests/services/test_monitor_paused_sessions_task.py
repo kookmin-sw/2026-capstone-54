@@ -2,10 +2,35 @@
 
 from django.test import TestCase
 from django.utils import timezone
-from interviews.enums import InterviewSessionStatus
-from interviews.factories import InterviewSessionFactory
+from interviews.constants import (
+  FOLLOWUP_ANCHOR_COUNT,
+  MAX_FOLLOWUP_PER_ANCHOR,
+)
+from interviews.enums import InterviewExchangeType, InterviewSessionStatus, InterviewSessionType
+from interviews.factories import InterviewSessionFactory, InterviewTurnFactory
 from interviews.tasks.monitor_paused_sessions_task import MonitorPausedSessionsTask
 from users.factories import UserFactory
+
+
+def _create_completion_eligible_followup_turns(session) -> None:
+  """FOLLOWUP 세션이 is_completion_eligible() 를 만족하도록 모든 턴 생성."""
+  for anchor_idx in range(FOLLOWUP_ANCHOR_COUNT):
+    anchor = InterviewTurnFactory(
+      interview_session=session,
+      turn_type=InterviewExchangeType.INITIAL,
+      answer=f"앵커 답변 {anchor_idx + 1}",
+      turn_number=anchor_idx + 1,
+      followup_order=None,
+    )
+    for followup_idx in range(MAX_FOLLOWUP_PER_ANCHOR):
+      InterviewTurnFactory(
+        interview_session=session,
+        turn_type=InterviewExchangeType.FOLLOWUP,
+        answer=f"꼬리 답변 {anchor_idx + 1}-{followup_idx + 1}",
+        turn_number=anchor_idx + 1,
+        followup_order=followup_idx + 1,
+        anchor_turn=anchor,
+      )
 
 
 class MonitorPausedSessionsTaskTests(TestCase):
@@ -16,7 +41,9 @@ class MonitorPausedSessionsTaskTests(TestCase):
     user = UserFactory()
     session = InterviewSessionFactory(
       user=user,
+      interview_session_type=InterviewSessionType.FOLLOWUP,
       interview_session_status=InterviewSessionStatus.IN_PROGRESS,
+      total_questions=5,
     )
     session.last_heartbeat_at = timezone.now() - timezone.timedelta(seconds=180)
     session.save(update_fields=["last_heartbeat_at"])
@@ -56,13 +83,16 @@ class MonitorPausedSessionsTaskTests(TestCase):
 
     self.assertEqual(result["heartbeat_timeout_paused"], 0)
 
-  def test_finishes_long_paused_session(self):
-    """30 분 이상 PAUSED 인 세션은 COMPLETED 로 전환된다."""
+  def test_finishes_long_paused_session_when_completion_eligible(self):
+    """30 분 이상 PAUSED 인 세션이 is_completion_eligible() 만족 시 COMPLETED 로 전환된다."""
     user = UserFactory()
     session = InterviewSessionFactory(
       user=user,
+      interview_session_type=InterviewSessionType.FOLLOWUP,
       interview_session_status=InterviewSessionStatus.IN_PROGRESS,
+      total_questions=FOLLOWUP_ANCHOR_COUNT * (1 + MAX_FOLLOWUP_PER_ANCHOR),
     )
+    _create_completion_eligible_followup_turns(session)
     session.mark_paused(reason="heartbeat_timeout")
     session.refresh_from_db()
     session.paused_at = timezone.now() - timezone.timedelta(minutes=45)
@@ -73,6 +103,28 @@ class MonitorPausedSessionsTaskTests(TestCase):
     session.refresh_from_db()
     self.assertEqual(session.interview_session_status, InterviewSessionStatus.COMPLETED)
     self.assertEqual(result["long_paused_auto_finished"], 1)
+
+  def test_does_not_finish_long_paused_session_when_not_eligible(self):
+    """30 분 이상 PAUSED 라도 상수 수식 기준 턴 수가 부족하면 COMPLETED 로 전환되지 않는다."""
+    user = UserFactory()
+    session = InterviewSessionFactory(
+      user=user,
+      interview_session_type=InterviewSessionType.FOLLOWUP,
+      interview_session_status=InterviewSessionStatus.IN_PROGRESS,
+      total_questions=2,
+    )
+    InterviewTurnFactory(interview_session=session, answer="답변1", turn_number=1)
+    InterviewTurnFactory(interview_session=session, answer="답변2", turn_number=2)
+    session.mark_paused(reason="heartbeat_timeout")
+    session.refresh_from_db()
+    session.paused_at = timezone.now() - timezone.timedelta(minutes=45)
+    session.save(update_fields=["paused_at"])
+
+    result = MonitorPausedSessionsTask().run()
+
+    session.refresh_from_db()
+    self.assertEqual(session.interview_session_status, InterviewSessionStatus.PAUSED)
+    self.assertEqual(result["long_paused_auto_finished"], 0)
 
   def test_does_not_finish_recent_paused_session(self):
     """짧게 PAUSED 인 세션 (30 분 미만) 은 영향받지 않는다."""

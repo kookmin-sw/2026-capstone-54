@@ -8,7 +8,7 @@ from config.celery import app
 from django.db.models import Q
 from django.utils import timezone
 from interviews.enums import InterviewSessionStatus
-from interviews.models import InterviewSession
+from interviews.models import InterviewSession, InterviewSessionCompletionNotEligibleError
 
 HEARTBEAT_TIMEOUT = timedelta(seconds=120)
 PAUSED_AUTO_FINISH_THRESHOLD = timedelta(minutes=30)
@@ -33,6 +33,7 @@ class MonitorPausedSessionsTask(BaseScheduledTask):
     cutoff = now - HEARTBEAT_TIMEOUT
     candidates = InterviewSession.objects.filter(
       interview_session_status=InterviewSessionStatus.IN_PROGRESS,
+      total_questions__gt=0,
     ).filter(Q(last_heartbeat_at__lt=cutoff)
              | Q(last_heartbeat_at__isnull=True, created_at__lt=cutoff))
     paused_count = 0
@@ -48,11 +49,15 @@ class MonitorPausedSessionsTask(BaseScheduledTask):
       interview_session_status=InterviewSessionStatus.PAUSED,
       paused_at__isnull=False,
       paused_at__lt=cutoff,
+      total_questions__gt=0,
     )
     finished_count = 0
     for session in candidates.iterator():
-      session.mark_completed()
-      finished_count += 1
+      try:
+        session.mark_completed()
+        finished_count += 1
+      except InterviewSessionCompletionNotEligibleError:
+        continue
     return finished_count
 
 
