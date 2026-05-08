@@ -10,7 +10,6 @@ import { QuestionFeedbackList } from "./QuestionFeedbackList";
 import { InterviewOverview } from "./InterviewOverview";
 import { AudioAnalysisSection } from "./AudioAnalysisSection";
 import { VideoAnalysisSection } from "./VideoAnalysisSection";
-import "./interview-report.css";
 
 const GRADE_BADGE: Record<string, { bg: string; text: string; label: string }> = {
   Excellent: { bg: "bg-[#EDE9FE]", text: "text-[#7C3AED]", label: "Excellent" },

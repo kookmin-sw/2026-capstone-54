@@ -221,6 +221,21 @@ button {
 }
 
 /* ════════════════════════════════════════════
+   Interview Report 카드 스타일
+   ════════════════════════════════════════════ */
+.report-card {
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.05), 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.report-card-hi {
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 0 0 1px rgba(9, 145, 178, 0.1), 0 8px 32px rgba(9, 145, 178, 0.08), 0 2px 6px rgba(0, 0, 0, 0.03);
+}
+
+/* ════════════════════════════════════════════
    Reveal 유틸리티 (JS 클래스 토글 방식)
    사용법: className={`reveal${revealed ? " reveal-in" : ""}`}
    ════════════════════════════════════════════ */
