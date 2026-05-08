@@ -11,6 +11,7 @@ import { InterviewOverview } from "./InterviewOverview";
 import { AudioAnalysisSection } from "./AudioAnalysisSection";
 import { VideoAnalysisSection } from "./VideoAnalysisSection";
 import { GRADE_BADGE } from "./constants";
+import { PrintLeftSlot, PrintRightSlot } from "./PrintOnlyContent";
 
 const SECTIONS = [
   { id: "overview", label: "면접 개요" },
@@ -95,10 +96,10 @@ export function InterviewReportPage() {
               </span>
             )}
           </div>
-          <Link to="/interview/setup" className="flex items-center gap-1.5 bg-[#0991B2] hover:bg-[#0E7490] text-white text-[13px] font-semibold px-3 py-1.5 rounded-lg transition-colors no-underline">
+          <button onClick={() => window.print()} className="flex items-center gap-1.5 bg-[#0991B2] hover:bg-[#0E7490] text-white text-[13px] font-semibold px-3 py-1.5 rounded-lg transition-colors">
             <Download size={13} />
-            pdf저장이 들어갈 곳~.~
-          </Link>
+            PDF 저장
+          </button>
         </div>
       </nav>
 
@@ -206,32 +207,40 @@ export function InterviewReportPage() {
                   <div className="report-card p-8">
                     <p className="text-[15px] font-bold text-[#374151] mb-5">역량 분석</p>
                     <div className="flex flex-col sm:flex-row items-stretch gap-8">
+                      {/* 화면: 레이더 차트 | 인쇄: 역량 프로그레스 바 */}
                       <div className="w-full sm:w-1/3 shrink-0 flex items-center justify-center overflow-hidden">
-                        <RadarChart scores={report.categoryScores} />
+                        <PrintLeftSlot report={report} />
+                        <div id="screen-radar" className="w-full flex items-center justify-center">
+                          <RadarChart scores={report.categoryScores} />
+                        </div>
                       </div>
-                      <div className="flex-1 w-full flex flex-col justify-center space-y-5 sm:border-l sm:border-gray-100 sm:pl-8">
-                        {report.categoryScores.map((cat, i) => (
-                          <div key={i}>
-                            <div className="flex justify-between mb-1">
-                              <span className="text-[13px] font-semibold text-[#374151]">{cat.category}</span>
-                              <span className="text-[13px] font-bold text-[#0991B2] tabular-nums">{cat.score}</span>
+                      {/* 화면: 역량 프로그레스 바 | 인쇄: 강점·개선 + 음성 + 영상 */}
+                      <div className="flex-1 w-full flex flex-col justify-center sm:border-l sm:border-gray-100 sm:pl-8">
+                        <div id="screen-category-bars" className="space-y-5">
+                          {report.categoryScores.map((cat, i) => (
+                            <div key={i}>
+                              <div className="flex justify-between mb-1">
+                                <span className="text-[13px] font-semibold text-[#374151]">{cat.category}</span>
+                                <span className="text-[13px] font-bold text-[#0991B2] tabular-nums">{cat.score}</span>
+                              </div>
+                              <div className="h-[5px] bg-gray-100 rounded-full overflow-hidden mb-2">
+                                <div
+                                  className="h-full bg-[#06B6D4] rounded-full transition-all duration-700"
+                                  style={{ width: `${cat.score}%` }}
+                                />
+                              </div>
+                              <p className="text-[11px] text-[#6B7280] leading-relaxed">{cat.comment}</p>
                             </div>
-                            <div className="h-[5px] bg-gray-100 rounded-full overflow-hidden mb-2">
-                              <div
-                                className="h-full bg-[#06B6D4] rounded-full transition-all duration-700"
-                                style={{ width: `${cat.score}%` }}
-                              />
-                            </div>
-                            <p className="text-[11px] text-[#6B7280] leading-relaxed">{cat.comment}</p>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
+                        <PrintRightSlot report={report} />
                       </div>
                     </div>
                   </div>
                 </section>
               )}
 
-              {/* 강점 / 개선 */}
+              {/* 강점 / 개선 (화면 전용) */}
               <section id="strengths-section" className="scroll-mt-20">
                 <StrengthsImprovements strengths={report.strengths} improvements={report.improvementAreas} />
               </section>
