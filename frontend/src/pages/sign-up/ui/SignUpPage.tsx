@@ -126,8 +126,7 @@ export function SignUpPage() {
             여정
           </h1>
           <p className="text-[14px] text-[#6B7280] leading-[1.7] mb-6 text-center md:text-left md:text-[15px]">
-            이메일 하나로 시작하는 AI 면접 코치.
-            <br className="hidden md:block" />
+            <span className="hidden md:inline">이메일 하나로 시작하는 AI 면접 코치.<br /></span>
             3단계만 거치면 바로 연습할 수 있어요.
           </p>
 
