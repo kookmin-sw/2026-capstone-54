@@ -19,14 +19,12 @@ from utils.token_tracker import TokenUsageCallback, calculate_cost
 
 logger = logging.getLogger(__name__)
 
-# 6개 평가 카테고리
+# 4개 텍스트 평가 카테고리 (면접태도는 영상 워커가 별도 산출)
 EVALUATION_CATEGORIES: list[str] = [
-    "직무 적합성",
     "구체성",
-    "전달력(명확성)",
-    "일관성",
-    "유창성",
-    "답변 길이 적절성",
+    "직무 적합성",
+    "논리성",
+    "신뢰도",
 ]
 
 # 등급 매핑 테이블 (하한, 상한, 등급)
@@ -144,13 +142,11 @@ class LLMAnalyzer:
 
 ## 평가 지침
 
-### 6개 카테고리 평가 기준
-1. **직무 적합성**: 채용공고의 주요업무, 자격요건, 우대사항에 답변이 부합하는지 평가. 채용공고 내용을 주요 기준으로 참조.
-2. **구체성**: 답변에 구체적인 수치, 사례, 경험이 포함되어 있는지 평가.
-3. **전달력(명확성)**: 답변의 논리적 구조와 표현의 명확성 평가.
-4. **일관성**: 이력서에 기재된 경력, 프로젝트, 기술 스택과 답변이 일치하는지 평가. 이력서 내용을 주요 기준으로 참조.
-5. **유창성**: 답변의 자연스러운 흐름과 표현력 평가. [음성 분석] 데이터가 있는 경우, 묵음 비율과 묵음 구간 수를 참고하여 답변의 유창성(머뭇거림, 긴 침묵)을 평가에 반영하세요.
-6. **답변 길이 적절성**: 질문의 복잡도 대비 답변 분량의 적절성 평가. [음성 분석]의 총 발화 시간을 참고할 수 있습니다.
+### 4개 카테고리 평가 기준
+1. **구체성**: STAR 기법(상황-과제-행동-결과) 활용 여부, 구체적인 수치·사례·경험 포함 여부 평가.
+2. **직무 적합성**: 채용공고의 주요업무(duties), 자격요건(requirements), 우대사항(preferred)에 답변이 부합하는지 평가. 채용공고 내용을 주요 기준으로 참조.
+3. **논리성**: 주장과 근거의 연결이 명확한지, 비약 없이 논리적으로 전개되는지 평가.
+4. **신뢰도**: 이력서에 기재된 경력, 프로젝트, 기술 스택과 답변 내용이 일치하는지 평가. 이력서 내용을 주요 기준으로 참조.
 
 ### 질문 메타데이터 활용
 - question_source가 "resume"인 질문: 이력서 기반 질문이므로 이력서 내용과의 일치도를 중점 평가
@@ -166,12 +162,10 @@ class LLMAnalyzer:
   "overall_grade": "<Excellent|Good|Average|Below Average|Poor>",
   "overall_comment": "<2~3문장의 종합 해석 코멘트>",
   "category_scores": [
-    {{"category": "직무 적합성", "score": <0~100>, "comment": "<1~2문장 평가>"}},
     {{"category": "구체성", "score": <0~100>, "comment": "<1~2문장 평가>"}},
-    {{"category": "전달력(명확성)", "score": <0~100>, "comment": "<1~2문장 평가>"}},
-    {{"category": "일관성", "score": <0~100>, "comment": "<1~2문장 평가>"}},
-    {{"category": "유창성", "score": <0~100>, "comment": "<1~2문장 평가>"}},
-    {{"category": "답변 길이 적절성", "score": <0~100>, "comment": "<1~2문장 평가>"}}
+    {{"category": "직무 적합성", "score": <0~100>, "comment": "<1~2문장 평가>"}},
+    {{"category": "논리성", "score": <0~100>, "comment": "<1~2문장 평가>"}},
+    {{"category": "신뢰도", "score": <0~100>, "comment": "<1~2문장 평가>"}}
   ],
   "question_feedbacks": [
     {{
@@ -263,7 +257,7 @@ strengths와 improvement_areas는 각각 최소 2개 이상 생성하세요.
         if not data.get("overall_comment"):
             data["overall_comment"] = "분석 결과를 확인하세요."
 
-        # category_scores: 6개 카테고리 검증
+        # category_scores: 4개 카테고리 검증 (면접태도는 영상 워커가 append)
         data["category_scores"] = self._validate_categories(
             data.get("category_scores", [])
         )
@@ -309,7 +303,7 @@ strengths와 improvement_areas는 각각 최소 2개 이상 생성하세요.
 
     @staticmethod
     def _validate_categories(raw: list) -> list[dict]:
-        """6개 카테고리 평가를 검증/보정한다."""
+        """4개 카테고리 평가를 검증/보정한다. (면접태도는 영상 워커가 별도 append)"""
         result: list[dict] = []
         raw_by_name: dict[str, dict] = {}
         for item in raw if isinstance(raw, list) else []:
