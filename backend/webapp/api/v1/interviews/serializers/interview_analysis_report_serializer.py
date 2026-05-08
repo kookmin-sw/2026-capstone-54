@@ -29,6 +29,16 @@ class InterviewAnalysisReportSerializer(serializers.ModelSerializer):
       "error_message",
       "created_at",
       "updated_at",
+      # 컴포넌트 점수
+      "content_score",
+      "video_score",
+      "audio_score",
+      # 영상 분석
+      "video_analysis_result",
+      "video_analysis_comment",
+      # 음성 분석
+      "audio_analysis_result",
+      "audio_analysis_comment",
       # 면접 개요
       "company_name",
       "position_title",
