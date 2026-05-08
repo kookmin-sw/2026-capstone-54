@@ -115,25 +115,49 @@ class ReportGeneratorService:
             result = self._analyzer.analyze(context)
 
             # 8) 영상 분석 집계 (face_analysis_result → video_score + 면접태도)
-            video_result = None
+            video_score = 0
             try:
                 video_result = self._video_aggregator.aggregate(str(session_id))
                 if video_result.video_score > 0:
+                    video_score = video_result.video_score
                     # category_scores에 "면접태도" append
                     result.category_scores.append({
                         "category": "면접태도",
                         "score": video_result.video_score,
                         "comment": video_result.video_analysis_comment,
                     })
-                    logger.info("영상 분석 집계 완료: video_score=%d", video_result.video_score)
+                    logger.info("영상 분석 집계 완료: video_score=%d", video_score)
             except Exception:
                 logger.exception("영상 분석 집계 실패 — 면접태도 카테고리 없이 진행")
 
-            # 9) 결과를 AnalysisReport에 저장
-            # 9) 결과를 AnalysisReport에 저장
+            # 9) content_score 산출 (LLM 4개 카테고리 평균)
+            llm_category_scores = [
+                cat["score"] for cat in result.category_scores
+                if cat["category"] != "면접태도"
+            ]
+            content_score = (
+                round(sum(llm_category_scores) / len(llm_category_scores))
+                if llm_category_scores else 0
+            )
+
+            # 10) overall_score 재산출: content 50% + audio 25% + video 25%
+            # audio_score는 현재 음성 워커에서 별도 산출하지 않으므로 0으로 처리
+            # TODO: 음성 워커 완성 후 audio_score 연동
+            audio_score = 0
+            overall_score = round(
+                content_score * 0.50
+                + audio_score * 0.25
+                + video_score * 0.25
+            )
+            overall_score = max(0, min(100, overall_score))
+
+            # 등급 재산출
+            overall_grade = self._analyzer.score_to_grade(overall_score)
+
+            # 11) 결과를 AnalysisReport에 저장
             report.interview_analysis_report_status = "completed"
-            report.overall_score = result.overall_score
-            report.overall_grade = result.overall_grade
+            report.overall_score = overall_score
+            report.overall_grade = overall_grade
             report.overall_comment = result.overall_comment
             report.category_scores = result.category_scores
             report.question_feedbacks = result.question_feedbacks
@@ -141,7 +165,7 @@ class ReportGeneratorService:
             report.improvement_areas = result.improvement_areas
             report.updated_at = datetime.utcnow()
 
-            # 10) TokenUsage 별도 저장 (GenericForeignKey: InterviewAnalysisReport)
+            # 12) TokenUsage 별도 저장 (GenericForeignKey: InterviewAnalysisReport)
             content_type = (
                 session.query(DjangoContentTypeTable)
                 .filter_by(app_label="interviews", model="interviewanalysisreport")
