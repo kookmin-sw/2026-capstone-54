@@ -201,39 +201,29 @@ export function InterviewReportPage() {
               {/* 역량 분석 */}
               {report.categoryScores.length > 0 && (
                 <section id="capabilities" className="scroll-mt-20">
-                  <div className="report-card p-5">
-                    <p className="text-[11px] font-semibold tracking-[.08em] uppercase text-[#9CA3AF] mb-4">역량 분석</p>
-                    <div className="flex flex-col sm:flex-row items-center gap-6">
-                      <div className="w-[210px] h-[210px] shrink-0">
+                  <div className="report-card p-6">
+                    <p className="text-[11px] font-semibold tracking-[.08em] uppercase text-[#9CA3AF] mb-5">역량 분석</p>
+                    <div className="flex flex-col sm:flex-row items-stretch gap-8">
+                      <div className="w-full sm:w-1/3 shrink-0 flex items-center justify-center overflow-hidden">
                         <RadarChart scores={report.categoryScores} />
                       </div>
-                      <div className="flex-1 w-full space-y-3">
+                      <div className="flex-1 w-full flex flex-col justify-center space-y-5 sm:border-l sm:border-gray-100 sm:pl-8">
                         {report.categoryScores.map((cat, i) => (
                           <div key={i}>
-                            <div className="flex justify-between mb-1.5">
-                              <span className="text-[13px] text-[#4B5563]">{cat.category}</span>
-                              <span className="text-[13px] font-semibold text-[#1F2937] tabular-nums">{cat.score}</span>
+                            <div className="flex justify-between mb-1">
+                              <span className="text-[13px] font-semibold text-[#374151]">{cat.category}</span>
+                              <span className="text-[13px] font-bold text-[#0991B2] tabular-nums">{cat.score}</span>
                             </div>
-                            <div className="h-[5px] bg-gray-100 rounded-full overflow-hidden">
+                            <div className="h-[5px] bg-gray-100 rounded-full overflow-hidden mb-2">
                               <div
                                 className="h-full bg-[#06B6D4] rounded-full transition-all duration-700"
                                 style={{ width: `${cat.score}%` }}
                               />
                             </div>
+                            <p className="text-[11px] text-[#6B7280] leading-relaxed">{cat.comment}</p>
                           </div>
                         ))}
                       </div>
-                    </div>
-                    {/* Category detail chips */}
-                    <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {report.categoryScores.map((cat, i) => (
-                        <div key={i} className="bg-[#F9FAFB] rounded-xl p-3 border border-gray-100">
-                          <p className="text-[12px] font-semibold text-[#374151] mb-0.5">
-                            {cat.category} <span className="text-[#0991B2] font-bold">{cat.score}</span>
-                          </p>
-                          <p className="text-[11px] text-[#6B7280]">{cat.comment}</p>
-                        </div>
-                      ))}
                     </div>
                   </div>
                 </section>

@@ -2,7 +2,7 @@ import type { InterviewCategoryScore } from "@/features/interview-session";
 
 export function RadarChart({ scores }: { scores: InterviewCategoryScore[] }) {
   if (scores.length < 3) return null;
-  const cx = 105, cy = 105, r = 72, n = scores.length;
+  const cx = 130, cy = 130, r = 70, n = scores.length;
 
   const toXY = (i: number, pct: number) => {
     const a = (2 * Math.PI * i) / n - Math.PI / 2;
@@ -11,7 +11,7 @@ export function RadarChart({ scores }: { scores: InterviewCategoryScore[] }) {
 
   const labelXY = (i: number) => {
     const a = (2 * Math.PI * i) / n - Math.PI / 2;
-    const dist = r + 22;
+    const dist = r + 20;
     return { x: cx + dist * Math.cos(a), y: cy + dist * Math.sin(a) };
   };
 
@@ -28,7 +28,7 @@ export function RadarChart({ scores }: { scores: InterviewCategoryScore[] }) {
   const dataPoints = scores.map((s, i) => { const p = toXY(i, s.score / 100); return `${p.x},${p.y}`; }).join(" ");
 
   return (
-    <svg viewBox="0 0 210 210" className="w-full max-w-[210px] mx-auto">
+    <svg viewBox="0 0 260 260" className="w-full max-w-full mx-auto block">
       {webs}{axes}
       <polygon points={dataPoints} fill="rgba(9,145,178,.1)" stroke="#0991B2" strokeWidth="1.5" />
       {scores.map((s, i) => {
@@ -40,7 +40,7 @@ export function RadarChart({ scores }: { scores: InterviewCategoryScore[] }) {
         const anchor = x < cx - 5 ? "end" : x > cx + 5 ? "start" : "middle";
         return (
           <text key={i} x={x} y={y} textAnchor={anchor} dominantBaseline="middle"
-            fontSize="10" fontWeight="500" fill="#9CA3AF">
+            fontSize="10" fontWeight="500" fill="#6B7280">
             {s.category}
           </text>
         );
