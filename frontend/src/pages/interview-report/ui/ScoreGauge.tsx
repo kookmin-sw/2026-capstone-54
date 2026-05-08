@@ -22,6 +22,7 @@ export function ScoreGauge({ score }: { score: number }) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    let rafId: number;
     const start = performance.now();
     const duration = 1100;
     const target = Math.min(100, Math.max(0, score));
@@ -32,9 +33,11 @@ export function ScoreGauge({ score }: { score: number }) {
       const eased = 1 - Math.pow(1 - progress, 3);
       setAnimatedScore(Math.round(eased * target));
       setAnimatedPct(eased * target);
-      if (progress < 1) requestAnimationFrame(animate);
+      if (progress < 1) rafId = requestAnimationFrame(animate);
     }
-    requestAnimationFrame(animate);
+    rafId = requestAnimationFrame(animate);
+
+    return () => cancelAnimationFrame(rafId);
   }, [score]);
 
   const grade = getGrade(score);
