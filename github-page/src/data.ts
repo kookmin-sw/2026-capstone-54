@@ -171,8 +171,8 @@ export interface WhyReason {
 export const whyReasons: WhyReason[] = [
   {
     Icon: Target,
-    title: "이력서 기반 맞춤 질문",
-    desc: "이력서를 업로드하면 AI가 직무·경력에 맞는 맞춤형 질문을 생성합니다. \n일반 예상 질문이 아닌, 나에게 딱 맞는 질문으로 준비할 수 있습니다.",
+    title: "이력서 & 채용공고 기반 맞춤 질문",
+    desc: "이력서와 채용공고를 입력하면 AI가 직무·경력에 맞는 맞춤형 질문을 생성합니다. \n일반 예상 질문이 아닌, 나에게 딱 맞는 질문으로 면접을 준비할 수 있습니다.",
     featured: true,
   },
   {
@@ -199,11 +199,6 @@ export const whyReasons: WhyReason[] = [
     Icon: Zap,
     title: "24/7 언제든 면접",
     desc: "면접관 일정에 맞출 필요 없이 내가 원하는 시간에, 원하는 장소에서 면접 연습을 시작할 수 있습니다. 지방 거주자나 바쁜 직장인도 부담 없이 면접 준비가 가능합니다.",
-  },
-  {
-    Icon: Building2,
-    title: "채용공고 연동",
-    desc: "지원하는 채용공고를 등록하면 해당 직무에 최적화된 질문이 생성됩니다. Free 5개 / Pro 무제한.",
   },
 ];
 
@@ -281,7 +276,7 @@ export const architecture: ArchCategory[] = [
     items: [
       "React 19 + Vite + Bun + TypeScript",
       "Zustand · React Router 7 · Tailwind 4",
-      "XState (면접 세션 상태 머신)",
+      "면접 세션을 상태 머신으로 관리",
       "Feature-Sliced Design 아키텍처",
     ],
   },
@@ -318,7 +313,7 @@ export const techStack = [
   },
   {
     group: "프론트엔드",
-    items: ["React 19", "Vite", "Bun", "Zustand", "XState", "Tailwind 4", "MediaRecorder"],
+    items: ["React 19", "Vite", "Bun", "Zustand", "Tailwind 4", "MediaRecorder"],
   },
   {
     group: "AI / LLM",

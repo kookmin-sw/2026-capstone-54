@@ -10,11 +10,11 @@ export default function WhySection() {
       eyebrow="왜 MeFit인가"
       title={
         <>
-          7가지 이유로,
+          6가지 이유로,
           <br className="md:hidden" /> 다른 모의면접과 다릅니다.
         </>
       }
-      description={`이력서 기반 맞춤 질문, 꼬리질문 AI,\n표정 · 발화 분석까지 한 플랫폼에서.`}
+      description={`이력서 & 채용공고 기반 맞춤 질문, 꼬리질문 AI,\n표정 · 발화 분석까지 한 플랫폼에서.`}
     >
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:grid-rows-3">
         <article className="group relative col-span-1 flex flex-col overflow-hidden rounded-2xl bg-fg p-7 text-white shadow-sc transition-[transform,box-shadow] duration-300 hover:-translate-y-1 hover:shadow-cta md:col-span-2 md:row-span-2 md:p-10">
