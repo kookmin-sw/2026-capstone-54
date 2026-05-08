@@ -71,6 +71,9 @@ echo "  네임스페이스: ${NAMESPACE}"
 echo "══════════════════════════════════════════"
 
 # 매니페스트 적용
+echo "▶ PriorityClass (cluster-scoped) 적용 중..."
+kubectl apply -f "${INFRA_DIR}/common/priority-classes.yml"
+
 echo "▶ ConfigMap / Service / Deployment 적용 중..."
 kubectl apply -f "${INFRA_DIR}/llm-gateway/configmap.yml"
 kubectl apply -f "${INFRA_DIR}/llm-gateway/service.yml"
