@@ -2,8 +2,46 @@ from datetime import timedelta
 
 from django.test import TestCase
 from django.utils import timezone
-from interviews.enums import InterviewSessionStatus, InterviewSessionType
+from interviews.constants import (
+  FOLLOWUP_ANCHOR_COUNT,
+  FULL_PROCESS_QUESTION_COUNT,
+  MAX_FOLLOWUP_PER_ANCHOR,
+)
+from interviews.enums import InterviewExchangeType, InterviewSessionStatus, InterviewSessionType
 from interviews.factories import InterviewSessionFactory, InterviewTurnFactory
+
+
+def _create_completion_eligible_followup_turns(session) -> None:
+  """FOLLOWUP 세션이 is_completion_eligible() 를 만족하도록 모든 턴 생성."""
+  for anchor_idx in range(FOLLOWUP_ANCHOR_COUNT):
+    anchor = InterviewTurnFactory(
+      interview_session=session,
+      turn_type=InterviewExchangeType.INITIAL,
+      answer=f"앵커 답변 {anchor_idx + 1}",
+      turn_number=anchor_idx + 1,
+      followup_order=None,
+    )
+    for followup_idx in range(MAX_FOLLOWUP_PER_ANCHOR):
+      InterviewTurnFactory(
+        interview_session=session,
+        turn_type=InterviewExchangeType.FOLLOWUP,
+        answer=f"꼬리 답변 {anchor_idx + 1}-{followup_idx + 1}",
+        turn_number=anchor_idx + 1,
+        followup_order=followup_idx + 1,
+        anchor_turn=anchor,
+      )
+
+
+def _create_completion_eligible_full_process_turns(session) -> None:
+  """FULL_PROCESS 세션이 is_completion_eligible() 를 만족하도록 모든 턴 생성."""
+  for idx in range(FULL_PROCESS_QUESTION_COUNT):
+    InterviewTurnFactory(
+      interview_session=session,
+      turn_type=InterviewExchangeType.INITIAL,
+      answer=f"답변 {idx + 1}",
+      turn_number=idx + 1,
+      followup_order=None,
+    )
 
 
 class InterviewSessionMarkCompletedTests(TestCase):
@@ -11,11 +49,11 @@ class InterviewSessionMarkCompletedTests(TestCase):
 
   def _build_completed_session(self):
     session = InterviewSessionFactory(
+      interview_session_type=InterviewSessionType.FOLLOWUP,
       interview_session_status=InterviewSessionStatus.IN_PROGRESS,
-      total_questions=2,
+      total_questions=FOLLOWUP_ANCHOR_COUNT * (1 + MAX_FOLLOWUP_PER_ANCHOR),
     )
-    InterviewTurnFactory(interview_session=session, answer="답변1", turn_number=1)
-    InterviewTurnFactory(interview_session=session, answer="답변2", turn_number=2)
+    _create_completion_eligible_followup_turns(session)
     return session
 
   def test_mark_completed_sets_status_to_completed(self):
@@ -34,8 +72,9 @@ class InterviewSessionMarkCompletedTests(TestCase):
     self.assertEqual(updated.interview_session_status, InterviewSessionStatus.COMPLETED)
 
   def test_mark_completed_raises_when_not_started(self):
-    """total_questions=0 인 세션 (시작되지 않음) 은 ValueError 로 거부된다."""
+    """턴이 생성되지 않은 세션 (시작되지 않음) 은 ValueError 로 거부된다."""
     session = InterviewSessionFactory(
+      interview_session_type=InterviewSessionType.FOLLOWUP,
       interview_session_status=InterviewSessionStatus.IN_PROGRESS,
       total_questions=0,
     )
@@ -45,17 +84,33 @@ class InterviewSessionMarkCompletedTests(TestCase):
   def test_mark_completed_raises_when_unanswered_turns_exist(self):
     """미답변 turn 이 남아있으면 ValueError 로 거부된다."""
     session = InterviewSessionFactory(
+      interview_session_type=InterviewSessionType.FOLLOWUP,
+      interview_session_status=InterviewSessionStatus.IN_PROGRESS,
+      total_questions=FOLLOWUP_ANCHOR_COUNT * (1 + MAX_FOLLOWUP_PER_ANCHOR),
+    )
+    _create_completion_eligible_followup_turns(session)
+    last_turn = session.turns.order_by("-turn_number", "-followup_order").first()
+    last_turn.answer = ""
+    last_turn.save(update_fields=["answer"])
+    with self.assertRaises(ValueError):
+      session.mark_completed()
+
+  def test_mark_completed_raises_when_turn_count_below_expected(self):
+    """상수 수식 기준 턴 수보다 적게 생성된 세션은 ValueError 로 거부된다."""
+    session = InterviewSessionFactory(
+      interview_session_type=InterviewSessionType.FOLLOWUP,
       interview_session_status=InterviewSessionStatus.IN_PROGRESS,
       total_questions=2,
     )
     InterviewTurnFactory(interview_session=session, answer="답변1", turn_number=1)
-    InterviewTurnFactory(interview_session=session, answer="", turn_number=2)
+    InterviewTurnFactory(interview_session=session, answer="답변2", turn_number=2)
     with self.assertRaises(ValueError):
       session.mark_completed()
 
   def test_mark_completed_does_not_persist_when_invariant_fails(self):
     """invariant 위반 시 DB 상태가 변경되지 않는다."""
     session = InterviewSessionFactory(
+      interview_session_type=InterviewSessionType.FOLLOWUP,
       interview_session_status=InterviewSessionStatus.IN_PROGRESS,
       total_questions=0,
     )
@@ -68,24 +123,78 @@ class InterviewSessionMarkCompletedTests(TestCase):
 class InterviewSessionIsCompletionEligibleTests(TestCase):
   """InterviewSession.is_completion_eligible 테스트"""
 
-  def test_returns_false_when_total_questions_is_zero(self):
-    """total_questions=0 인 세션은 종료 불가."""
-    session = InterviewSessionFactory(total_questions=0)
+  def test_returns_false_when_no_turns_exist(self):
+    """턴이 생성되지 않은 세션은 종료 불가."""
+    session = InterviewSessionFactory(
+      interview_session_type=InterviewSessionType.FOLLOWUP,
+      total_questions=0,
+    )
     self.assertFalse(session.is_completion_eligible())
 
-  def test_returns_false_when_unanswered_turns_exist(self):
-    """미답변 turn 이 하나라도 있으면 종료 불가."""
-    session = InterviewSessionFactory(total_questions=2)
-    InterviewTurnFactory(interview_session=session, answer="답변1", turn_number=1)
-    InterviewTurnFactory(interview_session=session, answer="", turn_number=2)
+  def test_returns_false_when_unanswered_turns_exist_in_followup(self):
+    """FOLLOWUP 세션에서 미답변 turn 이 하나라도 있으면 종료 불가."""
+    session = InterviewSessionFactory(
+      interview_session_type=InterviewSessionType.FOLLOWUP,
+      total_questions=FOLLOWUP_ANCHOR_COUNT * (1 + MAX_FOLLOWUP_PER_ANCHOR),
+    )
+    _create_completion_eligible_followup_turns(session)
+    last_turn = session.turns.order_by("-turn_number", "-followup_order").first()
+    last_turn.answer = ""
+    last_turn.save(update_fields=["answer"])
     self.assertFalse(session.is_completion_eligible())
 
-  def test_returns_true_when_all_turns_answered(self):
-    """모든 turn 에 답변이 있고 시작된 세션은 종료 가능."""
-    session = InterviewSessionFactory(total_questions=2)
+  def test_returns_false_when_followup_turn_count_below_constants_formula(self):
+    """FOLLOWUP 세션에서 상수 수식 미만의 turn 수면 종료 불가."""
+    session = InterviewSessionFactory(
+      interview_session_type=InterviewSessionType.FOLLOWUP,
+      total_questions=2,
+    )
     InterviewTurnFactory(interview_session=session, answer="답변1", turn_number=1)
     InterviewTurnFactory(interview_session=session, answer="답변2", turn_number=2)
+    self.assertFalse(session.is_completion_eligible())
+
+  def test_returns_true_when_followup_session_meets_constants_formula(self):
+    """FOLLOWUP 세션이 FOLLOWUP_ANCHOR_COUNT * (1 + MAX_FOLLOWUP_PER_ANCHOR) 만큼의 답변을 가지면 종료 가능."""
+    session = InterviewSessionFactory(
+      interview_session_type=InterviewSessionType.FOLLOWUP,
+      total_questions=FOLLOWUP_ANCHOR_COUNT * (1 + MAX_FOLLOWUP_PER_ANCHOR),
+    )
+    _create_completion_eligible_followup_turns(session)
     self.assertTrue(session.is_completion_eligible())
+
+  def test_returns_false_when_full_process_turn_count_below_constants_formula(self):
+    """FULL_PROCESS 세션에서 FULL_PROCESS_QUESTION_COUNT 미만의 turn 수면 종료 불가."""
+    session = InterviewSessionFactory(
+      interview_session_type=InterviewSessionType.FULL_PROCESS,
+      total_questions=2,
+    )
+    InterviewTurnFactory(interview_session=session, answer="답변1", turn_number=1)
+    InterviewTurnFactory(interview_session=session, answer="답변2", turn_number=2)
+    self.assertFalse(session.is_completion_eligible())
+
+  def test_returns_true_when_full_process_session_meets_constants_formula(self):
+    """FULL_PROCESS 세션이 FULL_PROCESS_QUESTION_COUNT 만큼의 답변을 가지면 종료 가능."""
+    session = InterviewSessionFactory(
+      interview_session_type=InterviewSessionType.FULL_PROCESS,
+      total_questions=FULL_PROCESS_QUESTION_COUNT,
+    )
+    _create_completion_eligible_full_process_turns(session)
+    self.assertTrue(session.is_completion_eligible())
+
+
+class InterviewSessionGetExpectedTotalQuestionsTests(TestCase):
+  """InterviewSession.get_expected_total_questions 테스트"""
+
+  def test_followup_returns_constants_formula(self):
+    """FOLLOWUP 타입은 FOLLOWUP_ANCHOR_COUNT * (1 + MAX_FOLLOWUP_PER_ANCHOR) 를 반환한다."""
+    session = InterviewSessionFactory(interview_session_type=InterviewSessionType.FOLLOWUP)
+    expected = FOLLOWUP_ANCHOR_COUNT * (1 + MAX_FOLLOWUP_PER_ANCHOR)
+    self.assertEqual(session.get_expected_total_questions(), expected)
+
+  def test_full_process_returns_full_process_question_count(self):
+    """FULL_PROCESS 타입은 FULL_PROCESS_QUESTION_COUNT 를 반환한다."""
+    session = InterviewSessionFactory(interview_session_type=InterviewSessionType.FULL_PROCESS)
+    self.assertEqual(session.get_expected_total_questions(), FULL_PROCESS_QUESTION_COUNT)
 
 
 class InterviewSessionStrTests(TestCase):
