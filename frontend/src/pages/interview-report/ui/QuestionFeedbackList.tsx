@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Mic, AlertTriangle, VolumeX, Eye } from "lucide-react";
 import type { InterviewQuestionFeedback, RecordingItem, BehaviorAnalysis, InterviewTurn } from "@/features/interview-session";
 import { InteractiveTimeline } from "./InteractiveTimeline";
 
@@ -67,6 +68,33 @@ export function QuestionFeedbackList({
         <div className="p-5 space-y-4">
           {/* Question & Answer */}
           <div className="space-y-2">
+            {/* 메타 배지 */}
+            <div className="flex flex-wrap gap-1.5 mb-1">
+              {activeFeedback.turnType && (
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#E6F7FA] text-[#0991B2]">
+                  {activeFeedback.turnType === "initial" ? "초기질문" : "꼬리질문"}
+                </span>
+              )}
+              {activeFeedback.questionSource && activeFeedback.questionSource !== "" && (
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#F3F4F6] text-[#6B7280]">
+                  {activeFeedback.questionSource === "job_posting" ? "채용공고 기반" : activeFeedback.questionSource === "resume" ? "이력서 기반" : activeFeedback.questionSource}
+                </span>
+              )}
+              {(() => {
+                const fr = activeFeedback.fillerWordRatio ?? 0;
+                const gr = activeFeedback.gazeDeviationRatio ?? 0;
+                let stabilityLabel = "긴장";
+                let stabilityCls = "bg-red-50 text-red-600";
+                if (fr < 0.05 && gr < 0.15) { stabilityLabel = "안정"; stabilityCls = "bg-[#DCFCE7] text-[#15803D]"; }
+                else if (fr < 0.10 && gr < 0.30) { stabilityLabel = "보통"; stabilityCls = "bg-amber-50 text-amber-600"; }
+                return (
+                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${stabilityCls}`}>
+                    {stabilityLabel}
+                  </span>
+                );
+              })()}
+            </div>
+
             <div className="bg-[#F9FAFB] rounded-xl p-3">
               <p className="text-[12px] font-semibold text-[#9CA3AF] mb-1">Q.</p>
               <p className="text-[13px] text-[#374151]">{activeFeedback.question}</p>
@@ -120,8 +148,87 @@ export function QuestionFeedbackList({
               </div>
             </div>
           )}
+
+          {/* 4개 지표 카드 (음성 + 영상) */}
+          <TurnMetricCards feedback={activeFeedback} />
         </div>
       )}
+    </div>
+  );
+}
+
+function TurnMetricCards({ feedback }: { feedback: InterviewQuestionFeedback }) {
+  const spm = feedback.speechRateSpm ?? 0;
+  const fillerCount = feedback.fillerWordCount ?? 0;
+  const fillerRatio = feedback.fillerWordRatio ?? 0;
+  const silenceRatio = feedback.silenceRatio ?? 0;
+  const gazeCount = feedback.gazeDeviationCount ?? 0;
+
+  const hasAnyData = spm > 0 || fillerCount > 0 || silenceRatio > 0 || gazeCount > 0;
+  if (!hasAnyData) return null;
+
+  // 배지 로직
+  const spmBadge = spm === 0
+    ? { label: "—", cls: "bg-[#F3F4F6] text-[#9CA3AF]" }
+    : spm >= 260 && spm <= 350
+    ? { label: "적절", cls: "bg-[#DCFCE7] text-[#15803D]" }
+    : spm > 350
+    ? { label: "빠름", cls: "bg-amber-50 text-amber-600" }
+    : { label: "느림", cls: "bg-amber-50 text-amber-600" };
+
+  const fillerBadge = fillerRatio < 0.05
+    ? { label: "양호", cls: "bg-[#DCFCE7] text-[#15803D]" }
+    : fillerRatio < 0.10
+    ? { label: "보통", cls: "bg-amber-50 text-amber-600" }
+    : { label: "개선 필요", cls: "bg-red-50 text-red-600" };
+
+  const silenceBadge = silenceRatio < 0.20
+    ? { label: "적절", cls: "bg-[#DCFCE7] text-[#15803D]" }
+    : silenceRatio < 0.30
+    ? { label: "조금 많음", cls: "bg-amber-50 text-amber-600" }
+    : { label: "너무 깁니다", cls: "bg-red-50 text-red-600" };
+
+  const gazeBadge = gazeCount < 5
+    ? { label: "안정", cls: "bg-[#DCFCE7] text-[#15803D]" }
+    : gazeCount < 12
+    ? { label: "불안정", cls: "bg-amber-50 text-amber-600" }
+    : { label: "주의", cls: "bg-red-50 text-red-600" };
+
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+      {/* 말하기 속도 */}
+      <div className="bg-[#F9FAFB] rounded-xl p-3 flex flex-col items-center text-center">
+        <Mic size={14} className="text-emerald-500 mb-1.5" />
+        <p className="text-[11px] text-[#6B7280] mb-1">말하기 속도</p>
+        <p className="text-[13px] font-bold text-[#374151] tabular-nums">{spm > 0 ? `${spm} SPM` : "—"}</p>
+        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full mt-1 ${spmBadge.cls}`}>{spmBadge.label}</span>
+      </div>
+
+      {/* 필러워드 */}
+      <div className="bg-[#F9FAFB] rounded-xl p-3 flex flex-col items-center text-center">
+        <AlertTriangle size={14} className="text-amber-500 mb-1.5" />
+        <p className="text-[11px] text-[#6B7280] mb-1">필러워드</p>
+        <p className="text-[13px] font-bold text-[#374151] tabular-nums">
+          {fillerCount}회 · {(fillerRatio * 100).toFixed(1)}%
+        </p>
+        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full mt-1 ${fillerBadge.cls}`}>{fillerBadge.label}</span>
+      </div>
+
+      {/* 묵음 비율 */}
+      <div className="bg-[#F9FAFB] rounded-xl p-3 flex flex-col items-center text-center">
+        <VolumeX size={14} className="text-emerald-500 mb-1.5" />
+        <p className="text-[11px] text-[#6B7280] mb-1">묵음 비율</p>
+        <p className="text-[13px] font-bold text-[#374151] tabular-nums">{(silenceRatio * 100).toFixed(0)}%</p>
+        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full mt-1 ${silenceBadge.cls}`}>{silenceBadge.label}</span>
+      </div>
+
+      {/* 시선 이탈 */}
+      <div className="bg-[#F9FAFB] rounded-xl p-3 flex flex-col items-center text-center">
+        <Eye size={14} className="text-[#0991B2] mb-1.5" />
+        <p className="text-[11px] text-[#6B7280] mb-1">시선 이탈</p>
+        <p className="text-[13px] font-bold text-[#374151] tabular-nums">{gazeCount}회</p>
+        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full mt-1 ${gazeBadge.cls}`}>{gazeBadge.label}</span>
+      </div>
     </div>
   );
 }

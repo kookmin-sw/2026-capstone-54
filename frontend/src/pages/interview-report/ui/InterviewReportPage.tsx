@@ -236,12 +236,18 @@ export function InterviewReportPage() {
 
               {/* 음성 분석 종합 */}
               <section id="audio-section" className="scroll-mt-20">
-                <AudioAnalysisSection />
+                <AudioAnalysisSection
+                  audioAnalysisResult={report.audioAnalysisResult}
+                  audioAnalysisComment={report.audioAnalysisComment}
+                />
               </section>
 
               {/* 영상 분석 종합 */}
               <section id="video-section" className="scroll-mt-20">
-                <VideoAnalysisSection />
+                <VideoAnalysisSection
+                  summary={report.videoAnalysisResult}
+                  questionFeedbacks={report.questionFeedbacks}
+                />
               </section>
 
               {/* 질문별 피드백 */}
