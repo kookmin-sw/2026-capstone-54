@@ -71,7 +71,7 @@ export function InterviewReportPage() {
   const gradeBadge = GRADE_BADGE[report?.overallGrade ?? ""] ?? GRADE_BADGE.Average;
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] antialiased" style={{ fontFamily: "'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, sans-serif" }}>
+    <div className="report-page min-h-screen bg-[#F8F9FA] antialiased">
       {/* Mesh background */}
       <div className="fixed inset-0 -z-10 pointer-events-none">
         <div className="absolute inset-0" style={{
