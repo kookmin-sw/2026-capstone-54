@@ -3,6 +3,7 @@ import { useAuthStore } from "@/features/auth";
 import { useNavigate, Link } from "react-router-dom";
 import { getTermsDocumentsApi, getTermsDocumentApi, type TermsDocument } from "@/features/auth/api/termsApi";
 import { Modal, PasswordChecklist } from "@/shared/ui";
+import { validatePassword } from "@/shared/lib/validatePassword";
 
 const isValidEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 
@@ -43,23 +44,13 @@ export function SignUpPage() {
     });
   }, []);
 
-  const allRequiredAgreed = useMemo(() => {
-    const requiredIds = terms.filter((t) => t.isRequired).map((t) => t.id);
+  const allRequiredAgreed = useMemo(() => {    const requiredIds = terms.filter((t) => t.isRequired).map((t) => t.id);
     return requiredIds.every((id) => agreements[id]);
   }, [terms, agreements]);
 
   const allAgreed = useMemo(() => {
     return terms.length > 0 && terms.every((t) => agreements[t.id]);
   }, [terms, agreements]);
-
-  const validatePassword = (pw: string): string | null => {
-    if (pw.length < 8) return "비밀번호는 8자 이상이어야 합니다.";
-    if (!/[A-Z]/.test(pw)) return "비밀번호에 대문자를 포함해야 합니다.";
-    if (!/[a-z]/.test(pw)) return "비밀번호에 소문자를 포함해야 합니다.";
-    if (!/[0-9]/.test(pw)) return "비밀번호에 숫자를 포함해야 합니다.";
-    if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(pw)) return "비밀번호에 특수문자를 포함해야 합니다.";
-    return null;
-  };
 
   const validate = (): string | null => {
     if (!name.trim()) return "이름을 입력해주세요.";

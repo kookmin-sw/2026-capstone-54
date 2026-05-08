@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Eye, EyeOff, KeyRound } from "lucide-react";
 import { confirmPasswordResetApi } from "@/features/auth/api/authApi";
 import { PasswordChecklist } from "@/shared/ui";
+import { validatePassword } from "@/shared/lib/validatePassword";
 
 const INPUT_CLS = "w-full py-[13px] px-4 pr-11 bg-white border border-[#E5E7EB] rounded-lg text-[14px] text-[#0A0A0A] font-plex-sans-kr outline-none transition-[border-color] duration-200 placeholder-[#9CA3AF] focus:border-[#0991B2] md:py-[14px]";
 const TOGGLE_BTN_CLS = "absolute right-3 top-1/2 -translate-y-1/2 bg-none border-none cursor-pointer text-[#9CA3AF] p-1 flex items-center justify-center hover:text-[#6B7280]";
@@ -60,15 +61,6 @@ export function ResetPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-
-  const validatePassword = (pw: string): string | null => {
-    if (pw.length < 8) return "비밀번호는 8자 이상이어야 합니다.";
-    if (!/[A-Z]/.test(pw)) return "비밀번호에 대문자를 포함해야 합니다.";
-    if (!/[a-z]/.test(pw)) return "비밀번호에 소문자를 포함해야 합니다.";
-    if (!/[0-9]/.test(pw)) return "비밀번호에 숫자를 포함해야 합니다.";
-    if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(pw)) return "비밀번호에 특수문자를 포함해야 합니다.";
-    return null;
-  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

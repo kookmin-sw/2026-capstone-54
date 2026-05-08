@@ -1,15 +1,7 @@
 import { KeyRound, Lock } from "lucide-react";
 import { Link } from "react-router-dom";
 import { PasswordChecklist } from "@/shared/ui";
-
-function validatePassword(pw: string): string | null {
-  if (pw.length < 8) return "비밀번호는 8자 이상이어야 합니다.";
-  if (!/[A-Z]/.test(pw)) return "비밀번호에 대문자를 포함해야 합니다.";
-  if (!/[a-z]/.test(pw)) return "비밀번호에 소문자를 포함해야 합니다.";
-  if (!/[0-9]/.test(pw)) return "비밀번호에 숫자를 포함해야 합니다.";
-  if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(pw)) return "비밀번호에 특수문자를 포함해야 합니다.";
-  return null;
-}
+import { validatePassword } from "@/shared/lib/validatePassword";
 
 interface PasswordChangeFormProps {
   passwordDraft: { currentPassword: string; newPassword: string; confirmPassword: string };

@@ -1,21 +1,15 @@
+import { PASSWORD_CHECKS } from "@/shared/lib/validatePassword";
+
 interface PasswordChecklistProps {
   password: string;
 }
-
-const CHECKS = [
-  { label: "8자 이상",   test: (pw: string) => pw.length >= 8 },
-  { label: "대문자",     test: (pw: string) => /[A-Z]/.test(pw) },
-  { label: "소문자",     test: (pw: string) => /[a-z]/.test(pw) },
-  { label: "숫자",       test: (pw: string) => /[0-9]/.test(pw) },
-  { label: "특수문자",   test: (pw: string) => /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(pw) },
-];
 
 export function PasswordChecklist({ password }: PasswordChecklistProps) {
   const pw = password ?? "";
 
   return (
     <div className="flex flex-wrap gap-[6px] mt-[10px]">
-      {CHECKS.map(({ label, test }) => {
+      {PASSWORD_CHECKS.map(({ label, test }) => {
         const met = pw.length > 0 && test(pw);
         return (
           <span
