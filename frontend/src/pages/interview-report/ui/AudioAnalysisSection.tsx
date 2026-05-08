@@ -30,15 +30,8 @@ function getVolumeBadge(dbfs: number | null) {
   return { label: "불안정합니다", cls: "bg-[#FDF6E3] text-[#E9B63B]" };
 }
 
-function getPerTurnFillerBadge(ratio: number) {
-  if (ratio < 0.05) return { label: "양호", cls: "bg-[#DCFCE7] text-[#15803D]" };
-  if (ratio < 0.10) return { label: "보통", cls: "bg-amber-50 text-amber-600" };
-  return { label: "개선 필요", cls: "bg-red-50 text-red-600" };
-}
-
 export function AudioAnalysisSection({ audioAnalysisResult }: AudioAnalysisSectionProps) {
   const summary = audioAnalysisResult?.summary;
-  const perTurn = audioAnalysisResult?.perTurn ?? [];
   const hasData = !!summary && (summary.avgSpeechRateSpm > 0 || summary.avgSilenceRatio > 0);
 
   const spmBadge = getSpmBadge(summary?.avgSpeechRateSpm ?? 0);
@@ -53,7 +46,7 @@ export function AudioAnalysisSection({ audioAnalysisResult }: AudioAnalysisSecti
 
 
       {/* 4개 지표 카드 */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {/* 말하기 속도 */}
         <div className="bg-[#F9FAFB] rounded-2xl p-4 flex flex-col items-center text-center">
           <div className="w-9 h-9 rounded-xl bg-[#E6F7FA] flex items-center justify-center mb-2.5">
@@ -101,61 +94,6 @@ export function AudioAnalysisSection({ audioAnalysisResult }: AudioAnalysisSecti
             {hasData && summary!.avgVolumeDbfs !== 0 ? `${summary!.avgVolumeDbfs} dBFS` : "—"}
           </p>
         </div>
-      </div>
-
-      {/* 질문별 필러워드 현황 */}
-      <div className="bg-[#F9FAFB] rounded-xl p-4 border border-gray-100">
-        <div className="flex items-center justify-between mb-3">
-          <p className="text-[13px] font-semibold text-[#374151]">질문별 필러워드 현황</p>
-          <span className="text-[11px] text-[#9CA3AF]">10% 초과 시 집중 개선 권장</span>
-        </div>
-        {hasData && perTurn.length > 0 ? (
-          <div className="space-y-1.5">
-            {perTurn.map((turn) => {
-              const badge = getPerTurnFillerBadge(turn.fillerWordRatio);
-              const topFillers = Object.entries(turn.fillerWordDetail || {})
-                .sort(([, a], [, b]) => b - a)
-                .slice(0, 2)
-                .map(([word]) => word)
-                .join(", ");
-
-              let comment = "필러워드가 거의 없어 자신감 있는 답변이었습니다.";
-              if (turn.fillerWordRatio >= 0.10) {
-                comment = topFillers
-                  ? `'${topFillers}'가 자주 등장해 흐름이 끊겼습니다.`
-                  : "필러워드가 자주 등장해 흐름이 끊겼습니다.";
-              } else if (turn.fillerWordRatio >= 0.05) {
-                comment = "일부 필러워드가 있지만 전달에는 지장이 없는 수준입니다.";
-              }
-
-              return (
-                <div
-                  key={turn.turnNumber}
-                  className={`flex items-center gap-3 rounded-xl px-3 py-2 border ${
-                    turn.fillerWordRatio >= 0.10
-                      ? "bg-red-50/50 border-red-100"
-                      : "bg-white border-gray-100"
-                  }`}
-                >
-                  <span className="text-[12px] font-semibold text-[#6B7280] w-6 shrink-0">Q{turn.turnNumber}</span>
-                  <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full shrink-0 ${badge.cls}`}>
-                    {badge.label}
-                  </span>
-                  <p className="flex-1 text-[12px] text-[#6B7280] truncate">{comment}</p>
-                  <span className={`text-[11px] tabular-nums shrink-0 ${
-                    turn.fillerWordRatio >= 0.10 ? "text-red-600 font-semibold" : "text-[#6B7280]"
-                  }`}>
-                    {(turn.fillerWordRatio * 100).toFixed(1)}%
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="flex items-center justify-center py-6">
-            <p className="text-[12px] text-[#9CA3AF]">음성 분석 데이터가 준비되면 여기에 표시됩니다.</p>
-          </div>
-        )}
       </div>
     </div>
   );
