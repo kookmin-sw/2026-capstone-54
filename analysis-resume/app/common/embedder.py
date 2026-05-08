@@ -17,6 +17,7 @@ def _get_embeddings() -> OpenAIEmbeddings:
     _embeddings = OpenAIEmbeddings(
       model=config.OPENAI_EMBEDDING_MODEL,
       openai_api_key=config.OPENAI_API_KEY,
+      base_url=config.OPENAI_BASE_URL,
     )
   return _embeddings
 

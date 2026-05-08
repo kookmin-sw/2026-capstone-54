@@ -24,6 +24,10 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 OPENAI_EMBEDDING_MODEL = os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small")
 OPENAI_EMBEDDING_DIMENSIONS = 1536
 OPENAI_LLM_MODEL = os.getenv("OPENAI_LLM_MODEL", "gpt-4o-mini")
+# LLM Gateway (LiteLLM) base URL.
+# - 비어 있으면 OpenAI 직통 (로컬 개발 기본값)
+# - 설정 시 게이트웨이 경유 (운영 K3s = "http://mefit-llm-gateway:4000/v1")
+OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", "") or None
 
 # ── 텍스트 처리 ──────────────────────────────────
 CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "500"))      # 청크당 최대 글자 수
