@@ -11,12 +11,15 @@ HTML을 정제한 뒤 LangChain + GPT로 구조화된 채용 정보를 추출합
   5. LLM_MAX_TEXT_CHARS 이하로 자름
 """
 
+import base64
+import io
 import json
 import re
 
 from bs4 import BeautifulSoup
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import SystemMessage, HumanMessage
+from PIL import Image
 
 from config import OPENAI_API_KEY, OPENAI_MODEL, OPENAI_VISION_MODEL, LLM_MAX_TEXT_CHARS
 from utils.logger import get_logger
@@ -43,9 +46,9 @@ JSON 외의 다른 텍스트는 절대 출력하지 마세요.
 {
   "title": "채용 공고 제목",
   "company": "회사명",
-  "duties": "담당 업무 내용 — '담당업무', '주요업무', '하는 일', 'responsibilities' 등의 섹션",
-  "requirements": "지원 필수 자격 조건 — '지원자격', '자격요건', '필수조건', '자격사항', 'requirements' 등의 섹션. 하나의 섹션에 자격사항과 우대사항이 함께 있으면 자격사항만 이 필드에 넣으세요.",
-  "preferred": "우대 사항 — '우대사항', '우대조건', 'preferred' 등의 섹션. 하나의 섹션에 자격사항과 우대사항이 함께 있으면 우대사항만 이 필드에 넣으세요.",
+  "duties": "담당 업무 내용 — '담당업무', '주요업무', '업무 분야', '업무내용', '직무 소개', '수행업무', '하는 일', 'responsibilities', 'job description', 'what you will do' 등의 섹션. 섹션 헤더가 위 키워드와 정확히 일치하지 않더라도, 업무/역할/작업을 설명하는 내용이면 이 필드에 넣으세요.",
+  "requirements": "지원 필수 자격 조건 — '지원자격', '자격요건', '필수조건', '자격사항', '자격 요건 및 우대사항', 'requirements', 'qualifications', 'who you are' 등의 섹션. 하나의 섹션에 자격사항과 우대사항이 함께 있으면 자격사항만 이 필드에 넣으세요.",
+  "preferred": "우대 사항 — '우대사항', '우대조건', '우대 요건', 'preferred', 'nice to have', 'plus' 등의 섹션. 하나의 섹션에 자격사항과 우대사항이 함께 있으면 우대사항만 이 필드에 넣으세요.",
   "work_type": "고용 형태 (예: 정규직, 계약직, 인턴 등)",
   "salary": "급여 정보",
   "location": "근무 위치 / 근무지",
@@ -223,6 +226,69 @@ async def extract_with_llm(text: str, url: str) -> dict:
     }
 
 
+def _split_tall_images(image_urls: list[str], max_height: int = 2000) -> list[str]:
+    """
+    세로로 긴 이미지를 분할하여 Vision API가 텍스트를 인식할 수 있도록 합니다.
+
+    높이가 max_height를 초과하는 base64 이미지를 max_height 단위로 잘라
+    여러 장의 base64 이미지로 변환합니다. 최종 결과는 최대 5장으로 제한합니다.
+
+    외부 URL(http)은 분할 불가하므로 그대로 유지합니다.
+    """
+    result: list[str] = []
+
+    for img_url in image_urls:
+        if len(result) >= 5:
+            break
+
+        if not img_url.startswith("data:"):
+            result.append(img_url)
+            continue
+
+        try:
+            # data:image/jpeg;base64,... 형식에서 헤더와 데이터 분리
+            header, b64_data = img_url.split(",", 1)
+            img_bytes = base64.b64decode(b64_data)
+            img = Image.open(io.BytesIO(img_bytes))
+            width, height = img.size
+
+            # 가로가 극단적으로 긴 이미지(배너/로고)는 공고 본문이 아니므로 제외
+            if width > height * 3:
+                logger.debug("배너/로고 이미지 제외: %dx%d (가로가 세로의 3배 초과)", width, height)
+                continue
+
+            # RGBA(투명도 포함) → RGB 변환 (JPEG 저장을 위해)
+            if img.mode == "RGBA":
+                img = img.convert("RGB")
+
+            if height <= max_height:
+                result.append(img_url)
+                continue
+
+            # 분할 수행
+            num_slices = (height + max_height - 1) // max_height
+            logger.debug("이미지 분할: %dx%d → %d조각 (max_height=%d)", width, height, num_slices, max_height)
+
+            for i in range(num_slices):
+                if len(result) >= 5:
+                    break
+                top = i * max_height
+                bottom = min((i + 1) * max_height, height)
+                slice_img = img.crop((0, top, width, bottom))
+
+                # 분할된 이미지를 JPEG base64로 인코딩
+                buf = io.BytesIO()
+                slice_img.save(buf, format="JPEG", quality=90)
+                slice_b64 = base64.b64encode(buf.getvalue()).decode()
+                result.append(f"data:image/jpeg;base64,{slice_b64}")
+
+        except Exception as e:
+            logger.debug("이미지 분할 실패 (원본 유지): %s", e)
+            result.append(img_url)
+
+    return result
+
+
 def _parse_llm_response(raw: str) -> dict:
     """LLM 응답 문자열을 dict로 파싱합니다 (공통 로직)."""
     if raw.startswith("```"):
@@ -249,9 +315,13 @@ def _parse_llm_response(raw: str) -> dict:
 
 async def extract_with_vision_llm(image_urls: list[str], url: str) -> dict:
     """
-    채용공고 이미지를 GPT-4o Vision에 전달하여 채용 정보를 추출합니다.
+    채용공고 이미지를 2단계로 처리하여 채용 정보를 추출합니다.
 
-    텍스트 추출이 불가능한 이미지 기반 공고에 사용됩니다.
+    1단계: GPT-4o Vision으로 이미지 속 텍스트를 그대로 읽어냄 (OCR 역할)
+    2단계: 읽어낸 텍스트를 기존 extract_with_llm()에 전달하여 구조화 (분류 역할)
+
+    이렇게 분리하면 Vision은 텍스트 인식에만 집중하고,
+    구조화는 텍스트 기반 LLM이 담당하여 정확도가 향상됩니다.
 
     Args:
         image_urls: 채용공고 이미지 URL 목록 (최대 5개 사용)
@@ -260,6 +330,7 @@ async def extract_with_vision_llm(image_urls: list[str], url: str) -> dict:
     if not OPENAI_API_KEY:
         raise ValueError("OPENAI_API_KEY가 설정되지 않았습니다. .env 파일을 확인하세요.")
 
+    # ── 1단계: Vision OCR — 이미지 속 텍스트 읽기 ──────────────────────────
     llm = ChatOpenAI(
         model=OPENAI_VISION_MODEL,
         api_key=OPENAI_API_KEY,
@@ -270,16 +341,19 @@ async def extract_with_vision_llm(image_urls: list[str], url: str) -> dict:
     # 이미지는 최대 5개 (토큰 비용 제한)
     target_urls = image_urls[:5]
 
+    # 세로로 긴 이미지 분할 처리
+    target_urls = _split_tall_images(target_urls)
+
     content: list = [
         {
             "type": "text",
             "text": (
-                f"아래 이미지는 다음 URL의 채용공고 페이지 캡처입니다.\n"
-                f"URL: {url}\n\n"
-                f"이미지에 보이는 채용 정보를 시스템 프롬프트의 JSON 형식으로 추출하세요. "
-                f"이미지 안의 텍스트를 그대로 읽어서 JSON 필드에 채워주세요. "
-                f"반드시 이 URL에 해당하는 채용공고 정보만 추출하고 "
-                f"다른 공고나 광고는 무시하세요."
+                "아래 이미지는 채용공고 페이지의 캡처입니다.\n"
+                "이미지에 보이는 모든 텍스트를 빠짐없이 그대로 읽어서 출력하세요.\n"
+                "표(테이블)가 있으면 각 행을 줄바꿈으로 구분하고, "
+                "열 헤더가 있으면 '헤더: 내용' 형식으로 작성하세요.\n"
+                "요약하거나 재구성하지 말고, 이미지에 보이는 텍스트를 위에서 아래로 순서대로 그대로 출력하세요.\n"
+                "마크다운이나 코드블록 없이 순수 텍스트만 출력하세요."
             ),
         }
     ]
@@ -289,14 +363,26 @@ async def extract_with_vision_llm(image_urls: list[str], url: str) -> dict:
             "image_url": {"url": img_url, "detail": "high"},
         })
 
-    messages = [
-        SystemMessage(content=_SYSTEM_PROMPT),
-        HumanMessage(content=content),
-    ]
+    messages = [HumanMessage(content=content)]
 
     logger.info(
-        "GPT Vision 호출 중 (모델: %s, 이미지: %d개) — %s",
+        "GPT Vision OCR 중 (모델: %s, 이미지: %d개) — %s",
         OPENAI_VISION_MODEL, len(target_urls), url,
     )
     response = await llm.ainvoke(messages)
-    return _parse_llm_response(response.content.strip())
+    ocr_text = response.content.strip()
+
+    logger.info("Vision OCR 완료: %d자 추출", len(ocr_text))
+    logger.debug("Vision OCR 결과 (앞 500자): %s", ocr_text[:500])
+
+    if not ocr_text or len(ocr_text) < 30:
+        logger.warning("Vision OCR 결과가 너무 짧음 (%d자) — 빈 결과 반환", len(ocr_text))
+        return {
+            "title": "", "company": "", "duties": "", "requirements": "",
+            "preferred": "", "work_type": "", "salary": "",
+            "location": "", "education": "", "experience": "",
+        }
+
+    # ── 2단계: 텍스트 기반 구조화 추출 ─────────────────────────────────────
+    logger.info("Vision OCR 텍스트를 텍스트 기반 LLM으로 구조화 중...")
+    return await extract_with_llm(ocr_text, url)

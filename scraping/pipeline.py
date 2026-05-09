@@ -19,11 +19,7 @@ from urllib.parse import urlparse
 from playwright.async_api import Browser
 
 from config import HTTP_TIMEOUT_SECONDS, HTTP_MAX_RETRIES, LLM_MAX_TEXT_CHARS
-from extractors.llm_extractor import (
-    clean_html_to_text,
-    extract_with_llm,
-    extract_with_vision_llm,
-)
+from extractors.llm_extractor import clean_html_to_text, extract_with_llm
 from extractors.schema import JobPosting, normalize
 from plugins.base import BaseScraper
 from plugins.registry import get_plugin
@@ -188,6 +184,39 @@ async def run(url: str, browser: Browser) -> JobPosting:
         if image_urls:
             logger.debug("HTML/iframe에서 이미지 URL %d개 추출", len(image_urls))
 
+    # 외부 URL 이미지를 httpx로 다운로드 → base64 변환
+    # (CDN이 외부 서버 접근을 차단하여 OpenAI Vision이 직접 접근 불가한 경우 대비)
+    if image_urls:
+        converted_urls: list[str] = []
+        _img_headers_conv = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                          "AppleWebKit/537.36 (KHTML, like Gecko) "
+                          "Chrome/122.0.0.0 Safari/537.36",
+            "Accept": "image/webp,image/apng,image/*,*/*;q=0.8",
+            "Referer": f"https://{urlparse(url).netloc}/",
+        }
+        for img_url in image_urls:
+            if img_url.startswith("data:"):
+                converted_urls.append(img_url)
+            else:
+                try:
+                    async with httpx.AsyncClient(
+                        headers=_img_headers_conv,
+                        follow_redirects=True,
+                        timeout=15,
+                    ) as img_client:
+                        resp = await img_client.get(img_url)
+                    if resp.status_code == 200 and resp.content:
+                        ct = resp.headers.get("content-type", "image/jpeg")
+                        b64 = base64.b64encode(resp.content).decode()
+                        converted_urls.append(f"data:{ct};base64,{b64}")
+                        logger.debug("이미지 base64 변환 성공: %s (%d bytes)", img_url[:80], len(resp.content))
+                    else:
+                        logger.debug("이미지 다운로드 실패 (HTTP %d): %s", resp.status_code, img_url[:80])
+                except Exception as e:
+                    logger.debug("이미지 다운로드 오류: %s — %s", img_url[:80], e)
+        image_urls = converted_urls
+
     # Vision LLM 전달 전 광고/트래킹 URL 최종 필터링
     # (data: URL은 이미 base64 변환된 안전한 URL이므로 제외하지 않음)
     _VISION_AD_PATTERNS = (
@@ -207,57 +236,91 @@ async def run(url: str, browser: Browser) -> JobPosting:
         if u.startswith("data:") or not any(ad in u for ad in _VISION_AD_PATTERNS)
     ]
 
-    # 텍스트가 매우 짧으면 바로 Vision 사용
-    _VISION_TEXT_THRESHOLD = 300
-    _MAX_VISION_IMAGES = 5  # Vision LLM에 전달할 최대 이미지 수
-    if len(text) < _VISION_TEXT_THRESHOLD and image_urls:
-        logger.info("텍스트 부족 (%d자) + 이미지 있음 → Vision LLM으로 처리", len(text))
-        raw = await extract_with_vision_llm(image_urls[:_MAX_VISION_IMAGES], url)
-    else:
-        # 텍스트 기반 LLM 추출
-        raw = await extract_with_llm(text, url)
+    # 이미지가 있으면 Vision OCR로 이미지 속 텍스트를 추출하여 HTML 텍스트에 보강
+    # 판별 로직 없이 항상 실행 → 이미지 공고/텍스트 공고 오판 문제 제거
+    if image_urls:
+        logger.info("이미지 %d개 감지 → Vision OCR로 이미지 텍스트 추출 중...", len(image_urls))
+        ocr_text = await _extract_text_from_images(image_urls, url)
+        if ocr_text:
+            logger.info("Vision OCR 완료: %d자 추출 → HTML 텍스트에 병합", len(ocr_text))
+            text = ocr_text + "\n\n" + text
+            # 병합 후 최대 길이 재적용
+            if len(text) > LLM_MAX_TEXT_CHARS:
+                text = text[:LLM_MAX_TEXT_CHARS]
 
-        # iframe 스크린샷이 있고 공고 본문 핵심 필드가 부실할 때 Vision으로 보완:
-        #   - duties/preferred 모두 비어있음 → 이미지 기반 공고
-        #   - duties가 너무 짧음(< 50자) + preferred 없음 → SPA 비동기 로딩으로 텍스트 미수집
-        duties_val = raw.get("duties", "")
-        preferred_val = raw.get("preferred", "")
-        duties_insufficient = not duties_val or len(duties_val) < 50
-        if duties_insufficient and not preferred_val and image_urls:
-            if not duties_val:
-                logger.info(
-                    "duties/preferred 비어 있음 + 이미지 있음 → Vision LLM으로 보완"
-                )
-            else:
-                logger.info(
-                    "duties 너무 짧음 (%d자) + 이미지 있음 → Vision LLM으로 보완",
-                    len(duties_val),
-                )
-            vision_raw = await extract_with_vision_llm(
-                image_urls[:_MAX_VISION_IMAGES], url
-            )
-            # Vision 결과로 빈/부족한 필드 채우기
-            for field in (
-                "duties",
-                "preferred",
-                "requirements",
-                "title",
-                "company",
-                "work_type",
-                "salary",
-                "location",
-                "education",
-                "experience",
-            ):
-                if vision_raw.get(field) and (
-                    not raw.get(field)
-                    or (field == "duties" and len(raw.get("duties", "")) < 50)
-                ):
-                    raw[field] = vision_raw[field]
+    # 통합된 텍스트(HTML + OCR)를 gpt-4o-mini로 구조화 추출
+    raw = await extract_with_llm(text, url)
 
     result = normalize(raw, url, platform)
     logger.info("스크래핑 완료: title='%s', company='%s'", result.title, result.company)
     return result
+
+
+async def _extract_text_from_images(image_urls: list[str], url: str) -> str:
+    """
+    이미지에서 Vision OCR로 텍스트를 추출합니다.
+
+    extract_with_vision_llm()의 1단계(OCR)만 수행하는 헬퍼 함수입니다.
+    추출된 텍스트는 HTML 텍스트와 병합되어 gpt-4o-mini에 전달됩니다.
+
+    Returns:
+        이미지에서 읽어낸 텍스트. 실패 시 빈 문자열.
+    """
+    from extractors.llm_extractor import _split_tall_images
+
+    try:
+        from langchain_openai import ChatOpenAI
+        from langchain_core.messages import HumanMessage as HMsg
+        from config import OPENAI_API_KEY, OPENAI_VISION_MODEL
+
+        if not OPENAI_API_KEY:
+            return ""
+
+        llm = ChatOpenAI(
+            model=OPENAI_VISION_MODEL,
+            api_key=OPENAI_API_KEY,
+            temperature=0,
+            max_retries=2,
+        )
+
+        target_urls = image_urls[:5]
+        target_urls = _split_tall_images(target_urls)
+
+        content: list = [
+            {
+                "type": "text",
+                "text": (
+                    "아래 이미지는 채용공고 페이지의 캡처입니다.\n"
+                    "이미지에 보이는 모든 텍스트를 빠짐없이 그대로 읽어서 출력하세요.\n"
+                    "표(테이블)가 있으면 각 행을 줄바꿈으로 구분하고, "
+                    "열 헤더가 있으면 '헤더: 내용' 형식으로 작성하세요.\n"
+                    "요약하거나 재구성하지 말고, 이미지에 보이는 텍스트를 "
+                    "위에서 아래로 순서대로 그대로 출력하세요.\n"
+                    "마크다운이나 코드블록 없이 순수 텍스트만 출력하세요."
+                ),
+            }
+        ]
+        for img_url in target_urls:
+            content.append({
+                "type": "image_url",
+                "image_url": {"url": img_url, "detail": "high"},
+            })
+
+        messages = [HMsg(content=content)]
+
+        logger.info(
+            "Vision OCR 호출 (모델: %s, 이미지: %d개) — %s",
+            OPENAI_VISION_MODEL, len(target_urls), url,
+        )
+        response = await llm.ainvoke(messages)
+        ocr_text = response.content.strip()
+
+        logger.debug("Vision OCR 결과 (앞 500자): %s", ocr_text[:500])
+        return ocr_text
+
+    except Exception as e:
+        logger.warning("Vision OCR 실패: %s", e)
+        return ""
 
 
 async def _try_direct_request(url: str) -> str | None:
@@ -640,6 +703,7 @@ async def _try_playwright(
             image_urls = plugin_images + direct_image_b64_urls + screenshot_urls
 
             # 메인 페이지 큰 이미지도 수집 (직접 URL도 스크린샷도 없는 경우 폴백)
+            # httpx로 다운로드 → base64 변환 (CDN이 외부 접근을 차단하는 경우 대비)
             if not image_urls:
                 try:
                     main_imgs = await page.evaluate("""
@@ -652,7 +716,37 @@ async def _try_playwright(
                             .map(img => img.src)
                             .filter(src => src && src.startsWith('http'))
                     """)
-                    image_urls.extend(main_imgs)
+                    if main_imgs:
+                        _img_headers_main = {
+                            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                                          "AppleWebKit/537.36 (KHTML, like Gecko) "
+                                          "Chrome/122.0.0.0 Safari/537.36",
+                            "Accept": "image/webp,image/apng,image/*,*/*;q=0.8",
+                            "Referer": f"https://{urlparse(url).netloc}/",
+                        }
+                        for img_url in main_imgs:
+                            try:
+                                async with httpx.AsyncClient(
+                                    headers=_img_headers_main,
+                                    follow_redirects=True,
+                                    timeout=15,
+                                ) as img_client:
+                                    resp = await img_client.get(img_url)
+                                if resp.status_code == 200 and resp.content:
+                                    ct = resp.headers.get("content-type", "image/jpeg")
+                                    b64 = base64.b64encode(resp.content).decode()
+                                    image_urls.append(f"data:{ct};base64,{b64}")
+                                    logger.debug(
+                                        "메인 이미지 다운로드 성공: %s (%d bytes)",
+                                        img_url[:80], len(resp.content),
+                                    )
+                                else:
+                                    logger.debug(
+                                        "메인 이미지 다운로드 실패 (HTTP %d): %s",
+                                        resp.status_code, img_url[:80],
+                                    )
+                            except Exception as e:
+                                logger.debug("메인 이미지 다운로드 오류: %s — %s", img_url[:80], e)
                 except Exception:
                     pass
 
@@ -699,6 +793,55 @@ def _detect_platform(url: str) -> str:
         return host.split(".")[0]
     except Exception:
         return "unknown"
+
+
+def _is_image_based_posting(text: str, image_urls: list[str]) -> bool:
+    """
+    LLM 호출 전 사전 분류: 이미지 기반 공고인지 판단합니다.
+
+    판단 기준 (모두 충족 시 이미지 공고로 분류):
+      1. 이미지가 존재함 (image_urls가 비어있지 않음)
+      2. 텍스트에 채용공고 핵심 섹션 키워드가 부족함 (1개 이하)
+      3. 텍스트 내 의미 있는 문장 블록이 적음 (5줄 미만)
+
+    이 함수는 기존 300자 고정 임계값 대신 구조적 신호를 사용하여
+    사이트별 텍스트 길이 차이에 영향받지 않습니다.
+
+    Returns:
+        True: 이미지 기반 공고 → Vision LLM 직행
+        False: 텍스트 기반 공고 → 텍스트 LLM 사용
+    """
+    # 이미지가 없으면 Vision 사용 불가 → 무조건 텍스트 추출
+    if not image_urls:
+        return False
+
+    # 채용공고 핵심 섹션 키워드 (한국어 + 영어)
+    _JOB_KEYWORDS = (
+        "담당업무", "주요업무", "직무내용", "하는 일", "업무내용",
+        "자격요건", "지원자격", "필수조건", "자격사항",
+        "우대사항", "우대조건", "우대 사항",
+        "responsibilities", "requirements", "qualifications", "preferred",
+    )
+
+    text_lower = text.lower()
+    keyword_matches = sum(1 for kw in _JOB_KEYWORDS if kw in text_lower)
+
+    # 키워드 2개 이상 매칭 → 텍스트에 공고 본문이 충분히 담겨있음
+    if keyword_matches >= 2:
+        return False
+
+    # 의미 있는 텍스트 줄 수 확인 (10자 이상인 줄만 카운트)
+    meaningful_lines = [line for line in text.splitlines() if len(line.strip()) >= 10]
+
+    # 키워드 0~1개 + 의미 있는 줄 5개 미만 → 이미지 공고
+    if len(meaningful_lines) < 5:
+        logger.debug(
+            "이미지 공고 판단: 키워드 %d개, 의미 있는 줄 %d개, 이미지 %d개",
+            keyword_matches, len(meaningful_lines), len(image_urls),
+        )
+        return True
+
+    return False
 
 
 def _has_expandable_content(html: str) -> bool:
