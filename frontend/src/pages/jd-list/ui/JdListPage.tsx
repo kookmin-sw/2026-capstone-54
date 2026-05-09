@@ -133,7 +133,7 @@ function JdCard({ item }: { item: JdListItem }) {
       {/* Company */}
       <div className="flex items-center gap-2.5 mb-2.5">
         <div className="w-[38px] h-[38px] rounded-lg shrink-0 shadow-[0_3px_8px_rgba(0,0,0,0.06)] overflow-hidden">
-          <CompanyIcon categoryId={item.categoryId} size={18} />
+          <CompanyIcon seed={item.uuid} size={18} />
         </div>
         <div className="text-[13px] text-[#6B7280] font-semibold">{item.company}</div>
       </div>

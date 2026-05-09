@@ -1,5 +1,6 @@
 /** STT 음성 인식 테스트 카드 (다크 테마). */
 import { useEffect, useRef, useState } from "react";
+import { Mic } from "lucide-react";
 import { WebSpeechSTTProvider } from "@/shared/lib/stt/WebSpeechSTTProvider";
 import { checkSttMatch, type SttMatchResult } from "@/shared/lib/voice/matchVoice";
 
@@ -53,7 +54,7 @@ export function SttTestCard() {
   return (
     <div className="bg-slate-800/60 border border-white/10 rounded-xl p-5">
       <div className="flex items-center gap-2 mb-2">
-        <span className="text-lg">🎙️</span>
+        <Mic size={18} className="text-slate-400 shrink-0" />
         <h3 className="text-[14px] font-extrabold text-slate-200">음성 인식 테스트</h3>
       </div>
       <p className="text-[12px] text-slate-400 leading-[1.5] mb-3">

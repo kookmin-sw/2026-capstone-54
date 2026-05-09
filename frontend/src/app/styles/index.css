@@ -51,7 +51,7 @@ main[data-landing-main] > section {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: clamp(20px, 5vh, 80px) clamp(16px, 5vw, 48px);
+  padding: clamp(20px, 5vh, 80px) clamp(20px, 5vw, 48px);
 }
 
 main[data-landing-main] > #hero {

@@ -57,7 +57,7 @@ export function StepVoiceCheck({ allPassed, isCreating, createError, onStart, on
 
           <div className="flex gap-3 mt-auto">
             <button className="flex-1 py-3 rounded-xl font-bold text-[13px] text-slate-400 bg-transparent border border-white/10 hover:bg-white/5 transition-colors cursor-pointer" onClick={onBack}>← 이전</button>
-            <button disabled={!allPassed || isCreating} onClick={onStart} className="flex-1 py-3 rounded-xl font-bold text-[13px] text-white bg-indigo-600 hover:bg-indigo-500 transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer">
+            <button disabled={!allPassed || isCreating} onClick={onStart} className="flex-1 py-3 rounded-xl font-bold text-[13px] text-white bg-[#06B6D4] hover:bg-[#22D3EE] transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer">
               {isCreating ? "생성 중..." : "면접 시작 →"}
             </button>
           </div>

@@ -19,8 +19,8 @@ export function BehaviorMetrics({
   isAnalyzing,
 }: BehaviorMetricsProps) {
   return (
-    <div className={`bg-slate-800/60 border border-white/10 rounded-2xl p-4 flex flex-col gap-3 ${className || ""}`}>
-      <div className="text-[10px] font-bold tracking-widest uppercase text-slate-500">실시간 분석</div>
+    <div className={`bg-[#071a26]/80 border border-[#0991B2]/20 rounded-2xl p-4 flex flex-col gap-3 ${className || ""}`}>
+      <div className="text-[10px] font-bold tracking-widest uppercase text-[#0991B2]/60">실시간 분석</div>
 
       <div className="grid grid-cols-2 gap-2">
         <MetricItem label="발화 속도" value={speechMetrics.wpm} unit="SPM" warnAt={0} />
@@ -33,11 +33,11 @@ export function BehaviorMetrics({
       <div>
         <div className="text-[10px] text-slate-500 mb-1 flex justify-between">
           <span>마이크 레벨</span>
-          {isAnalyzing && <span className="text-green-400 font-mono">{fps} FPS</span>}
+          {isAnalyzing && <span className="text-[#06B6D4] font-mono">{fps} FPS</span>}
         </div>
-        <div className="h-1.5 bg-slate-700 rounded-full overflow-hidden">
+        <div className="h-1.5 bg-[#0a1e2a] rounded-full overflow-hidden">
           <div
-            className="h-full bg-gradient-to-r from-indigo-500 to-blue-400 transition-all duration-75"
+            className="h-full bg-gradient-to-r from-[#0991B2] to-[#06B6D4] transition-all duration-75"
             style={{ width: `${Math.min(100, audioLevel)}%` }}
           />
         </div>
@@ -60,7 +60,7 @@ function MetricItem({
   const isWarn = value > warnAt && warnAt > 0;
   const isGood = warnAt === 0;
   return (
-    <div className="bg-slate-900/40 rounded-xl px-3 py-2">
+    <div className="bg-[#050e18] border border-[#0991B2]/10 rounded-xl px-3 py-2">
       <div className="text-[10px] text-slate-500">{label}</div>
       <div
         className={`text-lg font-mono font-bold ${

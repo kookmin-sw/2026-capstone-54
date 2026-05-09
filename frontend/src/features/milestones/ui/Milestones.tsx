@@ -37,8 +37,8 @@ export function Milestones({ fallbackData, revealed }: MilestonesProps) {
         style={{ transitionDelay: "150ms" }}
       >
         <div className="flex items-center gap-2 mb-4">
-          <span className="w-7 h-7 rounded-lg bg-[#FFF7ED] flex items-center justify-center">
-            <Medal size={14} className="text-[#F97316]" />
+          <span className="w-7 h-7 rounded-lg bg-[#FEFCE8] flex items-center justify-center">
+            <Medal size={14} className="text-[#EAB308]" />
           </span>
           <h3 className="text-[14px] font-bold text-[#0A0A0A]">마일스톤</h3>
         </div>
@@ -55,8 +55,8 @@ export function Milestones({ fallbackData, revealed }: MilestonesProps) {
       style={{ transitionDelay: "150ms" }}
     >
       <div className="flex items-center gap-2 mb-4">
-        <span className="w-7 h-7 rounded-lg bg-[#FFF7ED] flex items-center justify-center">
-          <Medal size={14} className="text-[#F97316]" />
+        <span className="w-7 h-7 rounded-lg bg-[#FEFCE8] flex items-center justify-center">
+          <Medal size={14} className="text-[#EAB308]" />
         </span>
         <h3 className="text-[14px] font-bold text-[#0A0A0A]">마일스톤</h3>
       </div>

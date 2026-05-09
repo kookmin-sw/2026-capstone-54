@@ -161,7 +161,7 @@ export function HeroSection() {
             className="inline-flex items-center bg-white/80 backdrop-blur-sm border border-[#E5E7EB] rounded-full font-[600] text-[#374151] leading-none shadow-sm gap-[clamp(5px,0.8vh,8px)] px-[clamp(10px,1.6vh,16px)] py-[clamp(4px,0.8vh,7px)] text-[clamp(10px,calc(0.9vh+0.3vw),13px)] mb-[clamp(12px,2.4vh,28px)]"
           >
             <span className="rounded-full bg-[#059669] inline-block shrink-0 animate-pulse-soft w-[clamp(6px,0.9vh,8px)] h-[clamp(6px,0.9vh,8px)]" />
-            수천 명이 meFit으로 면접 준비 중
+            모두가 미핏으로 면접 준비 중
           </div>
           <h1
             ref={headlineRef}
@@ -204,7 +204,7 @@ export function HeroSection() {
                 <span
                   key={kw}
                   data-rotating-keyword
-                  className="absolute left-0 top-0 whitespace-nowrap font-plex-sans-kr font-bold text-[#0991B2] text-[clamp(11px,calc(0.9vh+0.35vw),14px)]"
+                  className="absolute left-0 inset-y-0 flex items-center whitespace-nowrap font-plex-sans-kr font-bold text-[#0991B2] text-[clamp(11px,calc(0.9vh+0.35vw),14px)]"
                 >
                   {kw}
                 </span>
@@ -240,7 +240,7 @@ export function HeroSection() {
           {HERO_STATS.map((s) => (
             <div
               key={s.label}
-              className="bg-white/85 backdrop-blur-sm rounded-lg text-center border border-[#E5E7EB] px-[clamp(4px,0.8vh,12px)] py-[clamp(8px,1.4vh,18px)] md:bg-transparent md:backdrop-blur-none md:border-none md:rounded-none md:p-0"
+              className="bg-white/85 backdrop-blur-sm rounded-lg text-center px-[clamp(4px,0.8vh,12px)] py-[clamp(8px,1.4vh,18px)] md:bg-transparent md:backdrop-blur-none md:rounded-none md:p-0"
             >
               <StatValue stat={s} />
               <div className="text-[#6B7280] font-medium leading-tight text-[clamp(10px,calc(0.75vh+0.25vw),13px)]">

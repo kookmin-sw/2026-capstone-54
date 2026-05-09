@@ -29,6 +29,13 @@ export interface SpeechSegment {
   endMs: number;
 }
 
+export interface TurnMetrics {
+  gazeAwayCount: number;
+  headAwayCount: number;
+  speechRateSps: number | null;
+  pillarWordCounts: Record<string, number>;
+}
+
 export interface InterviewTurn {
   id: number;
   turnType: InterviewTurnType;
@@ -38,6 +45,10 @@ export interface InterviewTurn {
   speechSegments: SpeechSegment[];
   turnNumber: number;
   followupOrder: number | null;
+  gazeAwayCount: number;
+  headAwayCount: number;
+  speechRateSps: number | null;
+  pillarWordCounts: Record<string, number>;
   createdAt: string;
   transcriptStatus?: TranscriptStatus;
   transcriptSource?: TranscriptSource;
@@ -166,6 +177,7 @@ export interface CreateInterviewSessionParams {
 
 export interface StartInterviewResponse {
   turns: InterviewTurn[];
+  interviewSession: InterviewSession;
   ownerToken: string;
   ownerVersion: number;
   wsTicket: string;

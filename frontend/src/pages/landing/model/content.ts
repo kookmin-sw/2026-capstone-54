@@ -69,7 +69,7 @@ export interface FooterColumns {
 
 export const HERO_BADGE = {
   dotColor: "#059669",
-  text: "수천 명이 meFit으로 면접 준비 중",
+  text: "모두가 미핏으로 면접 준비 중",
 };
 
 export const HERO_STATS: HeroStat[] = [

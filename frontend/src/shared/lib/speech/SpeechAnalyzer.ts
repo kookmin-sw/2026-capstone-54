@@ -4,6 +4,10 @@ export interface SpeechMetrics {
   badWordCount: number;
   pauseWarnings: number;
   highlightedHtml: string;
+  speechRateSps: number;
+  pillarWordCounts: Record<string, number>;
+  syllableCount: number;
+  durationSeconds: number;
 }
 
 export class SpeechAnalyzer {
@@ -46,7 +50,17 @@ export class SpeechAnalyzer {
       this.lastTranscript = "";
       this.pauseCount = 0;
       this.isCurrentlyPaused = false;
-      return { wpm: 0, fillerCount: 0, badWordCount: 0, pauseWarnings: 0, highlightedHtml: transcript };
+      return {
+        wpm: 0,
+        fillerCount: 0,
+        badWordCount: 0,
+        pauseWarnings: 0,
+        highlightedHtml: transcript,
+        speechRateSps: 0,
+        pillarWordCounts: {},
+        syllableCount: 0,
+        durationSeconds: 0,
+      };
     }
 
     const now = Date.now();
@@ -68,19 +82,21 @@ export class SpeechAnalyzer {
     }
 
     const { fillerRegexes, badRegexes, isKorean } = this.createRegexInfo(language);
-    const elapsedMinutes = (now - this.startTime!) / 60000;
+    const durationSeconds = (now - this.startTime!) / 1000;
+    const elapsedMinutes = durationSeconds / 60;
+
+    const syllableCount = isKorean
+      ? transcript.replace(/\s/g, "").length
+      : transcript.trim().split(/\s+/).filter(Boolean).length;
+
     let wpm = 0;
-    if (elapsedMinutes > 0) {
-      if (isKorean) {
-        wpm = Math.round(transcript.replace(/\s/g, "").length / elapsedMinutes);
-      } else {
-        wpm = Math.round(transcript.trim().split(/\s+/).length / elapsedMinutes);
-      }
-    }
+    if (elapsedMinutes > 0) wpm = Math.round(syllableCount / elapsedMinutes);
+    const speechRateSps = durationSeconds > 0 ? syllableCount / durationSeconds : 0;
 
     let fillerCount = 0;
     let badWordCount = 0;
     let highlightedHtml = transcript;
+    const pillarWordCounts: Record<string, number> = {};
 
     badRegexes.forEach((regex) => {
       highlightedHtml = highlightedHtml.replace(regex, (match) => {
@@ -91,10 +107,30 @@ export class SpeechAnalyzer {
     fillerRegexes.forEach((regex) => {
       highlightedHtml = highlightedHtml.replace(regex, (match) => {
         fillerCount++;
+        const key = match.toLowerCase();
+        pillarWordCounts[key] = (pillarWordCounts[key] ?? 0) + 1;
         return `<span class="filler-word">${match}</span>`;
       });
     });
 
-    return { wpm, fillerCount, badWordCount, pauseWarnings: this.pauseCount, highlightedHtml };
+    return {
+      wpm,
+      fillerCount,
+      badWordCount,
+      pauseWarnings: this.pauseCount,
+      highlightedHtml,
+      speechRateSps,
+      pillarWordCounts,
+      syllableCount,
+      durationSeconds,
+    };
+  }
+
+  public reset(): void {
+    this.startTime = null;
+    this.lastActiveTime = null;
+    this.lastTranscript = "";
+    this.pauseCount = 0;
+    this.isCurrentlyPaused = false;
   }
 }

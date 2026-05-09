@@ -1,5 +1,5 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { User, Gem, ClipboardList, Bell, Inbox } from "lucide-react";
+import { User, Gem, ClipboardList, Bell, Inbox, Home } from "lucide-react";
 import { useSettingsStore } from "@/features/settings";
 import { useAuthStore } from "@/features/auth";
 import type { SettingsPanel } from "@/features/settings";
@@ -42,6 +42,11 @@ export function SettingsSidebar({ menuOpen }: SettingsSidebarProps) {
           </div>
         </div>
       </div>
+
+      {/* 홈으로 이동 */}
+      <Link to="/" className="hp-sb-item mb-1">
+        <span className="hp-sb-icon"><Home size={18} /></span>홈
+      </Link>
 
       {/* 설정 메뉴 */}
       <div className="hp-sb-sep">설정</div>

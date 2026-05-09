@@ -1,3 +1,5 @@
+import { EyeOff } from "lucide-react";
+
 interface ScreenSizeOverlayProps {
   screenWidth: number;
   screenHeight: number;
@@ -10,9 +12,7 @@ export function ScreenSizeOverlay({ screenWidth, screenHeight, onGoHome }: Scree
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="flex flex-col items-center gap-8 w-full max-w-[340px]">
           <div className="w-[80px] h-[80px] rounded-full bg-[#F9731620] flex items-center justify-center">
-            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M1 13s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="13" r="3" /><line x1="1" y1="1" x2="23" y2="23" />
-            </svg>
+            <EyeOff size={36} stroke="#F97316" strokeWidth={2} />
           </div>
           <div className="flex flex-col gap-3 text-center">
             <h2 className="text-[22px] font-bold text-white">화면이 너무 작습니다</h2>
@@ -28,7 +28,7 @@ export function ScreenSizeOverlay({ screenWidth, screenHeight, onGoHome }: Scree
               <span className="text-[12px] font-semibold text-[#22C55E]">1024 x 768</span>
             </div>
           </div>
-          <button onClick={onGoHome} className="w-full h-12 rounded-[10px] bg-[#0991B2] text-white font-semibold text-[14px] hover:opacity-90 transition-opacity">
+          <button onClick={onGoHome} className="w-full h-12 rounded-[10px] bg-[#06B6D4] text-white font-semibold text-[14px] hover:bg-[#22D3EE] transition-colors">
             홈으로 돌아가기
           </button>
         </div>

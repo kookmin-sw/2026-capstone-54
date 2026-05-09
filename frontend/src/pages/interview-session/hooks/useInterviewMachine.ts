@@ -6,6 +6,8 @@ import {
   type MachineEvent,
 } from "../model/machine";
 import { useInterviewSessionStore } from "@/features/interview-session";
+import type { TurnMetrics } from "@/features/interview-session/api/types";
+import type { TurnVideoCounts } from "./useVideoAnalysis";
 
 export interface InterviewMachineDeps {
   sessionUuid: string;
@@ -24,6 +26,8 @@ export interface InterviewMachineDeps {
   avatarSpeak: (text: string) => void;
   startVideoAnalysis: () => Promise<void>;
   stopVideoAnalysis: () => void;
+  startTurnCounting: () => void;
+  stopTurnCounting: () => TurnVideoCounts;
   resetWarnings: () => void;
   navigate: (to: string) => void;
 }
@@ -33,7 +37,11 @@ export interface UseInterviewMachineReturn {
   dispatch: React.Dispatch<MachineEvent>;
   handleStart: () => Promise<void>;
   handlePracticeStart: () => void;
-  handleSubmit: (answer: string, speechSegments?: { text: string; startMs: number; endMs: number }[]) => Promise<void>;
+  handleSubmit: (
+    answer: string,
+    speechSegments?: { text: string; startMs: number; endMs: number }[],
+    speechMetrics?: { speechRateSps: number; pillarWordCounts: Record<string, number> },
+  ) => Promise<void>;
 }
 
 export function useInterviewMachine(deps: InterviewMachineDeps): UseInterviewMachineReturn {
@@ -134,10 +142,11 @@ export function useInterviewMachine(deps: InterviewMachineDeps): UseInterviewMac
     return () => clearTimeout(id);
   }, [state.phase, state.countdown]);
 
-  // ── Effect: speaking entry → start STT + recording ──
+  // ── Effect: speaking entry → start STT + 녹화 + 시선/고개 카운팅 (동시 시작으로 동기화) ──
   useEffect(() => {
     if (state.phase !== "speaking" || !state.turnId) return;
     depsRef.current.startStt();
+    depsRef.current.startTurnCounting();
     depsRef.current.startRecording(state.turnId).catch(() => {});
   }, [state.phase, state.turnId]);
 
@@ -193,17 +202,29 @@ export function useInterviewMachine(deps: InterviewMachineDeps): UseInterviewMac
   }, []);
 
   const handleSubmit = useCallback(
-    async (answer: string, speechSegments?: { text: string; startMs: number; endMs: number }[]) => {
+    async (
+      answer: string,
+      speechSegments?: { text: string; startMs: number; endMs: number }[],
+      speechMetrics?: { speechRateSps: number; pillarWordCounts: Record<string, number> },
+    ) => {
       if (busyRef.current || !state.turnId || !answer.trim()) return;
       busyRef.current = true;
 
       dispatch({ type: "SUBMIT" });
       const d = depsRef.current;
       d.stopStt();
+      const videoCounts = d.stopTurnCounting();
       await d.stopRecording();
 
+      const turnMetrics: TurnMetrics = {
+        gazeAwayCount: videoCounts.gazeAwayCount,
+        headAwayCount: videoCounts.headAwayCount,
+        speechRateSps: speechMetrics?.speechRateSps ?? null,
+        pillarWordCounts: speechMetrics?.pillarWordCounts ?? {},
+      };
+
       try {
-        await submitInterviewAnswer(deps.sessionUuid, state.turnId, answer, speechSegments);
+        await submitInterviewAnswer(deps.sessionUuid, state.turnId, answer, speechSegments, turnMetrics);
         const store = useInterviewSessionStore.getState();
 
         if (store.interviewPhase === "error") {
