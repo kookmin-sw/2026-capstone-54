@@ -33,7 +33,7 @@ export function ScoreGauge({ score }: { score: number }) {
       <div
         className="w-[120px] h-[120px] rounded-full flex items-center justify-center"
         style={{
-          background: `conic-gradient(#0891B2 0% ${animatedPct}%, #E5E7EB ${animatedPct}% 100%)`,
+          background: `conic-gradient(#0ca8c7ff 0% ${animatedPct}%, #E5E7EB  ${animatedPct}% 100%)`,
         }}
       >
         <div className="w-[92px] h-[92px] rounded-full bg-white flex flex-col items-center justify-center shadow-[0_1px_4px_rgba(0,0,0,.08)]">
