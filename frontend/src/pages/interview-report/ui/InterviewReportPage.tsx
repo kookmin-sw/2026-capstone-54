@@ -12,6 +12,7 @@ import { AudioAnalysisSection } from "./AudioAnalysisSection";
 import { VideoAnalysisSection } from "./VideoAnalysisSection";
 import { GRADE_BADGE } from "./constants";
 import { PrintLeftSlot, PrintRightSlot } from "./PrintOnlyContent";
+import { PrintQuestionFeedbacks } from "./PrintQuestionFeedbacks";
 import "./InterviewReportPage.print.css";
 
 const SECTIONS = [
@@ -263,12 +264,18 @@ export function InterviewReportPage() {
 
               {/* 질문별 피드백 */}
               <section id="feedback-section" className="scroll-mt-20">
-                <QuestionFeedbackList
+                <div id="screen-feedbacks">
+                  <QuestionFeedbackList
+                    feedbacks={report.questionFeedbacks}
+                    turnAnswerMap={turnAnswerMap}
+                    recordings={recordings}
+                    behaviorAnalyses={behaviorAnalyses}
+                    interviewTurns={interviewTurns}
+                  />
+                </div>
+                <PrintQuestionFeedbacks
                   feedbacks={report.questionFeedbacks}
                   turnAnswerMap={turnAnswerMap}
-                  recordings={recordings}
-                  behaviorAnalyses={behaviorAnalyses}
-                  interviewTurns={interviewTurns}
                 />
               </section>
 

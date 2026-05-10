@@ -6,7 +6,8 @@
 #print-category-bars,
 #print-strengths,
 #print-audio,
-#print-video {
+#print-video,
+#print-feedbacks {
   display: none;
 }
 
@@ -39,16 +40,33 @@
     display: none !important;
   }
 
-  /* 질문별 피드백 섹션 숨김 */
-  #feedback-section {
-    display: none !important;
-  }
-
   /* 강점/개선, 음성/영상 분석 화면 섹션 숨김 (역량 카드 안에 통합) */
   #strengths-section,
   #audio-section,
   #video-section {
     display: none !important;
+  }
+
+  /* 질문별 피드백: 화면용(탭 carousel) 숨기고 인쇄용(전체 펼침) 표시 */
+  #screen-feedbacks {
+    display: none !important;
+  }
+
+  #print-feedbacks {
+    display: block !important;
+  }
+
+  /* 각 질문 카드를 새 페이지에서 시작 (마지막 카드 제외) */
+  .print-question-card {
+    break-before: page;
+    page-break-before: always;
+    break-inside: avoid;
+  }
+
+  /* 첫 번째 질문 카드는 헤더 바로 뒤에 와야 하므로 break 제거 */
+  #print-feedbacks .print-feedbacks-header + .print-question-card {
+    break-before: auto;
+    page-break-before: auto;
   }
 
   /* 레이아웃 보정 */
