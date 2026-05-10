@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { Loader2, ArrowLeft, Download } from "lucide-react";
 import { useInterviewSessionStore, recordingApi, interviewApi } from "@/features/interview-session";
 import type { RecordingItem, BehaviorAnalysis } from "@/features/interview-session";
+import { useSubscriptionStore } from "@/features/subscription";
 import { RadarChart } from "./RadarChart";
 import { ScoreGauge } from "./ScoreGauge";
 import { StrengthsImprovements } from "./StrengthsImprovements";
@@ -36,12 +37,15 @@ export function InterviewReportPage() {
     loadInterviewSession, loadInterviewTurns, startReportPolling, resetInterviewSession,
   } = useInterviewSessionStore();
 
+  const fetchSubscriptionStatus = useSubscriptionStore((s) => s.fetchStatus);
+
   useEffect(() => {
     if (!interviewSessionUuid) return;
     resetInterviewSession();
     loadInterviewSession(interviewSessionUuid);
     loadInterviewTurns(interviewSessionUuid);
     startReportPolling(interviewSessionUuid);
+    fetchSubscriptionStatus();
     recordingApi.list(interviewSessionUuid).then(setRecordings).catch(() => {});
     interviewApi.getBehaviorAnalyses(interviewSessionUuid).then(setBehaviorAnalyses).catch(() => {});
   }, [interviewSessionUuid]); // eslint-disable-line react-hooks/exhaustive-deps

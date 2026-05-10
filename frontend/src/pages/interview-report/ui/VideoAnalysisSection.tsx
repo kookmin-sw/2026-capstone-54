@@ -108,6 +108,66 @@ function GazeBarChart({ data }: GazeBarChartProps) {
   );
 }
 
+interface ExpressionDistributionRowsProps {
+  happy: number;
+  neutral: number;
+  negative: number;
+}
+
+function ExpressionDistributionRows({ happy, neutral, negative }: ExpressionDistributionRowsProps) {
+  const items = [
+    {
+      key: "happy",
+      label: "긍정",
+      value: happy,
+      comment: "미소를 유지해 호감 있는 인상을 주었습니다.",
+      labelCls: "bg-[#DCFCE7] text-[#15803D]",
+    },
+    {
+      key: "neutral",
+      label: "무표정",
+      value: neutral,
+      comment: "차분하고 진지한 인상으로 신뢰감을 주었습니다.",
+      labelCls: "text-[#6B7280] border border-gray-200",
+    },
+    {
+      key: "negative",
+      label: "부정",
+      value: negative,
+      comment: "긴장한 순간이 일부 있었으나 전반적으로 양호합니다.",
+      labelCls: "text-[#E9B63B] border border-[#E9B63B]/20 bg-[#FDF6E3]",
+    },
+  ];
+  const maxValue = Math.max(...items.map((i) => i.value));
+  const highlightedKey = maxValue > 0 ? items.find((i) => i.value === maxValue)?.key : undefined;
+
+  return (
+    <div className="w-full space-y-1.5">
+      {items.map((item) => {
+        const isHighlight = item.key === highlightedKey;
+        return (
+          <div
+            key={item.key}
+            className={`flex items-center gap-3 rounded-xl px-3 py-2 ${
+              isHighlight
+                ? "bg-[#E6F7FA] border border-[rgba(9,145,178,0.15)]"
+                : "bg-white border border-gray-100"
+            }`}
+          >
+            <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full shrink-0 ${item.labelCls}`}>
+              {item.label}
+            </span>
+            <p className={`flex-1 text-[12px] ${isHighlight ? "text-[#0E7490]" : "text-[#6B7280]"}`}>
+              {item.comment}
+            </p>
+            <span className="text-[11px] text-[#6B7280] tabular-nums shrink-0">{item.value}%</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export function VideoAnalysisSection({ summary, questionFeedbacks = [] }: VideoAnalysisProps) {
   const hasExprData = summary && summary.totalExpressionDistribution;
   const hasGazeData = summary && typeof summary.avgGazeDeviationRatio === "number";
@@ -182,23 +242,7 @@ export function VideoAnalysisSection({ summary, questionFeedbacks = [] }: VideoA
                 </div>
               </div>
 
-              <div className="w-full space-y-1.5">
-                <div className="flex items-center gap-3 rounded-xl px-3 py-2 bg-[#E6F7FA] border border-[rgba(9,145,178,0.15)]">
-                  <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-[#DCFCE7] text-[#15803D] shrink-0">긍정</span>
-                  <p className="flex-1 text-[12px] text-[#0E7490]">미소를 유지해 호감 있는 인상을 주었습니다.</p>
-                  <span className="text-[11px] text-[#6B7280] tabular-nums shrink-0">{happy}%</span>
-                </div>
-                <div className="flex items-center gap-3 rounded-xl px-3 py-2 bg-white border border-gray-100">
-                  <span className="text-[11px] font-semibold text-[#6B7280] px-2.5 py-0.5 rounded-full border border-gray-200 shrink-0">무표정</span>
-                  <p className="flex-1 text-[12px] text-[#6B7280]">차분하고 진지한 인상으로 신뢰감을 주었습니다.</p>
-                  <span className="text-[11px] text-[#6B7280] tabular-nums shrink-0">{neutral}%</span>
-                </div>
-                <div className="flex items-center gap-3 rounded-xl px-3 py-2 bg-white border border-gray-100">
-                  <span className="text-[11px] font-semibold text-[#E9B63B] px-2.5 py-0.5 rounded-full border border-[#E9B63B]/20 bg-[#FDF6E3] shrink-0">부정</span>
-                  <p className="flex-1 text-[12px] text-[#6B7280]">긴장한 순간이 일부 있었으나 전반적으로 양호합니다.</p>
-                  <span className="text-[11px] text-[#6B7280] tabular-nums shrink-0">{negative}%</span>
-                </div>
-              </div>
+              <ExpressionDistributionRows happy={happy} neutral={neutral} negative={negative} />
             </>
           ) : (
             <div className="flex items-center justify-center py-8 w-full">
