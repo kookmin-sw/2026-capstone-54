@@ -106,15 +106,23 @@ class MonitorPausedSessionsTaskTests(TestCase):
 
   def test_does_not_finish_long_paused_session_when_not_eligible(self):
     """30 분 이상 PAUSED 라도 상수 수식 기준 턴 수가 부족하면 COMPLETED 로 전환되지 않는다."""
+    expected_total = FOLLOWUP_ANCHOR_COUNT * (1 + MAX_FOLLOWUP_PER_ANCHOR)
+    insufficient_turn_count = expected_total - 1
+    self.assertGreaterEqual(insufficient_turn_count, 1)
+
     user = UserFactory()
     session = InterviewSessionFactory(
       user=user,
       interview_session_type=InterviewSessionType.FOLLOWUP,
       interview_session_status=InterviewSessionStatus.IN_PROGRESS,
-      total_questions=2,
+      total_questions=expected_total,
     )
-    InterviewTurnFactory(interview_session=session, answer="답변1", turn_number=1)
-    InterviewTurnFactory(interview_session=session, answer="답변2", turn_number=2)
+    for turn_number in range(1, insufficient_turn_count + 1):
+      InterviewTurnFactory(
+        interview_session=session,
+        answer=f"답변{turn_number}",
+        turn_number=turn_number,
+      )
     session.mark_paused(reason="heartbeat_timeout")
     session.refresh_from_db()
     session.paused_at = timezone.now() - timezone.timedelta(minutes=45)
