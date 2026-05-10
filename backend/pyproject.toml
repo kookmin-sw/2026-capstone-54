@@ -52,6 +52,7 @@ dependencies = [
     "pydantic>=2.12.5",
     "pytest>=9.0.3",
     "pycurl>=7.45",
+    "pydot>=4.0.1",
 ]
 
 [dependency-groups]

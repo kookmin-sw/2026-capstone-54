@@ -19,6 +19,7 @@ RUN apt-get update -qq && apt-get install -y --no-install-recommends \
     curl \
     wget \
     git \
+    graphviz \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
