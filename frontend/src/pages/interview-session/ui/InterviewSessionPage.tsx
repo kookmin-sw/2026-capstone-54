@@ -210,15 +210,24 @@ export function InterviewSessionPage() {
   }, [interviewSessionUuid]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    const handler = () => {
+    const handleHardExit = () => {
       recording.abortRecording().catch(() => {});
       stopStt();
       destroyTts();
       cleanupMedia();
       video.stopVideoAnalysis();
     };
-    window.addEventListener("beforeunload", handler);
-    return () => window.removeEventListener("beforeunload", handler);
+    const handlePageHide = (event: PageTransitionEvent) => {
+      if (!event.persisted) {
+        handleHardExit();
+      }
+    };
+    window.addEventListener("beforeunload", handleHardExit);
+    window.addEventListener("pagehide", handlePageHide);
+    return () => {
+      window.removeEventListener("beforeunload", handleHardExit);
+      window.removeEventListener("pagehide", handlePageHide);
+    };
   }, [recording, stopStt, destroyTts, cleanupMedia, video]);
 
   useEffect(() => {
