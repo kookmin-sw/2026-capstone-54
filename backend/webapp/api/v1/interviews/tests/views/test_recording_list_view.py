@@ -24,8 +24,9 @@ class RecordingListViewTests(TestCase):
     self.turn = InterviewTurnFactory(interview_session=self.session)
 
   def test_list_recordings_returns_user_recordings(self):
+    second_turn = InterviewTurnFactory(interview_session=self.session, turn_number=2)
     InterviewRecordingFactory(user=self.user, interview_session=self.session, interview_turn=self.turn)
-    InterviewRecordingFactory(user=self.user, interview_session=self.session, interview_turn=self.turn)
+    InterviewRecordingFactory(user=self.user, interview_session=self.session, interview_turn=second_turn)
 
     other_user = UserFactory()
     other_session = InterviewSessionFactory(user=other_user)
