@@ -48,7 +48,8 @@ class ApplyAnalysisResultService(BaseService):
     if file_text_content is not None and hasattr(resume, "file_content"):
       try:
         fc: ResumeFileContent = resume.file_content
-        fc.content = file_text_content
+        # PostgreSQL text 필드는 NUL(0x00) 바이트를 허용하지 않으므로 방어적으로 제거
+        fc.content = file_text_content.replace("\x00", "")
         fc.save(update_fields=["content", "updated_at"])
       except ResumeFileContent.DoesNotExist:
         pass
