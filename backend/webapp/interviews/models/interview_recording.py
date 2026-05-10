@@ -1,6 +1,7 @@
 from common.models import BaseModelWithUUID
 from django.conf import settings
 from django.db import models
+from django.db.models import Q
 from interviews.enums import RecordingMediaType, RecordingStatus
 
 
@@ -11,6 +12,20 @@ class InterviewRecording(BaseModelWithUUID):
     verbose_name = "면접 녹화"
     verbose_name_plural = "면접 녹화 목록"
     ordering = ["created_at"]
+    indexes = [
+      models.Index(fields=["s3_key"], name="ir_s3_key_idx"),
+      models.Index(
+        fields=["interview_session", "interview_turn", "status"],
+        name="ir_session_turn_status_idx",
+      ),
+    ]
+    constraints = [
+      models.UniqueConstraint(
+        fields=["interview_turn", "media_type"],
+        condition=~Q(status=RecordingStatus.ABANDONED),
+        name="uniq_active_recording_per_turn_media",
+      ),
+    ]
 
   interview_session = models.ForeignKey(
     "interviews.InterviewSession",
