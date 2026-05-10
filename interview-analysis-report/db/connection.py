@@ -29,7 +29,7 @@ engine = create_engine(
         ),
     },
 )
-SessionLocal = sessionmaker(bind=engine)
+SessionLocal = sessionmaker(bind=engine, expire_on_commit=False)
 
 
 @contextmanager

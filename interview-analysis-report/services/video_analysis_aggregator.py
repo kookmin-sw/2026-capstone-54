@@ -39,10 +39,10 @@ class VideoAnalysisAggregator:
 
     def aggregate(self, session_id: str) -> VideoAnalysisResult:
         """세션의 모든 턴 영상 분석 데이터를 읽어 집계한다."""
-        recordings = self._load_recordings(session_id)
+        face_by_turn = self._load_face_analysis_by_turn(session_id)
         turn_gaze_map = self._load_gaze_data(session_id)
 
-        if not recordings and not turn_gaze_map:
+        if not face_by_turn and not turn_gaze_map:
             logger.warning("영상 분석 데이터 없음: session_id=%s", session_id)
             return VideoAnalysisResult()
 
@@ -54,10 +54,7 @@ class VideoAnalysisAggregator:
         total_gaze_deviation_count = 0
         total_estimated_frames = 0
 
-        rec_by_turn: dict[int, object] = {
-            rec.interview_turn_id: rec for rec in recordings
-        }
-        all_turn_ids = set(rec_by_turn.keys()) | set(turn_gaze_map.keys())
+        all_turn_ids = set(face_by_turn.keys()) | set(turn_gaze_map.keys())
 
         for turn_id in sorted(all_turn_ids):
             turn_data: dict = {"turn_id": turn_id}
@@ -80,41 +77,41 @@ class VideoAnalysisAggregator:
             total_gaze_deviation_count += gaze_count
             total_estimated_frames += estimated_frames
 
-            # 표정 분포 데이터
-            rec = rec_by_turn.get(turn_id)
-            if rec:
-                face_result = rec.face_analysis_result or {}
-                statistics = face_result.get("statistics", {})
-                expr_dist = statistics.get("expression_distribution", {})
-                frames_count = statistics.get("total_frames", 0)
+            face_result = face_by_turn.get(turn_id) or {}
+            statistics = face_result.get("statistics", {}) if face_result else {}
+            expr_dist = statistics.get("expression_distribution", {})
+            frames_count = statistics.get("total_frames", 0)
 
-                if frames_count > 0:
-                    positive_raw = expr_dist.get("positive", 0.0)
-                    neutral_raw = expr_dist.get("neutral", 0.0)
-                    negative_raw = expr_dist.get("negative", 0.0)
+            face_data_present = False
+            if frames_count > 0:
+                positive_raw = expr_dist.get("positive", 0.0)
+                neutral_raw = expr_dist.get("neutral", 0.0)
+                negative_raw = expr_dist.get("negative", 0.0)
 
-                    valid_ratio = positive_raw + neutral_raw + negative_raw
-                    if valid_ratio > 0:
-                        positive_ratio = positive_raw / valid_ratio
-                        neutral_ratio = neutral_raw / valid_ratio
-                        negative_ratio = negative_raw / valid_ratio
-                        valid_frames = int(frames_count * valid_ratio)
+                valid_ratio = positive_raw + neutral_raw + negative_raw
+                if valid_ratio > 0:
+                    positive_ratio = positive_raw / valid_ratio
+                    neutral_ratio = neutral_raw / valid_ratio
+                    negative_ratio = negative_raw / valid_ratio
+                    valid_frames = int(frames_count * valid_ratio)
 
-                        turn_data["expression_distribution"] = {
-                            "happy": round(positive_ratio, 4),
-                            "neutral": round(neutral_ratio, 4),
-                            "negative": round(negative_ratio, 4),
-                        }
+                    turn_data["expression_distribution"] = {
+                        "happy": round(positive_ratio, 4),
+                        "neutral": round(neutral_ratio, 4),
+                        "negative": round(negative_ratio, 4),
+                    }
+                    face_data_present = True
 
-                        total_positive += positive_ratio * valid_frames
-                        total_neutral += neutral_ratio * valid_frames
-                        total_negative += negative_ratio * valid_frames
-                        total_valid_frames += valid_frames
+                    total_positive += positive_ratio * valid_frames
+                    total_neutral += neutral_ratio * valid_frames
+                    total_negative += negative_ratio * valid_frames
+                    total_valid_frames += valid_frames
 
-            if "expression_distribution" not in turn_data:
+            if not face_data_present:
                 turn_data["expression_distribution"] = {
                     "happy": 0.0, "neutral": 0.0, "negative": 0.0,
                 }
+            turn_data["face_data_present"] = face_data_present
 
             per_turn.append(turn_data)
 
@@ -162,15 +159,19 @@ class VideoAnalysisAggregator:
         )
 
     @staticmethod
-    def _load_recordings(session_id: str) -> list:
+    def _load_face_analysis_by_turn(session_id: str) -> dict[int, dict]:
         with get_session() as db:
-            return (
-                db.query(InterviewRecordingTable)
+            rows = (
+                db.query(
+                    InterviewRecordingTable.interview_turn_id,
+                    InterviewRecordingTable.face_analysis_result,
+                )
                 .filter(InterviewRecordingTable.interview_session_id == session_id)
                 .filter(InterviewRecordingTable.face_analysis_result != {})
                 .order_by(InterviewRecordingTable.interview_turn_id)
                 .all()
             )
+        return {row.interview_turn_id: row.face_analysis_result or {} for row in rows}
 
     @staticmethod
     def _load_gaze_data(session_id: str) -> dict[int, dict]:
