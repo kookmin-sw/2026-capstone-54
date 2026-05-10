@@ -75,7 +75,13 @@ def _dispatch_transcribe_audio(turn_id: str, output_bucket: str, output_key: str
     )
 
 
-def _store_face_analysis_result(session_uuid: str, turn_id: str, output_bucket: str, output_key: str) -> None:
+def _store_face_analysis_result(
+  session_uuid: str,
+  turn_id: str,
+  output_bucket: str,
+  output_key: str,
+  source_s3_key: str = "",
+) -> None:
   """face_analyzer step-complete 후처리: S3에서 결과를 읽어 DB에 저장한다.
 
   오케스트레이션만 담당하며, 각 단계는 별도 서비스에 위임한다.
@@ -89,6 +95,7 @@ def _store_face_analysis_result(session_uuid: str, turn_id: str, output_bucket: 
       turn_id=turn_id,
       output_bucket=output_bucket,
       output_key=output_key,
+      source_s3_key=source_s3_key,
     ).perform()
     logger.info("face_analysis_result_stored", session_uuid=session_uuid, turn_id=turn_id)
   except Exception as exc:
@@ -106,6 +113,7 @@ def process_video_step_complete(
   step: str = "",
   output_bucket: str = "",
   output_key: str = "",
+  source_s3_key: str = "",
   **kwargs,
 ):
   if step not in STEP_FIELD_MAP:
@@ -120,8 +128,15 @@ def process_video_step_complete(
       turn_id=turn_id,
       field_name=field_name,
       output_key=output_key,
+      source_s3_key=source_s3_key,
     ).perform()
-    logger.info("step_complete", session_uuid=session_uuid, turn_id=turn_id, step=step)
+    logger.info(
+      "step_complete",
+      session_uuid=session_uuid,
+      turn_id=turn_id,
+      step=step,
+      source_s3_key=source_s3_key,
+    )
   except Exception as exc:
     logger.exception(
       "step_complete_failed",
@@ -144,4 +159,5 @@ def process_video_step_complete(
       turn_id=turn_id,
       output_bucket=output_bucket,
       output_key=output_key,
+      source_s3_key=source_s3_key,
     )
