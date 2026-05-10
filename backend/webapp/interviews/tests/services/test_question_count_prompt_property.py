@@ -50,7 +50,9 @@ class Property5QuestionCountPromptTests(unittest.TestCase):
     system_prompt = "테스트 시스템 프롬프트"
 
     generator = QuestionGenerator()
-    prompt = generator._build_prompt(system_prompt, input_data, questions_count)
+    messages = generator._build_messages(system_prompt, input_data, questions_count)
+    # HumanMessage의 content에서 질문 수 지시 검증
+    prompt = messages[1].content
 
     expected_instruction = f"정확히 {questions_count}개 생성"
     self.assertIn(

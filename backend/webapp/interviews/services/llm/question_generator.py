@@ -10,6 +10,7 @@ from typing import Literal
 
 from common.llm_client import get_llm
 from interviews.schemas import InterviewQuestion, QuestionGeneratorInput, QuestionGeneratorOutput
+from langchain_core.messages import HumanMessage, SystemMessage
 from pydantic import BaseModel
 
 from .token_tracker import TokenUsageCallback
@@ -45,10 +46,10 @@ class QuestionGenerator:
 
     system_prompt = self._get_system_prompt(input_data)
     questions_count = self._get_questions_count(input_data)
-    prompt = self._build_prompt(system_prompt, input_data, questions_count)
+    messages = self._build_messages(system_prompt, input_data, questions_count)
 
     try:
-      result: _QuestionsOutputSchema = structured_llm.invoke(prompt)
+      result: _QuestionsOutputSchema = structured_llm.invoke(messages)
     except Exception as e:
       raise RuntimeError(f"LLM 호출 실패: {e}") from e
 
@@ -61,15 +62,15 @@ class QuestionGenerator:
   def _get_questions_count(self, input_data: QuestionGeneratorInput) -> int:
     return input_data.questions_count
 
-  def _build_prompt(
+  def _build_messages(
     self,
     system_prompt: str,
     input_data: QuestionGeneratorInput,
     questions_count: int,
-  ) -> str:
-    parts: list[str] = [system_prompt, "\n\n"]
-
-    parts.append("다음은 면접 질문 생성에 참고할 정보입니다:\n\n")
+  ) -> list[SystemMessage | HumanMessage]:
+    """system/user 역할을 분리한 메시지 리스트를 생성한다."""
+    # User message: 참고 자료 + 지시사항
+    parts: list[str] = ["다음은 면접 질문 생성에 참고할 정보입니다:\n\n"]
 
     if input_data.jd_chunks:
       parts.append("## 채용공고 정보\n")
@@ -85,4 +86,8 @@ class QuestionGenerator:
       f"위 내용을 바탕으로 면접 질문을 정확히 {questions_count}개 생성해주세요.\n"
       '"source" 값은 resume, job_description, unknown 중 하나로 명시하세요.'
     )
-    return "".join(parts)
+
+    return [
+      SystemMessage(content=system_prompt),
+      HumanMessage(content="".join(parts)),
+    ]

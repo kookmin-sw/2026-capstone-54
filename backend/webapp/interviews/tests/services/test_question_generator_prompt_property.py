@@ -50,7 +50,9 @@ class Property4PromptChunkFormatTests(unittest.TestCase):
     questions_count = len(chunks)
 
     generator = QuestionGenerator()
-    prompt = generator._build_prompt(system_prompt, input_data, questions_count)
+    messages = generator._build_messages(system_prompt, input_data, questions_count)
+    # HumanMessage의 content에서 청크 포맷 검증
+    prompt = messages[1].content
 
     for chunk in chunks:
       expected_label = f"[{chunk.source_label} - {chunk.type_label}]"
