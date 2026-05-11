@@ -39,6 +39,7 @@ def handler(event, context):
     frame_prefix = event.get("framePrefix", "")
     session_uuid = event.get("sessionUuid", "")
     turn_id = event.get("turnId", "")
+    source_key = event.get("sourceKey", "")
 
     if not frame_prefix:
         return {"statusCode": 400, "body": json.dumps({"error": "Missing framePrefix"})}
@@ -80,6 +81,7 @@ def handler(event, context):
             step="face_analyzer",
             output_bucket=frame_bucket,
             output_key=result_key,
+            source_key=source_key,
         )
 
     log.info(
