@@ -30,7 +30,7 @@ infra/
 
 | 구성 요소 | 기술 |
 |----------|------|
-| 컨테이너 오케스트레이션 | k3s (EC2 t3.medium) |
+| 컨테이너 오케스트레이션 | k3s (EC2 m5.large server + t3.small agent, 2-node cluster) |
 | Ingress Controller | Traefik (k3s 기본) |
 | 이미지 레지스트리 | Docker Hub (`teammefit/mefit-backend`) |
 | DB | AWS RDS PostgreSQL |
@@ -41,9 +41,36 @@ infra/
 
 ### EC2에 k3s 설치
 
+server 노드 (m5.large) — kubelet eviction threshold 권장 옵션 포함:
+
 ```bash
-curl -sfL https://get.k3s.io | sh -
+curl -sfL https://get.k3s.io | sh -s - server \
+  --kubelet-arg=eviction-hard=memory.available<200Mi,nodefs.available<10% \
+  --kubelet-arg=eviction-soft=memory.available<300Mi \
+  --kubelet-arg=eviction-soft-grace-period=memory.available=30s
 ```
+
+agent 노드 (t3.small) — 메모리가 작으므로 더 보수적인 임계값:
+
+```bash
+curl -sfL https://get.k3s.io | K3S_URL=https://<SERVER_IP>:6443 K3S_TOKEN=<TOKEN> sh -s - agent \
+  --kubelet-arg=eviction-hard=memory.available<150Mi,nodefs.available<10% \
+  --kubelet-arg=eviction-soft=memory.available<250Mi \
+  --kubelet-arg=eviction-soft-grace-period=memory.available=30s
+```
+
+eviction 임계값을 두면 OOMKill 이전에 kubelet 이 priority 가 낮은 파드를 사전에 evict 하여 핵심 파드(api/redis) 보호 여력이 커집니다.
+
+### 노드 라벨링 (필수)
+
+`api`, `redis`, `scraper`, `analysis-stt`, `llm-gateway` 등 무거운 워크로드는 `nodeSelector: nodepool=heavy` 로 m5.large 에 핀됩니다. server 노드에 라벨을 부여해야 정상 스케줄됩니다.
+
+```bash
+./scripts/setup-node-labels.sh           # dry-run (적용할 명령 출력)
+./scripts/setup-node-labels.sh --apply   # 실제 적용
+```
+
+스크립트는 allocatable memory > 4Gi 인 노드를 자동으로 `nodepool=heavy` 라벨링합니다.
 
 ### infra 레포 클론
 
