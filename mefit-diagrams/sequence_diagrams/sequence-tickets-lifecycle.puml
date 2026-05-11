@@ -1,0 +1,122 @@
+@startuml
+title 미핏 - 티켓 라이프사이클 시퀀스 (Grant / Use / Refund / Expire + 일일 리셋)
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 11
+skinparam sequence {
+  ArrowColor #555555
+  ActorBorderColor #2196F3
+  LifeLineBorderColor #2196F3
+  LifeLineBackgroundColor #E8F4FD
+  ParticipantBorderColor #2196F3
+  ParticipantBackgroundColor #E8F4FD
+  ParticipantFontSize 11
+  BoxBorderColor #B0BEC5
+  BoxBackgroundColor #ECEFF1
+}
+
+actor "사용자" as U
+participant "Frontend" as FE
+participant "Backend\n(SignUp /\nStartInterview /\nGenerateReport)" as BE
+participant "BaseTicketService\n(공통 상위)" as BTS
+database "PostgreSQL\n(UserTicket\n+ TicketLog\n+ select_for_update)" as DB
+queue "Redis\n(broker)" as Q
+participant "Celery Beat\n(스케줄러)" as Beat
+participant "Celery Worker\n(GrantDailySubscription\nTicketsTask)" as W
+
+== Step 1. 회원가입 시 초기 티켓 발급 (FR-SUB-03) ==
+
+U -> FE : 회원가입
+FE -> BE : POST /api/v1/users/sign-up/
+activate BE
+  BE -> BE : SignUpService.execute()
+  BE -> BE : GrantInitialSubscriptionTicketsService(user).perform()
+  BE -> DB : Subscription 조회 (FREE 플랜)
+  BE -> DB : SubscriptionPlanTicketPolicy\n.objects.get(plan_type=FREE)\n→ daily_ticket_amount
+  BE -> DB : UserTicket.objects.update_or_create(\n  user=user,\n  defaults={ daily_count: N, purchased_count: 0 }\n)
+  note right of DB : 초기 발급은 TicketLog 미생성\n(정책적 결정)
+  BE --> FE : 200 OK + JWT
+deactivate BE
+
+== Step 2. 면접 시작 시 차감 (FR-TICKET-02) ==
+
+U -> FE : "면접 시작"
+FE -> BE : POST /api/v1/interviews/interview-sessions/
+activate BE
+  BE -> BE : StartInterviewView.post()
+  BE -> BTS : UseTicketsService(user, amount=ticket_cost,\n  reason=f"{session_type} 면접 시작").perform()
+  activate BTS
+    BTS -> DB : SELECT ... FOR UPDATE\nUserTicket (user)
+    note right of DB
+      _get_or_create_ticket_with_lock()
+      → row-level lock 획득
+      (FR-TICKET-06 동시성 제어)
+    end note
+    BTS -> BTS : ticket.deduct(amount)\n(daily_count 우선, 부족하면 purchased_count)
+    BTS -> DB : UserTicket.save() + TicketLog 저장\n(action=USE, amount=-N, balance_after=...,\n  reason="...")
+  deactivate BTS
+  BE -> DB : InterviewSession 생성 + 첫 질문 LLM 호출
+  BE --> FE : { uuid, first_question }
+deactivate BE
+
+== Step 3. 분석 리포트 생성 시 차감 (FR-TICKET-02) ==
+
+U -> FE : "분석 리포트 생성"
+FE -> BE : POST /api/v1/interviews/{uuid}/generate-report/
+activate BE
+  BE -> BE : GenerateAnalysisReportView.post()
+  BE -> BTS : UseTicketsService(user, amount=TICKET_COST_ANALYSIS_REPORT,\n  reason="면접 분석 리포트 생성").perform()
+  activate BTS
+    BTS -> DB : SELECT ... FOR UPDATE UserTicket
+    BTS -> DB : UserTicket.save() + TicketLog(USE)
+  deactivate BTS
+  BE -> Q : dispatch generate_analysis_report task
+  BE --> FE : 202 Accepted
+deactivate BE
+
+== Step 4. 일일 티켓 리셋 (Celery Beat — KST 00:00) ==
+
+Beat -> Q : crontab(hour=0, minute=0)\n→ GrantDailySubscriptionTicketsTask
+Q -> W : pull task
+activate W
+  W -> W : GrantDailySubscriptionTicketsService.execute()
+  W -> DB : SubscriptionPlanTicketPolicy\n  .objects.filter(is_active=True)
+  loop policy in policies
+    W -> DB : Subscription.objects.filter(\n  plan_type=policy.plan_type, status=ACTIVE)
+    loop sub in subscriptions
+      W -> DB : UserTicket.objects.update_or_create(\n  user=sub.user,\n  defaults={ daily_count: policy.daily_ticket_amount }\n)
+      note right of DB : 일일 리셋 — TicketLog 미생성\n(누적 카운트 아님, 정책상 덮어쓰기)
+    end
+  end
+deactivate W
+
+== Step 5. 티켓 환불 (FR-TICKET-03 — 정의됨, 호출 사이트 미구현) ==
+
+note over BE, BTS
+  RefundTicketsService 정의 완료:
+    - target=PURCHASED 기본
+    - TicketLog(action=REFUND, amount=+N) 기록
+  현재 호출 사이트 없음 (To-Be):
+    - 면접 의도적 취소 시
+    - 분석 리포트 실패 시
+end note
+
+opt (To-Be) 면접 취소 환불
+  U -> FE : "면접 취소"
+  FE -> BE : POST /interview-sessions/{uuid}/cancel/
+  BE -> BTS : RefundTicketsService(user, amount=ticket_cost).perform()
+  BTS -> DB : SELECT FOR UPDATE + ticket.add() + TicketLog(REFUND)
+end
+
+== Step 6. 티켓 만료 (To-Be — 서비스만 정의됨) ==
+
+note over Beat, W
+  ExpireTicketsService 정의 완료:
+    - 시한부 프로모션 티켓 만료 처리
+    - TicketLog(action=EXPIRE, amount=-N)
+  ExpireTicketsTask (BaseScheduledTask) 미구현
+  → 향후 Celery Beat 스케줄로 등록 예정
+end note
+
+footer MeFit - 티켓 라이프사이클 (FR-SUB-01~03 + FR-TICKET-01~06)
+@enduml

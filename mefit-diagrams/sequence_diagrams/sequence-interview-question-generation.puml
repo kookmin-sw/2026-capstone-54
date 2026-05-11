@@ -1,0 +1,131 @@
+@startuml
+title 미핏 - 면접 질문 생성 시퀀스 (FOLLOWUP vs FULL_PROCESS 모드 분기)
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 11
+skinparam sequence {
+  ArrowColor #555555
+  ActorBorderColor #2196F3
+  LifeLineBorderColor #2196F3
+  LifeLineBackgroundColor #E8F4FD
+  ParticipantBorderColor #2196F3
+  ParticipantBackgroundColor #E8F4FD
+  ParticipantFontSize 11
+  BoxBorderColor #B0BEC5
+  BoxBackgroundColor #ECEFF1
+}
+
+actor "사용자" as U
+participant "Frontend" as FE
+participant "Backend\nStartInterviewView /\nSubmitAnswerView /\nFinishInterviewView" as BE
+participant "Generate\nInitialQuestions\nService" as GIS
+participant "Followup /\nFullProcess /\nFollowUpQuestion\nGenerator" as Gen
+participant "SubmitAnswerAnd\nGenerateFollowup\nService" as SAFS
+participant "SubmitAnswer\nForFullProcess\nService" as SAFP
+participant "OpenAI\ngpt-4o-mini\n(via LangChain)" as LLM
+database "PostgreSQL\n(InterviewTurn)" as DB
+
+== Step 1. 세션 시작 + 초기 질문 생성 ==
+
+U -> FE : "면접 시작" 클릭
+FE -> BE : POST /api/v1/interviews/{uuid}/start/
+activate BE
+  BE -> BE : UseTicketsService 차감\n+ InterviewSession.status=IN_PROGRESS
+  BE -> GIS : execute(session)
+  activate GIS
+
+    alt session_type == FOLLOWUP
+      GIS -> Gen : FollowupInterviewQuestionGenerator\n.generate(resume, JD, difficulty)
+      Gen -> LLM : ChatOpenAI.invoke\n(prompt_friendly | normal | pressure)
+      LLM --> Gen : 2 anchor questions\n(FOLLOWUP_ANCHOR_COUNT)
+      GIS -> DB : bulk_create InterviewTurn × 2\n(turn_type=INITIAL,\n turn_number=1..2, followup_order=NULL,\n question_source=RESUME | JOB_DESCRIPTION)
+
+    else session_type == FULL_PROCESS
+      GIS -> Gen : FullProcessInterviewQuestionGenerator\n.generate(resume, JD, difficulty)
+      Gen -> LLM : ChatOpenAI.invoke (full_process_prompt)
+      LLM --> Gen : 10 questions\n(FULL_PROCESS_QUESTION_COUNT)
+      GIS -> DB : bulk_create InterviewTurn × 10\n(turn_type=INITIAL, turn_number=1..10)
+    end
+
+  deactivate GIS
+  BE --> FE : { uuid, first_turn:\n  { turn_number=1, followup_order=null,\n    question } }
+deactivate BE
+
+note over BE, DB
+  ※ LangChain TokenUsageCallback 로
+  input/output tokens + cost_usd 자동 기록
+  → TokenUsage (context="interview_question")
+end note
+
+== Step 2. 답변 제출 + 다음 질문 (loop) ==
+
+loop until session ends
+  U -> FE : 답변 녹화 종료 + "답변 완료" 클릭
+  FE -> BE : POST /api/v1/interviews/{uuid}/\n  turns/{turn_pk}/submit-answer/\n(REST — WebSocket 아님)
+  activate BE
+
+    alt session_type == FOLLOWUP
+      BE -> SAFS : execute(answer, turn_pk)
+      activate SAFS
+        SAFS -> DB : InterviewTurn.answer = answer
+        SAFS -> DB : 현재 anchor (turn_number=N) 의\nfollowup_order 개수 카운트
+
+        alt followup_count < MAX_FOLLOWUP_PER_ANCHOR (3)
+          SAFS -> Gen : FollowUpQuestionGenerator.generate\n(conversation_history, difficulty)
+          Gen -> LLM : ChatOpenAI.invoke (followup_prompt)
+          LLM --> Gen : 1 follow-up question
+          SAFS -> DB : InterviewTurn 생성\n(turn_type=FOLLOWUP,\n turn_number=N, followup_order=K+1)
+          SAFS --> FE : { next_turn: follow-up }
+        else followup_count == 3 (max 도달)
+          alt 다음 anchor 존재 (turn_number=N+1)
+            SAFS --> FE : { next_turn: 다음 anchor }
+          else 마지막 anchor 의 마지막 followup
+            SAFS --> FE : { followup_exhausted: true }
+            FE -> U : "면접 종료" 버튼 활성
+          end
+        end
+      deactivate SAFS
+
+    else session_type == FULL_PROCESS
+      BE -> SAFP : execute(answer, turn_pk)
+      activate SAFP
+        SAFP -> DB : InterviewTurn.answer = answer
+        SAFP -> DB : 다음 unanswered turn 조회\n(ORDER BY turn_number ASC)
+        alt 다음 turn 존재
+          SAFP --> FE : { next_turn }
+          note right of SAFP : LLM 호출 없음\n(사전 생성된 10개 사용)
+        else 모든 답변 완료
+          SAFP --> FE : { all_answered: true }
+        end
+      deactivate SAFP
+    end
+
+  deactivate BE
+end
+
+== Step 3. 면접 종료 ==
+
+U -> FE : "면접 종료" 클릭
+FE -> BE : POST /api/v1/interviews/{uuid}/finish/
+activate BE
+  BE -> BE : FinishInterviewSessionService.execute()
+  BE -> DB : InterviewSession.status = COMPLETED
+  BE -> DB : StreakStatisticsService\n.record_participation(user)
+  BE --> FE : 200 OK
+deactivate BE
+
+note over BE
+  상수 (backend/webapp/interviews/constants.py):
+   • FOLLOWUP_ANCHOR_COUNT = 2
+   • MAX_FOLLOWUP_PER_ANCHOR = 3
+   • FULL_PROCESS_QUESTION_COUNT = 10
+
+  WebSocket (별도, /ws/interviews/{uuid}/?ticket=...):
+   • pause / resume / heartbeat 만 처리
+   • 답변 제출은 REST API
+   • 자세한 흐름:
+     state-interview-pause-resume.puml
+end note
+
+footer MeFit - 면접 질문 생성 (FR-INT-10 / FR-INT-14 / FR-INT-15)
+@enduml

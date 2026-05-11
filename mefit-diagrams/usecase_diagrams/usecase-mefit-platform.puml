@@ -1,0 +1,148 @@
+@startuml
+title 미핏 - 시스템 유스케이스 (사용자 / 관리자 / 외부 시스템)
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 11
+skinparam usecase {
+  BackgroundColor #E8F4FD
+  BorderColor #2196F3
+  ArrowColor #555555
+  FontSize 11
+}
+skinparam actor {
+  BackgroundColor #FFFFFF
+  BorderColor #2196F3
+  FontSize 11
+}
+skinparam actor<<external>> {
+  BackgroundColor #FFF3E0
+  BorderColor #FB8C00
+}
+skinparam package {
+  BackgroundColor transparent
+  BorderColor #B0BEC5
+  FontSize 11
+}
+
+left to right direction
+
+actor "사용자" as User
+actor "관리자" as Admin
+actor "OpenAI\n(LLM / Embedding)" as LLM <<external>>
+actor "AWS\n(S3 / Lambda / SNS·SQS)" as AWS <<external>>
+actor "voice-api\n(TTS / STT)" as VoiceAPI <<external>>
+
+package "계정 / 약관" {
+  usecase "회원가입" as UC_Signup
+  usecase "이메일 인증" as UC_Verify
+  usecase "로그인 / JWT 발급" as UC_Login
+  usecase "비밀번호 재설정" as UC_PwReset
+  usecase "약관 동의 / 철회" as UC_Consent
+}
+
+package "프로필 / 직무" {
+  usecase "프로필 작성·수정" as UC_Profile
+  usecase "직무 카테고리 선택" as UC_JobCat
+  usecase "관심 직무 등록" as UC_Job
+}
+
+package "이력서" {
+  usecase "이력서 텍스트 입력" as UC_TextResume
+  usecase "이력서 파일 업로드" as UC_FileResume
+  usecase "이력서 분석 요청" as UC_AnalyzeResume
+  usecase "이력서 조회·수정" as UC_ViewResume
+}
+
+package "채용공고" {
+  usecase "채용공고 검색" as UC_SearchJD
+  usecase "관심 채용공고 저장" as UC_SaveJD
+}
+
+package "가상 면접" {
+  usecase "면접 세션 시작" as UC_StartInterview
+  usecase "음성·영상 답변 녹화" as UC_Recording
+  usecase "답변 제출 / 후속 질문" as UC_Submit
+  usecase "면접 종료" as UC_FinishInterview
+  usecase "분석 리포트 생성 요청" as UC_GenReport
+  usecase "리포트 조회" as UC_ViewReport
+}
+
+package "구독 / 티켓" {
+  usecase "구독 가입·변경" as UC_Subscribe
+  usecase "티켓 사용 (차감)" as UC_UseTicket
+  usecase "구독 해지" as UC_Cancel
+}
+
+package "스트릭 / 업적" {
+  usecase "스트릭 확인" as UC_Streak
+  usecase "업적 / 마일스톤 확인" as UC_Achievement
+}
+
+package "알림" {
+  usecase "알림 설정" as UC_NotifSetting
+  usecase "실시간 알림 수신 (SSE)" as UC_NotifReceive
+}
+
+package "관리자 운영" {
+  usecase "사용자 관리" as UC_AdminUser
+  usecase "약관 문서 관리" as UC_AdminTerms
+  usecase "채용공고 관리" as UC_AdminJD
+  usecase "구독·티켓 정책 관리" as UC_AdminPolicy
+}
+
+' === 사용자 액터 → 유스케이스 ===
+User --> UC_Signup
+User --> UC_Login
+User --> UC_PwReset
+User --> UC_Consent
+User --> UC_Profile
+User --> UC_JobCat
+User --> UC_Job
+User --> UC_TextResume
+User --> UC_FileResume
+User --> UC_AnalyzeResume
+User --> UC_ViewResume
+User --> UC_SearchJD
+User --> UC_SaveJD
+User --> UC_StartInterview
+User --> UC_Recording
+User --> UC_Submit
+User --> UC_FinishInterview
+User --> UC_GenReport
+User --> UC_ViewReport
+User --> UC_Subscribe
+User --> UC_Cancel
+User --> UC_Streak
+User --> UC_Achievement
+User --> UC_NotifSetting
+User --> UC_NotifReceive
+
+' === 관리자 액터 → 유스케이스 ===
+Admin --> UC_AdminUser
+Admin --> UC_AdminTerms
+Admin --> UC_AdminJD
+Admin --> UC_AdminPolicy
+
+' === 외부 시스템 (참여) ===
+UC_AnalyzeResume ..> LLM : <<use>>
+UC_StartInterview ..> LLM : <<use>>
+UC_Submit ..> LLM : <<use>>
+UC_GenReport ..> LLM : <<use>>
+
+UC_Recording ..> AWS : <<S3 multipart>>
+UC_GenReport ..> AWS : <<Lambda 영상/음성 분석>>
+UC_FileResume ..> AWS : <<S3 upload>>
+
+UC_StartInterview ..> VoiceAPI : <<TTS 질문>>
+UC_Recording ..> VoiceAPI : <<STT 답변>>
+
+' === include / extend 관계 ===
+UC_Signup ..> UC_Consent : <<include>>
+UC_Signup ..> UC_Verify : <<include>>
+UC_AnalyzeResume ..> UC_UseTicket : <<include>>
+UC_StartInterview ..> UC_UseTicket : <<include>>
+UC_GenReport ..> UC_UseTicket : <<include>>
+UC_Submit <.. UC_Submit : <<extend>>\n(후속 질문 분기)
+
+footer MeFit - 9 도메인 통합 유스케이스 (User / Admin + OpenAI / AWS / voice-api)
+@enduml

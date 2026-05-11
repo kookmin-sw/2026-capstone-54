@@ -1,0 +1,136 @@
+@startuml
+title 미핏 - 회원가입 → 이메일 인증 → JWT → 프로필 완성 시퀀스
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 11
+skinparam sequence {
+  ArrowColor #555555
+  ActorBorderColor #2196F3
+  LifeLineBorderColor #2196F3
+  LifeLineBackgroundColor #E8F4FD
+  ParticipantBorderColor #2196F3
+  ParticipantBackgroundColor #E8F4FD
+  ParticipantFontSize 11
+  BoxBorderColor #B0BEC5
+  BoxBackgroundColor #ECEFF1
+}
+
+actor "사용자" as U
+participant "Frontend\n(useAuthStore)" as FE
+participant "Backend\n(Django + DRF)" as BE
+database "PostgreSQL" as DB
+queue "Redis\n(broker)" as Q
+participant "Celery Worker" as W
+participant "SMTP" as SMTP
+
+== Step 1. 회원가입 (FR-AUTH-01) ==
+
+U -> FE : 이메일 / 비밀번호 / 이름 입력
+FE -> BE : POST /api/v1/users/sign-up/
+activate BE
+  BE -> BE : SignUpService.execute()
+  BE -> DB : User 생성 (email_confirmed_at=null,\n  profile_completed_at=null)
+  BE -> DB : GrantInitialSubscriptionTicketsService\n(FREE 플랜 정책 기준 daily_count 초기화)
+  BE -> Q : on_commit: dispatch\nRegisteredSendVerificationEmailTask
+  BE -> BE : RefreshToken.for_user(user)\n(rest_framework_simplejwt)
+  BE --> FE : { access, refresh } + user 메타
+deactivate BE
+FE -> FE : setTokens(access)
+FE -> BE : GET /api/v1/users/me/ (Bearer)
+BE --> FE : { isEmailConfirmed: false,\n  isProfileCompleted: false }
+FE -> FE : navigate("/verify-email")
+
+== Step 2. 인증 코드 비동기 발송 (FR-AUTH-02, FR-AUTH-04) ==
+
+Q -> W : pull RegisteredSendVerificationEmailTask
+activate W
+  W -> W : SendVerificationEmailService.execute()
+  W -> W : 6 자리 코드 생성 (대문자 + 숫자)
+  W -> DB : EmailVerificationCode 저장\n(expires_at = now + 10분, used_at=null)
+  W -> SMTP : send_mail("verification_code.html", { code })
+deactivate W
+SMTP --> U : 인증 메일 수신
+
+== Step 3. 코드 입력 + 검증 (FR-AUTH-05) ==
+
+U -> FE : 6 자리 코드 입력
+FE -> BE : POST /api/v1/users/verify-email/ (Bearer)\n{ code }
+activate BE
+  BE -> BE : VerifyEmailService.execute()
+  BE -> DB : EmailVerificationCode.active(user)\n  .get(code=code)
+  note right of DB
+    .active() = user 일치
+    + used_at IS NULL
+    + expires_at > now()
+  end note
+
+  alt 만료 / 사용된 코드 / 오타
+    BE --> FE : 400 ValidationException\n("invalid_code" / "expired")
+  else 유효
+    BE -> DB : code_obj.used_at = now\nuser.email_confirmed_at = now
+    BE --> FE : 200 OK
+  end
+deactivate BE
+
+FE -> BE : GET /api/v1/users/me/
+BE --> FE : { isEmailConfirmed: true,\n  isProfileCompleted: false }
+FE -> FE : navigate("/onboarding")
+
+== Step 4. 프로필 완성 (FR-AUTH-10) ==
+
+U -> FE : 직무 카테고리 / 직무 / 경력 단계 선택
+FE -> BE : POST /api/v1/profiles/me/\n{ job_category, jobs[], career_level }
+activate BE
+  BE -> DB : Profile 업데이트\nuser.profile_completed_at = now
+  BE --> FE : 200 OK
+deactivate BE
+FE -> FE : navigate("/")\n(홈 + 모든 도메인 접근 가능)
+
+== Step 5. 로그인 / 토큰 갱신 (FR-AUTH-04, FR-AUTH-07) ==
+
+U -> FE : 재로그인
+FE -> BE : POST /api/v1/users/sign-in/\n{ email, password }
+activate BE
+  BE -> BE : SignInService.execute()
+  BE -> BE : authenticate(email, password)
+  BE -> BE : RefreshToken.for_user(user)
+  BE --> FE : { access, refresh }
+deactivate BE
+
+note over FE, BE
+  access 만료 시:
+  POST /api/v1/users/token/refresh/
+  → 새 access 발급 (refresh 검증)
+end note
+
+== Step 6. 비밀번호 재설정 (FR-AUTH-08) ==
+
+U -> FE : "비밀번호 찾기" → 이메일 입력
+FE -> BE : POST /api/v1/users/password-reset/
+activate BE
+  BE -> BE : RequestPasswordResetService.execute()
+  BE -> DB : 기존 활성 PasswordResetToken 무효화
+  BE -> DB : 새 PasswordResetToken(token=UUID, expires_at=now+30분)
+  BE -> Q : dispatch RegisteredSendPasswordResetEmailTask
+  BE --> FE : 200 OK
+deactivate BE
+Q -> W : pull task
+W -> SMTP : send_mail("password_reset.html", { reset_link })
+SMTP --> U : 재설정 링크 메일
+
+U -> FE : 링크 클릭 → /reset-password?token={uuid}
+U -> FE : 새 비밀번호 입력
+FE -> BE : POST /api/v1/users/password-reset/confirm/
+activate BE
+  BE -> BE : ConfirmPasswordResetService.execute()
+  BE -> DB : PasswordResetToken 조회
+  alt 사용됨 / 만료됨
+    BE --> FE : 400 ValidationException
+  else 유효
+    BE -> DB : user.set_password(new_pw)\ntoken.used_at = now
+    BE --> FE : 200 OK
+  end
+deactivate BE
+
+footer MeFit - 인증 + 온보딩 (FR-AUTH-01~10) — JWT + Celery 비동기 메일
+@enduml

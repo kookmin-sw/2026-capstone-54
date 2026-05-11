@@ -1,0 +1,102 @@
+@startuml
+title 미핏 - 실시간 알림 시퀀스 (SSE + Redis Channel Layer + 다중 이벤트 소스)
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 11
+skinparam sequence {
+  ArrowColor #555555
+  ActorBorderColor #2196F3
+  LifeLineBorderColor #2196F3
+  LifeLineBackgroundColor #E8F4FD
+  ParticipantBorderColor #2196F3
+  ParticipantBackgroundColor #E8F4FD
+  ParticipantFontSize 11
+  BoxBorderColor #B0BEC5
+  BoxBackgroundColor #ECEFF1
+}
+
+actor "사용자" as U
+participant "Frontend\n(EventSource)" as FE
+participant "Backend\nUserSseConsumer\n(JWT Bearer)" as BE
+queue "Redis\nChannel Layer\n(group: user_{id}_notifications)" as Redis
+database "PostgreSQL" as DB
+participant "Celery Worker\n(analysis-resume,\ninterview-analysis-report)" as Worker
+participant "Email\n(SMTP)" as SMTP
+
+== Step 1. SSE 연결 수립 ==
+
+U -> FE : 페이지 진입 (로그인 상태)
+FE -> BE : GET /sse/notifications/\nAuthorization: Bearer {JWT}
+activate BE
+  BE -> BE : JWT 검증 + current_user 결정
+  BE -> Redis : group_add\n("user_{id}_notifications", channel)
+  BE --> FE : 200 OK\nContent-Type: text/event-stream
+deactivate BE
+FE -> FE : EventSource 활성화 (자동 재연결)
+
+== Step 2-A. 이벤트 소스 — 이력서 분석 완료 ==
+
+Worker -> DB : Resume.status = COMPLETED\nResumeEmbedding 저장
+Worker -> DB : Notification(type=resume_analyzed)
+Worker -> Redis : group_send\n("user_{id}_notifications", payload)
+
+== Step 2-B. 이벤트 소스 — 면접 분석 리포트 완료 ==
+
+Worker -> DB : InterviewAnalysisReport(status=COMPLETED)
+Worker -> DB : Notification(type=interview_report_ready)
+Worker -> Redis : group_send(...)
+
+== Step 2-C. 이벤트 소스 — 업적 달성 / 스트릭 마일스톤 ==
+
+BE -> DB : 사용자 행동 기록 (signal hook)
+activate BE
+  BE -> BE : EvaluateAchievementService\n+ UpdateStreakService
+  BE -> DB : UserAchievement / StreakLog 저장
+  BE -> DB : Notification(type=achievement_earned\n또는 streak_milestone)
+  BE -> Redis : group_send(...)
+deactivate BE
+
+== Step 3. Channel Layer → 클라이언트 push ==
+
+Redis -> BE : channel message 수신\n(SSE consumer 콜백)
+activate BE
+  BE -> FE : data: { type, title, body, url, timestamp }\\n\\n
+deactivate BE
+FE -> FE : EventSource.onmessage 핸들러
+FE -> FE : 알림 UI 갱신 (toast + 헤더 배지)
+
+== Step 4. 사용자 인터랙션 → 상세 조회 ==
+
+U -> FE : 알림 클릭
+FE -> BE : GET /api/v1/notifications/{uuid}/
+activate BE
+  BE -> DB : Notification 조회 + read=True
+  BE --> FE : 알림 상세 + deeplink url
+deactivate BE
+U <- FE : 해당 도메인 화면으로 이동\n(이력서 / 리포트 / 업적 등)
+
+== Step 5. 이메일 알림 (UserEmailNotificationSettings 동의 시) ==
+
+note right of DB
+  UserEmailNotificationSettings.{type}_subscribed 값에 따라
+  Celery 가 비동기로 SMTP 발송 — SSE 푸시와 병행
+end note
+
+Worker -> DB : 사용자 알림 설정 조회
+alt 이메일 수신 동의
+  Worker -> SMTP : send_mail(template, payload)
+  SMTP --> U : 이메일 수신
+else 동의 X
+  Worker -> Worker : skip
+end
+
+== Step 6. 연결 종료 ==
+
+U -> FE : 페이지 이탈 / 로그아웃
+FE -> BE : EventSource.close()
+activate BE
+  BE -> Redis : group_discard\n("user_{id}_notifications", channel)
+deactivate BE
+
+footer MeFit - 실시간 알림 (UserSseConsumer + Channels Channel Layer + 이메일 병행)
+@enduml
