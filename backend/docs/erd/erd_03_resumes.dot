@@ -1,0 +1,2424 @@
+digraph model_graph {
+	graph [bb="0,0,4793.5,1319",
+		fontname=Roboto,
+		fontsize=8,
+		rankdir=TB,
+		splines=true
+	];
+	node [fontname=Roboto,
+		fontsize=8,
+		label="\N",
+		shape=plaintext
+	];
+	edge [fontname=Roboto,
+		fontsize=8
+	];
+	common_models_base_model_with_uuid_and_soft_delete_BaseModelWithUUIDAndSoftDelete	[height=1.0972,
+		label=<
+    <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
+    <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="#1b563f">
+    <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
+    BaseModelWithUUIDAndSoftDelete<BR/>&lt;<FONT FACE="Roboto"><I>BaseModelWithSoftDelete</I></FONT>&gt;
+    </B></FONT></TD></TR>
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>created_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>deleted_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>updated_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+    </TABLE>
+    >,
+		pos="2786.5,283.5",
+		width=3.5];
+	common_models_base_model_with_soft_delete_BaseModelWithSoftDelete	[height=1.0972,
+		label=<
+    <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
+    <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="#1b563f">
+    <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
+    BaseModelWithSoftDelete<BR/>&lt;<FONT FACE="Roboto"><I>BaseModel</I></FONT>&gt;
+    </B></FONT></TD></TR>
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>created_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">deleted_at</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">DateTimeField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>updated_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+    </TABLE>
+    >,
+		pos="1050.5,150.5",
+		width=2.7917];
+	common_models_base_model_with_uuid_and_soft_delete_BaseModelWithUUIDAndSoftDelete -> common_models_base_model_with_soft_delete_BaseModelWithSoftDelete	[arrowhead=empty,
+		arrowtail=none,
+		dir=both,
+		label=" abstract\ninheritance",
+		lp="2046,217",
+		pos="e,1151.2,159.1 2660.3,272.97 2334.5,248.39 1469.6,183.13 1161.5,159.87"];
+	common_models_base_model_BaseModel	[height=0.79167,
+		label=<
+    <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
+    <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="#1b563f">
+    <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
+    BaseModel
+    </B></FONT></TD></TR>
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">created_at</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">DateTimeField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">updated_at</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">DateTimeField</FONT>
+    </TD></TR>
+
+
+    </TABLE>
+    >,
+		pos="1356.5,28.5",
+		width=2.375];
+	common_models_base_model_with_uuid_BaseModelWithUUID	[height=0.91667,
+		label=<
+    <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
+    <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="#1b563f">
+    <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
+    BaseModelWithUUID<BR/>&lt;<FONT FACE="Roboto"><I>BaseModel</I></FONT>&gt;
+    </B></FONT></TD></TR>
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>created_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>updated_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+    </TABLE>
+    >,
+		pos="4503.5,449",
+		width=2.375];
+	common_models_base_model_with_uuid_BaseModelWithUUID -> common_models_base_model_BaseModel	[arrowhead=empty,
+		arrowtail=none,
+		dir=both,
+		label=" abstract\ninheritance",
+		lp="4268,217",
+		pos="e,1442.3,28.971 4484.9,415.71 4454.7,366.98 4389.6,276.84 4305.5,244 3767.7,34.077 1898.6,27.449 1452.6,28.934"];
+	common_models_base_model_with_soft_delete_BaseModelWithSoftDelete -> common_models_base_model_BaseModel	[arrowhead=empty,
+		arrowtail=none,
+		dir=both,
+		label=" abstract\ninheritance",
+		lp="1264,84",
+		pos="e,1286.3,57.03 1149,110.87 1190.2,94.701 1237.5,76.15 1276.6,60.847"];
+	resumes_models_resume_Resume	[height=3.4444,
+		label=<
+    <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
+    <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="#1b563f">
+    <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
+    Resume<BR/>&lt;<FONT FACE="Roboto"><I>BaseModelWithUUIDAndSoftDelete</I></FONT>&gt;
+    </B></FONT></TD></TR>
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><I><B>uuid</B></I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><I><B>UUIDField</B></I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><B>resume_job_category</B></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><B>ForeignKey (uuid)</B></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><B>user</B></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><B>ForeignKey (id)</B></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto">analysis_status</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto">CharField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto">analysis_step</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto">CharField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">analyzed_at</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">DateTimeField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>created_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>deleted_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto">is_dirty</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto">BooleanField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto">is_parsed</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto">BooleanField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">last_finalized_at</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">DateTimeField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">parsed_data</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">JSONField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto">source_mode</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto">CharField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto">title</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto">CharField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto">type</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto">CharField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>updated_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+    </TABLE>
+    >,
+		pos="2230.5,699",
+		width=3.6111];
+	resumes_models_resume_Resume -> common_models_base_model_with_uuid_and_soft_delete_BaseModelWithUUIDAndSoftDelete	[arrowhead=empty,
+		arrowtail=none,
+		dir=both,
+		label=" abstract\ninheritance",
+		lp="2445,449",
+		pos="e,2660.2,293 2358.2,574.57 2362.2,568.8 2366,562.93 2369.5,557 2411.6,485.14 2374.5,445.76 2421.5,377 2436.3,355.27 2444.4,351.6 \
+2468.5,341 2525.3,316.01 2592.3,302.07 2650.2,294.29"];
+	resumes_models_resume_job_category_ResumeJobCategory	[height=1.8194,
+		label=<
+    <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
+    <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="#1b563f">
+    <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
+    ResumeJobCategory<BR/>&lt;<FONT FACE="Roboto"><I>BaseModelWithUUIDAndSoftDelete</I></FONT>&gt;
+    </B></FONT></TD></TR>
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><I><B>uuid</B></I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><I><B>UUIDField</B></I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>created_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>deleted_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">description</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">TextField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">emoji</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">CharField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto">name</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto">CharField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>updated_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+    </TABLE>
+    >,
+		pos="2233.5,449",
+		width=3.6111];
+	resumes_models_resume_Resume -> resumes_models_resume_job_category_ResumeJobCategory	[arrowhead=none,
+		arrowtail=dot,
+		dir=both,
+		label=" resume_job_category (resumes)",
+		lp="2299,548",
+		pos="s,2232,574.73 2232.1,566.45 2232.3,548.45 2232.5,530.67 2232.7,514.62"];
+	users_models_user_User	[height=0.5,
+		label=<
+  <TABLE BGCOLOR="white" BORDER="0" CELLBORDER="0" CELLSPACING="0">
+  <TR><TD COLSPAN="2" CELLPADDING="4" ALIGN="CENTER" BGCOLOR="#1b563f">
+  <FONT FACE="Roboto" POINT-SIZE="12" COLOR="white">User</FONT>
+  </TD></TR>
+  </TABLE>
+  >,
+		pos="871.5,449",
+		width=0.86111];
+	resumes_models_resume_Resume -> users_models_user_User	[arrowhead=none,
+		arrowtail=dot,
+		dir=both,
+		label=" user (resumes)",
+		lp="1561.5,548",
+		pos="s,2100.2,674.08 2092.2,672.59 1950.5,645.97 1723.9,601.87 1529.5,557 1498.6,549.87 1491.8,543.69 1460.5,539 1365.5,524.79 1122,543.2 \
+1028.5,521 981.35,509.8 931,484.34 900.39,467.16"];
+	resumes_models_file_resume_FileResume	[height=0.5,
+		label=<
+    <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
+    <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="#1b563f">
+    <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
+    FileResume
+    </B></FONT></TD></TR>
+
+    </TABLE>
+    >,
+		pos="2015.5,1042.5",
+		width=1.8611];
+	resumes_models_file_resume_FileResume -> resumes_models_resume_Resume	[arrowhead=empty,
+		arrowtail=none,
+		dir=both,
+		label=" proxy\ninheritance",
+		lp="2197,887",
+		pos="e,2182.8,823.13 2027.1,1024.2 2040.7,1004.6 2065,972.7 2091.5,951 2104.4,940.42 2113.1,945.23 2124.5,933 2140.1,916.25 2160.3,875.31 \
+2178.8,832.33"];
+	resumes_models_industry_domain_IndustryDomain	[height=1.2778,
+		label=<
+    <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
+    <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="#1b563f">
+    <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
+    IndustryDomain<BR/>&lt;<FONT FACE="Roboto"><I>BaseModelWithUUID</I></FONT>&gt;
+    </B></FONT></TD></TR>
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><I><B>uuid</B></I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><I><B>UUIDField</B></I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>created_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto">name</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto">CharField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>updated_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+    </TABLE>
+    >,
+		pos="4269.5,699",
+		width=2.4722];
+	resumes_models_industry_domain_IndustryDomain -> common_models_base_model_with_uuid_BaseModelWithUUID	[arrowhead=empty,
+		arrowtail=none,
+		dir=both,
+		label=" abstract\ninheritance",
+		lp="4438,548",
+		pos="e,4473.1,482.26 4312.1,652.8 4356.1,606.18 4424.1,534.18 4466,489.69"];
+	resumes_models_keyword_Keyword	[height=1.2778,
+		label=<
+    <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
+    <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="#1b563f">
+    <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
+    Keyword<BR/>&lt;<FONT FACE="Roboto"><I>BaseModelWithUUID</I></FONT>&gt;
+    </B></FONT></TD></TR>
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><I><B>uuid</B></I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><I><B>UUIDField</B></I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>created_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto">text</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto">CharField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>updated_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+    </TABLE>
+    >,
+		pos="4073.5,699",
+		width=2.4722];
+	resumes_models_keyword_Keyword -> common_models_base_model_with_uuid_BaseModelWithUUID	[arrowhead=empty,
+		arrowtail=none,
+		dir=both,
+		label=" abstract\ninheritance",
+		lp="4153,548",
+		pos="e,4470.3,482.33 4076.3,652.8 4081.2,615.87 4094.4,565.6 4129.5,539 4179,501.48 4350.2,542.49 4408.5,521 4427.9,513.84 4446.7,501.37 \
+4462.4,488.85"];
+	resumes_models_resume_award_ResumeAward	[height=2.3611,
+		label=<
+    <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
+    <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="#1b563f">
+    <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
+    ResumeAward<BR/>&lt;<FONT FACE="Roboto"><I>BaseModelWithUUIDAndSoftDelete</I></FONT>&gt;
+    </B></FONT></TD></TR>
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><I><B>uuid</B></I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><I><B>UUIDField</B></I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><B>resume</B></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><B>ForeignKey (uuid)</B></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>created_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>deleted_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">description</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">TextField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto">display_order</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto">PositiveIntegerField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">name</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">CharField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">organization</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">CharField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>updated_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">year</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">CharField</FONT>
+    </TD></TR>
+
+
+    </TABLE>
+    >,
+		pos="1646.5,1042.5",
+		width=3.6111];
+	resumes_models_resume_award_ResumeAward -> common_models_base_model_with_uuid_and_soft_delete_BaseModelWithUUIDAndSoftDelete	[arrowhead=empty,
+		arrowtail=none,
+		dir=both,
+		label=" abstract\ninheritance",
+		lp="1850,548",
+		pos="e,2660.4,291.26 1622.3,957.35 1615.9,920.42 1614.4,877.3 1629.5,841 1741.4,571.33 1834.8,510.36 2094.5,377 2188.7,328.62 2476.8,\
+303.19 2650.2,291.92"];
+	resumes_models_resume_award_ResumeAward -> resumes_models_resume_Resume	[arrowhead=none,
+		arrowtail=dot,
+		dir=both,
+		label=" resume (awards)",
+		lp="2014.5,887",
+		pos="s,1769.2,957.47 1776.9,954.27 1779.7,953.11 1782.6,952.02 1785.5,951 1822.1,938.03 1930.7,959.07 1959.5,933 1990.5,905 1953.8,874.68 \
+1978.5,841 2008.9,799.44 2055.5,768.53 2100.4,746.41"];
+	resumes_models_resume_basic_info_ResumeBasicInfo	[height=2.1806,
+		label=<
+    <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
+    <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="#1b563f">
+    <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
+    ResumeBasicInfo<BR/>&lt;<FONT FACE="Roboto"><I>BaseModelWithUUIDAndSoftDelete</I></FONT>&gt;
+    </B></FONT></TD></TR>
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><I><B>uuid</B></I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><I><B>UUIDField</B></I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><B>resume</B></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><B>OneToOneField (uuid)</B></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>created_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>deleted_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">email</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">EmailField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">location</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">CharField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">name</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">CharField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">phone</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">CharField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>updated_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+    </TABLE>
+    >,
+		pos="2508.5,1042.5",
+		width=3.6111];
+	resumes_models_resume_basic_info_ResumeBasicInfo -> common_models_base_model_with_uuid_and_soft_delete_BaseModelWithUUIDAndSoftDelete	[arrowhead=empty,
+		arrowtail=none,
+		dir=both,
+		label=" abstract\ninheritance",
+		lp="2754,548",
+		pos="e,2778.3,323.21 2613.9,963.79 2622.8,954.16 2630.9,943.86 2637.5,933 2653.5,906.89 2745.1,479.63 2776.2,333.25"];
+	resumes_models_resume_basic_info_ResumeBasicInfo -> resumes_models_resume_Resume	[arrowhead=none,
+		arrowtail=none,
+		dir=both,
+		label=" resume (basic_info)",
+		lp="2461,887",
+		pos="2445.1,963.58 2411.3,922.04 2368.9,869.98 2330.7,823.11"];
+	resumes_models_resume_career_meta_ResumeCareerMeta	[height=1.8194,
+		label=<
+    <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
+    <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="#1b563f">
+    <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
+    ResumeCareerMeta<BR/>&lt;<FONT FACE="Roboto"><I>BaseModelWithUUIDAndSoftDelete</I></FONT>&gt;
+    </B></FONT></TD></TR>
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><I><B>uuid</B></I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><I><B>UUIDField</B></I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><B>resume</B></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><B>OneToOneField (uuid)</B></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>created_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>deleted_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">total_experience_months</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">PositiveIntegerField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">total_experience_years</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">PositiveIntegerField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>updated_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+    </TABLE>
+    >,
+		pos="3347.5,1042.5",
+		width=3.7361];
+	resumes_models_resume_career_meta_ResumeCareerMeta -> common_models_base_model_with_uuid_and_soft_delete_BaseModelWithUUIDAndSoftDelete	[arrowhead=empty,
+		arrowtail=none,
+		dir=both,
+		label=" abstract\ninheritance",
+		lp="3145,548",
+		pos="e,2845.1,323.19 3352.5,976.82 3353.1,936.09 3349,883.38 3329.5,841 3221.9,607.19 2973.3,412.95 2853.5,329.04"];
+	resumes_models_resume_career_meta_ResumeCareerMeta -> resumes_models_resume_Resume	[arrowhead=none,
+		arrowtail=none,
+		dir=both,
+		label=" resume (career_meta)",
+		lp="2982,887",
+		pos="3259.5,976.8 3241.7,966.5 3222.6,957.2 3203.5,951 3090,914.12 3048.3,972.18 2935.5,933 2867.3,909.29 2867.4,870.58 2801.5,841 2657.6,\
+776.4 2479.4,738.42 2360.7,718.46"];
+	resumes_models_resume_certification_ResumeCertification	[height=2.1806,
+		label=<
+    <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
+    <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="#1b563f">
+    <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
+    ResumeCertification<BR/>&lt;<FONT FACE="Roboto"><I>BaseModelWithUUIDAndSoftDelete</I></FONT>&gt;
+    </B></FONT></TD></TR>
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><I><B>uuid</B></I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><I><B>UUIDField</B></I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><B>resume</B></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><B>ForeignKey (uuid)</B></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>created_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">date</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">CharField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>deleted_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto">display_order</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto">PositiveIntegerField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">issuer</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">CharField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">name</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">CharField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>updated_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+    </TABLE>
+    >,
+		pos="604.5,1042.5",
+		width=3.6111];
+	resumes_models_resume_certification_ResumeCertification -> common_models_base_model_with_uuid_and_soft_delete_BaseModelWithUUIDAndSoftDelete	[arrowhead=empty,
+		arrowtail=none,
+		dir=both,
+		label=" abstract\ninheritance",
+		lp="667,548",
+		pos="e,2660.4,285.16 601.33,963.95 597.79,849.65 596.08,642.22 626.5,575 678.72,459.6 715.83,428.62 831.5,377 996.27,303.47 2233.5,288.28 \
+2650.1,285.24"];
+	resumes_models_resume_certification_ResumeCertification -> resumes_models_resume_Resume	[arrowhead=none,
+		arrowtail=dot,
+		dir=both,
+		label=" resume (certifications)",
+		lp="1527,887",
+		pos="s,711.7,963.9 719.06,960.42 727.11,956.77 735.29,953.57 743.5,951 871.22,911 1218.3,974.56 1345.5,933 1414.2,910.57 1412.8,868.71 \
+1479.5,841 1686.2,755.14 1946.7,721.21 2100.3,708.05"];
+	resumes_models_resume_education_ResumeEducation	[height=2.3611,
+		label=<
+    <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
+    <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="#1b563f">
+    <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
+    ResumeEducation<BR/>&lt;<FONT FACE="Roboto"><I>BaseModelWithUUIDAndSoftDelete</I></FONT>&gt;
+    </B></FONT></TD></TR>
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><I><B>uuid</B></I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><I><B>UUIDField</B></I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><B>resume</B></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><B>ForeignKey (uuid)</B></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>created_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">degree</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">CharField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>deleted_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto">display_order</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto">PositiveIntegerField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">major</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">CharField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">period</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">CharField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">school</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">CharField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>updated_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+    </TABLE>
+    >,
+		pos="2230.5,1042.5",
+		width=3.6111];
+	resumes_models_resume_education_ResumeEducation -> common_models_base_model_with_uuid_and_soft_delete_BaseModelWithUUIDAndSoftDelete	[arrowhead=empty,
+		arrowtail=none,
+		dir=both,
+		label=" abstract\ninheritance",
+		lp="2670,548",
+		pos="e,2763.6,323.38 2354.6,957.43 2359.6,955.13 2364.5,952.97 2369.5,951 2411.1,934.47 2434.2,961.75 2468.5,933 2501.9,904.97 2485.2,\
+881.01 2502.5,841 2593.9,629.54 2624.9,580.14 2733.5,377 2741.4,362.27 2750.3,346.42 2758.5,332.09"];
+	resumes_models_resume_education_ResumeEducation -> resumes_models_resume_Resume	[arrowhead=none,
+		arrowtail=dot,
+		dir=both,
+		label=" resume (educations)",
+		lp="2274.5,887",
+		pos="s,2230.5,957.08 2230.5,948.93 2230.5,910.19 2230.5,864.6 2230.5,823.1"];
+	resumes_models_resume_embedding_ResumeEmbedding	[height=2.5417,
+		label=<
+    <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
+    <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="#1b563f">
+    <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
+    ResumeEmbedding<BR/>&lt;<FONT FACE="Roboto"><I>BaseModelWithSoftDelete</I></FONT>&gt;
+    </B></FONT></TD></TR>
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><B>id</B></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><B>BigAutoField</B></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><B>resume</B></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><B>ForeignKey (uuid)</B></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><B>user</B></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><B>ForeignKey (id)</B></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto">chunk_index</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto">IntegerField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto">chunk_type</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto">CharField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto">context</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto">TextField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>created_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>deleted_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">embedding_vector</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">VectorField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>updated_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto">uuid</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto">UUIDField</FONT>
+    </TD></TR>
+
+
+    </TABLE>
+    >,
+		pos="343.5,1042.5",
+		width=3.125];
+	resumes_models_resume_embedding_ResumeEmbedding -> common_models_base_model_with_soft_delete_BaseModelWithSoftDelete	[arrowhead=empty,
+		arrowtail=none,
+		dir=both,
+		label=" abstract\ninheritance",
+		lp="395,449",
+		pos="e,949.95,160.62 355.01,950.71 362.73,881.99 371.5,785.22 371.5,700 371.5,700 371.5,700 371.5,282.5 371.5,225.33 747.36,180.72 939.8,\
+161.62"];
+	resumes_models_resume_embedding_ResumeEmbedding -> resumes_models_resume_Resume	[arrowhead=none,
+		arrowtail=dot,
+		dir=both,
+		label=" resume (embeddings)",
+		lp="1295,887",
+		pos="s,456.2,954.54 463.75,951.62 464.33,951.41 464.92,951.2 465.5,951 540.53,925.16 1109,969.38 1179.5,933 1224.9,909.57 1204.5,867.06 \
+1248.5,841 1390,757.15 1867,719.93 2100.1,706.44"];
+	resumes_models_resume_embedding_ResumeEmbedding -> users_models_user_User	[arrowhead=none,
+		arrowtail=dot,
+		dir=both,
+		label=" user (resume_embeddings)",
+		lp="810,699",
+		pos="s,456.22,954.1 462.43,948.82 468.6,943.54 474.66,938.25 480.5,933 531.45,887.2 545.41,876.26 588.5,823 671.62,720.27 670.18,678.37 \
+752.5,575 785.17,533.98 828.78,490.63 853.11,467.3"];
+	resumes_models_resume_experience_ResumeExperience	[height=2.5417,
+		label=<
+    <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
+    <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="#1b563f">
+    <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
+    ResumeExperience<BR/>&lt;<FONT FACE="Roboto"><I>BaseModelWithUUIDAndSoftDelete</I></FONT>&gt;
+    </B></FONT></TD></TR>
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><I><B>uuid</B></I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><I><B>UUIDField</B></I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><B>resume</B></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><B>ForeignKey (uuid)</B></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">company</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">CharField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>created_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>deleted_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto">display_order</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto">PositiveIntegerField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">highlights</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">ArrayField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">period</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">CharField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">responsibilities</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">ArrayField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">role</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">CharField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>updated_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+    </TABLE>
+    >,
+		pos="2786.5,1042.5",
+		width=3.6111];
+	resumes_models_resume_experience_ResumeExperience -> common_models_base_model_with_uuid_and_soft_delete_BaseModelWithUUIDAndSoftDelete	[arrowhead=empty,
+		arrowtail=none,
+		dir=both,
+		label=" abstract\ninheritance",
+		lp="2810,548",
+		pos="e,2786.5,323.27 2786.5,950.94 2786.5,789.67 2786.5,457.95 2786.5,333.29"];
+	resumes_models_resume_experience_ResumeExperience -> resumes_models_resume_Resume	[arrowhead=none,
+		arrowtail=dot,
+		dir=both,
+		label=" resume (experiences)",
+		lp="2622,887",
+		pos="s,2656.2,954.98 2648.9,951.6 2648.4,951.4 2648,951.2 2647.5,951 2617.7,937.94 2603.7,950.96 2576.5,933 2533.6,904.66 2545.9,873.96 \
+2506.5,841 2463.4,804.93 2409.5,774.82 2360.8,751.8"];
+	resumes_models_resume_file_content_ResumeFileContent	[height=2.5417,
+		label=<
+    <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
+    <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="#1b563f">
+    <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
+    ResumeFileContent<BR/>&lt;<FONT FACE="Roboto"><I>BaseModelWithSoftDelete</I></FONT>&gt;
+    </B></FONT></TD></TR>
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><B>id</B></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><B>BigAutoField</B></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><B>resume</B></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><B>OneToOneField (uuid)</B></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><B>user</B></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><B>ForeignKey (id)</B></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">content</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">TextField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>created_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>deleted_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">file_size_bytes</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">BigIntegerField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">mime_type</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">CharField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto">original_filename</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto">CharField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto">storage_path</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto">CharField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>updated_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+    </TABLE>
+    >,
+		pos="871.5,1042.5",
+		width=3.2917];
+	resumes_models_resume_file_content_ResumeFileContent -> common_models_base_model_with_soft_delete_BaseModelWithSoftDelete	[arrowhead=empty,
+		arrowtail=none,
+		dir=both,
+		label=" abstract\ninheritance",
+		lp="1074,449",
+		pos="e,1050.5,190.19 949.75,950.66 997.92,885.4 1050.5,792.88 1050.5,700 1050.5,700 1050.5,700 1050.5,282.5 1050.5,255.34 1050.5,225 \
+1050.5,200.37"];
+	resumes_models_resume_file_content_ResumeFileContent -> resumes_models_resume_Resume	[arrowhead=none,
+		arrowtail=none,
+		dir=both,
+		label=" resume (file_content)",
+		lp="1690.5,887",
+		pos="990.24,954.41 993.32,953.18 996.4,952.04 999.5,951 1060.5,930.55 1521.6,963.08 1578.5,933 1623.2,909.36 1603.4,869.1 1645.5,841 \
+1783.2,749.02 1974.6,716.89 2100.5,705.75"];
+	resumes_models_resume_file_content_ResumeFileContent -> users_models_user_User	[arrowhead=none,
+		arrowtail=dot,
+		dir=both,
+		label=" user (resume_file_contents)",
+		lp="929.5,699",
+		pos="s,871.5,950.7 871.5,942.58 871.5,797.28 871.5,535.89 871.5,467.01"];
+	resumes_models_resume_industry_domain_ResumeIndustryDomain	[height=1.8194,
+		label=<
+    <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
+    <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="#1b563f">
+    <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
+    ResumeIndustryDomain<BR/>&lt;<FONT FACE="Roboto"><I>BaseModelWithUUIDAndSoftDelete</I></FONT>&gt;
+    </B></FONT></TD></TR>
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><I><B>uuid</B></I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><I><B>UUIDField</B></I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><B>industry_domain</B></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><B>ForeignKey (uuid)</B></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><B>resume</B></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><B>ForeignKey (uuid)</B></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>created_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>deleted_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto">display_order</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto">PositiveIntegerField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>updated_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+    </TABLE>
+    >,
+		pos="4186.5,1042.5",
+		width=3.6111];
+	resumes_models_resume_industry_domain_ResumeIndustryDomain -> common_models_base_model_with_uuid_and_soft_delete_BaseModelWithUUIDAndSoftDelete	[arrowhead=empty,
+		arrowtail=none,
+		dir=both,
+		label=" abstract\ninheritance",
+		lp="3628,548",
+		pos="e,2912.5,297.07 4098.5,976.94 4082.1,967.08 4064.7,957.91 4047.5,951 4007.2,934.85 3989.4,954.23 3951.5,933 3764.6,828.19 3796,708.64 \
+3628.5,575 3487.6,462.58 3443.9,438.59 3274.5,377 3159.6,335.24 3022.3,311.37 2922.7,298.37"];
+	resumes_models_resume_industry_domain_ResumeIndustryDomain -> resumes_models_resume_Resume	[arrowhead=none,
+		arrowtail=dot,
+		dir=both,
+		label=" resume (resume_industry_domains)",
+		lp="3561.5,887",
+		pos="s,4103.1,976.95 4096,972.82 4080.5,963.98 4064.1,956.21 4047.5,951 3988.1,932.33 3540.5,965.67 3487.5,933 3447.9,908.57 3476,867.07 \
+3437.5,841 3264.3,723.85 2635.5,703.58 2360.6,700.4"];
+	resumes_models_resume_industry_domain_ResumeIndustryDomain -> resumes_models_industry_domain_IndustryDomain	[arrowhead=none,
+		arrowtail=dot,
+		dir=both,
+		label=" industry_domain (resume_industry_domains)",
+		lp="4280,887",
+		pos="s,4178.4,976.7 4177.9,968.61 4175.6,930.03 4176.3,882.23 4187.5,841 4196.9,806.44 4217,771.6 4235,745.21"];
+	resumes_models_resume_job_category_ResumeJobCategory -> common_models_base_model_with_uuid_and_soft_delete_BaseModelWithUUIDAndSoftDelete	[arrowhead=empty,
+		arrowtail=none,
+		dir=both,
+		label=" abstract\ninheritance",
+		lp="2367,350",
+		pos="e,2660.4,291.68 2286.2,383.39 2302.8,367.01 2322.4,351.18 2343.5,341 2396.2,315.61 2540.5,300.53 2650.2,292.42"];
+	resumes_models_resume_keyword_ResumeKeyword	[height=1.8194,
+		label=<
+    <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
+    <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="#1b563f">
+    <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
+    ResumeKeyword<BR/>&lt;<FONT FACE="Roboto"><I>BaseModelWithUUIDAndSoftDelete</I></FONT>&gt;
+    </B></FONT></TD></TR>
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><I><B>uuid</B></I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><I><B>UUIDField</B></I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><B>keyword</B></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><B>ForeignKey (uuid)</B></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><B>resume</B></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><B>ForeignKey (uuid)</B></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>created_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>deleted_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto">display_order</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto">PositiveIntegerField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>updated_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+    </TABLE>
+    >,
+		pos="3908.5,1042.5",
+		width=3.6111];
+	resumes_models_resume_keyword_ResumeKeyword -> common_models_base_model_with_uuid_and_soft_delete_BaseModelWithUUIDAndSoftDelete	[arrowhead=empty,
+		arrowtail=none,
+		dir=both,
+		label=" abstract\ninheritance",
+		lp="3476,548",
+		pos="e,2912.7,307.79 3866.7,976.75 3834,927.11 3790.6,863.42 3768.5,841 3520.9,589.71 3442.8,529.09 3124.5,377 3061.1,346.69 2986,324.89 \
+2922.8,310.1"];
+	resumes_models_resume_keyword_ResumeKeyword -> resumes_models_resume_Resume	[arrowhead=none,
+		arrowtail=dot,
+		dir=both,
+		label=" resume (resume_keywords)",
+		lp="3380,887",
+		pos="s,3824.7,976.84 3817.6,972.74 3802.3,963.97 3785.9,956.23 3769.5,951 3674.8,920.8 3417,963.72 3322.5,933 3252.4,910.22 3253.3,867.48 \
+3184.5,841 2904.4,733.21 2548.8,707.24 2360.8,701.36"];
+	resumes_models_resume_keyword_ResumeKeyword -> resumes_models_keyword_Keyword	[arrowhead=none,
+		arrowtail=dot,
+		dir=both,
+		label=" keyword (resume_keywords)",
+		lp="4061,887",
+		pos="s,3939.7,976.86 3943.2,969.58 3976,901.78 4024.1,802.27 4051.7,745.03"];
+	resumes_models_resume_language_spoken_ResumeLanguageSpoken	[height=2,
+		label=<
+    <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
+    <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="#1b563f">
+    <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
+    ResumeLanguageSpoken<BR/>&lt;<FONT FACE="Roboto"><I>BaseModelWithUUIDAndSoftDelete</I></FONT>&gt;
+    </B></FONT></TD></TR>
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><I><B>uuid</B></I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><I><B>UUIDField</B></I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><B>resume</B></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><B>ForeignKey (uuid)</B></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>created_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>deleted_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto">display_order</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto">PositiveIntegerField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">language</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">CharField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">level</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">CharField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>updated_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+    </TABLE>
+    >,
+		pos="3630.5,1042.5",
+		width=3.6111];
+	resumes_models_resume_language_spoken_ResumeLanguageSpoken -> common_models_base_model_with_uuid_and_soft_delete_BaseModelWithUUIDAndSoftDelete	[arrowhead=empty,
+		arrowtail=none,
+		dir=both,
+		label=" abstract\ninheritance",
+		lp="3255,548",
+		pos="e,2905.5,323.1 3527.1,970.45 3515,963.42 3502.7,956.76 3490.5,951 3466.9,939.81 3454.5,949.8 3434.5,933 3296.7,817.36 3357.2,716.07 \
+3245.5,575 3162.4,470.04 3132.7,446.78 3018.5,377 2986.6,357.53 2949.9,340.69 2915.3,326.91"];
+	resumes_models_resume_language_spoken_ResumeLanguageSpoken -> resumes_models_resume_Resume	[arrowhead=none,
+		arrowtail=dot,
+		dir=both,
+		label=" resume (languages_spoken)",
+		lp="3125,887",
+		pos="s,3534.8,970.45 3527.7,966.68 3515.6,960.44 3503.1,955 3490.5,951 3445.5,936.67 3104.1,960.28 3065.5,933 3029.5,907.56 3062.7,868.77 \
+3028.5,841 2928,759.45 2559.7,722.29 2360.5,707.83"];
+	resumes_models_resume_project_ResumeProject	[height=2.3611,
+		label=<
+    <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
+    <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="#1b563f">
+    <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
+    ResumeProject<BR/>&lt;<FONT FACE="Roboto"><I>BaseModelWithUUIDAndSoftDelete</I></FONT>&gt;
+    </B></FONT></TD></TR>
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><I><B>uuid</B></I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><I><B>UUIDField</B></I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><B>resume</B></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><B>ForeignKey (uuid)</B></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>created_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>deleted_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">description</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">TextField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto">display_order</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto">PositiveIntegerField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">name</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">CharField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">period</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">CharField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">role</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">CharField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>updated_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+    </TABLE>
+    >,
+		pos="1138.5,1042.5",
+		width=3.6111];
+	resumes_models_resume_project_ResumeProject -> common_models_base_model_with_uuid_and_soft_delete_BaseModelWithUUIDAndSoftDelete	[arrowhead=empty,
+		arrowtail=none,
+		dir=both,
+		label=" abstract\ninheritance",
+		lp="1433,548",
+		pos="e,2660.2,294.19 1168.4,957.21 1171.2,949.04 1173.9,940.87 1176.5,933 1189.8,892.38 1172.9,869.77 1204.5,841 1234,814.12 1261.7,848.44 \
+1292.5,823 1397.7,736.01 1311.2,633.75 1409.5,539 1651.5,305.67 1805.2,376.19 2139.5,341 2315.6,322.46 2519.1,305.41 2650.1,294.99"];
+	resumes_models_resume_project_ResumeProject -> resumes_models_resume_Resume	[arrowhead=none,
+		arrowtail=dot,
+		dir=both,
+		label=" resume (projects)",
+		lp="1796,887",
+		pos="s,1260.3,957.36 1267.8,954.38 1271,953.16 1274.3,952.03 1277.5,951 1326.5,935.42 1700.3,966.21 1739.5,933 1771.4,906.01 1730.3,871.77 \
+1758.5,841 1845.5,746.13 1993.3,714.08 2100.4,703.77"];
+	resumes_models_resume_project_tech_stack_ResumeProjectTechStack	[height=1.8194,
+		label=<
+    <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
+    <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="#1b563f">
+    <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
+    ResumeProjectTechStack<BR/>&lt;<FONT FACE="Roboto"><I>BaseModelWithUUIDAndSoftDelete</I></FONT>&gt;
+    </B></FONT></TD></TR>
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><I><B>uuid</B></I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><I><B>UUIDField</B></I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><B>resume_project</B></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><B>ForeignKey (uuid)</B></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><B>tech_stack</B></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><B>ForeignKey (uuid)</B></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>created_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>deleted_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto">display_order</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto">PositiveIntegerField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>updated_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+    </TABLE>
+    >,
+		pos="4344.5,1253.5",
+		width=3.6111];
+	resumes_models_resume_project_tech_stack_ResumeProjectTechStack -> common_models_base_model_with_uuid_and_soft_delete_BaseModelWithUUIDAndSoftDelete	[arrowhead=empty,
+		arrowtail=none,
+		dir=both,
+		label=" abstract\ninheritance",
+		lp="3924,699",
+		pos="e,2912.7,286.35 4350,1187.7 4355.1,1109 4357.7,982.86 4325.5,951 4298.1,923.93 4013,952 3979.5,933 3958.7,921.18 3756.6,591.77 3739.5,\
+575 3623.3,461.04 3583.6,434.83 3431.5,377 3263.9,313.28 3056.6,293.01 2923,286.81"];
+	resumes_models_resume_project_tech_stack_ResumeProjectTechStack -> resumes_models_resume_project_ResumeProject	[arrowhead=none,
+		arrowtail=dot,
+		dir=both,
+		label=" resume_project (resume_project_tech_stacks)",
+		lp="1585,1161",
+		pos="s,4214.3,1251.6 4206.1,1251.5 3645.4,1246.8 1558.4,1223.3 1277.5,1134 1271.7,1132.2 1266,1130 1260.3,1127.6"];
+	resumes_models_tech_stack_TechStack	[height=1.2778,
+		label=<
+    <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
+    <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="#1b563f">
+    <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
+    TechStack<BR/>&lt;<FONT FACE="Roboto"><I>BaseModelWithUUID</I></FONT>&gt;
+    </B></FONT></TD></TR>
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><I><B>uuid</B></I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><I><B>UUIDField</B></I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>created_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto">name</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto">CharField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>updated_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+    </TABLE>
+    >,
+		pos="4674.5,887",
+		width=2.4722];
+	resumes_models_resume_project_tech_stack_ResumeProjectTechStack -> resumes_models_tech_stack_TechStack	[arrowhead=none,
+		arrowtail=dot,
+		dir=both,
+		label=" tech_stack (resume_project_tech_stacks)",
+		lp="4709,1161",
+		pos="s,4474.9,1231.5 4482.6,1229.3 4540.4,1212.4 4602.9,1183.5 4641.5,1134 4686.5,1076.2 4686.3,986.71 4681.1,933.08"];
+	resumes_models_resume_skill_ResumeSkill	[height=1.8194,
+		label=<
+    <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
+    <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="#1b563f">
+    <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
+    ResumeSkill<BR/>&lt;<FONT FACE="Roboto"><I>BaseModelWithUUIDAndSoftDelete</I></FONT>&gt;
+    </B></FONT></TD></TR>
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><I><B>uuid</B></I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><I><B>UUIDField</B></I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><B>resume</B></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><B>ForeignKey (uuid)</B></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><B>skill</B></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><B>ForeignKey (uuid)</B></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>created_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>deleted_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto">display_order</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto">PositiveIntegerField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>updated_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+    </TABLE>
+    >,
+		pos="4502.5,1042.5",
+		width=3.6111];
+	resumes_models_resume_skill_ResumeSkill -> common_models_base_model_with_uuid_and_soft_delete_BaseModelWithUUIDAndSoftDelete	[arrowhead=empty,
+		arrowtail=none,
+		dir=both,
+		label=" abstract\ninheritance",
+		lp="4371,548",
+		pos="e,2912.6,285.91 4468.3,976.77 4447.2,934.17 4421.2,876.57 4405.5,823 4374.2,715.99 4443.5,656.63 4367.5,575 4293.9,495.91 4226.2,\
+571.1 4130.5,521 4025.4,466 4043,386.61 3933.5,341 3842.5,303.07 3206.9,290.02 2923,286.05"];
+	resumes_models_resume_skill_ResumeSkill -> resumes_models_resume_Resume	[arrowhead=none,
+		arrowtail=dot,
+		dir=both,
+		label=" resume (resume_skills)",
+		lp="3910,887",
+		pos="s,4394,976.82 4386.8,973.44 4366.9,964.37 4346,956.36 4325.5,951 4225.7,924.9 3962.4,954.78 3861.5,933 3755.5,910.11 3740.8,867.13 \
+3635.5,841 3176.6,727.09 2611.7,704.79 2360.9,700.71"];
+	resumes_models_skill_Skill	[height=1.4583,
+		label=<
+    <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
+    <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="#1b563f">
+    <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
+    Skill<BR/>&lt;<FONT FACE="Roboto"><I>BaseModelWithUUID</I></FONT>&gt;
+    </B></FONT></TD></TR>
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><I><B>uuid</B></I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><I><B>UUIDField</B></I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>created_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto">name</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto">CharField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto">skill_type</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto">CharField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>updated_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+    </TABLE>
+    >,
+		pos="4503.5,699",
+		width=2.4722];
+	resumes_models_resume_skill_ResumeSkill -> resumes_models_skill_Skill	[arrowhead=none,
+		arrowtail=dot,
+		dir=both,
+		label=" skill (resume_skills)",
+		lp="4535.5,887",
+		pos="s,4497,977 4496.4,968.79 4495.6,956.84 4494.9,944.58 4494.5,933 4493,892.14 4493.2,881.87 4494.5,841 4495.4,811.34 4497.5,778.21 \
+4499.4,751.53"];
+	resumes_models_resume_summary_ResumeSummary	[height=1.6389,
+		label=<
+    <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
+    <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="#1b563f">
+    <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
+    ResumeSummary<BR/>&lt;<FONT FACE="Roboto"><I>BaseModelWithUUIDAndSoftDelete</I></FONT>&gt;
+    </B></FONT></TD></TR>
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><I><B>uuid</B></I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><I><B>UUIDField</B></I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><B>resume</B></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><B>OneToOneField (uuid)</B></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>created_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>deleted_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">text</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">TextField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>updated_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+    </TABLE>
+    >,
+		pos="3064.5,1042.5",
+		width=3.6111];
+	resumes_models_resume_summary_ResumeSummary -> common_models_base_model_with_uuid_and_soft_delete_BaseModelWithUUIDAndSoftDelete	[arrowhead=empty,
+		arrowtail=none,
+		dir=both,
+		label=" abstract\ninheritance",
+		lp="2910,548",
+		pos="e,2800.7,323.25 3043,983.23 3037,966.97 3030.5,949.3 3024.5,933 2942,708.7 2843.7,440.64 2804.2,332.87"];
+	resumes_models_resume_summary_ResumeSummary -> resumes_models_resume_Resume	[arrowhead=none,
+		arrowtail=none,
+		dir=both,
+		label=" resume (summary)",
+		lp="2762,887",
+		pos="2989.7,983.36 2969.8,970.62 2947.7,958.67 2925.5,951 2882.7,936.21 2760.9,957.06 2722.5,933 2682.1,907.69 2704.8,870.66 2667.5,841 \
+2578.9,770.52 2454.1,734.85 2360.6,717.05"];
+	resumes_models_resume_text_content_ResumeTextContent	[height=1.8194,
+		label=<
+    <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
+    <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="#1b563f">
+    <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
+    ResumeTextContent<BR/>&lt;<FONT FACE="Roboto"><I>BaseModelWithSoftDelete</I></FONT>&gt;
+    </B></FONT></TD></TR>
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><B>id</B></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><B>BigAutoField</B></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><B>resume</B></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><B>OneToOneField (uuid)</B></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><B>user</B></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><B>ForeignKey (id)</B></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto">content</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto">TextField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>created_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>deleted_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>updated_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+    </TABLE>
+    >,
+		pos="106.5,1042.5",
+		width=2.9583];
+	resumes_models_resume_text_content_ResumeTextContent -> common_models_base_model_with_soft_delete_BaseModelWithSoftDelete	[arrowhead=empty,
+		arrowtail=none,
+		dir=both,
+		label=" abstract\ninheritance",
+		lp="221,449",
+		pos="e,949.72,156.59 134.55,976.76 161.28,909.07 197.5,799.09 197.5,700 197.5,700 197.5,700 197.5,282.5 197.5,208.27 708.69,170.46 939.61,\
+157.17"];
+	resumes_models_resume_text_content_ResumeTextContent -> resumes_models_resume_Resume	[arrowhead=none,
+		arrowtail=none,
+		dir=both,
+		label=" resume (text_content)",
+		lp="1129.5,887",
+		pos="175.39,976.82 189.71,966.52 205.38,957.22 221.5,951 275.33,930.24 423.16,939.36 480.5,933 749.95,903.13 814.41,873.98 1083.5,841 \
+1169.4,830.47 1191.4,832.54 1277.5,823 1572.2,790.32 1917.1,743.72 2100.4,718.29"];
+	resumes_models_resume_text_content_ResumeTextContent -> users_models_user_User	[arrowhead=none,
+		arrowtail=dot,
+		dir=both,
+		label=" user (resume_text_contents)",
+		lp="525.5,699",
+		pos="s,171.99,976.99 177.69,970.97 189.31,958.6 200.98,945.64 211.5,933 336.44,782.83 297.19,672.44 466.5,575 504.03,553.4 618.9,569 \
+660.5,557 731.73,536.45 807.41,491.68 845.85,467.07"];
+	resumes_models_resume_text_content_template_ResumeTextContentTemplate	[height=2,
+		label=<
+    <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
+    <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="#1b563f">
+    <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
+    ResumeTextContentTemplate<BR/>&lt;<FONT FACE="Roboto"><I>BaseModelWithUUIDAndSoftDelete</I></FONT>&gt;
+    </B></FONT></TD></TR>
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><I><B>uuid</B></I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><I><B>UUIDField</B></I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><B>job</B></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><B>ForeignKey (id)</B></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto">content</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto">TextField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>created_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>deleted_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto">display_order</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto">IntegerField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto">title</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto">CharField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>updated_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+    </TABLE>
+    >,
+		pos="4269.5,449",
+		width=3.6111];
+	resumes_models_resume_text_content_template_ResumeTextContentTemplate -> common_models_base_model_with_uuid_and_soft_delete_BaseModelWithUUIDAndSoftDelete	[arrowhead=empty,
+		arrowtail=none,
+		dir=both,
+		label=" abstract\ninheritance",
+		lp="4185,350",
+		pos="e,2912.5,285.6 4191.1,376.79 4171,362.39 4148.5,349.17 4125.5,341 4014.4,301.64 3240.9,289.19 2922.7,285.71"];
+	profiles_models_job_Job	[height=0.5,
+		label=<
+  <TABLE BGCOLOR="white" BORDER="0" CELLBORDER="0" CELLSPACING="0">
+  <TR><TD COLSPAN="2" CELLPADDING="4" ALIGN="CENTER" BGCOLOR="#1b563f">
+  <FONT FACE="Roboto" POINT-SIZE="12" COLOR="white">Job</FONT>
+  </TD></TR>
+  </TABLE>
+  >,
+		pos="4269.5,283.5",
+		width=0.75];
+	resumes_models_resume_text_content_template_ResumeTextContentTemplate -> profiles_models_job_Job	[arrowhead=none,
+		arrowtail=dot,
+		dir=both,
+		label=" job (resume_text_content_templates)",
+		lp="4346.5,350",
+		pos="s,4269.5,376.76 4269.5,368.61 4269.5,343.43 4269.5,317.95 4269.5,301.74"];
+	resumes_models_resume_token_usage_ResumeTokenUsage	[height=2.1806,
+		label=<
+    <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
+    <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="#1b563f">
+    <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
+    ResumeTokenUsage<BR/>&lt;<FONT FACE="Roboto"><I>BaseModel</I></FONT>&gt;
+    </B></FONT></TD></TR>
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><B>id</B></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><B>BigAutoField</B></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><B>resume</B></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><B>ForeignKey (uuid)</B></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><B>user</B></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><B>ForeignKey (id)</B></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>created_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto">model_name</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto">CharField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto">operation_type</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto">CharField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto">prompt_tokens</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto">IntegerField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto">total_tokens</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto">IntegerField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>updated_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+    </TABLE>
+    >,
+		pos="1392.5,1042.5",
+		width=2.9306];
+	resumes_models_resume_token_usage_ResumeTokenUsage -> common_models_base_model_BaseModel	[arrowhead=empty,
+		arrowtail=none,
+		dir=both,
+		label=" abstract\ninheritance",
+		lp="1380,350",
+		pos="e,1356.5,57.144 1375.4,963.79 1373.5,953.47 1371.8,943.01 1370.5,933 1357,830.13 1356.5,803.74 1356.5,700 1356.5,700 1356.5,700 \
+1356.5,149.5 1356.5,122.04 1356.5,91.043 1356.5,67.433"];
+	resumes_models_resume_token_usage_ResumeTokenUsage -> resumes_models_resume_Resume	[arrowhead=none,
+		arrowtail=dot,
+		dir=both,
+		label=" resume (token_usages)",
+		lp="1906,887",
+		pos="s,1480.7,964 1487.6,960.08 1494.1,956.61 1500.8,953.53 1507.5,951 1541.9,938.04 1809.7,956.96 1837.5,933 1869.1,905.76 1829.4,872.75 \
+1856.5,841 1917.5,769.64 2018.4,734.33 2100.1,716.89"];
+	resumes_models_resume_token_usage_ResumeTokenUsage -> users_models_user_User	[arrowhead=none,
+		arrowtail=dot,
+		dir=both,
+		label=" user (resume_token_usages)",
+		lp="1228,699",
+		pos="s,1298.4,963.83 1291.6,959.41 1286.9,956.46 1282.2,953.64 1277.5,951 1257.6,939.82 1246.7,947.95 1229.5,933 1194.4,902.46 1204.1,\
+880.51 1179.5,841 1103,718.08 1083.7,686.64 991.5,575 957.79,534.17 913.71,490.4 889.46,467.03"];
+	resumes_models_skill_Skill -> common_models_base_model_with_uuid_BaseModelWithUUID	[arrowhead=empty,
+		arrowtail=none,
+		dir=both,
+		label=" abstract\ninheritance",
+		lp="4527,548",
+		pos="e,4503.5,482.32 4503.5,646.31 4503.5,600.68 4503.5,534.95 4503.5,492.36"];
+	resumes_models_tech_stack_TechStack -> common_models_base_model_with_uuid_BaseModelWithUUID	[arrowhead=empty,
+		arrowtail=none,
+		dir=both,
+		label=" abstract\ninheritance",
+		lp="4691,699",
+		pos="e,4535.1,482.05 4670.1,840.97 4662.7,778.61 4644.1,663.61 4601.5,575 4586.4,543.62 4562.4,512.8 4541.9,489.61"];
+	resumes_models_text_resume_TextResume	[height=0.5,
+		label=<
+    <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
+    <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="#1b563f">
+    <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
+    TextResume
+    </B></FONT></TD></TR>
+
+    </TABLE>
+    >,
+		pos="1862.5,1042.5",
+		width=1.8889];
+	resumes_models_text_resume_TextResume -> resumes_models_resume_Resume	[arrowhead=empty,
+		arrowtail=none,
+		dir=both,
+		label=" proxy\ninheritance",
+		lp="2097,887",
+		pos="e,2100.5,803.32 1871.9,1024.3 1884.4,1003.2 1908.5,968.34 1939.5,951 1984.6,925.72 2017,968.69 2054.5,933 2084.7,904.2 2052.7,877.2 \
+2073.5,841 2079.4,830.7 2086.4,820.75 2094,811.22"];
+	resumes_admin_search_playground_admin_SearchPlaygroundProxy	[height=0.5,
+		label=<
+    <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
+    <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="#1b563f">
+    <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
+    SearchPlaygroundProxy
+    </B></FONT></TD></TR>
+
+    </TABLE>
+    >,
+		pos="343.5,1253.5",
+		width=2.8611];
+	resumes_admin_search_playground_admin_SearchPlaygroundProxy -> resumes_models_resume_embedding_ResumeEmbedding	[arrowhead=empty,
+		arrowtail=none,
+		dir=both,
+		label=" proxy\ninheritance",
+		lp="367,1161",
+		pos="e,343.5,1134.1 343.5,1235.4 343.5,1215.1 343.5,1179.5 343.5,1144.5"];
+}
