@@ -720,14 +720,16 @@ class S14_TakeoverOwnershipRotationTests(_LifecycleE2EBase):
 
 
 class S15_StepCompleteForAbandonedRecordingTests(_LifecycleE2EBase):
-  """ABANDONED 된 recording 의 step-complete 메시지는 NotFoundException 으로 raise 된다.
+  """ABANDONED 된 recording 의 step-complete 메시지는 정상 skip 된다.
 
-  process_video_step_complete task 가 raise 하므로 .apply() 결과의 successful 가 False.
-  Backend 가 alert 를 보내고 retry 정책에 따라 SQS dead-letter 로 처리되도록 두는 것이 기대 동작.
+  takeover 등으로 폐기된 recording 에 대해 지연된 step-complete 가 도착하는 경우
+  task 는 raise 없이 정상 종료하여 SQS 메시지를 ack 하고 alert 도 발송하지 않는다.
+  acks_late=True + visibility_timeout 3600s 환경에서 무한 재시도와 Slack 알림
+  폭주를 방지하기 위함이다.
   """
 
-  def test_step_complete_for_abandoned_recording_raises_not_found(self):
-    """ABANDONED recording 의 source_s3_key 로 step-complete → task 실패."""
+  def test_step_complete_for_abandoned_recording_is_skipped_without_alert(self):
+    """ABANDONED recording 의 source_s3_key 로 step-complete → task 성공 + alert 미발송 + 필드 보존."""
     abandoned_recording = InterviewRecordingFactory(
       interview_session=self.session,
       interview_turn=self.anchor_turn,
@@ -736,14 +738,15 @@ class S15_StepCompleteForAbandonedRecordingTests(_LifecycleE2EBase):
       s3_key=f"{self.session.pk}/{self.anchor_turn.pk}/old-abandoned.webm",
     )
 
-    with patch("interviews.tasks.process_video_step_complete._send_dispatch_failure_alert"):
+    with patch("interviews.tasks.process_video_step_complete._send_dispatch_failure_alert") as mock_alert:
       result = self._trigger_step_complete(
         abandoned_recording,
         "video_converter",
         output_key="should-not-be-applied.mp4",
       )
 
-    self.assertFalse(result.successful())
+    self.assertTrue(result.successful())
+    mock_alert.assert_not_called()
     abandoned_recording.refresh_from_db()
     self.assertEqual(abandoned_recording.scaled_video_key, "")
 

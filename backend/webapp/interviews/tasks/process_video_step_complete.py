@@ -1,6 +1,7 @@
 import traceback as tb_module
 
 import structlog
+from common.exceptions import NotFoundException
 from common.tasks.send_error_alert_task import RegisteredSendErrorAlertTask
 from config.celery import app as redis_app
 from config.celery_sqs import app
@@ -137,6 +138,15 @@ def process_video_step_complete(
       step=step,
       source_s3_key=source_s3_key,
     )
+  except NotFoundException:
+    logger.warning(
+      "step_complete_skipped_unknown_recording",
+      session_uuid=session_uuid,
+      turn_id=turn_id,
+      step=step,
+      source_s3_key=source_s3_key,
+    )
+    return
   except Exception as exc:
     logger.exception(
       "step_complete_failed",
