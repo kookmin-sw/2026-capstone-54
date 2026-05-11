@@ -146,6 +146,9 @@ class _LifecycleE2EBase(OwnershipHeadersMixin, TestCase):
     with patch(MOCK_ABORT_S3, return_value=self._make_s3_mock_for_abort()):
       return self.client.post(f"{BASE}/recordings/{recording_id}/abort/")
 
+  def _api_presign_part(self, recording_id, part_number=1):
+    return self.client.get(f"{BASE}/recordings/{recording_id}/presign-part/?part_number={part_number}", )
+
   def _api_submit_answer(self, turn, *, answer="답변 내용", followup_turns=None, followup_exhausted=False):
     with patch(MOCK_FOLLOWUP_SERVICE) as mock_service_class:
       mock_service_class.return_value.perform.return_value = FollowupResult(
@@ -634,6 +637,11 @@ class S10_PausedSessionGuardTests(_LifecycleE2EBase):
 
   def test_submit_answer_on_paused_session_returns_400(self):
     response = self._api_submit_answer(self.anchor_turn)
+    self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+  def test_presign_part_on_paused_session_returns_400(self):
+    """PAUSED 세션의 recording 은 presign-part 도 거부 (frontend MediaRecorder.pause() 와 일관)."""
+    response = self._api_presign_part(self.recording.pk, part_number=1)
     self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 

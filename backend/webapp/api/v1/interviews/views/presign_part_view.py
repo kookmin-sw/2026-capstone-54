@@ -1,10 +1,10 @@
 from api.v1.interviews.serializers import PresignPartQuerySerializer
 from botocore.exceptions import BotoCoreError, ClientError
-from common.exceptions import ConflictException, ServiceUnavailableException
+from common.exceptions import ConflictException, ServiceUnavailableException, ValidationException
 from common.permissions import IsEmailVerified
 from common.views import BaseAPIView
 from drf_spectacular.utils import extend_schema
-from interviews.enums import RecordingStatus
+from interviews.enums import InterviewSessionStatus, RecordingStatus
 from interviews.models import InterviewRecording
 from interviews.services.get_s3_client import get_video_s3_presign_client
 from rest_framework.generics import get_object_or_404
@@ -22,6 +22,9 @@ class PresignPartView(BaseAPIView):
     part_number = serializer.validated_data["part_number"]
 
     recording = get_object_or_404(InterviewRecording, pk=uuid, user=self.current_user)
+
+    if recording.interview_session.interview_session_status == InterviewSessionStatus.PAUSED:
+      raise ValidationException(detail="일시정지된 세션입니다. 재개 후 다시 시도하세요.")
 
     if recording.status not in (
       RecordingStatus.INITIATED,
