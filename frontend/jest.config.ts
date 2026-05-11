@@ -25,6 +25,7 @@ const config: Config = {
     ],
   },
   testMatch: ['**/__tests__/**/*.{ts,tsx}', '**/*.{spec,test}.{ts,tsx}'],
+  testPathIgnorePatterns: ['/node_modules/', '/tests-e2e/', '/dist/', '/coverage/'],
 };
 
 export default config;
