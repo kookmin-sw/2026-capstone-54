@@ -15,7 +15,11 @@ log = get_logger(__name__)
 
 
 def _publish_face_trigger(
-    session_uuid: str, turn_id: str, frame_bucket: str, frame_prefix: str
+    session_uuid: str,
+    turn_id: str,
+    frame_bucket: str,
+    frame_prefix: str,
+    source_key: str,
 ) -> None:
     """Face_Trigger_SQS에 face_analyzer 트리거 메시지를 발행한다."""
     face_trigger_sqs_url = os.environ.get("FACE_TRIGGER_SQS_URL", "")
@@ -28,6 +32,7 @@ def _publish_face_trigger(
         "framePrefix": frame_prefix,
         "sessionUuid": session_uuid,
         "turnId": turn_id,
+        "sourceKey": source_key,
     }
 
     try:
@@ -89,6 +94,7 @@ def _process(bucket, key):
             step="frame_extractor",
             output_bucket=FRAME_BUCKET,
             output_key=frame_prefix,
+            source_key=key,
         )
 
         _publish_face_trigger(
@@ -96,6 +102,7 @@ def _process(bucket, key):
             turn_id=parts[1],
             frame_bucket=FRAME_BUCKET,
             frame_prefix=frame_prefix,
+            source_key=key,
         )
 
     os.rmdir(tmp_dir)

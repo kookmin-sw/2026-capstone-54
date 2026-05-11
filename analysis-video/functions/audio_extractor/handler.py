@@ -50,6 +50,7 @@ def _process(bucket, key):
             step="audio_extractor",
             output_bucket=AUDIO_BUCKET,
             output_key=output_key,
+            source_key=key,
         )
 
         publish_step_complete(
@@ -58,6 +59,7 @@ def _process(bucket, key):
             step="audio_scaler",
             output_bucket=SCALED_AUDIO_BUCKET,
             output_key=output_key,
+            source_key=key,
         )
 
     os.remove(input_path)

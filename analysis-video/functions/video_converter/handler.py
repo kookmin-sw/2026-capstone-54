@@ -67,6 +67,7 @@ def _process(bucket, key, context):
             step="video_converter",
             output_bucket=SCALED_VIDEO_BUCKET,
             output_key=output_key,
+            source_key=key,
         )
 
     os.remove(input_path)

@@ -84,6 +84,7 @@ def publish_step_complete(
     step: str,
     output_bucket: str,
     output_key: str,
+    source_key: str = "",
 ) -> None:
     if not STEP_COMPLETE_SQS_URL:
         log.info("sqs_skip", reason="STEP_COMPLETE_SQS_URL not set")
@@ -95,6 +96,7 @@ def publish_step_complete(
         "step": step,
         "output_bucket": output_bucket,
         "output_key": output_key,
+        "source_s3_key": source_key,
     }
 
     message_body = _build_celery_message(TASK_NAME, kwargs)
@@ -104,5 +106,9 @@ def publish_step_complete(
         MessageBody=message_body,
     )
     log.info(
-        "celery_task_published", step=step, session_uuid=session_uuid, turn_id=turn_id
+        "celery_task_published",
+        step=step,
+        session_uuid=session_uuid,
+        turn_id=turn_id,
+        source_key=source_key,
     )
