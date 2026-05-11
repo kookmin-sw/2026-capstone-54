@@ -24,7 +24,7 @@ backend (Django)                    interview-analysis-report (Python + Celery)
 
 ```
 interview-analysis-report/
-├── config.py                 # 환경 변수 (DATABASE_URL, REDIS_URL, OPENAI_API_KEY 등)
+├── config.py                 # 환경 변수 (DATABASE_URL, OPENAI_API_KEY, S3 등)
 ├── celery_app.py             # Celery 앱 설정 (analysis 큐)
 ├── Dockerfile                # Docker 이미지 빌드
 ├── pyproject.toml            # 의존성 관리
@@ -32,48 +32,56 @@ interview-analysis-report/
 │
 ├── db/
 │   ├── connection.py         # SQLAlchemy 엔진/세션 팩토리
-│   └── models.py             # 테이블 매핑 (InterviewSession, Exchange, AnalysisReport)
+│   └── models.py             # 테이블 매핑 (InterviewSession, InterviewTurn, AnalysisReport 등)
 │
 ├── services/
-│   ├── llm_analyzer.py       # LLM 호출, 프롬프트 구성, JSON 파싱, 등급 산출
-│   └── report_generator.py   # 리포트 생성 오케스트레이션 (DB 조회 → LLM → 저장)
+│   ├── llm_analyzer.py           # LLM 호출, 프롬프트 구성, JSON 파싱, 등급 산출
+│   ├── report_generator.py       # 리포트 생성 오케스트레이션 (DB 조회 → LLM → 저장)
+│   └── voice_analysis_invoker.py # voice-analyzer Lambda 병렬 호출 및 음성 데이터 저장
 │
 ├── tasks/
 │   └── generate_report.py    # Celery 태스크 진입점
 │
-├── utils/
-│   ├── token_tracker.py      # LangChain 토큰 추적 콜백 + 비용 계산
-│   └── document_loader.py    # 이력서/채용공고 파일 로딩
-│
-└── tests/                    # 속성 기반 테스트 (Hypothesis)
-    ├── test_score_grade_mapping_property.py
-    ├── test_category_structure_property.py
-    ├── test_feedback_completeness_property.py
-    ├── test_strengths_improvements_property.py
-    ├── test_report_status_transition_property.py
-    ├── test_avg_answer_time_property.py
-    └── test_token_tracker_property.py
+└── utils/
+    ├── token_tracker.py      # LangChain 토큰 추적 콜백 + 비용 계산
+    └── content_loader.py     # S3에서 이력서 bundle JSON, DB에서 채용공고 로드
 ```
 
 ## 환경 변수
 
+`.env.example`을 복사해 `.env`를 만들고 아래 값을 채워주세요.
+
 | 변수 | 설명 | 기본값 |
 |------|------|--------|
-| `DATABASE_URL` | PostgreSQL 연결 문자열 | `postgresql://postgres:postgres@localhost:5432/team_four_db` |
-| `REDIS_URL` | Redis 브로커 URL | `redis://localhost:6379/0` |
 | `OPENAI_API_KEY` | OpenAI API 키 | (필수) |
 | `OPENAI_MODEL` | 사용할 모델 | `gpt-4o-mini` |
-| `FILE_STORAGE_TYPE` | 파일 저장소 타입 (`local` / `s3`) | `local` |
-| `MEDIA_ROOT` | 미디어 파일 경로 | `/app/media` |
+| `CELERY_BROKER_URL` | Redis 브로커 URL | `redis://localhost:6379/0` |
+| `CELERY_RESULT_BACKEND` | Redis 결과 백엔드 URL | `redis://localhost:6379/1` |
+| `DATABASE_URL` | PostgreSQL 연결 문자열 (미설정 시 아래 개별 변수 조합) | - |
+| `POSTGRES_HOST` | DB 호스트 | `localhost` |
+| `POSTGRES_PORT` | DB 포트 | `5432` |
+| `DATABASE_NAME` | DB 이름 | `team_four_db` |
+| `POSTGRES_USER` | DB 유저 | `postgres` |
+| `POSTGRES_PASSWORD` | DB 비밀번호 | (필수) |
+| `AWS_STORAGE_BUCKET_NAME` | S3 버킷 이름 | `mefit-files` |
+| `AWS_S3_REGION_NAME` | S3 리전 | `us-east-1` |
+| `AWS_S3_ENDPOINT_URL` | S3 엔드포인트 (개발 시 S3Mock URL, 운영 시 미설정) | - |
+| `AWS_ACCESS_KEY_ID` | AWS 액세스 키 (운영 시 IAM Role로 대체 가능) | - |
+| `AWS_SECRET_ACCESS_KEY` | AWS 시크릿 키 | - |
+| `LAMBDA_ENDPOINT_URL` | Lambda 엔드포인트 (개발 시 LocalStack URL, 운영 시 미설정) | - |
 
 ## 로컬 데모 실행
 
 DB나 Docker 없이 LLM 분석 결과를 바로 확인할 수 있습니다:
 
-```powershell
+```bash
 cd interview-analysis-report
-$env:OPENAI_API_KEY="sk-..."
-python demo_local.py
+
+# 의존성 설치
+uv sync
+
+# 실행
+OPENAI_API_KEY="sk-..." python demo_local.py
 ```
 
 샘플 면접 데이터(질문 3개)로 LLM을 호출하여 종합 점수, 카테고리 평가, 질문별 피드백, 강점/개선점을 출력합니다.
@@ -105,10 +113,10 @@ docker-compose logs -f analysis-worker
 
 ## 테스트
 
-```powershell
+```bash
 cd interview-analysis-report
-pip install hypothesis
-python -m pytest tests/ -v
+uv sync
+uv run pytest -v
 ```
 
 7개 속성 기반 테스트(Hypothesis)로 핵심 로직을 검증합니다:
