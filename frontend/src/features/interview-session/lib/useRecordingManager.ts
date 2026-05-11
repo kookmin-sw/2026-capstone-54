@@ -19,6 +19,8 @@ export interface UseRecordingManagerReturn {
   startRecording: (turnId: number) => Promise<void>;
   stopRecording: () => Promise<void>;
   abortRecording: () => Promise<void>;
+  pauseRecording: () => void;
+  resumeRecording: () => void;
   recordingEnabled: boolean;
 }
 
@@ -38,6 +40,8 @@ export function useRecordingManager({
   const preparedTurnIdRef = useRef<number | null>(null);
   const preparePromiseRef = useRef<Promise<string | null> | null>(null);
   const preparingTurnIdRef = useRef<number | null>(null);
+  const pausedDurationAccumRef = useRef<number>(0);
+  const pauseStartedAtRef = useRef<number | null>(null);
 
   const chunkUploader = useChunkUploader();
 
@@ -81,6 +85,8 @@ export function useRecordingManager({
     preparePromiseRef.current = null;
     preparingTurnIdRef.current = null;
     preparedTurnIdRef.current = null;
+    pausedDurationAccumRef.current = 0;
+    pauseStartedAtRef.current = null;
     chunkUploader.reset();
   }, [chunkUploader]);
 
@@ -93,6 +99,23 @@ export function useRecordingManager({
     }
     resetRefs();
   }, [mediaRecorder, resetRefs]);
+
+  const pauseRecording = useCallback(() => {
+    if (!recordingEnabled) return;
+    if (pauseStartedAtRef.current === null) {
+      pauseStartedAtRef.current = Date.now();
+    }
+    mediaRecorder.pause();
+  }, [recordingEnabled, mediaRecorder]);
+
+  const resumeRecording = useCallback(() => {
+    if (!recordingEnabled) return;
+    if (pauseStartedAtRef.current !== null) {
+      pausedDurationAccumRef.current += Date.now() - pauseStartedAtRef.current;
+      pauseStartedAtRef.current = null;
+    }
+    mediaRecorder.resume();
+  }, [recordingEnabled, mediaRecorder]);
 
   const prepareRecording = useCallback(
     async (turnId: number) => {
@@ -208,7 +231,11 @@ export function useRecordingManager({
       }
 
       const endTime = Date.now();
-      const durationMs = endTime - startTimeRef.current;
+      if (pauseStartedAtRef.current !== null) {
+        pausedDurationAccumRef.current += endTime - pauseStartedAtRef.current;
+        pauseStartedAtRef.current = null;
+      }
+      const durationMs = endTime - startTimeRef.current - pausedDurationAccumRef.current;
       const endTimestamp = new Date(endTime).toISOString();
 
       const sortedParts = [...parts].sort((a, b) => a.partNumber - b.partNumber);
@@ -244,6 +271,8 @@ export function useRecordingManager({
     startRecording,
     stopRecording,
     abortRecording,
+    pauseRecording,
+    resumeRecording,
     recordingEnabled,
   };
 }

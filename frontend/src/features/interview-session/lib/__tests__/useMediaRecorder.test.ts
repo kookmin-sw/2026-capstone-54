@@ -1,6 +1,9 @@
 import { renderHook, act } from "@testing-library/react";
 import { useMediaRecorder } from "../useMediaRecorder";
 
+const mockPauseFn = jest.fn();
+const mockResumeFn = jest.fn();
+
 class MockMediaRecorder {
   state: string = "inactive";
   ondataavailable: ((e: { data: Blob }) => void) | null = null;
@@ -30,6 +33,27 @@ class MockMediaRecorder {
     this.state = "inactive";
     this.ondataavailable?.({ data: new Blob([new ArrayBuffer(50)]) });
     this.onstop?.();
+  }
+
+  pause() {
+    mockPauseFn();
+    if (this.state === "recording") {
+      this.state = "paused";
+      if (this.intervalId) clearInterval(this.intervalId);
+      this.intervalId = null;
+    }
+  }
+
+  resume() {
+    mockResumeFn();
+    if (this.state === "paused") {
+      this.state = "recording";
+      if (this.timeslice > 0) {
+        this.intervalId = setInterval(() => {
+          this.ondataavailable?.({ data: new Blob([new ArrayBuffer(100)]) });
+        }, this.timeslice);
+      }
+    }
   }
 
   addEventListener() { /* noop */ }
@@ -122,5 +146,49 @@ describe("useMediaRecorder", () => {
     ).rejects.toThrow();
 
     Object.defineProperty(globalThis, "MediaRecorder", { value: MockMediaRecorder, writable: true });
+  });
+
+  it("pause(): recording 상태에서 MediaRecorder.pause() 호출", async () => {
+    const { result } = renderHook(() =>
+      useMediaRecorder({ onChunk, externalStream: mockStream, timeslice: 50000 }),
+    );
+
+    await act(async () => { await result.current.start(); });
+    expect(result.current.isRecording).toBe(true);
+
+    act(() => { result.current.pause(); });
+    expect(mockPauseFn).toHaveBeenCalledTimes(1);
+  });
+
+  it("resume(): paused 상태에서 MediaRecorder.resume() 호출", async () => {
+    const { result } = renderHook(() =>
+      useMediaRecorder({ onChunk, externalStream: mockStream, timeslice: 50000 }),
+    );
+
+    await act(async () => { await result.current.start(); });
+    act(() => { result.current.pause(); });
+
+    act(() => { result.current.resume(); });
+    expect(mockResumeFn).toHaveBeenCalledTimes(1);
+  });
+
+  it("pause(): recorder 가 없을 때 no-op (start 전 호출)", () => {
+    const { result } = renderHook(() =>
+      useMediaRecorder({ onChunk, externalStream: mockStream }),
+    );
+
+    act(() => { result.current.pause(); });
+    expect(mockPauseFn).not.toHaveBeenCalled();
+  });
+
+  it("resume(): recording 상태 (paused 아님) 에서 no-op", async () => {
+    const { result } = renderHook(() =>
+      useMediaRecorder({ onChunk, externalStream: mockStream, timeslice: 50000 }),
+    );
+
+    await act(async () => { await result.current.start(); });
+
+    act(() => { result.current.resume(); });
+    expect(mockResumeFn).not.toHaveBeenCalled();
   });
 });
