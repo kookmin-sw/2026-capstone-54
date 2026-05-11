@@ -2,7 +2,8 @@
 
 import { Loader2 } from "lucide-react";
 import { Alert, Button, Spinner } from "@/shared/ui";
-import { CompanyIcon } from "@/shared/ui/CompanyIcon";
+import { CATEGORY_STYLE } from "@/shared/ui/categoryIconStyle";
+import { inferCategoryId } from "@/shared/ui/inferCategoryId";
 import type { ResumeTemplateListItem } from "@/features/resume";
 
 interface TemplatePickerListProps {
@@ -67,6 +68,8 @@ export function TemplatePickerList(props: TemplatePickerListProps) {
           <div className="grid grid-cols-2 gap-2 max-sm:grid-cols-1">
             {items.map((t) => {
               const isLoading = pickerLoadingUuid === t.uuid;
+              const categoryId = inferCategoryId(t.job.category ?? t.job.name, t.title);
+              const { Icon, color, bgColor } = CATEGORY_STYLE[categoryId] ?? CATEGORY_STYLE[0];
               return (
                 <button
                   key={t.uuid}
@@ -75,8 +78,8 @@ export function TemplatePickerList(props: TemplatePickerListProps) {
                   disabled={pickerLoadingUuid !== null}
                   className="flex items-start gap-3 p-3 rounded-lg border border-[#E5E7EB] bg-white text-left transition-all hover:border-[#0991B2] hover:bg-[#F0FDFE] disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <div className="w-8 h-8 rounded-lg shrink-0 overflow-hidden">
-                    <CompanyIcon seed={t.uuid} size={16} />
+                  <div className={`w-8 h-8 rounded-lg shrink-0 flex items-center justify-center ${bgColor}`}>
+                    <Icon size={16} className={color} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-[13px] font-bold text-[#0A0A0A] truncate">{t.title}</div>
