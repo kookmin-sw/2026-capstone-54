@@ -11,6 +11,7 @@ pj-kmucd1-04-mefit-video-files (원본 .webm 업로드)
     │
     └─ S3 이벤트 → SNS (video-uploaded) ─┬→ video-converter  → scaled-video-files (.mp4)
                                          ├→ frame-extractor  → video-frame-files (.jpg)
+                                         │       └─ SQS (face-trigger) → face-analyzer worker
                                          └→ audio-extractor  → audio-files (.wav 원본) + scaled-audio-files (.wav 16kHz)
 
 각 Lambda 완료 시 → SQS (step-complete) → Django Celery Worker
@@ -18,6 +19,11 @@ pj-kmucd1-04-mefit-video-files (원본 .webm 업로드)
 
 S3 이벤트 알림은 동일 버킷·이벤트 유형·접미사에 대해 여러 대상을 지정할 수 없으므로
 SNS fan-out 패턴으로 3개 Lambda를 동시에 호출한다.
+
+`frame_extractor`는 프레임 추출 완료 후 `step-complete` SQS 발행과 함께
+`face-trigger` SQS에도 메시지를 발행한다. 메시지에는 `frameBucket`, `framePrefix`,
+`sessionUuid`, `turnId`, `sourceKey`가 포함되며, face-analyzer 워커가 이를 수신해
+얼굴 표정 분석을 시작한다.
 
 ## 프로젝트 구조
 
@@ -81,7 +87,15 @@ cd local
 docker compose up -d
 ```
 
-5개 S3 버킷 + SNS 토픽 + SQS 큐 + Lambda 5개(4 pipeline + 1 voice-analyzer)가 자동 생성됩니다.
+5개 S3 버킷 + SNS 토픽 + SQS 큐 5개 + Lambda 4개(3 pipeline + 1 voice-analyzer)가 자동 생성됩니다.
+
+| SQS 큐 | 용도 |
+|---|---|
+| `mefit-video-step-complete` | Lambda 완료 → Django Celery Worker |
+| `mefit-face-trigger` | frame_extractor → face-analyzer 워커 |
+| `mefit-video-converter-queue` | SNS fan-out → video-converter Lambda |
+| `mefit-frame-extractor-queue` | SNS fan-out → frame-extractor Lambda |
+| `mefit-audio-extractor-queue` | SNS fan-out → audio-extractor Lambda |
 
 ### 로컬 환경 제한사항
 
@@ -144,6 +158,8 @@ AWS 콘솔 또는 EC2 CLI를 통해 배포. 상세 절차:
 | `FRAME_BUCKET` | 프레임 버킷 | `pj-kmucd1-04-mefit-video-frame-files` |
 | `AUDIO_BUCKET` | 음성 버킷 | `pj-kmucd1-04-mefit-audio-files` |
 | `SCALED_AUDIO_BUCKET` | 스케일 음성 버킷 | `pj-kmucd1-04-mefit-scaled-audio-files` |
+| `STEP_COMPLETE_SQS_URL` | step-complete SQS URL | — |
+| `FACE_TRIGGER_SQS_URL` | face-trigger SQS URL (`frame_extractor`에서 발행) | — |
 | `REGION` | AWS 리전 | `us-east-1` |
 | `FFMPEG_PATH` | ffmpeg 바이너리 경로 | `/opt/bin/ffmpeg` |
 
