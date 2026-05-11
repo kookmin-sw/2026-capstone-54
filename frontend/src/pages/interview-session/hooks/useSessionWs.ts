@@ -59,9 +59,6 @@ export function useSessionWs({ interviewSessionUuid, enabled }: UseSessionWsOpti
     if (!visible) {
       clientRef.current.sendPause("user_left_window");
       setPaused(true, "user_left_window");
-    } else {
-      clientRef.current.sendResume();
-      setPaused(false, null);
     }
   }, [visible, enabled, setPaused]);
 

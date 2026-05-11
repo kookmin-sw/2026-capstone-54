@@ -178,8 +178,6 @@ export function InterviewSessionPage() {
     if (!hasStarted || isFinished) return;
     if (isIdle) {
       wsClientRef.current?.sendPause("user_idle");
-    } else {
-      wsClientRef.current?.sendResume();
     }
   }, [isIdle, hasStarted, isFinished, wsClientRef]);
 
@@ -198,6 +196,7 @@ export function InterviewSessionPage() {
 
   const handleIdleContinue = () => {
     resetIdle();
+    wsClientRef.current?.sendResume();
   };
 
   const handleIdleFinish = () => {
@@ -403,7 +402,7 @@ export function InterviewSessionPage() {
       {isTooSmall && <ScreenSizeOverlay screenWidth={screenSize.w} screenHeight={screenSize.h} onGoHome={() => navigate("/interview/results")} />}
       {permissionError && <PermissionOverlay onReload={() => window.location.reload()} onGoResults={() => navigate("/interview/results")} />}
       <SessionTakeoverModal />
-      <PausedOverlay />
+      <PausedOverlay onResume={() => wsClientRef.current?.sendResume()} />
       <IdleDetectedModal open={isIdle} onContinue={handleIdleContinue} onFinish={handleIdleFinish} />
       <SttAidNotice />
     </div>
