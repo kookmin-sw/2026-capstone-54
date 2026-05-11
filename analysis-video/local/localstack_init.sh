@@ -41,6 +41,12 @@ echo "=== 2. SNS Topics + SQS Queues ==="
 STEP_COMPLETE_QUEUE_URL=$(awslocal sqs create-queue --queue-name mefit-video-step-complete --query 'QueueUrl' --output text)
 echo "  [OK] SQS Queue (step-complete): $STEP_COMPLETE_QUEUE_URL"
 
+FACE_TRIGGER_QUEUE_URL=$(awslocal sqs create-queue \
+  --queue-name mefit-face-trigger \
+  --attributes VisibilityTimeout=300,MessageRetentionPeriod=1209600 \
+  --query 'QueueUrl' --output text)
+echo "  [OK] SQS Queue (face-trigger): $FACE_TRIGGER_QUEUE_URL"
+
 UPLOAD_SNS_ARN=$(awslocal sns create-topic --name mefit-video-uploaded --query 'TopicArn' --output text)
 echo "  [OK] SNS Topic (video-uploaded fan-out): $UPLOAD_SNS_ARN"
 
@@ -88,7 +94,7 @@ LAYERS_DIR="/opt/mefit/layers/common/python"
 OUT_DIR="/tmp/lambda-packages"
 mkdir -p "$OUT_DIR"
 
-LAMBDA_ENV="Variables={VIDEO_BUCKET=$VIDEO_BUCKET,SCALED_VIDEO_BUCKET=$SCALED_VIDEO_BUCKET,FRAME_BUCKET=$FRAME_BUCKET,AUDIO_BUCKET=$AUDIO_BUCKET,SCALED_AUDIO_BUCKET=$SCALED_AUDIO_BUCKET,STEP_COMPLETE_SQS_URL=$STEP_COMPLETE_QUEUE_URL,REGION=$REGION,FFMPEG_PATH=/opt/ffmpeg-bin/ffmpeg}"
+LAMBDA_ENV="Variables={VIDEO_BUCKET=$VIDEO_BUCKET,SCALED_VIDEO_BUCKET=$SCALED_VIDEO_BUCKET,FRAME_BUCKET=$FRAME_BUCKET,AUDIO_BUCKET=$AUDIO_BUCKET,SCALED_AUDIO_BUCKET=$SCALED_AUDIO_BUCKET,STEP_COMPLETE_SQS_URL=$STEP_COMPLETE_QUEUE_URL,FACE_TRIGGER_SQS_URL=$FACE_TRIGGER_QUEUE_URL,REGION=$REGION,FFMPEG_PATH=/opt/ffmpeg-bin/ffmpeg}"
 
 FUNCTIONS="video_converter frame_extractor audio_extractor"
 
@@ -223,10 +229,12 @@ echo ""
 echo "  S3 Buckets:        5 (CORS enabled)"
 echo "  Lambda:            4 (3 pipeline + 1 voice-analyzer)"
 echo "  SNS Topics:        1 (video-uploaded)"
-echo "  SQS Queues:        4 (3 fan-out + step-complete)"
+echo "  SQS Queues:        5 (3 fan-out + step-complete + face-trigger)"
 echo "  Event Sources:     3 (SQS→Lambda fan-out)"
 echo ""
 echo "  Flow: S3 .webm → SNS → 3×SQS → 3×Lambda"
+echo "        frame_extractor → face-trigger SQS → face-analyzer worker (external)"
 echo "  Endpoint: http://localhost:4566"
 echo "  Step-Complete SQS: $STEP_COMPLETE_QUEUE_URL"
+echo "  Face-Trigger SQS:  $FACE_TRIGGER_QUEUE_URL"
 echo "========================================="
