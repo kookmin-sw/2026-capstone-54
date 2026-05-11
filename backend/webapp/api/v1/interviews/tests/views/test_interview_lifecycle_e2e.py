@@ -555,14 +555,15 @@ class S8_ConcurrentInitiateConflictTests(_LifecycleE2EBase):
       s3_key=f"{self.session.pk}/{self.anchor_turn.pk}/already.webm",
     )
 
-    with self.assertRaises(ConflictException):
-      with transaction.atomic():
-        InitiateRecordingService(
-          interview_session=self.session,
-          interview_turn=self.anchor_turn,
-          user=self.user,
-          media_type=RecordingMediaType.VIDEO,
-        ).perform()
+    with patch(MOCK_INITIATE_S3, return_value=self._make_s3_mock_for_initiate()):
+      with self.assertRaises(ConflictException):
+        with transaction.atomic():
+          InitiateRecordingService(
+            interview_session=self.session,
+            interview_turn=self.anchor_turn,
+            user=self.user,
+            media_type=RecordingMediaType.VIDEO,
+          ).perform()
 
     active_count = InterviewRecording.objects.filter(interview_turn=self.anchor_turn, ).exclude(
       status=RecordingStatus.ABANDONED
