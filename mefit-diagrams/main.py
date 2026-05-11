@@ -9,20 +9,67 @@ from diagrams.aws.compute import LambdaFunction
 from diagrams.custom import Custom
 from diagrams.k8s.compute import Deploy, Pod
 from diagrams.k8s.network import Ing, SVC
+from diagrams.onprem.client import Client
 from diagrams.onprem.database import Postgresql
 from diagrams.programming.framework import Django, Nextjs
+from diagrams.saas.cdn import Cloudflare
 
 
 FLOWER_ICON = "flower.png"
 
 BASE_GRAPH_ATTR = {
-    "splines": "polyline",
-    "nodesep": "1.4",
-    "ranksep": "1.8",
-    "pad": "0.3",
+    "splines": "ortho",
+    "nodesep": "1.6",
+    "ranksep": "2.0",
+    "pad": "0.4",
     "fontsize": "11",
     "overlap": "false",
     "newrank": "true",
+    "concentrate": "true",
+}
+
+EDGE_DEFAULT = {
+    "color": "#4B5563",
+    "fontsize": "10",
+    "fontname": "Helvetica",
+    "penwidth": "1.4",
+    "arrowsize": "0.8",
+}
+
+EDGE_FANOUT = {
+    "color": "#0E7490",
+    "penwidth": "1.6",
+    "arrowsize": "0.85",
+    "fontsize": "10",
+}
+
+EDGE_LAMBDA = {
+    "color": "#D97706",
+    "penwidth": "1.5",
+    "arrowsize": "0.8",
+    "fontsize": "10",
+}
+
+EDGE_STEP = {
+    "color": "#0991B2",
+    "penwidth": "1.8",
+    "arrowsize": "0.9",
+    "fontsize": "10",
+}
+
+EDGE_DLQ = {
+    "color": "#DC2626",
+    "style": "dashed",
+    "penwidth": "1.2",
+    "arrowsize": "0.7",
+    "fontsize": "9",
+}
+
+EDGE_FACE = {
+    "color": "#7C3AED",
+    "penwidth": "1.6",
+    "arrowsize": "0.85",
+    "fontsize": "10",
 }
 
 
@@ -63,6 +110,10 @@ def aws_diagram():
             sqs_audio = SQS("audio-extractor-queue")
             sqs_audio_dlq = SQS("audio-extractor-queue-dlq")
 
+        with Cluster("Downstream Queues"):
+            sqs_face = SQS("face-analyzer-queue")
+            sqs_face_dlq = SQS("face-analyzer-queue-dlq")
+
         with Cluster("Completion Queue"):
             sqs_step = SQS("video-step-complete")
             sqs_step_dlq = SQS("video-step-complete-dlq")
@@ -71,6 +122,7 @@ def aws_diagram():
             lb_converter = LambdaFunction("video-converter")
             lb_frame = LambdaFunction("frame-extractor")
             lb_audio = LambdaFunction("audio-extractor")
+            lb_face = LambdaFunction("face-analyzer")
             LambdaFunction("voice-analyzer\n(on-demand invoke)")
 
         celery_sqs_worker = Django(
@@ -97,8 +149,11 @@ def aws_diagram():
         lb_audio >> Edge(label="16kHz mono wav") >> s3_scaled_audio
 
         lb_converter >> Edge(label="step complete", color="darkblue") >> sqs_step
-        lb_frame >> Edge(label="step complete", color="darkblue") >> sqs_step
         lb_audio >> Edge(label="step complete", color="darkblue") >> sqs_step
+
+        lb_frame >> Edge(label="frames ready", color="purple") >> sqs_face
+        sqs_face >> Edge(label="event source mapping") >> lb_face
+        lb_face >> Edge(label="step complete", color="darkblue") >> sqs_step
 
         (
             sqs_step
@@ -120,6 +175,11 @@ def aws_diagram():
             sqs_audio
             >> Edge(label="redrive", style="dashed", color="firebrick")
             >> sqs_audio_dlq
+        )
+        (
+            sqs_face
+            >> Edge(label="redrive", style="dashed", color="firebrick")
+            >> sqs_face_dlq
         )
         (
             sqs_step
@@ -259,8 +319,12 @@ def combined_diagram():
         show=False,
         direction="TB",
         graph_attr=BASE_GRAPH_ATTR,
+        edge_attr=EDGE_DEFAULT,
     ):
-        user = Nextjs("User Browser")
+        user = Client("User Browser")
+        with Cluster("Cloudflare Edge"):
+            cf_dns = Cloudflare("DNS\nmefit.kr · api.mefit.kr")
+            cf_worker = Cloudflare("Worker (Pages)\nFrontend 정적 호스팅")
         frontend = Nextjs("Frontend Next.js")
 
         ec2_edge = EC2("EC2 public endpoint\n:80/:443")
@@ -285,11 +349,13 @@ def combined_diagram():
             sqs_converter = SQS("video-converter-queue")
             sqs_frame = SQS("frame-extractor-queue")
             sqs_audio = SQS("audio-extractor-queue")
+            sqs_face = SQS("face-analyzer-queue")
             sqs_step = SQS("video-step-complete")
 
             lb_converter = LambdaFunction("video-converter")
             lb_frame = LambdaFunction("frame-extractor")
             lb_audio = LambdaFunction("audio-extractor")
+            lb_face = LambdaFunction("face-analyzer")
             lb_voice = LambdaFunction("voice-analyzer")
 
         with Cluster("k3s namespace: mefit-backend-production"):
@@ -318,9 +384,12 @@ def combined_diagram():
             flower = Custom("Flower\n(admin/flower)", FLOWER_ICON)
 
         rds = Postgresql("RDS PostgreSQL")
-        user >> frontend
+        user >> Edge(label="DNS lookup") >> cf_dns
+        cf_dns >> Edge(label="Frontend\n(mefit.kr)") >> cf_worker
+        cf_worker >> Edge(label="static assets") >> frontend
+        cf_dns >> Edge(label="API\n(api.mefit.kr)") >> ec2_edge
         frontend >> Edge(label="presigned upload") >> s3_video
-        frontend >> Edge(label="HTTPS") >> ec2_edge
+        frontend >> Edge(label="API call") >> ec2_edge
         cp_node >> wk_node_1
         cp_node >> wk_node_2
         ec2_edge >> web_ing
@@ -346,8 +415,11 @@ def combined_diagram():
         lb_audio >> s3_scaled_audio
 
         lb_converter >> sqs_step
-        lb_frame >> sqs_step
         lb_audio >> sqs_step
+
+        lb_frame >> Edge(label="frames ready", color="purple") >> sqs_face
+        sqs_face >> Edge(label="event source mapping") >> lb_face
+        lb_face >> Edge(label="step complete") >> sqs_step
 
         sqs_step >> Edge(label="kombu polling") >> sqs_worker
 
