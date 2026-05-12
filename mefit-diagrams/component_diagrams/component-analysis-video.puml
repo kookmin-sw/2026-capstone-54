@@ -1,0 +1,89 @@
+@startuml
+title analysis-video - AWS Lambda 4 종 (영상/오디오/프레임/음성지표 후처리)
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 11
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+skinparam component {
+  BackgroundColor #FFF3E0
+  BorderColor #FB8C00
+}
+skinparam component<<storage>> {
+  BackgroundColor #ECEFF1
+  BorderColor #607D8B
+}
+skinparam component<<layer>> {
+  BackgroundColor #FFF9C4
+  BorderColor #FBC02D
+}
+skinparam component<<face>> {
+  BackgroundColor #F3E5F5
+  BorderColor #8E24AA
+}
+skinparam component<<external>> {
+  BackgroundColor #E8F4FD
+  BorderColor #2196F3
+}
+
+database "S3\nvideo-files (.webm)" as S3In <<storage>>
+component "SNS\nvideo-uploaded" as SNS
+component "SQS Fan-out\n(converter · frame · audio +\n각자 DLQ)" as SQS
+queue "SQS\nvideo-step-complete" as SQSDone
+component "face-analyzer Lambda\n(invoke)" as FA <<face>>
+component "Backend SQS Worker\n(kombu polling)" as BE <<external>>
+
+package "analysis-video/" {
+  package "layers/" {
+    component "mefit-video-common\n(config · s3_client\nffmpeg_runner · logger\nevent_parser)" as Lcommon <<layer>>
+    component "mefit-ffmpeg-binary\n(static ffmpeg)" as Lffmpeg <<layer>>
+    component "audio-analysis\n(librosa · numpy)" as Laudio <<layer>>
+  }
+
+  package "functions/" {
+    component "video_converter\n.webm → .mp4 (720p H.264)\nmem=1024MB · timeout=5m" as F1
+    component "frame_extractor\n.webm → .jpg 1FPS ZIP\nmem=512MB · timeout=3m" as F2
+    component "audio_extractor\n.webm → .wav (원본)\n+ .wav 16kHz mono\nmem=512MB · timeout=2m" as F3
+    component "voice_analyzer\n.wav → JSON\n(속도 · 필러 · 침묵 · 음량)\nmem=1024MB · timeout=2m" as F4
+  }
+}
+
+database "S3 scaled-video-files" as S3Mp4 <<storage>>
+database "S3 video-frame-files" as S3Jpg <<storage>>
+database "S3 audio-files" as S3Wav <<storage>>
+database "S3 scaled-audio-files\n(16kHz mono)" as S3Wav16 <<storage>>
+
+S3In --> SNS : ObjectCreated event
+SNS --> SQS : subscribe (fan-out)
+SQS --> F1 : event source mapping
+SQS --> F2
+SQS --> F3
+SQSDone --> BE : long polling
+
+F1 ..> Lcommon
+F1 ..> Lffmpeg
+F2 ..> Lcommon
+F2 ..> Lffmpeg
+F3 ..> Lcommon
+F3 ..> Lffmpeg
+F4 ..> Lcommon
+F4 ..> Laudio
+
+F1 --> S3Mp4 : PUT
+F1 --> SQSDone : step=converter
+F2 --> S3Jpg : PUT (1FPS .jpg)
+F2 --> FA : SQS face-trigger\n(frame 추출 완료 시\nSendMessage)
+F2 --> SQSDone : step=frame_extractor
+F3 --> S3Wav : PUT
+F3 --> S3Wav16 : PUT
+F3 --> SQSDone : step=audio
+
+F4 <-- S3Wav16 : 별도 호출 시 GET
+note right of F4
+  voice_analyzer 는 SNS 트리거가 아닌
+  interview-analysis-report Worker 가
+  boto3.invoke (RequestResponse) 로 동기 호출
+end note
+
+footer analysis-video/ — 4 Lambda · 3 Lambda Layers · ffmpeg + librosa · DLQ 1:1 격리
+@enduml

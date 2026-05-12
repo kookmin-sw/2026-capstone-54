@@ -1,0 +1,102 @@
+@startuml
+title face-analyzer - AWS Lambda (MediaPipe Face Landmarker 표정 분석)
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 11
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+skinparam component {
+  BackgroundColor #F3E5F5
+  BorderColor #8E24AA
+}
+skinparam component<<storage>> {
+  BackgroundColor #ECEFF1
+  BorderColor #607D8B
+}
+skinparam component<<layer>> {
+  BackgroundColor #FFF9C4
+  BorderColor #FBC02D
+}
+skinparam component<<external>> {
+  BackgroundColor #FFF3E0
+  BorderColor #FB8C00
+}
+skinparam queue {
+  BackgroundColor #F3E5F5
+  BorderColor #8E24AA
+}
+
+component "frame_extractor Lambda\n(영상 → 1FPS .jpg)" as FrEx <<external>>
+queue "SQS\nmefit-face-trigger\n(가시성 300s, 배치=1)" as TriggerQ
+database "S3\nvideo-frame-files\n({sessionUuid}/{turnId}/frames/)" as S3In <<storage>>
+queue "SQS\nvideo-step-complete" as DoneQ
+component "Backend\nCelery SQS Worker" as BE <<external>>
+
+package "face-analyzer/" {
+  package "layers/" {
+    component "face-analysis\n(MediaPipe 0.10.14 +\nOpenCV headless +\nNumPy + Pillow +\nProtobuf, strip 후 ~250MB)" as Lmed <<layer>>
+    component "mefit-video-common\n(공유 Layer:\nS3 client / SQS publisher /\nLogger / Config)" as Lcommon <<layer>>
+  }
+
+  package "functions/face_analyzer/" {
+    component "handler.py\nLambda entry\n메모리=1024MB · timeout=5m\nx86_64 / Python 3.12" as Func
+  }
+
+  package "analyzer/ (로직 모듈)" {
+    component "face_detector\nMediaPipe FaceLandmarker\n+ blendshape + head pose" as Det
+    component "frame_analyzer\n단일 프레임 분류 +\n저장 최적화" as FrA
+    component "emotion_category\n5 score → positive/\nnegative/neutral 임계값" as EmCat
+    component "batch_processor\nS3 객체 순차 분석\nlocal 폴더 분석" as Batch
+    component "statistics\n분포 / 평균 /\n표정 전이율 집계" as Stat
+  }
+
+  database "models/\nface_landmarker.task\n(3.7 MB)" as Models <<storage>>
+}
+
+' 트리거 흐름
+FrEx --> TriggerQ : SendMessage\n{frameBucket, framePrefix,\n sessionUuid, turnId}
+TriggerQ --> Func : SQS Event Source\n(Records[0].body)
+
+' 내부 처리
+Func --> Batch : analyze_s3_images()
+Batch --> S3In : list_objects_v2\n+ get_object (.jpg)
+Batch --> FrA : per-frame 분석
+FrA --> Det : analyze_face()
+Det ..> Models : load (Lazy init,\n콜드 스타트 1회)
+FrA --> EmCat : classify_expression()
+Batch --> Stat : compute_statistics()
+Stat --> Func : 통합 JSON 결과
+
+' Layer 의존
+Func ..> Lcommon
+Func ..> Lmed
+Det ..> Lmed
+FrA ..> Lmed
+
+' 결과 영속화
+Func --> S3In : put_object\nface_analysis_result.json
+Func --> DoneQ : publish_step_complete\n(step=face_analyzer)
+DoneQ --> BE : kombu polling
+
+note bottom of EmCat
+  멘토 피드백:
+  표정 분류 정확도는 본질적으로 제한적
+  → positive / negative / neutral / no_face
+     거시 카테고리로 단순화
+  → 임계값 기반(임계값 5개) 결정론적 분류
+  → 동양인 무표정 보정 (eye_squint 보조 판정)
+end note
+
+note right of Det
+  MediaPipe Face Landmarker:
+  - 478 facial landmarks
+  - 52 blendshape coefficients
+  - head pose (yaw/pitch/roll)
+
+  추출 핵심 5 score:
+  smile, frown, brow_down,
+  jaw_open, eye_squint
+end note
+
+footer face-analyzer/ — MediaPipe Face Landmarker · 임계값 기반 분류 · SQS 트리거 · S3 결과 영속화
+@enduml
