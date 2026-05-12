@@ -1,0 +1,87 @@
+@startuml
+title 미핏 - 13 도메인 앱 의존 관계
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 11
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+skinparam component {
+  BackgroundColor #E8F4FD
+  BorderColor #2196F3
+}
+skinparam component<<core>> {
+  BackgroundColor #FFF9C4
+  BorderColor #FBC02D
+}
+skinparam component<<reward>> {
+  BackgroundColor #C8E6C9
+  BorderColor #388E3C
+}
+skinparam component<<billing>> {
+  BackgroundColor #F8BBD0
+  BorderColor #C2185B
+}
+
+package "1. 인증 / 프로필" {
+  component "users\n(인증 / 가입)" as USERS
+  component "profiles\n(직무 / 경력)" as PROF
+}
+
+package "2. 자료 등록" {
+  component "resumes\n(이력서)" as RES
+  component "job_descriptions\n(채용공고)" as JD
+}
+
+package "3. 면접 핵심" <<core>> {
+  component "interviews\n(세션 / Turn / Recording / Report)" as INT <<core>>
+}
+
+package "4. 학습 보상" <<reward>> {
+  component "streaks\n(일일 참여)" as STR <<reward>>
+  component "achievements\n(업적)" as ACH <<reward>>
+}
+
+package "5. 결제 / 권한" <<billing>> {
+  component "subscriptions\n(Free / Pro)" as SUB <<billing>>
+  component "tickets\n(잔량 / 이력)" as TIC <<billing>>
+}
+
+package "6. 부가" {
+  component "notifications" as NOTI
+  component "terms_documents" as TRM
+  component "dashboard" as DASH
+  component "llm_trackers\n(TokenUsage)" as LLM
+}
+
+USERS --> PROF : 1:1
+USERS --> RES : 1:N
+USERS --> JD : 1:N
+USERS --> SUB : 1:N
+USERS --> TIC : 1:1
+USERS --> STR : 1:1
+USERS --> ACH : 1:N
+USERS --> NOTI : 1:N
+
+RES --> INT : 면접에 사용
+JD --> INT : 면접에 사용
+
+SUB --> TIC : 정책 정의 (티켓 비용)
+TIC --> INT : 면접 시작 시 차감
+INT --> STR : 종료 시 참여 기록
+INT --> ACH : 횟수 누적 평가
+STR --> TIC : 보상 발급
+ACH --> TIC : 보상 발급
+
+INT --> LLM : LLM 호출 시 토큰 기록
+RES --> LLM : 분석 시 토큰 기록
+JD --> LLM : 추출 시 토큰 기록
+INT --> NOTI : 분석 완료 알림
+
+DASH ..> INT : 통계 집계
+DASH ..> STR : 통계 집계
+DASH ..> ACH : 통계 집계
+
+USERS ..> TRM : 약관 동의
+
+footer MeFit - 13 도메인 앱 의존 관계 (interviews 가 중심 허브)
+@enduml

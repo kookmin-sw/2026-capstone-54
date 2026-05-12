@@ -1,0 +1,114 @@
+@startuml
+title backend - Django 6 webapp 내부 구조 (3-Layer + 도메인 앱 + api/v1)
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 11
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+skinparam component {
+  BackgroundColor #E8F4FD
+  BorderColor #2196F3
+}
+skinparam component<<api>> {
+  BackgroundColor #FFF9C4
+  BorderColor #FBC02D
+}
+skinparam component<<common>> {
+  BackgroundColor #F3E5F5
+  BorderColor #8E24AA
+}
+skinparam component<<storage>> {
+  BackgroundColor #ECEFF1
+  BorderColor #607D8B
+}
+
+actor "External\n(Frontend / Worker)" as Ext
+
+package "api/v1 (URL · ViewSet · Serializer · Consumer)" {
+  component "api/v1/users\nprofiles · resumes\njob_descriptions\nuser_job_descriptions\ninterviews · realtime\nachievements · streaks\nsubscriptions · tickets\nnotifications · dashboard\nterms_documents · demo\nhealth_check" as APIv1 <<api>>
+}
+
+package "webapp 도메인 앱 (Model · Service · Task · Signal)" {
+  component "users" as DUsers
+  component "profiles" as DProfiles
+  component "resumes" as DResumes
+  component "job_descriptions" as DJD
+  component "interviews" as DInter
+  component "achievements" as DAch
+  component "streaks" as DStreaks
+  component "subscriptions" as DSub
+  component "tickets" as DTickets
+  component "notifications" as DNoti
+  component "terms_documents" as DTerms
+  component "llm_trackers" as DLLM
+  component "dashboard" as DDash
+  component "realtime_docs" as DRT
+}
+
+package "common (Base 패턴)" {
+  component "BaseModel\nBaseModelWithUUID\nBaseModelWithSoftDelete" as CMod <<common>>
+  component "BaseService\nBaseQueryService" as CSvc <<common>>
+  component "BaseAPIView\nBaseGenericViewSet\nBaseReadOnlyViewSet\nBaseListAPIView" as CView <<common>>
+  component "BaseTask\nBaseScheduledTask" as CTask <<common>>
+  component "UserWebSocketConsumer\nUserSseConsumer\n@ws_consumer @sse_consumer" as CConsumer <<common>>
+  component "Exceptions\nPermissions\nMiddlewares\nFilters · Pagination" as CUtil <<common>>
+}
+
+package "config" {
+  component "settings/base · prod · dev\ncelery · channels\nurls · asgi · wsgi" as Conf
+}
+
+package "외부 / 인프라" {
+  database "PostgreSQL (RDS)" as PG <<storage>>
+  queue "Redis\n(Celery Broker +\nChannels Layer)" as Redis <<storage>>
+  database "S3 (5 buckets)" as S3 <<storage>>
+}
+
+Ext --> APIv1 : REST / WebSocket / SSE
+APIv1 --> DUsers
+APIv1 --> DProfiles
+APIv1 --> DResumes
+APIv1 --> DJD
+APIv1 --> DInter
+APIv1 --> DAch
+APIv1 --> DStreaks
+APIv1 --> DSub
+APIv1 --> DTickets
+APIv1 --> DNoti
+APIv1 --> DTerms
+APIv1 --> DDash
+
+APIv1 ..> CView : 상속
+APIv1 ..> CConsumer : 상속
+
+DInter ..> CMod
+DInter ..> CSvc
+DInter ..> CTask
+DResumes ..> CMod
+DResumes ..> CSvc
+DResumes ..> CTask
+DJD ..> CSvc
+DJD ..> CTask
+DAch ..> CSvc
+DStreaks ..> CSvc
+DSub ..> CSvc
+DTickets ..> CSvc
+DNoti ..> CSvc
+
+DInter --> PG : ORM
+DResumes --> PG : ORM
+DJD --> PG : ORM
+DUsers --> PG : ORM
+
+DInter --> Redis : Celery 발행 · WS broadcast
+DResumes --> Redis : Celery 발행
+DJD --> Redis : Celery 발행
+DInter --> S3 : Presigned · boto3
+DResumes --> S3 : boto3
+
+Conf ..> APIv1 : 라우팅
+Conf ..> DUsers : INSTALLED_APPS
+Conf ..> Redis : Channel Layer
+
+footer backend/ — 13 도메인 앱 + api/v1 + common Base 패턴 (3-Layer Architecture)
+@enduml

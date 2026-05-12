@@ -1,0 +1,87 @@
+@startuml
+title 미핏 - 계획 vs 최종 아키텍처 비교
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 11
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+skinparam component {
+  BackgroundColor #E8F4FD
+  BorderColor #2196F3
+}
+skinparam component<<plan>> {
+  BackgroundColor #FFCDD2
+  BorderColor #C62828
+}
+skinparam component<<added>> {
+  BackgroundColor #C8E6C9
+  BorderColor #2E7D32
+}
+
+package "수행 계획 (초기) — 단순 모놀리식" <<plan>> {
+  component "사용자" as U_P
+  component "React (Vite)" as FE_P <<plan>>
+  component "Django REST" as BE_P <<plan>>
+  component "PostgreSQL" as DB_P <<plan>>
+  component "Celery Worker\n(단일 큐)" as W_P <<plan>>
+  component "OpenAI API" as OAI_P <<plan>>
+
+  U_P --> FE_P
+  FE_P --> BE_P
+  BE_P --> DB_P
+  BE_P --> W_P
+  W_P --> OAI_P
+}
+
+package "최종 — 12 마이크로서비스" <<added>> {
+  component "사용자" as U_F
+  component "Frontend\nReact 19 + FSD" as FE_F
+  component "Backend\nDjango 6 + Channels" as BE_F
+  database "Redis" as R_F
+  database "PostgreSQL" as DB_F
+
+  package "도메인별 Worker" <<added>> {
+    component "analysis-resume" as AR_F <<added>>
+    component "interview-analysis-report" as IAR_F <<added>>
+    component "scraping" as SCR_F <<added>>
+    component "analysis-stt" as STT_F <<added>>
+  }
+
+  component "voice-api\n(FastAPI)" as VA_F <<added>>
+
+  package "AWS Event Pipeline" <<added>> {
+    component "S3 + SNS + SQS" as MQ_F <<added>>
+    component "Lambda 4종\n+ face-analyzer" as L_F <<added>>
+  }
+
+  component "LiteLLM Gateway\n(To-Be Bedrock)" as LLM_F <<added>>
+
+  U_F --> FE_F
+  FE_F --> BE_F : REST + WS + SSE
+  BE_F --> DB_F
+  BE_F --> R_F
+  R_F --> AR_F
+  R_F --> IAR_F
+  R_F --> SCR_F
+  R_F --> STT_F
+  BE_F --> VA_F
+  BE_F ..> MQ_F : 이벤트
+  MQ_F --> L_F
+  L_F --> MQ_F : step-complete
+  IAR_F ..> LLM_F
+  AR_F ..> LLM_F
+}
+
+note bottom
+  변경 7 가지:
+  1. 단일 Worker → 도메인별 Worker
+  2. 단일 백엔드 → backend + voice-api 분리
+  3. voice-api STT → analysis-stt 분리
+  4. 동기 영상 → 이벤트 기반 비동기
+  5. 단일 Lambda → 4종 + face-analyzer
+  6. 단일 EC2 → k3s 클러스터
+  7. 직접 OpenAI → LiteLLM Gateway 사전 도입
+end note
+
+footer MeFit - 단순 모놀리식 → 12 마이크로서비스 진화
+@enduml
