@@ -1,0 +1,71 @@
+@startuml
+title 미핏 - 단계적 보안 강화 로드맵 (현재 → To-Be)
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 11
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+skinparam component {
+  BackgroundColor #E8F4FD
+  BorderColor #2196F3
+}
+skinparam component<<current>> {
+  BackgroundColor #FFCDD2
+  BorderColor #C62828
+}
+skinparam component<<phase1>> {
+  BackgroundColor #FFE0B2
+  BorderColor #FB8C00
+}
+skinparam component<<phase2>> {
+  BackgroundColor #FFF9C4
+  BorderColor #FBC02D
+}
+skinparam component<<phase3>> {
+  BackgroundColor #C8E6C9
+  BorderColor #2E7D32
+}
+
+package "현재 (캡스톤)\n공용 인터넷망 통과" <<current>> {
+  component "Backend\n(k3s on EC2)" as BE0
+  component "OpenAI API\n(공용 인터넷)" as OAI0 <<current>>
+  BE0 --> OAI0 : HTTPS (공용)
+}
+
+package "1 단계: LiteLLM 도입\n(코드 변경 0)" <<phase1>> {
+  component "Backend" as BE1
+  component "LiteLLM Gateway\n(k3s Pod)" as LLM1 <<phase1>>
+  component "OpenAI API\n(공용 인터넷)" as OAI1
+  BE1 --> LLM1 : k3s 내부 (Cluster IP)
+  LLM1 --> OAI1 : HTTPS (공용)
+}
+
+package "2 단계: Bedrock 전환\n(VPC + Endpoint)" <<phase2>> {
+  component "Backend\n(VPC + Private Subnet)" as BE2
+  component "LiteLLM Gateway" as LLM2 <<phase2>>
+  component "AWS Bedrock\n(OpenAI/Claude/Titan)" as BR2 <<phase2>>
+  BE2 --> LLM2 : 내부 트래픽
+  LLM2 --> BR2 : VPC Endpoint\n(AWS 내부)
+}
+
+package "3 단계: 종단 격리\n(Production)" <<phase3>> {
+  component "사용자\n(CloudFront)" as U3
+  component "ALB" as ALB3
+  component "Backend\n(Private Subnet)" as BE3 <<phase3>>
+  component "RDS\n(Private Subnet)" as DB3 <<phase3>>
+  component "S3\n(VPC Endpoint)" as S33 <<phase3>>
+  component "Bedrock\n(VPC Endpoint)" as BR3 <<phase3>>
+  U3 --> ALB3 : HTTPS
+  ALB3 --> BE3 : VPC 내부
+  BE3 --> DB3 : VPC 내부
+  BE3 --> S33 : VPC Endpoint
+  BE3 --> BR3 : VPC Endpoint
+}
+
+note bottom
+  멘토 권장: AWS Bedrock 도입 + VPC Endpoint 로
+  공용 인터넷망 회피 → 보안 태클 사전 차단
+end note
+
+footer MeFit - 보안 강화 4 단계 (캡스톤 인프라 제약 → 정식 운영 전환)
+@enduml
