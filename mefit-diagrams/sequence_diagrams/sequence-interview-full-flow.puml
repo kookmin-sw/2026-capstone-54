@@ -1,0 +1,136 @@
+@startuml
+title 미핏 - 한 면접 시나리오 시퀀스 (Setup → Session → Lambda → Report)
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 11
+skinparam sequence {
+  ArrowColor #555555
+  ActorBorderColor #2196F3
+  LifeLineBorderColor #2196F3
+  LifeLineBackgroundColor #E8F4FD
+  ParticipantBorderColor #2196F3
+  ParticipantBackgroundColor #E8F4FD
+  ParticipantFontSize 11
+  BoxBorderColor #B0BEC5
+  BoxBackgroundColor #ECEFF1
+}
+
+actor "사용자" as U
+participant "Frontend\n(React 19)" as FE
+participant "Backend\n(Django 6)" as BE
+database "PostgreSQL\n(RDS)" as DB
+queue "Redis\n(Broker)" as Redis
+participant "voice-api\n(FastAPI)" as VA
+participant "S3\nvideo-files" as S3
+participant "SNS / SQS\nFan-out" as MQ
+participant "Lambda\n4 종" as Lambda
+participant "interview-\nanalysis-report\nWorker" as Analyzer
+
+== Step 1. Setup & Start ==
+
+U -> FE : 면접 시작 클릭
+FE -> BE : POST /interviews/interview-sessions/
+activate BE
+  BE -> DB : 티켓 검증 + 차감
+  BE -> DB : InterviewSession 생성 (IN_PROGRESS)
+  BE -> BE : GenerateInitialQuestionsService\n(LLM call gpt-4o-mini)
+  BE --> FE : { uuid, first_question }
+deactivate BE
+
+FE -> FE : window.open(/interview/precheck/{uuid})
+
+== Step 2. Precheck (3 단계) ==
+
+FE -> FE : 카메라/마이크 + 브라우저/네트워크 + 음성 테스트
+
+== Step 3. WebSocket Q&A 루프 ==
+
+FE -> BE : WS connect /ws/interviews/{uuid}/
+activate BE
+BE -> BE : 티켓 인증 + 세션 검증
+BE --> FE : { question }
+
+FE -> VA : POST /api/v1/tts (Bearer)
+activate VA
+  VA --> FE : mp3 stream
+deactivate VA
+
+U <- FE : TTS 음성 재생
+
+loop until no more questions
+  U -> FE : 답변 (영상 + 음성)
+
+  FE -> BE : POST /recordings/{uuid}/presign-part/
+  BE --> FE : presigned URL
+
+  FE -> S3 : PUT chunks (멀티파트)
+  activate S3
+
+  FE -> BE : POST /recordings/{uuid}/complete/
+  BE -> S3 : complete multipart upload
+  deactivate S3
+
+  FE -> BE : WS submit_answer
+  BE -> BE : SubmitAnswerService\n(FOLLOWUP: 후속 질문 / FULL_PROCESS: 다음)
+  BE -> DB : InterviewTurn 저장
+  BE --> FE : { next_question }
+end
+
+deactivate BE
+
+U -> FE : "면접 종료"
+FE -> BE : POST /interview-sessions/{uuid}/finish/
+BE -> DB : status = COMPLETED + 스트릭 기록
+
+== Step 4. AWS 영상 처리 파이프라인 (비동기) ==
+
+S3 -> MQ : ObjectCreated event
+activate MQ
+
+MQ -> Lambda : SNS Fan-out → SQS
+activate Lambda
+  Lambda -> Lambda : video-converter (.mp4)
+  Lambda -> Lambda : frame-extractor (.jpg)
+  Lambda -> Lambda : audio-extractor (.wav + 16kHz)
+  Lambda -> S3 : 결과 업로드
+  Lambda -> MQ : SQS face-trigger\n(frame 추출 완료 시)
+  MQ -> Lambda : face-analyzer 트리거\n(MediaPipe 1FPS 분석)
+  Lambda -> S3 : face_analysis_result.json
+deactivate Lambda
+
+Lambda -> MQ : SQS step-complete (단계별)
+deactivate MQ
+
+MQ -> BE : kombu polling (sqs-celery-worker)
+activate BE
+  BE -> DB : InterviewRecording 업데이트
+deactivate BE
+
+== Step 5. 사용자 트리거 분석 리포트 ==
+
+U -> FE : "분석 리포트 생성" 클릭
+FE -> BE : POST /generate-report/
+activate BE
+  BE -> DB : 티켓 차감
+  BE -> Redis : publish "analysis" 큐
+deactivate BE
+
+Redis -> Analyzer : pull task
+activate Analyzer
+  Analyzer -> DB : Load (Session + Turns + Resume + JD)
+  Analyzer -> Lambda : voice-analyzer Lambda 병렬 호출
+  Lambda --> Analyzer : 음성 지표 (속도/필러/침묵/음량)
+  Analyzer -> Analyzer : LLMAnalyzer.analyze (5 카테고리)
+  Analyzer -> DB : InterviewAnalysisReport (COMPLETED)
+deactivate Analyzer
+
+== Step 6. SSE 실시간 알림 ==
+
+BE -> FE : SSE event (status=COMPLETED)
+FE -> BE : GET /analysis-report/
+BE --> FE : 5 카테고리 + 질문별 피드백 + 모범 답안
+
+U <- FE : 리포트 화면 렌더링
+
+footer MeFit - 한 면접의 전체 흐름 (REST + WebSocket + SSE + Event-driven)
+@enduml
