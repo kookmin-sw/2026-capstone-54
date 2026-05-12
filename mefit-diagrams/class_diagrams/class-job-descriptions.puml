@@ -1,0 +1,75 @@
+@startuml
+title 미핏 - JobDescription 도메인 클래스 다이어그램
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 11
+skinparam linetype ortho
+skinparam class {
+  BackgroundColor #E8F4FD
+  BorderColor #2196F3
+  ArrowColor #555555
+  AttributeFontSize 10
+  AttributeFontColor #455A64
+}
+skinparam class<<aggregate>> {
+  BackgroundColor #FFF9C4
+  BorderColor #FBC02D
+}
+skinparam class<<external>> {
+  BackgroundColor #ECEFF1
+  BorderColor #607D8B
+}
+
+class User <<external>> {
+  +id: BigAutoField
+  +email: str
+}
+
+class UserJobDescription <<aggregate>> {
+  +uuid: UUID (PK)
+  +user_id: FK
+  +source_url: str?
+  +status: COLLECTING / COLLECTED / FAILED
+  +collected_at: datetime?
+  +deleted_at: datetime? (soft delete)
+  --
+  +mark_collecting()
+  +mark_collected()
+  +mark_failed()
+}
+
+class JobPosting {
+  +uuid: UUID (PK)
+  +user_job_description_id: FK (1:1)
+  +company: str
+  +title: str
+  +duties: text
+  +requirements: text
+  +preferred: text
+  +work_type: str
+  +salary: str?
+  +location: str
+  +education: str?
+  +experience: str?
+  +source_url: str?
+}
+
+User "1" *-- "*" UserJobDescription : owns
+UserJobDescription "1" -- "1" JobPosting : has
+
+note right of UserJobDescription
+  등록 경로:
+  - URL 입력: scraping Worker 자동 추출
+    + 사람인 / 잡코리아 / 잡플래닛
+    + 봇 차단 시 fallback
+  - 직접 입력: 즉시 COLLECTED
+end note
+
+note bottom of JobPosting
+  LLM 추출 전략:
+  - 텍스트 ≥ 300자: gpt-4o-mini
+  - 이미지 있음: gpt-4o Vision
+end note
+
+footer MeFit - backend/webapp/job_descriptions/
+@enduml
