@@ -36,6 +36,14 @@ const config: Config = {
     '!src/__mocks__/**',
     '!src/main.tsx',
     '!src/vite-env.d.ts',
+    '!src/**/index.ts',
+    '!src/**/index.tsx',
+    '!src/**/types.ts',
+    '!src/**/config.ts',
+    '!src/**/constants.ts',
+    '!src/**/constants/**',
+    '!src/app/**',
+    '!src/pages/**',
   ],
 };
 
