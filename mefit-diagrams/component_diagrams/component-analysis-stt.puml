@@ -1,0 +1,59 @@
+@startuml
+title analysis-stt - 음성 transcript Celery Worker 내부 구조
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 11
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+skinparam component {
+  BackgroundColor #E8F4FD
+  BorderColor #2196F3
+}
+skinparam component<<external>> {
+  BackgroundColor #ECEFF1
+  BorderColor #607D8B
+}
+skinparam component<<model>> {
+  BackgroundColor #C8E6C9
+  BorderColor #43A047
+}
+
+queue "Redis\n(analysis-stt queue)" as Redis <<external>>
+component "Backend\n(콜백 task)" as BE <<external>>
+database "S3 (scaled-audio-files)" as S3 <<external>>
+
+package "analysis-stt/" {
+  component "celery_app.py\nconfig.py" as Cfg
+
+  package "tasks/" {
+    component "transcribe_audio_task\n(BaseTask)" as TaskMain
+  }
+
+  package "services/" {
+    component "TranscribeService\n(S3 다운로드 → STT → 결과 반환)" as Svc
+    component "WhisperEngine\n(Singleton)\nfaster-whisper model" as Whisper <<model>>
+    component "S3 Loader\n(boto3.download_fileobj)" as S3L
+  }
+}
+
+Redis --> TaskMain : pull task (audio_key, turn_id)
+TaskMain --> Svc : transcribe(audio_key)
+Svc --> S3L : download
+S3L --> S3 : GET .wav (16kHz mono)
+S3L --> Svc : in-memory bytes
+Svc --> Whisper : transcribe(audio, language=ko)
+Whisper --> Svc : segments + text
+Svc --> TaskMain : transcript text
+
+TaskMain --> Redis : callback (Backend save_transcript)
+Redis --> BE
+
+note bottom of Whisper
+  faster-whisper:
+  - 모델 1회 로드 후 메모리 상주
+  - GPU 없을 시 CPU INT8 quantize
+  - 한국어 디코딩 최적화
+end note
+
+footer analysis-stt/ — faster-whisper Singleton · CPU INT8 · 16kHz mono 입력
+@enduml
