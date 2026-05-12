@@ -1,0 +1,67 @@
+@startuml
+title 미핏 - InterviewRecording 상태 머신 (영상 처리 파이프라인)
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 11
+skinparam state {
+  BackgroundColor #E8F4FD
+  BorderColor #2196F3
+  ArrowColor #555555
+  FontSize 11
+}
+skinparam state<<terminal>> {
+  BackgroundColor #C8E6C9
+  BorderColor #2E7D32
+}
+skinparam state<<errstate>> {
+  BackgroundColor #FFCDD2
+  BorderColor #C62828
+}
+skinparam state<<process>> {
+  BackgroundColor #FFF9C4
+  BorderColor #FBC02D
+}
+
+[*] --> UPLOADING : POST /recordings/initiate/
+
+state UPLOADING
+UPLOADING : MediaRecorder API 청크 수집
+UPLOADING : presign-part / parts / complete
+UPLOADING : 지수 백오프 재시도
+
+state UPLOAD_COMPLETED <<process>>
+UPLOAD_COMPLETED : original_video_key 저장
+UPLOAD_COMPLETED : S3 ObjectCreated 이벤트 발행
+UPLOAD_COMPLETED : SNS Fan-out → SQS 3 큐
+
+state PROCESSING <<process>>
+PROCESSING : Lambda 4 종 병렬 처리
+PROCESSING : - video-converter (.mp4)
+PROCESSING : - frame-extractor (.jpg)
+PROCESSING : - audio-extractor (.wav + 16kHz)
+PROCESSING : 후속:
+PROCESSING : - face-analyzer (SQS face-analyzer-queue 트리거)
+PROCESSING : - analysis-stt Worker
+
+state COMPLETED <<terminal>>
+COMPLETED : scaled_video_key 저장
+COMPLETED : frame_prefix 저장
+COMPLETED : audio_key + scaled_audio_key 저장
+COMPLETED : face_analysis_result 저장
+COMPLETED : transcript_status = COMPLETED
+
+state FAILED <<errstate>>
+FAILED : 청크 업로드 실패 또는
+FAILED : Lambda DLQ 진입
+FAILED : 운영자 검토 후 재처리
+
+UPLOADING --> UPLOAD_COMPLETED : 모든 청크 + complete()
+UPLOADING --> FAILED : 업로드 실패 (재시도 한도)
+UPLOAD_COMPLETED --> PROCESSING : SQS step-complete\n(sqs-celery-worker polling)
+PROCESSING --> COMPLETED : 모든 단계 완료
+PROCESSING --> FAILED : Lambda 실패 (DLQ)
+
+COMPLETED --> [*]
+
+footer MeFit - backend/webapp/interviews/ + analysis-video/ + face-analyzer/
+@enduml

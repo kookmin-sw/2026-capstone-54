@@ -1,0 +1,52 @@
+@startuml
+title 미핏 - UserJobDescription 상태 머신
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 11
+skinparam state {
+  BackgroundColor #E8F4FD
+  BorderColor #2196F3
+  ArrowColor #555555
+  FontSize 11
+}
+skinparam state<<terminal>> {
+  BackgroundColor #C8E6C9
+  BorderColor #2E7D32
+}
+skinparam state<<errstate>> {
+  BackgroundColor #FFCDD2
+  BorderColor #C62828
+}
+
+[*] --> COLLECTING : CreateUserJobDescriptionService\n(URL 또는 직접 입력)
+
+state COLLECTING
+COLLECTING : URL 경로:
+COLLECTING :   scraping 큐로 dispatch
+COLLECTING :   Plugin 선택 + Playwright/httpx
+COLLECTING :   LLM 추출 (gpt-4o-mini / Vision)
+COLLECTING : 직접 입력 경로:
+COLLECTING :   바로 COLLECTED 으로 전이
+
+state COLLECTED <<terminal>>
+COLLECTED : JobPosting 저장 완료
+COLLECTED : 사용자 편집 가능
+COLLECTED : 면접에서 사용 가능
+
+state FAILED <<errstate>>
+FAILED : 봇 차단 / DOM 변경 / LLM 실패
+FAILED : 재시도 가능
+
+state DELETED <<errstate>>
+DELETED : 소프트 삭제 (deleted_at)
+
+COLLECTING --> COLLECTED : ApplyJobPostingResultTask\n(scraping 결과 콜백)
+COLLECTING --> FAILED : 스크래핑 / LLM 실패
+COLLECTED --> COLLECTED : 사용자 편집\n(상태 유지)
+FAILED --> COLLECTING : retry()
+COLLECTED --> DELETED : 사용자 삭제 요청
+
+DELETED --> [*]
+
+footer MeFit - backend/webapp/job_descriptions/
+@enduml
