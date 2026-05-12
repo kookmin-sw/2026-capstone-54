@@ -16,6 +16,7 @@ const config: Config = {
         tsconfig: {
           jsx: 'react-jsx',
           verbatimModuleSyntax: false,
+          esModuleInterop: true,
           types: ['jest', '@testing-library/jest-dom', 'node'],
           baseUrl: '.',
           paths: { '@/*': ['src/*'] },
