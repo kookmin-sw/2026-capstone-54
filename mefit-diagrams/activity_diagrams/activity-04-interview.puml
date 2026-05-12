@@ -69,7 +69,7 @@ start
 ' 면접 시작
 
 |Frontend|
-#LightCyan:InterviewSessionPage.tsx\nfull-screen 레이아웃\nXState 상태 머신 초기화;
+#LightCyan:InterviewSessionPage.tsx\nfull-screen 레이아웃\n 상태 머신 초기화;
 
 :POST /interview-sessions/uuid/start/;
 
@@ -156,12 +156,14 @@ repeat while (남은 질문?) is (있음) not (없음)
 fork
   :video-converter Lambda\n.webm -> .mp4 변환;
 fork again
-  :frame-extractor Lambda\n영상 -> 프레임 추출 .jpg;
+  :frame-extractor Lambda\n영상 -> 프레임 추출 .jpg\n-> SQS face-analyzer-queue 발행;
 fork again
   :audio-extractor Lambda\n영상 -> 오디오 추출 .wav;
 end fork
 
 :audio-scaler Lambda\n오디오 -> 16kHz mono wav 변환;
+
+:face-analyzer Lambda\n- SQS face-analyzer-queue 수신\n- S3 프레임 1FPS 분석\n- positive / negative / neutral / no_face\n- step-complete 발행;
 
 :각 단계 완료 -> SQS step-complete\n- Celery SQS Worker 수신\n- process_video_step_complete 태스크\n- InterviewRecording 업데이트\n  processed S3 키 저장;
 
