@@ -15,6 +15,11 @@ SUBDIRS=(
   "gantt"
 )
 
+# Python diagrams 스크립트 디렉토리 (diagrams 라이브러리 기반)
+PYTHON_DIAGRAM_DIRS=(
+  "reports"
+)
+
 CLEAN=0
 ONLY=""
 FORMAT="all"
@@ -271,6 +276,59 @@ process_subdir() {
   TOTAL_FAIL=$((TOTAL_FAIL + sub_fail))
 }
 
+process_python_diagrams() {
+  local subdir="$1"
+  local subdir_path="${ROOT_DIR}/${subdir}"
+
+  if [[ ! -d "${subdir_path}" ]]; then
+    log_warn "skip (missing): ${subdir}/"
+    return 0
+  fi
+
+  local py_files=()
+  while IFS= read -r -d '' f; do
+    py_files+=("$f")
+  done < <(find "${subdir_path}" -maxdepth 1 -type f -name "*.py" -print0 | sort -z)
+
+  if (( ${#py_files[@]} == 0 )); then
+    log_warn "skip (no .py): ${subdir}/"
+    return 0
+  fi
+
+  log_head "─────────────────────────────────────────────"
+  log_head " ${subdir}/  (${#py_files[@]} python diagram files)"
+  log_head "─────────────────────────────────────────────"
+
+  local python_bin="${ROOT_DIR}/.venv/bin/python"
+  if [[ ! -x "${python_bin}" ]]; then
+    log_err "Python venv not found: ${python_bin}"
+    log_err "Run: uv sync"
+    TOTAL_FAIL=$((TOTAL_FAIL + ${#py_files[@]}))
+    TOTAL_FILES=$((TOTAL_FILES + ${#py_files[@]}))
+    return 1
+  fi
+
+  local sub_ok=0 sub_fail=0
+  for py_file in "${py_files[@]}"; do
+    local base
+    base="$(basename "${py_file}" .py)"
+    log_info "▶ ${base}.py (python diagrams)"
+    if "${python_bin}" "${py_file}" 2>/tmp/pydiag_err.$$; then
+      log_ok "  PNG: out/${subdir}/${base}.png"
+      sub_ok=$((sub_ok + 1))
+    else
+      log_err "  Failed: ${py_file#${ROOT_DIR}/}"
+      cat /tmp/pydiag_err.$$ >&2 || true
+      sub_fail=$((sub_fail + 1))
+    fi
+    rm -f /tmp/pydiag_err.$$
+  done
+
+  TOTAL_FILES=$((TOTAL_FILES + sub_ok + sub_fail))
+  TOTAL_OK=$((TOTAL_OK + sub_ok))
+  TOTAL_FAIL=$((TOTAL_FAIL + sub_fail))
+}
+
 main() {
   log_head "═════════════════════════════════════════════"
   log_head " MeFit Diagrams — Build"
@@ -293,10 +351,25 @@ main() {
   TOTAL_FAIL=0
 
   if [[ -n "${ONLY}" ]]; then
-    process_subdir "${ONLY}"
+    # --only 로 python diagram dir 지정 시 해당 디렉토리만 실행
+    local is_python=0
+    for pdir in "${PYTHON_DIAGRAM_DIRS[@]}"; do
+      if [[ "${ONLY}" == "${pdir}" ]]; then
+        is_python=1
+        break
+      fi
+    done
+    if (( is_python )); then
+      process_python_diagrams "${ONLY}"
+    else
+      process_subdir "${ONLY}"
+    fi
   else
     for subdir in "${SUBDIRS[@]}"; do
       process_subdir "${subdir}"
+    done
+    for pdir in "${PYTHON_DIAGRAM_DIRS[@]}"; do
+      process_python_diagrams "${pdir}"
     done
   fi
 
