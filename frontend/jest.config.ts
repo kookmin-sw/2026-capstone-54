@@ -27,6 +27,16 @@ const config: Config = {
   },
   testMatch: ['**/__tests__/**/*.{ts,tsx}', '**/*.{spec,test}.{ts,tsx}'],
   testPathIgnorePatterns: ['/node_modules/', '/tests-e2e/', '/dist/', '/coverage/'],
+  collectCoverageFrom: [
+    'src/**/*.{ts,tsx}',
+    '!src/**/*.d.ts',
+    '!src/**/__tests__/**',
+    '!src/**/*.{spec,test}.{ts,tsx}',
+    '!src/test-utils/**',
+    '!src/__mocks__/**',
+    '!src/main.tsx',
+    '!src/vite-env.d.ts',
+  ],
 };
 
 export default config;
