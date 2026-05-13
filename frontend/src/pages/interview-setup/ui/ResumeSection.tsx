@@ -1,7 +1,14 @@
 import { Link } from "react-router-dom";
 import { SetupSection } from "@/shared/ui/SetupSection";
 import { SelectableCard } from "@/shared/ui/SelectableCard";
-import { FileText, PencilLine } from "lucide-react";
+import { CATEGORY_STYLE } from "@/shared/ui/categoryIconStyle";
+import { inferCategoryId } from "@/shared/ui/inferCategoryId";
+
+interface ResumeJobCategory {
+  uuid: string;
+  name: string;
+  emoji: string;
+}
 
 interface Resume {
   uuid: string;
@@ -10,6 +17,7 @@ interface Resume {
   createdAt: string;
   isParsed: boolean;
   analysisStatus: string;
+  resumeJobCategory: ResumeJobCategory | null;
 }
 
 interface ResumeSectionProps {
@@ -49,12 +57,15 @@ export function ResumeSection({
             const eligible = isEligible(r);
             return (
               <SelectableCard key={r.uuid} selected={selectedResumeUuid === r.uuid} disabled={!eligible} onClick={() => onSelectResume(r.uuid)}>
-                <div className="w-8 h-8 rounded-lg bg-[#F3F4F6] border border-[#E5E7EB] flex items-center justify-center shrink-0">
-                  {r.type === "file"
-                    ? <FileText size={16} className="text-[#6B7280]" />
-                    : <PencilLine size={16} className="text-[#6B7280]" />
-                  }
-                </div>
+                {(() => {
+                  const categoryId = inferCategoryId(r.resumeJobCategory?.name ?? "", r.title ?? "");
+                  const { Icon, color, bgColor } = CATEGORY_STYLE[categoryId] ?? CATEGORY_STYLE[0];
+                  return (
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${bgColor}`}>
+                      <Icon size={16} className={color} />
+                    </div>
+                  );
+                })()}
                 <div className="flex-1 min-w-0">
                   <div className="text-[12px] font-bold truncate">{r.title}</div>
                   <div className="text-[11px] text-[#6B7280] mt-px">

@@ -6,6 +6,13 @@ import type {
   InterviewPracticeMode,
 } from "@/features/interview-session";
 
+// ── Resume Job Category ──
+export interface ResumeJobCategory {
+  uuid: string;
+  name: string;
+  emoji: string;
+}
+
 // ── Resume option (matches backend ResumeSerializer) ──
 export interface ResumeOption {
   uuid: string;
@@ -18,6 +25,7 @@ export interface ResumeOption {
   analyzedAt: string | null;
   createdAt: string;
   updatedAt: string;
+  resumeJobCategory: ResumeJobCategory | null;
 }
 
 // ── User job description option (future) ──
