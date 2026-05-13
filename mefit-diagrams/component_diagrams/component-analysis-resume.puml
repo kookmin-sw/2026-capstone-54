@@ -1,0 +1,77 @@
+@startuml
+title analysis-resume - 이력서 분석 Celery Worker 내부 구조
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 11
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+skinparam component {
+  BackgroundColor #E8F4FD
+  BorderColor #2196F3
+}
+skinparam component<<external>> {
+  BackgroundColor #ECEFF1
+  BorderColor #607D8B
+}
+skinparam component<<llm>> {
+  BackgroundColor #FFF3E0
+  BorderColor #FB8C00
+}
+
+queue "Redis\n(analysis-resume queue)" as Redis <<external>>
+component "Backend\n(콜백 task)" as BE <<external>>
+database "S3 (resume-files)" as S3 <<external>>
+component "LLM Gateway\n(OpenAI / Bedrock)" as LLM <<llm>>
+component "Embedding API\n(text-embedding-3-small)" as Emb <<llm>>
+
+package "analysis-resume/" {
+  component "celery_app.py\nconfig.py" as Cfg
+
+  package "tasks/" {
+    component "analyze_resume_task\n(BaseTask, retry policy)" as TaskMain
+  }
+
+  package "common/" {
+    component "Logging · Errors\nLangChain helpers" as Common
+  }
+
+  package "utils/" {
+    component "PDF Extractor\n(pdfplumber + PyPDF2)" as PDFExt
+    component "DOCX Extractor\n(python-docx)" as DOCXExt
+    component "S3 Downloader" as S3DL
+    component "Chunker\n(섹션 단위 split)" as Chunker
+  }
+
+  package "schemas/" {
+    component "ResumeAnalysisOutput\n(Pydantic — 섹션별)\nBasicInfo · Summary · Experience\nEducation · Certification · Project\nSkill · Keyword · IndustryDomain" as Schemas
+  }
+
+  component "LLM Analyzer\n(LangChain + structured output)" as Analyzer
+  component "Embedding Generator\n(1536-dim vector)" as EmbGen
+}
+
+Redis --> TaskMain : pull task (resume_id, s3_key)
+TaskMain --> S3DL : download(s3_key)
+S3DL --> S3 : GET object
+S3DL --> PDFExt : if .pdf
+S3DL --> DOCXExt : if .docx
+PDFExt --> Chunker
+DOCXExt --> Chunker
+Chunker --> Analyzer : sectioned text
+
+Analyzer --> LLM : prompt + Pydantic schema
+LLM --> Analyzer : structured JSON
+Analyzer ..> Schemas : validate
+
+TaskMain --> EmbGen : full text
+EmbGen --> Emb : embed
+EmbGen --> TaskMain : vector[1536]
+
+TaskMain --> Redis : callback (Backend save_resume_analysis)
+Redis --> BE
+
+Common ..> TaskMain
+Common ..> Analyzer
+
+footer analysis-resume/ — LangChain · Pydantic structured output · pdfplumber + python-docx · OpenAI Embedding
+@enduml

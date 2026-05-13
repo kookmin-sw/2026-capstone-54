@@ -1,0 +1,122 @@
+@startuml
+title MeFit 사용자 인증 흐름\n(로그인 / 회원가입 / 이메일 인증 / 온보딩)
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 11
+skinparam ActivityBackgroundColor #E8F4FD
+skinparam ActivityBorderColor #2196F3
+skinparam ArrowColor #555555
+skinparam DiamondBackgroundColor #FFF9C4
+skinparam DiamondBorderColor #FBC02D
+
+|#E3F2FD|사용자|
+|#E8F5E9|Frontend|
+|#FFF8E1|Backend API|
+|#F3E5F5|비동기 처리|
+
+|사용자|
+start
+:Landing 페이지 접속;
+
+|Frontend|
+:LandingPage.tsx 렌더링\nuseAuthStore 로 인증 상태 확인;
+
+if (로그인 + 인증 + 프로필 모두 완료?) then (yes)
+  :홈 대시보드로 이동;
+  stop
+else (no)
+endif
+
+|사용자|
+if (로그인 or 회원가입?) then (회원가입)
+
+  |사용자|
+  :SignUpPage.tsx\n이메일, 비밀번호, 비밀번호 확인 입력;
+
+  |Frontend|
+  :POST /api/v1/users/sign-up/\nemail, password, password_confirm;
+
+  |Backend API|
+  :SignUpService.execute()\n- 이메일 형식 검증\n- 비밀번호 강도 검증\n- 이메일 중복 확인\n- User 생성\n- JWT access + refresh 토큰 발급;
+
+  |비동기 처리|
+  :SendVerificationEmailTask (Celery)\n인증 코드 이메일 발송;
+
+  :SendSignUpEventTask (Celery)\n회원가입 이벤트 처리;
+
+  |Frontend|
+  :JWT 토큰 쿠키 저장\nnavigate("/verify-email");
+
+else (로그인)
+
+  |사용자|
+  :LoginPage.tsx\n이메일, 비밀번호 입력;
+
+  |Frontend|
+  :POST /api/v1/users/sign-in/\nemail, password;
+
+  |Backend API|
+  :SignInService.execute()\n- 이메일로 User 조회\n- 비밀번호 검증 (bcrypt)\n- JWT access + refresh 토큰 발급;
+
+  |Frontend|
+  :JWT 토큰 쿠키 저장;
+
+  if (이메일 인증 + 프로필 완성?) then (yes)
+    :홈 대시보드로 이동;
+    stop
+  else (no)
+  endif
+
+endif
+
+|Frontend|
+#LightCyan:VerifyEmailPage.tsx\n인증 코드 입력 화면 표시\n(full-screen 레이아웃);
+
+|사용자|
+:이메일에서 인증 코드 확인\n6자리 코드 입력;
+
+|Frontend|
+:POST /api/v1/users/verify-email/\ncode;
+
+|Backend API|
+:VerifyEmailService.execute()\n- 코드 유효성 검증 (만료 확인)\n- User.email_verified = True;
+
+|Frontend|
+if (프로필 완성?) then (완료)
+  :홈 대시보드로 이동;
+  stop
+else (미완성)
+endif
+
+|Frontend|
+#LightCyan:OnboardingPage.tsx\n프로필 완성 폼 표시\n(full-screen 레이아웃);
+
+|사용자|
+:직무 카테고리 선택\n경력 단계 선택;
+
+|Frontend|
+:PUT /api/v1/profiles/me/\njob_category_id, career_stage;
+
+|Backend API|
+:ProfileMeView.put()\n- Profile 업데이트\n- is_profile_completed = True;
+
+|Frontend|
+:navigate("/")\n홈 대시보드로 이동;
+
+|사용자|
+:홈 대시보드 도착\n- 면접 통계 확인\n- 이력서, 채용공고 관리\n- 면접 시작 가능;
+
+stop
+
+legend right
+  색상 범례
+  ....
+  사용자 = 사용자 액션
+  Frontend = Frontend 처리
+  Backend API = Backend API 호출
+  비동기 처리 = Celery 비동기 태스크
+  LightCyan = Full-screen 페이지
+end legend
+
+footer MeFit 코드 기반 Activity Diagram - auth flow
+@enduml

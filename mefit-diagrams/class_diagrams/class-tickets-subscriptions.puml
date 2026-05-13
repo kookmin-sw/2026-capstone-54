@@ -1,0 +1,101 @@
+@startuml
+title 미핏 - Ticket / Subscription 도메인 클래스 다이어그램
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 11
+skinparam linetype ortho
+skinparam class {
+  BackgroundColor #E8F4FD
+  BorderColor #2196F3
+  ArrowColor #555555
+  AttributeFontSize 10
+  AttributeFontColor #455A64
+}
+skinparam class<<aggregate>> {
+  BackgroundColor #FFF9C4
+  BorderColor #FBC02D
+}
+skinparam class<<policy>> {
+  BackgroundColor #C8E6C9
+  BorderColor #388E3C
+}
+skinparam class<<external>> {
+  BackgroundColor #ECEFF1
+  BorderColor #607D8B
+}
+
+class User <<external>> {
+  +id: BigAutoField
+  +email: str
+}
+
+class SubscriptionPlan <<policy>> {
+  +id: BigAutoField (PK)
+  +name: str (Free / Pro)
+  +price: int
+  +features: JSON
+}
+
+class UserSubscription <<aggregate>> {
+  +id: BigAutoField (PK)
+  +user_id: FK
+  +plan_id: FK
+  +started_at: datetime
+  +ended_at: datetime?
+  +status: ACTIVE / EXPIRED / CANCELLED
+}
+
+class SubscriptionPlanTicketPolicy <<policy>> {
+  +id: BigAutoField (PK)
+  +plan_id: FK
+  +action_type: FOLLOWUP / FULL_PROCESS / ANALYSIS_REPORT
+  +ticket_cost: int
+  --
+  FOLLOWUP=5, FULL_PROCESS=10
+}
+
+class UserTicket <<aggregate>> {
+  +id: BigAutoField (PK)
+  +user_id: FK (1:1)
+  +balance: int
+  --
+  +grant(amount, source)
+  +use(amount, related)
+  +refund(amount, related)
+  +expire(amount)
+}
+
+class TicketLog {
+  +id: BigAutoField (PK)
+  +user_id: FK
+  +action: GRANT / USE / REFUND / EXPIRE
+  +source: SUBSCRIPTION / STREAK / ACHIEVEMENT / SIGNUP
+  +amount: int
+  +related_object_id: int?
+  +related_object_type: ContentType?
+  +created_at: datetime
+}
+
+User "1" -- "*" UserSubscription : has
+SubscriptionPlan "1" -- "*" UserSubscription : selected by
+SubscriptionPlan "1" -- "*" SubscriptionPlanTicketPolicy : defines
+User "1" -- "1" UserTicket : owns
+User "1" -- "*" TicketLog : has history
+UserTicket -- "*" TicketLog : tracks via
+
+note right of UserTicket
+  동시성 제어:
+  select_for_update()
+  for race condition 방지
+end note
+
+note bottom of TicketLog
+  Source 분기:
+  - SUBSCRIPTION: 가입 / 결제
+  - STREAK: 연속 학습 보상
+  - ACHIEVEMENT: 업적 청구
+  - SIGNUP: 초기 발급
+end note
+
+footer MeFit - backend/webapp/{tickets, subscriptions}/
+@enduml

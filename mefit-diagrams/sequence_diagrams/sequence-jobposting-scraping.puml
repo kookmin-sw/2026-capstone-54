@@ -1,0 +1,130 @@
+@startuml
+title 미핏 - 채용공고 URL 수집 시퀀스 (사용자 → Backend → scraping Worker → SQLAlchemy → SSE)
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 11
+skinparam sequence {
+  ArrowColor #555555
+  ActorBorderColor #2196F3
+  LifeLineBorderColor #2196F3
+  LifeLineBackgroundColor #E8F4FD
+  ParticipantBorderColor #2196F3
+  ParticipantBackgroundColor #E8F4FD
+  ParticipantFontSize 11
+  BoxBorderColor #B0BEC5
+  BoxBackgroundColor #ECEFF1
+}
+
+actor "사용자" as U
+participant "Frontend" as FE
+participant "Backend\nUserJobDescription\nAPIView" as BE
+database "PostgreSQL" as DB
+queue "Redis\nscraping 큐" as Q
+participant "scraping Worker\n(Celery + Playwright)" as W
+boundary "httpx" as HTTP
+boundary "Playwright\nBrowser (per worker)" as PW
+participant "OpenAI\n(text / Vision)" as LLM
+participant "Backend SSE\nUserJobDescription\nScrapingStatus\nConsumer" as SSE
+
+== Step 1. URL 등록 + 태스크 발행 ==
+
+U -> FE : 채용공고 URL 입력
+FE -> BE : POST /api/v1/user-job-descriptions/\n{ url, title, application_status }
+activate BE
+  BE -> BE : CreateUserJobDescriptionSerializer 검증
+  BE -> BE : CreateUserJobDescriptionService.execute()
+  BE -> DB : get_or_create JobDescription\n(collection_status=pending)
+  BE -> DB : UserJobDescription 생성
+  BE -> Q : send_task("scraping.tasks.scrape_job_posting",\n  args=[jd_id, url], queue="scraping")
+  BE --> FE : { uuid, ... }
+deactivate BE
+
+== Step 2. SSE 구독 ==
+
+FE -> SSE : GET /sse/user-job-descriptions/{uuid}/collection-status/\nAuthorization: Bearer {JWT}
+activate SSE
+  SSE -> DB : UserJobDescription 소유권 검증 (user_id 매치)
+  SSE --> FE : 200 OK\nContent-Type: text/event-stream
+  note right of SSE : 1.5 초 폴링\nDB.collection_status 변화 감지
+
+== Step 3. Worker 처리 시작 ==
+
+Q -> W : pull scrape_job_posting(jd_id, url)
+activate W
+  W -> DB : UPDATE collection_status = in_progress
+
+== Step 4. Pipeline — Stage 1 (httpx 직접 요청) ==
+
+W -> W : pipeline.run(url, browser)
+W -> W : URL 정규화 (사람인 relay → direct)
+W -> W : get_plugin(url)\n(jobkorea / jobplanet / default)
+
+W -> HTTP : GET url\n(랜덤 User-Agent + stealth headers)
+activate HTTP
+  HTTP --> W : HTML or 403/429/503 (bot 차단)
+deactivate HTTP
+
+alt HTTP 실패 / bot 차단 / HTML 불완전
+  == Step 4-B. Pipeline — Stage 2 (Playwright fallback) ==
+  W -> PW : page.goto(url, wait_until=domcontentloaded)
+  activate PW
+    PW -> PW : 500ms + networkidle
+    PW -> PW : Cloudflare JS challenge bypass
+    PW -> PW : plugin.before_extract(page)\n(버튼 클릭 / 스크롤)
+    PW -> PW : iframe HTML / image 수집
+    PW --> W : final HTML + image bytes
+  deactivate PW
+end
+
+== Step 5. HTML → Text + LLM 추출 분기 ==
+
+W -> W : clean_html_to_text(html)\n(script/style/nav 제거)
+
+alt 텍스트 ≥ 300 자
+  W -> LLM : extract_with_llm(text, url)\nModel: gpt-4o-mini
+  activate LLM
+    LLM --> W : JobPosting JSON\n(title, company, duties, requirements, ...)
+  deactivate LLM
+
+  opt duties/preferred 비어있음 + image 존재
+    W -> LLM : extract_with_vision_llm(images, url)\nModel: gpt-4o (Vision)
+    LLM --> W : 보강 필드
+  end
+
+else 텍스트 < 300 자 + image 존재
+  W -> LLM : extract_with_vision_llm(images, url)\nModel: gpt-4o (Vision)
+  LLM --> W : JobPosting JSON
+end
+
+== Step 6. SQLAlchemy 직접 저장 (Worker → Backend DB) ==
+
+W -> DB : UPDATE JobDescription\nSET title, company, duties, requirements, ...,\n  collection_status=done, scraped_at=now()
+note right of W
+  scraping Worker 가
+  backend PostgreSQL 에
+  SQLAlchemy 로 직접 write
+  (별도 callback task 없음)
+end note
+deactivate W
+
+== Step 7. SSE 상태 변경 감지 → 클라이언트 push ==
+
+SSE -> DB : SELECT collection_status (1.5s 폴링)
+SSE -> FE : event: status\ndata: { collection_status: done, updated_at }
+deactivate SSE
+FE -> FE : 수집 완료 UI 갱신
+
+U <- FE : 채용공고 상세 페이지 표시
+
+== Step 8. 실패 시 재시도 ==
+
+note over W
+  실패 시 Celery 재시도:
+  - max_retries=2, retry_delay=120s
+  - soft_time_limit=120s, hard=150s
+  - 최종 실패 → collection_status=error,
+    error_message 기록
+end note
+
+footer MeFit - 채용공고 스크래핑 (FR-JD-01~10) — httpx → Playwright → text/Vision LLM
+@enduml

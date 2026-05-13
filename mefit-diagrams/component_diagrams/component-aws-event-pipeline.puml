@@ -1,0 +1,98 @@
+@startuml
+title 미핏 - AWS 영상 처리 이벤트 파이프라인 (PlantUML 버전)
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 11
+skinparam componentStyle rectangle
+skinparam component {
+  BackgroundColor #FFF3E0
+  BorderColor #FB8C00
+}
+skinparam component<<lambda>> {
+  BackgroundColor #FFE0B2
+  BorderColor #EF6C00
+}
+skinparam component<<storage>> {
+  BackgroundColor #ECEFF1
+  BorderColor #607D8B
+}
+skinparam component<<dlq>> {
+  BackgroundColor #FFCDD2
+  BorderColor #C62828
+}
+
+actor "사용자" as U
+
+component "Frontend\nMediaRecorder" as FE
+
+database "S3\nvideo-files\n(.webm)" as S3IN <<storage>>
+
+component "SNS\nvideo-uploaded" as SNS
+
+component "SQS\nvideo-converter" as SQS1
+component "SQS\nframe-extractor" as SQS2
+component "SQS\naudio-extractor" as SQS3
+
+component "DLQ" as DLQ1 <<dlq>>
+component "DLQ" as DLQ2 <<dlq>>
+component "DLQ" as DLQ3 <<dlq>>
+
+component "Lambda\nvideo-converter\n(.mp4 720p)" as L1 <<lambda>>
+component "Lambda\nframe-extractor\n(.jpg 1FPS)" as L2 <<lambda>>
+component "Lambda\naudio-extractor\n(.wav + 16kHz)" as L3 <<lambda>>
+
+database "S3 scaled-video" as S3V <<storage>>
+database "S3 frames" as S3F <<storage>>
+database "S3 audio" as S3A <<storage>>
+database "S3 scaled-audio" as S3SA <<storage>>
+
+component "Lambda\nface-analyzer\n(MediaPipe)" as FA <<lambda>>
+component "Lambda\nvoice-analyzer\n(pydub)" as VA <<lambda>>
+
+component "SQS\nface-trigger\n(face-analyzer 전용)" as SQSFT
+component "SQS\nvideo-step-complete" as SQSC
+
+component "Backend\nsqs-celery-worker\n(kombu polling)" as BE
+
+component "analysis-stt\nWorker\n(faster-whisper)" as STT
+
+component "interview-analysis-report\nWorker (LLM)" as IAR
+
+U --> FE
+FE --> S3IN : Presigned PUT (멀티파트)
+
+S3IN --> SNS : ObjectCreated event
+SNS --> SQS1 : subscription
+SNS --> SQS2 : subscription
+SNS --> SQS3 : subscription
+
+SQS1 --> DLQ1 : 실패 격리
+SQS2 --> DLQ2 : 실패 격리
+SQS3 --> DLQ3 : 실패 격리
+
+SQS1 --> L1 : event source mapping
+SQS2 --> L2 : event source mapping
+SQS3 --> L3 : event source mapping
+
+L1 --> S3V
+L2 --> S3F
+L3 --> S3A
+L3 --> S3SA
+
+L2 --> SQSFT : SendMessage\n(frame 추출 완료 시)
+SQSFT --> FA : SQS Event Source
+S3SA ..> STT : transcribe_audio task
+S3SA ..> VA : on-demand invoke
+
+L1 --> SQSC : step-complete
+L2 --> SQSC : step-complete
+L3 --> SQSC : step-complete
+FA --> SQSC : step-complete
+
+SQSC --> BE : kombu long polling
+
+VA ..> IAR : 결과 (음성 지표)
+STT ..> BE : SaveTranscriptResultTask 콜백
+
+footer MeFit - 이벤트 기반 영상 처리 (S3 → SNS → SQS Fan-out → Lambda → step-complete)
+@enduml

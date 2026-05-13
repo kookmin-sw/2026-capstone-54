@@ -1,0 +1,145 @@
+@startuml
+title 미핏 - 분석 리포트 생성 파이프라인 시퀀스 (interview-analysis-report 5+ 단계 zoom-in)
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 11
+skinparam sequence {
+  ArrowColor #555555
+  ActorBorderColor #2196F3
+  LifeLineBorderColor #2196F3
+  LifeLineBackgroundColor #E8F4FD
+  ParticipantBorderColor #2196F3
+  ParticipantBackgroundColor #E8F4FD
+  ParticipantFontSize 11
+  BoxBorderColor #B0BEC5
+  BoxBackgroundColor #ECEFF1
+}
+
+actor "사용자" as U
+participant "Backend\n(Django)" as BE
+queue "Redis\nanalysis 큐" as Q
+participant "interview-analysis-report\nWorker" as W
+participant "ReportGenerator\nService" as RG
+participant "VoiceAnalysis\nInvoker" as VAI
+participant "LLMAnalyzer" as LLMA
+participant "VideoAnalysis\nAggregator" as VAA
+participant "voice-analyzer\nLambda" as Lambda
+participant "OpenAI\n(gpt-4o-mini)" as LLM
+database "PostgreSQL\n(SQLAlchemy)" as DB
+participant "S3\n(resume bundle)" as S3
+
+== Step 0. 트리거 (Backend → analysis 큐) ==
+
+U -> BE : POST /api/v1/interviews/{uuid}/generate-report/
+activate BE
+  BE -> BE : 티켓 차감 (UseTicketsService)
+  BE -> DB : AnalysisReport(status=PENDING) 생성
+  BE -> Q : dispatch\nanalysis.tasks.generate_report.generate_analysis_report\n(report_id, bundle_url)
+  BE --> U : 202 Accepted
+deactivate BE
+
+Q -> W : pull task
+activate W
+  W -> RG : ReportGeneratorService().generate(report_id, bundle_url)
+  activate RG
+
+== Step 1. Load (순차) ==
+
+  RG -> DB : SELECT AnalysisReportTable WHERE id = report_id
+  RG -> DB : SELECT InterviewSessionTable
+  RG -> DB : SELECT InterviewTurnTable\nORDER BY turn_number, followup_order
+  RG -> S3 : GET resume bundle.json\n(bundle_url)
+  S3 --> RG : { sections, embeddings_meta, ... }
+  RG -> DB : SELECT JobDescriptionTable\n(via UserJobDescription)
+
+== Step 2. InterviewBehaviorAnalysis 보장 ==
+
+  loop turn in turns
+    RG -> DB : INSERT InterviewBehaviorAnalysisTable\n(turn_id, status="pending")
+  end
+
+== Step 3. 음성 분석 (병렬 Lambda 호출) ==
+
+  RG -> VAI : analyze_all_turns(session_id)
+  activate VAI
+  par ThreadPoolExecutor (max_workers=4)
+    VAI -> Lambda : invoke pj-kmucd1-04-mefit-voice-analyzer\n{ scaled_audio_key }
+    activate Lambda
+      Lambda --> VAI : { speechDurationMs, totalDurationMs,\n  silenceRatio, silenceSegmentCount,\n  avgDbfsSpeech, timeline[...] }
+    deactivate Lambda
+  else 다른 turn (병렬)
+    VAI -> Lambda : invoke voice-analyzer\n(다른 audio_key)
+    Lambda --> VAI : voice metrics
+  end
+  VAI --> RG : { turn_id: voice_data, ... }
+  deactivate VAI
+
+  note right of RG
+    실패 시: voice 데이터 없이
+    LLM 분석은 계속 진행 (graceful degrade)
+  end note
+
+== Step 4. LLM 분석 (gpt-4o-mini, 4 텍스트 카테고리) ==
+
+  RG -> LLMA : analyze(context)\n{ session, turns, resume, JD, voice_summary }
+  activate LLMA
+  LLMA -> LLM : ChatOpenAI.invoke(\n  prompt,\n  callback=TokenUsageCallback,\n  temperature=0.3\n)
+  activate LLM
+    note right of LLM
+      4 텍스트 카테고리 평가:
+      ① 구체성 (STAR 기법, 정량 지표)
+      ② 직무 적합성 (JD duties / requirements 매칭)
+      ③ 논리성 (전후 일관성)
+      ④ 신뢰도 (이력서 정합성)
+    end note
+    LLM --> LLMA : AnalysisResult\n(category_scores, question_feedbacks,\n strengths, improvement_areas)
+  deactivate LLM
+  LLMA -> LLMA : TokenUsageCallback\n→ input/output_tokens, cost_usd
+  LLMA --> RG : AnalysisResult
+  deactivate LLMA
+
+== Step 5. 영상 분석 집계 (사전 계산된 결과 읽기) ==
+
+  RG -> VAA : aggregate(session_id)
+  activate VAA
+    VAA -> DB : SELECT InterviewRecordingTable\n  .face_analysis_result\n  (face-analyzer Lambda 가 미리 저장)
+    VAA -> DB : SELECT InterviewTurnTable\n  .gaze_away_count
+    VAA -> VAA : gaze_score = (1 - avg_gaze_dev) × 100\nface_score = (avg_neutral + avg_positive) × 100\nvideo_score = round(gaze × 0.6 + face × 0.4)
+    VAA --> RG : VideoAnalysisResult\n(video_score, video_analysis_comment, per_turn)
+  deactivate VAA
+
+  note right of VAA
+    face-analyzer Lambda 는
+    S3 영상 업로드 시점에 별도 호출됨
+    (sequence-interview-full-flow Step 4 참조)
+  end note
+
+== Step 6. 음성 점수 집계 (rule-based) ==
+
+  RG -> RG : _aggregate_audio_analysis()\n속도 / 필러 / 침묵 / 음량 페널티 계산
+  RG -> RG : audio_score = 100 - 페널티\naudio_analysis_comment 생성
+
+== Step 7. 종합 점수 ==
+
+  RG -> RG : overall_score = round(\n  content × 0.50 + audio × 0.25 + video × 0.25\n)\noverall_grade = score_to_grade(overall)
+
+== Step 8. DB 저장 (단일 트랜잭션) ==
+
+  RG -> DB : UPDATE AnalysisReportTable\n  SET overall_score, overall_grade,\n      content_score, audio_score, video_score,\n      category_scores (JSONB),\n      question_feedbacks (JSONB),\n      strengths, improvement_areas,\n      audio_analysis_result, video_analysis_result,\n      status="completed", updated_at=now()
+  RG -> DB : INSERT TokenUsageTable\n  (token_usable=AnalysisReport,\n   model_name, input/output/total_tokens, cost_usd)
+  loop turn in turns
+    RG -> DB : UPDATE InterviewBehaviorAnalysisTable\n  SET speech_data (JSONB), status="completed"
+  end
+  deactivate RG
+deactivate W
+
+== Step 9. SSE 알림 (별도 다이어그램 참조) ==
+
+note over BE, U
+  분석 완료 알림은
+  sequence-realtime-notification.puml 의
+  "면접 분석 리포트 완료" 이벤트로 처리
+end note
+
+footer MeFit - 분석 리포트 5+단계 (FR-REPORT-01~07) — content + audio + video 가중 평균
+@enduml

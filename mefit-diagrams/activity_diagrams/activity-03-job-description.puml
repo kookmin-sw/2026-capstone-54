@@ -1,0 +1,109 @@
+@startuml
+title MeFit 채용공고 관리 흐름\n(등록 / 스크래핑 / 편집)
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 11
+skinparam ActivityBackgroundColor #E8F4FD
+skinparam ActivityBorderColor #2196F3
+skinparam ArrowColor #555555
+skinparam DiamondBackgroundColor #FFF9C4
+skinparam DiamondBorderColor #FBC02D
+
+|#E3F2FD|사용자|
+|#E8F5E9|Frontend|
+|#FFF8E1|Backend API|
+|#F3E5F5|비동기 처리|
+
+|사용자|
+start
+:HomeSidebar 에서 "채용공고" 메뉴 클릭;
+
+|Frontend|
+:JdListPage.tsx\nGET /api/v1/user-job-descriptions/\n채용공고 목록 조회\n필터링: 상태, 키워드 검색\nSSE 연결: 수집 중 공고 상태 표시;
+
+|사용자|
+if (새 채용공고?) then (등록)
+
+  :"채용공고 추가" 버튼 클릭\nJdAddPage.tsx;
+
+  |사용자|
+  :채용공고 URL 입력\n사람인, 잡코리아, 원티드,\n잡플래닛, 링크드인 등\n또는 직접 입력;
+
+  |Frontend|
+  :POST /api/v1/user-job-descriptions/\nurl 또는 title, company 등;
+
+  |Backend API|
+  :CreateUserJobDescriptionService.execute()\n- UserJobDescription 생성\n  status: COLLECTING\n- URL 제공 시:\n  Scraping Worker에 태스크 디스패치;
+
+  if (URL 스크래핑?) then (yes)
+    |비동기 처리|
+    #DCEDC8:Scraping Worker (Celery)\n- 채용 사이트 접속\n- HTML 파싱\n- 정보 추출:\n  공고 제목, 회사명, 직무 설명,\n  자격 요건, 우대 사항,\n  근무 조건, 기술 스택\n- 결과 저장\n- status -> COLLECTED;
+
+    |Frontend|
+    :SSE collection-status\nUserJobDescriptionScrapingStatusConsumer\n1.5초 간격 DB 폴링\n상태 변화: COLLECTING -> COLLECTED;
+
+    :스크래핑 완료 알림\nJdDetailPage.tsx로 이동;
+  else (직접 입력)
+    |Backend API|
+    :UserJobDescription 바로 생성\nstatus: COLLECTED;
+
+    |Frontend|
+    :JdDetailPage.tsx로 이동;
+  endif
+
+else (기존 채용공고)
+  |사용자|
+  :채용공고 목록에서 선택;
+
+  |Frontend|
+  :GET /api/v1/user-job-descriptions/uuid/\nJdDetailPage.tsx\n채용공고 상세 정보 표시;
+endif
+
+' 채용공고 편집
+
+|사용자|
+:채용공고 정보 수정\n- 제목\n- 회사명\n- 직무 요구사항\n- 우대 사항\n- 기술 스택\n- 근무 조건;
+
+|Frontend|
+:PUT /api/v1/user-job-descriptions/uuid/\ntitle, company, requirements,\npreferred, tech_stack 등;
+
+|Backend API|
+:UpdateUserJobDescriptionService.execute()\n- UserJobDescription 업데이트;
+
+|사용자|
+if (삭제?) then (yes)
+
+  |Frontend|
+  :DELETE /api/v1/user-job-descriptions/uuid/;
+
+  |Backend API|
+  :DeleteUserJobDescriptionService.execute()\n- 소프트 삭제;
+
+  |Frontend|
+  :navigate("/jd")\n채용공고 목록으로 복귀;
+
+  stop
+
+else (no)
+endif
+
+|사용자|
+:채용공고 등록 완료\n- 면접 준비에서 선택 가능\n- 이력서와 매칭하여 면접 생성;
+
+stop
+
+legend right
+  색상 범례
+  ....
+  사용자 = 사용자 액션
+  Frontend = Frontend 처리
+  Backend API = Backend API 호출
+  비동기 처리 = Celery 비동기 태스크
+  DCEDC8 = Scraping Worker
+  ....
+  지원 스크래핑 사이트:
+  사람인, 잡코리아, 원티드, 잡플래닛 등
+end legend
+
+footer MeFit 코드 기반 Activity Diagram - job description flow
+@enduml

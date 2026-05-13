@@ -1,0 +1,64 @@
+@startmindmap
+title 미핏 - 핵심 기능 7가지
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 11
+
+* MeFit
+** ① 인증 / 온보딩
+*** 이메일 회원가입
+*** 6자리 인증 코드
+*** JWT (access + refresh)
+*** 직무 + 경력 입력
+*** 풀스크린 가드
+** ② 이력서
+*** PDF / DOCX 업로드
+*** 직접 입력 + 템플릿
+*** 섹션별 인라인 편집
+*** LLM 분석 + 임베딩
+*** SSE 실시간 상태
+** ③ 채용공고
+*** URL 자동 스크래핑
+**** 사람인 ✅
+**** 잡코리아 ✅
+**** 잡플래닛 ✅
+*** 직접 입력
+*** Plugin 구조
+*** 봇 차단 fallback
+** ④ 가상 면접
+*** FOLLOWUP (5 티켓)
+**** 후속 질문 LLM
+*** FULL_PROCESS (10 티켓)
+**** 사전 풀 질문
+*** 난이도 EASY/MEDIUM/HARD
+*** 모드 PRACTICE/REAL
+*** Precheck 3 단계
+*** WebSocket Q&A
+*** 영상/음성 청크 업로드
+** ⑤ 분석 리포트
+*** 5 카테고리 점수
+**** 구체성
+**** 직무 적합성
+**** 논리성
+**** 신뢰도
+**** 면접태도
+*** 종합 등급 5 단계
+*** 질문별 피드백
+**** strengths
+**** improvements
+**** model_answer
+*** 음성 + 표정 분석
+*** SSE 진행 상태
+** ⑥ 스트릭 / 업적
+*** 일일 참여 자동 기록
+*** 캘린더 그리드
+*** 보상 발급 (티켓)
+*** 4 카테고리 업적
+** ⑦ 구독 / 티켓
+*** Free / Pro 플랜
+*** Grant / Use / Refund / Expire
+*** TicketLog 이력
+*** 동시성 제어
+
+footer MeFit - 핵심 기능 7가지
+@endmindmap

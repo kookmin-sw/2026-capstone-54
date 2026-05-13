@@ -1,0 +1,70 @@
+@startgantt
+title 미핏 - 향후 발전 로드맵 (단기 / 중기 / 장기)
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 11
+
+Project starts 2026-05-16
+
+' Phases
+[단기 (3개월)] lasts 90 days
+[단기 (3개월)] is colored in #C8E6C9
+
+[중기 (6~12개월)] lasts 180 days
+[중기 (6~12개월)] starts 90 days after [단기 (3개월)]'s start
+[중기 (6~12개월)] is colored in #FFF9C4
+
+[장기 (1~2년)] lasts 365 days
+[장기 (1~2년)] starts 180 days after [중기 (6~12개월)]'s start
+[장기 (1~2년)] is colored in #FFE0B2
+
+' 단기 세부
+[베타 도메인 안정 운영] lasts 90 days
+[베타 도메인 안정 운영] starts at [단기 (3개월)]'s start
+
+[베타 사용자 50~100명 확보] lasts 60 days
+[베타 사용자 50~100명 확보] starts 30 days after [단기 (3개월)]'s start
+
+[만족도 서베이 + 인센티브] lasts 60 days
+[만족도 서베이 + 인센티브] starts 30 days after [단기 (3개월)]'s start
+
+' 중기 세부
+[LiteLLM 다중 Provider 통합] lasts 60 days
+[LiteLLM 다중 Provider 통합] starts at [중기 (6~12개월)]'s start
+
+[AWS Bedrock + VPC Endpoint] lasts 90 days
+[AWS Bedrock + VPC Endpoint] starts 30 days after [중기 (6~12개월)]'s start
+
+[데이터 자산화 파이프라인] lasts 120 days
+[데이터 자산화 파이프라인] starts 30 days after [중기 (6~12개월)]'s start
+
+[추가 채용 사이트 스크래퍼] lasts 60 days
+[추가 채용 사이트 스크래퍼] starts at [중기 (6~12개월)]'s start
+
+[영상 분석 고도화] lasts 90 days
+[영상 분석 고도화] starts 60 days after [중기 (6~12개월)]'s start
+
+[Anchor Question (사용자 지정)] lasts 45 days
+[Anchor Question (사용자 지정)] starts 90 days after [중기 (6~12개월)]'s start
+
+' 장기 세부
+[B2B 라이선스 (부트캠프/학교)] lasts 180 days
+[B2B 라이선스 (부트캠프/학교)] starts at [장기 (1~2년)]'s start
+
+[다국어 면접 (영어/일본어)] lasts 180 days
+[다국어 면접 (영어/일본어)] starts 90 days after [장기 (1~2년)]'s start
+
+[HR 시장 인사이트 리포트] lasts 240 days
+[HR 시장 인사이트 리포트] starts at [장기 (1~2년)]'s start
+
+[모범 답변 라이브러리] lasts 180 days
+[모범 답변 라이브러리] starts 60 days after [장기 (1~2년)]'s start
+
+[멀티 에이전트 LangGraph] lasts 120 days
+[멀티 에이전트 LangGraph] starts 90 days after [장기 (1~2년)]'s start
+
+[모바일 네이티브 앱] lasts 180 days
+[모바일 네이티브 앱] starts 180 days after [장기 (1~2년)]'s start
+
+footer MeFit - 향후 1.5~2년 로드맵 (멘토링 권장 항목 적극 반영)
+@endgantt

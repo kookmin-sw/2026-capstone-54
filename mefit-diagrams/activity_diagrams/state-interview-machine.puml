@@ -1,0 +1,116 @@
+@startuml
+title 미핏 인터뷰 상태 머신
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 11
+skinparam linetype ortho
+skinparam state {
+  BackgroundColor #E8F4FD
+  BorderColor #2196F3
+  ArrowColor #555555
+  FontSize 11
+  AttributeFontSize 10
+  AttributeFontColor #455A64
+}
+skinparam state<<terminal>> {
+  BackgroundColor #C8E6C9
+  BorderColor #2E7D32
+}
+skinparam state<<errstate>> {
+  BackgroundColor #FFCDD2
+  BorderColor #C62828
+}
+skinparam state<<choice>> {
+  BackgroundColor #FFF9C4
+  BorderColor #FBC02D
+}
+
+[*] --> idle
+
+state "idle" as idle
+idle : 페이지 마운트 직후
+idle : 세션/미디어 device 대기
+
+state "ready" as ready
+ready : 미디어 ready 완료
+ready : Start 버튼 활성
+
+state "starting" as starting
+starting : startInterview API in-flight
+starting : entry / startVideoAnalysis()
+starting : entry / resetWarnings()
+
+state "tts_playing" as tts
+tts : 질문 TTS 재생 + 아바타 발화
+tts : entry / resetText()
+tts : entry / avatarSpeak(question)
+tts : entry / playTtsText(question)
+tts : entry / prepareRecording(turnId)
+
+state "preparing_record" as prep
+prep : TTS 종료 후 녹화 준비 완료 대기
+
+state mode_choice <<choice>>
+
+state "countdown" as cd
+cd : 5~30초 랜덤 카운트다운 (real mode)
+cd : entry / setTimeout(1s) -> COUNTDOWN_TICK
+
+state "awaiting_start" as await_start
+await_start : "말하기 시작" 클릭 대기 (practice mode)
+
+state "speaking" as speak
+speak : STT + 녹화 + 시선/고개 카운팅
+speak : entry / startStt()
+speak : entry / startTurnCounting()
+speak : entry / startRecording(turnId)
+
+state "submitting" as submit
+submit : 답변 제출 + 백엔드 처리
+submit : handler / stopStt()
+submit : handler / stopTurnCounting()
+submit : handler / stopRecording()
+submit : handler / submitInterviewAnswer(...)
+
+state "finished" as finished <<terminal>>
+finished : 면접 완료
+finished : entry / cleanup all media+stt+tts
+finished : entry / navigate("/interview/results")
+
+state "error" as error <<errstate>>
+error : 복구 불가능한 오류
+
+idle --> ready : MEDIA_READY
+idle --> tts : RESUME(turnId, question)
+
+ready --> starting : START
+starting --> tts : QUESTION_ARRIVED
+tts --> prep : TTS_DONE
+prep --> mode_choice : RECORDING_READY
+
+mode_choice --> cd : [isRealMode]
+mode_choice --> await_start : [!isRealMode]
+
+cd --> cd : COUNTDOWN_TICK\n[next > 0]
+cd --> speak : COUNTDOWN_TICK\n[next <= 0]
+
+await_start --> speak : PRACTICE_START
+speak --> submit : SUBMIT
+submit --> tts : ANSWER_ACCEPTED
+submit --> finished : FINISH
+
+finished --> [*]
+error --> [*]
+
+note bottom
+  ★ 일시중지(Pause/Resume)는 이 머신과 **orthogonal** 합니다 ★
+  • Zustand store `useInterviewSessionStore.isPaused` 에서 별도 관리 (Machine B)
+  • speaking / tts_playing / submitting 등 어떤 상태에서도 paused 활성 가능
+  • 녹화(MediaRecorder)는 paused 시 MediaRecorder.pause() 로 함께 중단되고,
+    resume 시 MediaRecorder.resume() 으로 같은 instance 에서 이어서 녹화됨 (FR-INT-17~19)
+  • 자세한 매트릭스 + 설계 의도: state-interview-machine.md
+  • 시각화: state-interview-pause-resume.puml (Machine B 직교 머신)
+end note
+
+footer MeFit 코드 기반 State Diagram - frontend reducer machine (Machine A)
+@enduml

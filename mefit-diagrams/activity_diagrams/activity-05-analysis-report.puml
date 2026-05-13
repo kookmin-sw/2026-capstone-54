@@ -1,0 +1,139 @@
+@startuml
+title MeFit 면접 분석 리포트 흐름\n(리포트 요청 / 분석 파이프라인 / 결과 확인)
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 11
+skinparam ActivityBackgroundColor #E8F4FD
+skinparam ActivityBorderColor #2196F3
+skinparam ArrowColor #555555
+skinparam DiamondBackgroundColor #FFF9C4
+skinparam DiamondBorderColor #FBC02D
+
+|#E3F2FD|사용자|
+|#E8F5E9|Frontend|
+|#FFF8E1|Backend API|
+|#F3E5F5|분석 서비스|
+|#FFE0B2|AWS Lambda|
+
+|사용자|
+start
+:HomeSidebar 에서 "면접 결과" 클릭;
+
+|Frontend|
+:InterviewResultsPage.tsx\nGET /api/v1/interviews/interview-sessions/\nstatus=COMPLETED\n완료된 면접 세션 목록 조회 페이지네이션\nSSE 연결: 리포트 생성 상태 실시간 표시;
+
+|사용자|
+:면접 세션 선택;
+
+|Frontend|
+if (리포트 존재?) then (COMPLETED)
+  :navigate 리포트 페이지;
+else (없음 또는 FAILED)
+endif
+
+' 리포트 생성 요청
+
+|사용자|
+:"분석 리포트 생성" 버튼 클릭;
+
+|Frontend|
+:POST /interview-sessions/uuid/generate-report/;
+
+|Backend API|
+:GenerateAnalysisReportView.post();
+
+if (티켓 검증) then (충분)
+  :UseTicketsService.execute()\n티켓 차감 TICKET_COST_ANALYSIS_REPORT;
+else (부족)
+  :HTTP 402\n티켓 부족 오류;
+  |Frontend|
+  :티켓 부족 안내 표시;
+  stop
+endif
+
+|Backend API|
+:InterviewAnalysisReport 생성\nstatus: PENDING\ndispatch_report_task\n- get_resume_bundle_url -> S3 URL\n- Celery 태스크 디스패치\n  analysis 큐 -> interview-analysis-report;
+
+|Frontend|
+:SSE /sse/interviews/uuid/report-status/\nInterviewReportStatusConsumer\n2초 간격 DB 폴링\n상태 이벤트 수신 대기:\nPENDING -> GENERATING -> COMPLETED;
+
+' 분석 파이프라인
+
+|분석 서비스|
+#DCEDC8:generate_analysis_report 태스크\ninterview-analysis-report 서비스\nstatus -> GENERATING;
+
+:1단계: 면접 데이터 로드\n- InterviewSession 조회\n- 모든 InterviewTurn 조회\n  질문 + 답변 쌍\n- 이력서 내용 로드\n  S3 번들 URL에서\n- 채용공고 내용 로드;
+
+' 음성 분석
+
+:2단계: 음성 분석 요청\nVoiceAnalysisInvoker\n.analyze_all_turns;
+
+|AWS Lambda|
+fork
+  :voice-analyzer\nTurn 1 음성 분석\n- S3에서 16kHz wav 로드\n- 음성 특성 추출\n  말하기 속도, 필러 단어 빈도,\n  침묵 구간, 음량 변화;
+fork again
+  :voice-analyzer\nTurn 2 음성 분석;
+fork again
+  :voice-analyzer\nTurn N 음성 분석;
+end fork
+
+:음성 분석 결과 반환\n각 Turn별 voice_summary;
+
+' LLM 종합 분석
+
+|분석 서비스|
+:3단계: 분석 컨텍스트 구성\nAnalysisContext 빌드\n- 면접 교환 내용 Q and A\n- 이력서 정보\n- 채용공고 요구사항\n- 음성 분석 결과;
+
+:4단계: LLM 종합 분석\nLLMAnalyzer 호출;
+
+:overall_score 0~100점\noverall_grade\nExcellent 90+, Good 75~89,\nAverage 60~74, Below Average 40~59,\nPoor 0~39;
+
+:category_scores 6개 카테고리\n- job_fit 직무 적합도\n- specificity 구체성\n- communication 의사소통\n- consistency 일관성\n- fluency 유창성\n- answer_length 답변 분량;
+
+:question_feedbacks 질문별 피드백\n각 Turn에 대해:\n- strengths 강점\n- improvements 개선점\n- model_answer 모범 답안;
+
+:strengths 전체 강점 요약\nimprovement_areas 전체 개선 영역;
+
+:5단계: 결과 저장\n- InterviewAnalysisReport 업데이트\n  status -> COMPLETED\n- TokenUsage 기록\n  LLM 토큰 사용량 + 비용;
+
+' 리포트 확인
+
+|Frontend|
+:SSE 이벤트 수신\nstatus: COMPLETED;
+
+:GET /interview-sessions/uuid/analysis-report/\n전체 리포트 데이터 조회;
+
+:GET /interview-sessions/uuid/behavior-analyses/\n행동 분석 데이터 조회 영상 분석;
+
+:InterviewReportPage.tsx 렌더링;
+
+|사용자|
+:리포트 확인\n- 종합 점수 + 등급\n- 6개 카테고리별 점수\n- 질문별 피드백\n  강점, 개선점, 모범 답안\n- 전체 강점 요약\n- 전체 개선 영역 요약;
+
+:리포트 확인 완료\n- 개선점 파악\n- 다음 면접 준비에 활용;
+
+stop
+
+legend right
+  색상 범례
+  ....
+  사용자 = 사용자 액션
+  Frontend = Frontend 처리
+  Backend API = Backend API 호출
+  DCEDC8 = interview-analysis-report 서비스
+  FFE0B2 = AWS Lambda voice-analyzer
+  ....
+  분석 파이프라인:
+  1. 면접 데이터 로드
+  2. 음성 분석 병렬 Lambda
+  3. 분석 컨텍스트 구성
+  4. LLM 종합 분석
+  5. 결과 저장
+  ....
+  실시간 상태 전달:
+  SSE Server-Sent Events
+  2초 간격 DB 폴링
+end legend
+
+footer MeFit 코드 기반 Activity Diagram - analysis report flow
+@enduml

@@ -1,0 +1,102 @@
+@startuml
+title 미핏 - 12 마이크로서비스 모듈 통신 구조
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 11
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+skinparam component {
+  BackgroundColor #E8F4FD
+  BorderColor #2196F3
+}
+skinparam component<<aws>> {
+  BackgroundColor #FFF3E0
+  BorderColor #FB8C00
+}
+skinparam component<<frontend>> {
+  BackgroundColor #F3E5F5
+  BorderColor #8E24AA
+}
+skinparam component<<storage>> {
+  BackgroundColor #ECEFF1
+  BorderColor #607D8B
+}
+
+actor "사용자" as User
+
+package "사용자 접점" {
+  component "frontend\nReact 19 / Vite / FSD" as FE <<frontend>>
+}
+
+package "API / 비즈니스" {
+  component "backend\nDjango 6 / DRF / Channels" as BE
+}
+
+package "데이터 / 브로커 / 스토리지" {
+  database "PostgreSQL\n(RDS)" as DB <<storage>>
+  queue "Redis\n(Broker + Channel Layer)" as Redis <<storage>>
+  database "S3 (5 buckets)\nvideo / scaled-video / frames\naudio / scaled-audio" as S3 <<storage>>
+}
+
+package "도메인별 Celery Worker (k3s Pod)" {
+  component "analysis-resume\nWorker (LangChain)" as ARES
+  component "interview-analysis-report\nWorker (LLM + Hypothesis)" as IAR
+  component "scraping\nWorker (Playwright + LLM)" as SCR
+  component "analysis-stt\nWorker (faster-whisper)" as STT
+}
+
+package "음성 / TTS" {
+  component "voice-api\nFastAPI / edge-tts" as VA
+}
+
+package "AWS Event Pipeline" {
+  component "SNS\nvideo-uploaded" as SNS <<aws>>
+  component "SQS Fan-out + DLQ" as SQS <<aws>>
+  component "Lambda\nvideo-converter\nframe-extractor\naudio-extractor\nvoice-analyzer" as LAM <<aws>>
+  component "Lambda\nface-analyzer\n(MediaPipe)" as FA <<aws>>
+}
+
+package "운영 도구" {
+  component "infra/\nk3s + Traefik" as INFRA
+  component "mefit-tools\nStreamlit GUI" as TOOLS
+  component "mefit-diagrams\ndiagrams + PlantUML" as DIAGS
+}
+
+User --> FE : HTTPS
+FE --> BE : REST + WebSocket + SSE
+FE --> S3 : Presigned PUT (멀티파트)
+FE --> VA : HTTPS Bearer
+
+BE --> DB : ORM
+BE --> Redis : Celery 발행 / Channels
+BE --> S3 : boto3 (Instance Profile)
+BE --> VA : 토큰 검증
+
+Redis --> ARES : analysis-resume 큐
+Redis --> IAR : analysis 큐
+Redis --> SCR : scraping 큐
+Redis --> STT : analysis-stt 큐
+
+ARES --> Redis : 결과 콜백
+IAR --> DB : 결과 직접 저장 (SQLAlchemy)
+IAR --> LAM : voice-analyzer (boto3.invoke)
+SCR --> Redis : 결과 콜백
+STT --> Redis : 결과 콜백
+
+S3 --> SNS : ObjectCreated
+SNS --> SQS : Fan-out
+SQS --> LAM : event source
+LAM --> S3 : 결과 업로드
+LAM --> SQS : face-trigger (frame 추출 완료 시)
+SQS --> FA : SQS Event Source (frame → 표정)
+LAM --> SQS : step-complete
+SQS --> BE : kombu polling (sqs-celery-worker)
+
+INFRA ..> BE : 배포
+INFRA ..> ARES : 배포
+INFRA ..> IAR : 배포
+INFRA ..> VA : 배포
+TOOLS ..> BE : 로컬 운영
+
+footer MeFit - 12 모듈 마이크로서비스 (k3s on EC2 + AWS)
+@enduml

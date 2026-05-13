@@ -1,0 +1,149 @@
+@startuml
+title 미핏 - Resume 도메인 클래스 다이어그램
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 11
+skinparam linetype ortho
+skinparam class {
+  BackgroundColor #E8F4FD
+  BorderColor #2196F3
+  ArrowColor #555555
+  AttributeFontSize 10
+  AttributeFontColor #455A64
+}
+skinparam class<<aggregate>> {
+  BackgroundColor #FFF9C4
+  BorderColor #FBC02D
+}
+skinparam class<<section>> {
+  BackgroundColor #C8E6C9
+  BorderColor #388E3C
+}
+skinparam class<<embedding>> {
+  BackgroundColor #F8BBD0
+  BorderColor #C2185B
+}
+skinparam class<<external>> {
+  BackgroundColor #ECEFF1
+  BorderColor #607D8B
+}
+
+class User <<external>> {
+  +id: BigAutoField
+  +email: str
+}
+
+class Resume <<aggregate>> {
+  +uuid: UUID (PK)
+  +user_id: FK
+  +title: str
+  +source_type: FILE / TEXT
+  +source_file_key: str?
+  +status: DRAFT / ANALYZING / COMPLETED / FAILED
+  +analyzed_at: datetime?
+  +deleted_at: datetime? (soft delete)
+  --
+  +finalize()
+  +reanalyze()
+}
+
+class ResumeBasicInfo <<section>> {
+  +resume_id: FK (1:1)
+  +name: str
+  +contact: str
+  +location: str
+}
+
+class ResumeSummary <<section>> {
+  +resume_id: FK (1:1)
+  +objective: text
+  +summary: text
+}
+
+class ResumeExperience <<section>> {
+  +id: BigAutoField (PK)
+  +resume_id: FK
+  +company: str
+  +position: str
+  +start_date: date
+  +end_date: date?
+  +description: text
+}
+
+class ResumeEducation <<section>> {
+  +id: BigAutoField (PK)
+  +resume_id: FK
+  +school: str
+  +degree: str
+  +major: str
+  +start_date: date
+  +end_date: date?
+}
+
+class ResumeCertification <<section>> {
+  +id: BigAutoField (PK)
+  +resume_id: FK
+  +name: str
+  +issuer: str
+  +issued_at: date
+}
+
+class ResumeProject <<section>> {
+  +id: BigAutoField (PK)
+  +resume_id: FK
+  +name: str
+  +role: str
+  +description: text
+  +start_date: date
+  +end_date: date?
+}
+
+class ResumeSkill {
+  +id: BigAutoField
+  +name: str
+}
+
+class ResumeKeyword {
+  +id: BigAutoField
+  +name: str
+}
+
+class ResumeIndustryDomain {
+  +id: BigAutoField
+  +name: str
+}
+
+class ResumeEmbedding <<embedding>> {
+  +resume_id: FK (1:1)
+  +vector: float[1536]
+  +embedded_at: datetime
+  --
+  (OpenAI Embedding)
+}
+
+User "1" *-- "*" Resume : owns
+Resume "1" *-- "1" ResumeBasicInfo
+Resume "1" *-- "1" ResumeSummary
+Resume "1" *-- "*" ResumeExperience
+Resume "1" *-- "*" ResumeEducation
+Resume "1" *-- "*" ResumeCertification
+Resume "1" *-- "*" ResumeProject
+Resume "*" -- "*" ResumeSkill : has
+Resume "*" -- "*" ResumeKeyword : has
+Resume "*" -- "*" ResumeIndustryDomain : has
+Resume "1" -- "1" ResumeEmbedding : indexed by
+
+note right of Resume
+  생성 경로:
+  - FILE: 자동 finalize → 분석
+  - TEXT: 사용자 finalize → 분석
+
+  분석 워커: analysis-resume
+  - ExtractTextTask
+  - EmbedResumeTask (병렬)
+  - AnalyzeResumeTask (병렬)
+  - FinalizeResumeTask (join)
+end note
+
+footer MeFit - backend/webapp/resumes/
+@enduml

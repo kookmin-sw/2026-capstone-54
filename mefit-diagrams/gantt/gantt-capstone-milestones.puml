@@ -1,0 +1,75 @@
+@startgantt
+title 미핏 - 캡스톤 마일스톤 (4 ~ 5 월)
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 11
+
+Project starts 2026-04-04
+
+' Sprint 정의
+[M1: MVP] lasts 14 days
+[M1: MVP] is colored in #C8E6C9
+
+[M2: Alpha] lasts 10 days
+[M2: Alpha] starts 14 days after [M1: MVP]'s start
+[M2: Alpha] is colored in #FFF9C4
+
+[M3: Beta] lasts 10 days
+[M3: Beta] starts 10 days after [M2: Alpha]'s start
+[M3: Beta] is colored in #FFE0B2
+
+[M4: Final] lasts 8 days
+[M4: Final] starts 10 days after [M3: Beta]'s start
+[M4: Final] is colored in #F8BBD0
+
+' 세부 작업
+[인증 / 온보딩] lasts 5 days
+[인증 / 온보딩] starts at [M1: MVP]'s start
+
+[이력서 도메인] lasts 7 days
+[이력서 도메인] starts at [M1: MVP]'s start
+
+[채용공고 / 스크래핑] lasts 7 days
+[채용공고 / 스크래핑] starts 3 days after [M1: MVP]'s start
+
+[FOLLOWUP 면접 모드] lasts 7 days
+[FOLLOWUP 면접 모드] starts 5 days after [M1: MVP]'s start
+
+[FULL_PROCESS 모드] lasts 5 days
+[FULL_PROCESS 모드] starts at [M2: Alpha]'s start
+
+[영상 녹화 / 청크 업로드] lasts 7 days
+[영상 녹화 / 청크 업로드] starts at [M2: Alpha]'s start
+
+[기본 분석 리포트] lasts 5 days
+[기본 분석 리포트] starts 5 days after [M2: Alpha]'s start
+
+[Lambda 영상 후처리] lasts 7 days
+[Lambda 영상 후처리] starts at [M3: Beta]'s start
+
+[5 카테고리 점수] lasts 5 days
+[5 카테고리 점수] starts 3 days after [M3: Beta]'s start
+
+[음성 분석 통합] lasts 5 days
+[음성 분석 통합] starts 5 days after [M3: Beta]'s start
+
+[스트릭 / 업적] lasts 5 days
+[스트릭 / 업적] starts 5 days after [M3: Beta]'s start
+
+[표정 분석 (face-analyzer)] lasts 5 days
+[표정 분석 (face-analyzer)] starts at [M4: Final]'s start
+
+[STT 정밀화] lasts 4 days
+[STT 정밀화] starts at [M4: Final]'s start
+
+[리포트 시각화] lasts 5 days
+[리포트 시각화] starts 2 days after [M4: Final]'s start
+
+[운영 안정화] lasts 5 days
+[운영 안정화] starts 3 days after [M4: Final]'s start
+
+[멘토링] happens at 2026-05-08
+[보고서 마감] happens at 2026-05-15
+
+footer MeFit - 4 마일스톤 + 16 세부 작업 + 멘토링 + 보고서 마감
+@endgantt

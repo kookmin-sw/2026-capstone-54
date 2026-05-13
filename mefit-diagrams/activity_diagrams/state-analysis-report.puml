@@ -1,0 +1,55 @@
+@startuml
+title 미핏 - InterviewAnalysisReport 상태 머신
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 11
+skinparam state {
+  BackgroundColor #E8F4FD
+  BorderColor #2196F3
+  ArrowColor #555555
+  FontSize 11
+}
+skinparam state<<terminal>> {
+  BackgroundColor #C8E6C9
+  BorderColor #2E7D32
+}
+skinparam state<<errstate>> {
+  BackgroundColor #FFCDD2
+  BorderColor #C62828
+}
+
+[*] --> PENDING : 사용자 "분석 리포트 생성" 클릭\n(티켓 차감)
+
+state PENDING
+PENDING : analysis 큐에 dispatch_report_task
+PENDING : SSE 폴링 시작 (2초 간격)
+
+state GENERATING
+GENERATING : interview-analysis-report Worker 처리 중
+GENERATING : 5 단계:
+GENERATING :   1. 면접 데이터 로드
+GENERATING :   2. 음성 분석 병렬 (voice-analyzer Lambda)
+GENERATING :   3. AnalysisContext 빌드
+GENERATING :   4. LLMAnalyzer (5 카테고리)
+GENERATING :   5. 결과 저장 + TokenUsage 기록
+
+state COMPLETED <<terminal>>
+COMPLETED : 5 카테고리 점수 산출
+COMPLETED : 종합 등급 매핑
+COMPLETED : 질문별 피드백 + 모범 답안
+COMPLETED : SSE → Frontend 알림
+
+state FAILED <<errstate>>
+FAILED : LLM 호출 실패 (재시도 한도 초과)
+FAILED : Lambda 호출 실패
+FAILED : 토큰 한도 초과
+
+PENDING --> GENERATING : Worker 시작
+GENERATING --> COMPLETED : 분석 완료
+GENERATING --> FAILED : 처리 실패
+FAILED --> GENERATING : retry()
+
+COMPLETED --> [*]
+
+footer MeFit - interview-analysis-report/services/report_generator.py
+@enduml

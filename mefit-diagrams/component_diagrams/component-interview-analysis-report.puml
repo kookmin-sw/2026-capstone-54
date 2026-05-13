@@ -1,0 +1,83 @@
+@startuml
+title interview-analysis-report - 면접 분석 리포트 생성 Celery Worker 내부 구조
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 11
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+skinparam component {
+  BackgroundColor #E8F4FD
+  BorderColor #2196F3
+}
+skinparam component<<external>> {
+  BackgroundColor #ECEFF1
+  BorderColor #607D8B
+}
+skinparam component<<llm>> {
+  BackgroundColor #FFF3E0
+  BorderColor #FB8C00
+}
+skinparam component<<aws>> {
+  BackgroundColor #FFF3E0
+  BorderColor #FB8C00
+}
+
+queue "Redis\n(analysis queue)" as Redis <<external>>
+component "Backend SSE\n(진행 이벤트 게시)" as BE_SSE <<external>>
+database "PostgreSQL\n(SQLAlchemy 직접 접근)" as DB <<external>>
+component "LLM Gateway" as LLM <<llm>>
+component "Lambda\nvoice-analyzer\n(boto3.invoke RequestResponse)" as VALam <<aws>>
+database "S3 (scaled-audio)" as S3 <<external>>
+
+package "interview-analysis-report/" {
+  component "celery_app.py\nconfig.py" as Cfg
+
+  package "tasks/" {
+    component "generate_report.py\n(BaseTask — ReportGenerator entry)" as TaskMain
+  }
+
+  package "services/" {
+    component "ReportGenerator\n(orchestrator)\n5 단계 파이프라인" as ReportGen
+    component "Loader\n(Session · Turn · Resume · JD\nfrom PostgreSQL)" as Loader
+    component "VoiceAnalysisInvoker\n(parallel Lambda.invoke)" as VAInv
+    component "AnalysisContext.build\n(컨텍스트 통합)" as CtxBuild
+    component "LLMAnalyzer\n(5 카테고리 점수 + 피드백)\nstructured output" as LLMAna
+    component "Repository\n(save InterviewAnalysisReport\nSQLAlchemy upsert)" as Repo
+  }
+
+  package "db/" {
+    component "session\n(SQLAlchemy engine)\nmodels (read-only mirror)" as DBLayer
+  }
+
+  package "utils/" {
+    component "Logging\nProgress event publisher\nMetric helpers" as Utils
+  }
+}
+
+Redis --> TaskMain : pull task (session_id)
+TaskMain --> ReportGen : run(session_id)
+ReportGen --> Loader : load_session()
+Loader --> DBLayer
+DBLayer --> DB : SELECT (join Turn · Resume · JD)
+
+ReportGen --> VAInv : per-turn audio_key 병렬 호출
+VAInv --> VALam : invoke
+VALam --> S3 : GET .wav
+VALam --> VAInv : {speed, fillers, silence, volume}
+
+ReportGen --> CtxBuild : assemble(turns + voice + meta)
+CtxBuild --> LLMAna : full context
+
+LLMAna --> LLM : prompt (5 category schema)
+LLM --> LLMAna : scores · feedback · strengths · improvements
+
+ReportGen --> Repo : save(report)
+Repo --> DBLayer
+DBLayer --> DB : UPSERT InterviewAnalysisReport
+
+ReportGen --> Utils : publish progress
+Utils --> Redis : Channel Layer event
+Redis --> BE_SSE
+
+footer interview-analysis-report/ — 5 단계 파이프라인 · SQLAlchemy 직접 접근 · 병렬 Lambda · LLM 5 카테고리 점수
+@enduml

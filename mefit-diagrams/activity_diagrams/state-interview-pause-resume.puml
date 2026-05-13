@@ -1,0 +1,88 @@
+@startuml
+title 미핏 - 인터뷰 일시중지 / 재개 머신 (Machine B — Zustand store, useReducer 와 orthogonal)
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 11
+skinparam linetype ortho
+skinparam state {
+  BackgroundColor #E8F4FD
+  BorderColor #2196F3
+  ArrowColor #555555
+  FontSize 11
+  AttributeFontSize 10
+  AttributeFontColor #455A64
+}
+skinparam state<<paused>> {
+  BackgroundColor #FFF9C4
+  BorderColor #FBC02D
+}
+
+[*] --> active
+
+state "active" as active
+active : useInterviewSessionStore.isPaused = false
+active : useInterviewSessionStore.pauseReason = null
+active : PausedOverlay 숨김
+
+state "paused" as paused <<paused>>
+paused : useInterviewSessionStore.isPaused = true
+paused : useInterviewSessionStore.pauseReason ∈ {
+paused :   "user_left_window",
+paused :   "user_idle",
+paused :   "manual_pause",
+paused :   "heartbeat_timeout"
+paused : }
+paused : PausedOverlay 표시 (reason 별 메시지)
+
+active --> paused : sendPause(reason)\n(WS → server → pause_ack)
+paused --> active : sendResume()\n(WS → server → resume_ack)
+paused --> paused : reason 변경\n(예: user_idle → user_left_window)
+
+note right of active
+  Pause 트리거 (모두 자동, 즉시 setPaused(true)):
+  ① Tab visibility hidden
+     usePageVisibility (visibilitychange)
+     reason = "user_left_window"
+  ② Window blur ★ 신규
+     usePageVisibility (window.blur)
+     → 다른 앱/창 전환, 분할 창, devtools 도 감지
+     reason = "user_left_window"
+  ③ 60초 idle
+     useIdleDetector
+     reason = "user_idle"
+  ④ 사용자 수동 클릭
+     reason = "manual_pause"
+  ⑤ Server-initiated
+     server 가 pause_ack 푸시
+     (heartbeat 누락 등)
+end note
+
+note right of paused
+  ★ Resume 은 모두 명시적 사용자 액션만 (auto-resume 제거) ★
+  • PausedOverlay "이어서 하기" 버튼 클릭
+  • IdleDetectedModal "계속하기" 버튼 클릭
+  → 두 경로 모두 sendResume() + setPaused(false)
+
+  Pause 중 사이드 이펙트:
+  • TTS → skipTts()
+  • STT → (이미 SUBMIT 시 stop)
+  • Video analysis → stop
+  • Recording (MediaRecorder)
+    ★ MediaRecorder.pause() — 청크 생성 중단 ★
+  • Backend: 모든 mutate API 거부 (ValidationException 400)
+    Initiate / PresignPart / Complete / Abort / SubmitAnswer
+end note
+
+note bottom
+  ★ 이 머신은 useReducer (Machine A) 와 직교 (orthogonal) ★
+  • Machine A: speaking / tts_playing / submitting 등 11개 상태
+  • Machine B: active / paused 2개 상태
+  • 전체 상태 공간 = 11 × 2 = 22 cross product
+  • 어떤 Machine A 상태에서도 paused 가 활성화될 수 있음
+  • 녹화 (MediaRecorder) 도 paused 와 **동기로** 일시중지/재개
+    → 같은 MediaRecorder instance 에서 이어서 녹화되어 영상 연속성 유지
+  자세한 매트릭스 + 설계 의도: state-interview-machine.md
+end note
+
+footer MeFit - 일시중지 직교 머신 (frontend/src/features/interview-session/model/store.ts)
+@enduml

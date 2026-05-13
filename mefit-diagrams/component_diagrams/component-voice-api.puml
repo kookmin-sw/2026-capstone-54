@@ -1,0 +1,59 @@
+@startuml
+title voice-api - FastAPI 음성 합성 서비스 내부 구조
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 11
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+skinparam component {
+  BackgroundColor #E8F4FD
+  BorderColor #2196F3
+}
+skinparam component<<external>> {
+  BackgroundColor #ECEFF1
+  BorderColor #607D8B
+}
+skinparam component<<frontend>> {
+  BackgroundColor #F3E5F5
+  BorderColor #8E24AA
+}
+
+actor "Frontend\n(Browser)" as FE <<frontend>>
+component "Backend\n(토큰 검증 endpoint)" as BE <<external>>
+component "Microsoft edge-tts\n(외부 TTS 서비스)" as Edge <<external>>
+
+package "voice-api/" {
+  component "main.py\n(FastAPI App + CORS + Lifespan)" as Main
+
+  package "core" {
+    component "config\n(Settings · env)" as Core_Cfg
+    component "auth\n(Bearer JWT 검증 호출)" as Core_Auth
+    component "logger\n(structlog)" as Core_Log
+  }
+
+  package "api" {
+    component "routes/\n(POST /tts · POST /tts/stream\nGET /healthz)" as Routes
+    component "schemas/\n(Pydantic Request · Response)" as Schemas
+  }
+
+  package "services" {
+    component "TTSService\n(edge-tts wrapper +\nstreaming generator)" as TTSSvc
+  }
+}
+
+FE --> Main : HTTPS Bearer JWT
+Main --> Routes
+Routes ..> Schemas : validate
+Routes --> Core_Auth : require_user
+Core_Auth --> BE : POST /verify
+Routes --> TTSSvc : synthesize(text, voice)
+TTSSvc --> Edge : Edge TTS WebSocket
+TTSSvc --> Routes : audio/mpeg stream
+Routes --> FE : mp3 chunk (Server-Sent stream)
+
+Core_Cfg ..> Main
+Core_Cfg ..> TTSSvc
+Core_Log ..> Routes
+
+footer voice-api/ — FastAPI · edge-tts · Bearer JWT 검증 · 스트리밍 응답
+@enduml

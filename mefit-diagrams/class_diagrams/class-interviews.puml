@@ -1,0 +1,132 @@
+@startuml
+title 미핏 - Interview 도메인 클래스 다이어그램
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 11
+skinparam linetype ortho
+skinparam class {
+  BackgroundColor #E8F4FD
+  BorderColor #2196F3
+  ArrowColor #555555
+  AttributeFontSize 10
+  AttributeFontColor #455A64
+}
+skinparam class<<aggregate>> {
+  BackgroundColor #FFF9C4
+  BorderColor #FBC02D
+}
+skinparam class<<external>> {
+  BackgroundColor #ECEFF1
+  BorderColor #607D8B
+}
+
+class User <<external>> {
+  +id: BigAutoField
+  +email: str
+  --
+  (users 도메인)
+}
+
+class Resume <<external>> {
+  +uuid: UUID
+  +status: ResumeStatus
+}
+
+class UserJobDescription <<external>> {
+  +uuid: UUID
+  +status: JobDescriptionStatus
+}
+
+class TicketLog <<external>> {
+  +action: GRANT/USE/REFUND/EXPIRE
+  +amount: int
+}
+
+class InterviewSession <<aggregate>> {
+  +uuid: UUID (PK)
+  +user_id: FK -> User
+  +resume_id: FK -> Resume
+  +user_job_description_id: FK -> UserJobDescription
+  +mode: FOLLOWUP / FULL_PROCESS
+  +difficulty: EASY / MEDIUM / HARD
+  +interview_mode: PRACTICE / REAL
+  +status: IN_PROGRESS / COMPLETED / CANCELLED
+  +started_at: datetime
+  +completed_at: datetime?
+  --
+  +start()
+  +finish()
+  +cancel()
+}
+
+class InterviewTurn {
+  +id: BigAutoField (PK)
+  +session_id: FK
+  +question: text
+  +question_type: INITIAL / FOLLOWUP / SECTION_INTRO
+  +question_order: int
+  +answer_text: text?
+  +answer_video_key: str?
+  +answer_audio_key: str?
+  +started_at: datetime
+  +answered_at: datetime?
+  +voice_analysis_result: JSON?
+}
+
+class InterviewRecording {
+  +uuid: UUID (PK)
+  +session_id: FK
+  +turn_id: FK?
+  +original_video_key: str (.webm)
+  +scaled_video_key: str?
+  +frame_prefix: str?
+  +audio_key: str?
+  +scaled_audio_key: str?
+  +face_analysis_result: JSON?
+  +transcript_status: PENDING/COMPLETED/FAILED
+  +status: UPLOADING/COMPLETED/FAILED
+}
+
+class InterviewAnalysisReport {
+  +uuid: UUID (PK)
+  +session_id: FK (1:1)
+  +status: PENDING/GENERATING/COMPLETED/FAILED
+  +overall_score: int? (0~100)
+  +grade: str?
+  +category_scores: JSON?
+  +question_feedbacks: JSON?
+  +strengths: JSON?
+  +improvement_areas: JSON?
+  +total_token_usage: JSON?
+  +started_at: datetime?
+  +completed_at: datetime?
+}
+
+User "1" *-- "*" InterviewSession : participates
+Resume "1" --> "*" InterviewSession : referenced by
+UserJobDescription "1" --> "*" InterviewSession : referenced by
+InterviewSession "1" *-- "*" InterviewTurn : contains
+InterviewSession "1" *-- "*" InterviewRecording : owns
+InterviewSession "1" -- "1" InterviewAnalysisReport : analyzes
+InterviewTurn "1" -- "0..1" InterviewRecording : per turn
+InterviewSession "1" --> "1" TicketLog : triggers (USE)
+
+note right of InterviewAnalysisReport
+  category_scores 5 카테고리:
+  - 구체성
+  - 직무 적합성
+  - 논리성
+  - 신뢰도
+  - 면접태도
+end note
+
+note bottom of InterviewRecording
+  Lambda 4 종 결과:
+  - video-converter (.mp4)
+  - frame-extractor (.jpg ZIP)
+  - audio-extractor (.wav)
+  - face-analyzer (표정)
+end note
+
+footer MeFit - backend/webapp/interviews/
+@enduml

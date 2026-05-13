@@ -1,0 +1,76 @@
+@startuml
+title scraping - 채용공고 자동 수집 Celery Worker 내부 구조
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 11
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+skinparam component {
+  BackgroundColor #E8F4FD
+  BorderColor #2196F3
+}
+skinparam component<<external>> {
+  BackgroundColor #ECEFF1
+  BorderColor #607D8B
+}
+skinparam component<<plugin>> {
+  BackgroundColor #FFF9C4
+  BorderColor #FBC02D
+}
+skinparam component<<llm>> {
+  BackgroundColor #FFF3E0
+  BorderColor #FB8C00
+}
+
+queue "Redis\n(scraping queue)" as Redis <<external>>
+component "Backend\n(결과 콜백 task)" as BE <<external>>
+component "Target Site\n(JobKorea · JobPlanet · ...)" as Site <<external>>
+component "LLM Gateway\n(OpenAI via LiteLLM)" as LLM <<llm>>
+database "PostgreSQL\n(direct write)" as DB <<external>>
+
+package "scraping/" {
+  component "celery_app.py\nconfig.py" as Cfg
+  component "tasks.py\n(BaseTask: scrape_url)" as Task
+  component "pipeline.py\n(Extract → Transform → Load)" as Pipeline
+  component "scraper.py\n(httpx fallback chain →\nPlaywright headless)" as Scraper
+
+  package "plugins/ (Site-Specific Strategy)" {
+    component "registry.py\n(Plugin lookup)" as PReg
+    component "base.py\n(SitePlugin ABC)" as PBase
+    component "jobkorea.py" as PJK <<plugin>>
+    component "jobplanet.py" as PJP <<plugin>>
+    component "default.py\n(fallback)" as PDef <<plugin>>
+  }
+
+  package "extractors/" {
+    component "llm_extractor.py\n(LLM 구조화 추출)" as LLMExt
+    component "schema.py\n(Pydantic 출력 스키마)" as ExtSchema
+  }
+
+  component "db/\n(SQLAlchemy session)" as DBLayer
+  component "schemas/\nutils/" as Misc
+}
+
+Redis --> Task : pull task
+Task --> Pipeline : run(url)
+Pipeline --> Scraper : fetch
+Scraper --> Site : httpx GET / Playwright load
+Scraper --> PReg : lookup(url)
+PReg --> PJK
+PReg --> PJP
+PReg --> PDef
+PJK --> PBase
+PJP --> PBase
+PDef --> PBase
+
+Pipeline --> LLMExt : raw HTML / text
+LLMExt --> LLM : prompt + Pydantic schema
+LLMExt ..> ExtSchema : validate
+
+Pipeline --> DBLayer : upsert JobPosting
+DBLayer --> DB
+Task --> Redis : callback (Backend collect_callback)
+Redis --> BE
+
+footer scraping/ — Strategy Pattern (plugins) · httpx → Playwright fallback · LLM 구조화 추출
+@enduml

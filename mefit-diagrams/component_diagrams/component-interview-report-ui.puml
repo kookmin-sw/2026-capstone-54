@@ -1,0 +1,107 @@
+@startuml
+title 미핏 - 면접 리포트 UI 컴포넌트 구조 (frontend/src/pages/interview-report/)
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 11
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+skinparam component {
+  BackgroundColor #E8F4FD
+  BorderColor #2196F3
+}
+skinparam component<<store>> {
+  BackgroundColor #F3E5F5
+  BorderColor #8E24AA
+}
+skinparam component<<api>> {
+  BackgroundColor #FFF3E0
+  BorderColor #FB8C00
+}
+skinparam component<<print>> {
+  BackgroundColor #ECEFF1
+  BorderColor #607D8B
+}
+skinparam component<<section>> {
+  BackgroundColor #E1F5FE
+  BorderColor #0288D1
+}
+
+actor "사용자" as U
+
+package "데이터 흐름 (features/interview-session)" {
+  component "interviewApi.\ngetInterviewAnalysisReport(uuid)" as API <<api>>
+  component "useInterviewSessionStore\n(Zustand)\n+ startReportPolling()" as Store <<store>>
+  component "InterviewAnalysisReport\nInterviewQuestionFeedback\nAudio/VideoAnalysisResult\n(TypeScript types)" as Type
+}
+
+package "InterviewReportPage (main container)" {
+  component "Top Nav\n뒤로가기 + PDF 다운로드" as TopNav
+  component "Side Nav\n(scrollspy)" as SideNav
+  component "Main Content\n(7 sections)" as Main
+}
+
+package "7 Top-level Sections (scrollspy targets)" {
+  component "InterviewOverview\n(메타데이터:\ncompany / position /\ndate / duration / difficulty /\nQ 수)" as S1 <<section>>
+  component "Summary Section\n(종합 점수 + 코멘트)" as S2 <<section>>
+  component "Capabilities Section\n(카테고리 분석)" as S3 <<section>>
+  component "StrengthsImprovements\n(강점 / 개선점\n+ evidence)" as S4 <<section>>
+  component "AudioAnalysisSection\n(음성 지표 4 카드)" as S5 <<section>>
+  component "VideoAnalysisSection\n(표정 분포 + 시선)" as S6 <<section>>
+  component "QuestionFeedbackList\n(질문별 탭)" as S7 <<section>>
+}
+
+package "Sub-components (visualization)" {
+  component "ScoreGauge\n(애니메이션 원형 게이지\n+ 등급 배지)" as SG
+  component "RadarChart\n(SVG 레이더 +\n카테고리 progress bars)" as RC
+  component "InteractiveTimeline\n(영상 미디어 플레이어 +\n파형 + 발화 segment 표시)" as IT
+  component "VoiceAnalysisPanel\n(dBFS 차트 +\n침묵 ratio 시각화)" as VP
+  component "TurnMetricCards\n(턴별 4 지표:\nSPM / 필러 / 침묵 / 시선)" as TMC
+}
+
+package "Print 전용 (PDF 출력)" {
+  component "PrintOnlyContent\n(인쇄 슬롯)" as P1 <<print>>
+  component "PrintQuestionFeedbacks\n(인쇄용 질문 피드백)" as P2 <<print>>
+}
+
+' === 데이터 흐름 ===
+U --> TopNav : 뒤로가기 / PDF 다운로드 클릭
+U --> SideNav : 섹션 nav 클릭
+U --> Main : 페이지 스크롤
+
+Store --> API : startReportPolling(uuid)\n(status=COMPLETED / FAILED 까지)
+API ..> Type : InterviewAnalysisReport 반환
+Main --> Store : useStore() 구독\n→ report + isReportPolling
+
+SideNav ..> Main : IntersectionObserver\n(scrollspy 활성 섹션 추적)
+
+' === 컴포넌트 composition ===
+Main --> S1
+Main --> S2
+Main --> S3
+Main --> S4
+Main --> S5
+Main --> S6
+Main --> S7
+
+S2 --> SG : overall_score + grade
+S3 --> RC : category_scores (4)
+S7 --> IT : 답변 영상 + speech_segments
+S7 --> VP : audio_analysis_result
+S7 --> TMC : turn 별 audio/video 지표
+
+' === Print 모드 ===
+Main ..> P1 : CSS @media print
+Main ..> P2 : CSS @media print
+
+note right of Main
+  Scrollspy 메커니즘:
+  IntersectionObserver 가 7 섹션 id 추적
+  → 활성 섹션에 SideNav 하이라이트
+  click → element.scrollIntoView({behavior: smooth})
+
+  Print: 브라우저 print + CSS media queries
+  (ReportLab / PDF 라이브러리 미사용)
+end note
+
+footer MeFit - 면접 리포트 UI (FR-REPORT-08, FR-REPORT-10 시각화 컴포넌트)
+@enduml

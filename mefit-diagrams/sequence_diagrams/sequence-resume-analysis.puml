@@ -1,0 +1,81 @@
+@startuml
+title 미핏 - 이력서 분석 시퀀스 (Frontend → Backend → analysis-resume Worker)
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 11
+skinparam sequence {
+  ArrowColor #555555
+  LifeLineBorderColor #2196F3
+  LifeLineBackgroundColor #E8F4FD
+  ParticipantBorderColor #2196F3
+  ParticipantBackgroundColor #E8F4FD
+}
+
+actor "사용자" as U
+participant "Frontend" as FE
+participant "Backend" as BE
+database "PostgreSQL" as DB
+participant "S3 (be-files)" as S3
+queue "Redis\nanalysis-resume 큐" as Q
+participant "analysis-resume\nWorker" as Worker
+participant "OpenAI" as LLM
+
+== A. 파일 업로드 경로 (PDF / DOCX) ==
+
+U -> FE : 파일 선택 + 업로드
+FE -> BE : POST /resumes/ (type=file)
+activate BE
+  BE -> S3 : 원본 파일 업로드
+  BE -> DB : Resume(status=DRAFT) 생성
+  BE -> BE : FinalizeResumeService\n(자동 호출)
+  BE -> DB : status = ANALYZING
+  BE -> Q : dispatch analysis tasks
+  BE --> FE : { uuid }
+deactivate BE
+
+FE -> FE : SSE 구독\n/sse/resumes/{uuid}/analysis-status/
+
+== B. 분석 워커 처리 ==
+
+Q -> Worker : pull task
+activate Worker
+
+Worker -> S3 : 원본 다운로드
+Worker -> Worker : ExtractTextTask\n(PyPDF / docx2txt)
+
+note right of Worker
+  병렬 fork:
+end note
+
+par 임베딩
+  Worker -> LLM : OpenAI Embedding API
+  LLM --> Worker : vector[1536]
+else LLM 파싱
+  Worker -> LLM : gpt-4o-mini\n(이력서 → 구조화 JSON)
+  LLM --> Worker : { skills, experience, ... }
+end
+
+Worker -> Worker : FinalizeResumeTask (join)
+Worker -> Q : Backend 콜백 task\nApplyAnalysisResultTask
+deactivate Worker
+
+== C. Backend 콜백 ==
+
+Q -> BE : pull callback
+activate BE
+  BE -> DB : Resume 섹션 저장 (Experience, Skill, ...)
+  BE -> DB : ResumeEmbedding 저장
+  BE -> DB : status = COMPLETED
+  BE -> DB : TokenUsage.log()
+deactivate BE
+
+== D. SSE 알림 ==
+
+BE -> FE : SSE event { status: COMPLETED }
+FE -> BE : GET /resumes/{uuid}/
+BE --> FE : 전체 이력서 데이터
+
+U <- FE : "분석 완료" 배지 + 상세 페이지
+
+footer MeFit - 이력서 분석 (analysis-resume 도메인)
+@enduml

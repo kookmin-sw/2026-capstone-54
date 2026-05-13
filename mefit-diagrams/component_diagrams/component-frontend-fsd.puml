@@ -1,0 +1,77 @@
+@startuml
+title frontend - React 19 FSD (Feature-Sliced Design) 6 Layer 구조
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 11
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+skinparam component {
+  BackgroundColor #F3E5F5
+  BorderColor #8E24AA
+}
+skinparam component<<infra>> {
+  BackgroundColor #E8F4FD
+  BorderColor #2196F3
+}
+skinparam component<<external>> {
+  BackgroundColor #ECEFF1
+  BorderColor #607D8B
+}
+
+actor "사용자\n(Browser)" as User
+
+package "app (전역)" {
+  component "Router (React Router)\nProviders (Zustand · TanStack Query)\nGlobal Styles (Tailwind 4)" as App
+}
+
+package "pages (28개 페이지)" {
+  component "landing · home\nlogin · sign-up\nforgot-password\nonboarding\nresume-{list,new,detail}\njd-{list,add,detail}\ninterview-{precheck,setup,session,results,complete,report}\nachievements · subscription\nsettings · notifications" as Pages
+}
+
+package "widgets" {
+  component "interview-session\n(녹화 + 질문 표시)\nlanding-navbar" as Widgets
+}
+
+package "features (14개 슬라이스)" {
+  component "auth\nhome\nonboarding\nresume\njd\nuser-job-description\ninterview-precheck\ninterview-setup\ninterview-session\nachievements · streak\nmilestones · notifications\nsubscription · settings" as Features
+}
+
+package "entities" {
+  component "session\n(InterviewSession\n인터뷰 model)" as Entities
+}
+
+package "shared (공통 자원)" {
+  component "ui (Button · Modal · Input)\napi (axios client · interceptor)\nlib (Zustand store · utils)\nconfig (env · routes)" as Shared
+}
+
+package "외부 의존" {
+  component "Backend API\n(REST / WebSocket / SSE)" as BE <<external>>
+  component "S3 Presigned PUT" as S3 <<external>>
+  component "voice-api\n(TTS Bearer)" as VA <<external>>
+  component "MediaRecorder API\n@mediapipe/tasks-vision\nGSAP + Lenis" as Browser <<infra>>
+}
+
+User --> App
+App --> Pages
+Pages --> Widgets
+Pages --> Features
+Widgets --> Features
+Features --> Entities
+Features --> Shared
+Entities --> Shared
+
+Features ..> Shared : api 클라이언트
+Features --> BE : REST · WS · SSE
+Features --> S3 : 멀티파트 업로드
+Features --> VA : TTS
+Widgets --> Browser : MediaRecorder
+
+note bottom of App
+  FSD 의존 방향:
+  app → pages → widgets → features → entities → shared
+  (상위 layer 가 하위 layer 만 import.
+   cross-import 금지 = 같은 layer 내 슬라이스 간 import 금지)
+end note
+
+footer frontend/ — Feature-Sliced Design 6 layer, Zustand · TanStack Query · Tailwind 4
+@enduml

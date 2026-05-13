@@ -1,0 +1,56 @@
+@startuml
+title 미핏 - Resume 상태 머신
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 11
+skinparam state {
+  BackgroundColor #E8F4FD
+  BorderColor #2196F3
+  ArrowColor #555555
+  FontSize 11
+}
+skinparam state<<terminal>> {
+  BackgroundColor #C8E6C9
+  BorderColor #2E7D32
+}
+skinparam state<<errstate>> {
+  BackgroundColor #FFCDD2
+  BorderColor #C62828
+}
+
+[*] --> DRAFT : CreateResumeService\n(파일 또는 텍스트)
+
+state DRAFT
+DRAFT : 사용자 편집 가능
+DRAFT : 파일 경로 → 자동 finalize
+DRAFT : 텍스트 경로 → 사용자 finalize
+
+state ANALYZING
+ANALYZING : analysis-resume 큐로 발행
+ANALYZING : ExtractText + Embed + Analyze + Finalize
+
+state COMPLETED <<terminal>>
+COMPLETED : 섹션 저장 완료
+COMPLETED : 임베딩 저장 완료
+COMPLETED : 면접에서 사용 가능
+
+state FAILED <<errstate>>
+FAILED : LLM / 텍스트 추출 실패
+FAILED : 재시도 가능
+
+state DELETED <<errstate>>
+DELETED : 소프트 삭제 (deleted_at)
+DELETED : hard delete 대기
+
+DRAFT --> ANALYZING : finalize()\n(자동 또는 사용자 트리거)
+ANALYZING --> COMPLETED : ApplyAnalysisResultTask
+ANALYZING --> FAILED : 분석 실패
+COMPLETED --> ANALYZING : 사용자 섹션 편집 후 재분석
+FAILED --> ANALYZING : retry()
+COMPLETED --> DELETED : 사용자 삭제 요청
+FAILED --> DELETED : 운영자 삭제
+
+DELETED --> [*]
+
+footer MeFit - backend/webapp/resumes/
+@enduml

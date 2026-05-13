@@ -1,0 +1,69 @@
+@startuml
+title 미핏 - InterviewSession 상태 머신 (Backend 도메인)
+
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 11
+skinparam state {
+  BackgroundColor #E8F4FD
+  BorderColor #2196F3
+  ArrowColor #555555
+  FontSize 11
+}
+skinparam state<<terminal>> {
+  BackgroundColor #C8E6C9
+  BorderColor #2E7D32
+}
+skinparam state<<errstate>> {
+  BackgroundColor #FFCDD2
+  BorderColor #C62828
+}
+
+[*] --> IN_PROGRESS : CreateInterviewSessionService\n(이력서 + 채용공고 + 모드 선택)
+
+state IN_PROGRESS {
+  IN_PROGRESS : 티켓 차감 완료
+  IN_PROGRESS : LLM 첫 질문 생성
+  IN_PROGRESS : WebSocket 연결 가능
+  IN_PROGRESS : Q&A 루프 진행 중
+}
+
+state COMPLETED <<terminal>>
+COMPLETED : status = COMPLETED
+COMPLETED : entry / StreakStatisticsService.record_participation
+COMPLETED : entry / 영상 처리 파이프라인 트리거 (S3 → SNS)
+
+state CANCELLED <<errstate>>
+CANCELLED : status = CANCELLED
+CANCELLED : entry / 티켓 환불 (RefundTicketsService)
+
+state PAUSED
+PAUSED : status = PAUSED
+PAUSED : entry / mark_paused(reason)
+PAUSED : entry / paused_at = now, pause_count++
+PAUSED : entry / pause_reason ∈ {user_left_window,\n  user_idle, manual_pause, heartbeat_timeout}
+PAUSED : guard / 모든 mutate API 거부 (ValidationException 400)\n  (Initiate / PresignPart / Complete / Abort / SubmitAnswer)
+PAUSED : exit / mark_resumed()\n+ total_paused_duration_ms 누적
+
+IN_PROGRESS --> IN_PROGRESS : WS reconnect\n(끊김 → 재연결, 동일 상태)
+IN_PROGRESS --> PAUSED : PauseInterviewSessionService\n(WS "pause" → mark_paused)
+PAUSED --> IN_PROGRESS : ResumeInterviewSessionService\n(WS "resume" → mark_resumed)
+IN_PROGRESS --> COMPLETED : FinishInterviewSessionService\n(모든 질문 완료)
+IN_PROGRESS --> CANCELLED : 사용자 취소 또는 timeout
+PAUSED --> CANCELLED : 사용자 취소 또는 timeout
+
+COMPLETED --> [*]
+CANCELLED --> [*]
+
+note bottom
+  PAUSED 는 status enum 의 별도 값 (IN_PROGRESS 와 구분):
+  • paused_at + pause_reason + pause_count + total_paused_duration_ms 함께 관리
+  • PAUSED 상태에서는 모든 mutate API 거부 (ValidationException 400):
+    InitiateRecording / PresignPart / CompleteRecording / AbortRecording / SubmitAnswer
+    (defense-in-depth — Frontend MediaRecorder.pause() 와 이중 보장)
+  ★ 녹화 동기 일시중지: PAUSED 진입 시 Frontend 가 MediaRecorder.pause() 호출 → 청크 생성 중단
+  ★ 같은 MediaRecorder instance 에서 이어서 녹화되어 영상 연속성 유지
+  Frontend 머신 동기화: state-interview-pause-resume.puml
+end note
+
+footer MeFit - backend/webapp/interviews/services/ + WebSocket pause/resume (4 상태)
+@enduml
