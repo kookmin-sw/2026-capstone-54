@@ -1,0 +1,35 @@
+services:
+  analysis-stt-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mefit-analysis-stt-worker
+    env_file:
+      - .env
+    environment:
+      - CELERY_BROKER_URL=redis://mefit-redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://mefit-redis:6379/1
+      - AWS_S3_ENDPOINT_URL=http://mefit-localstack:4566
+      - AWS_ACCESS_KEY_ID=dummy
+      - AWS_SECRET_ACCESS_KEY=dummy
+      - ANALYSIS_STT_CONCURRENCY=${ANALYSIS_STT_CONCURRENCY:-1}
+      - AWS_STORAGE_BUCKET_NAME=${AWS_STORAGE_BUCKET_NAME:-pj-kmucd1-04-mefit-audio-files}
+      - AWS_S3_REGION_NAME=${AWS_S3_REGION_NAME:-us-east-1}
+      - STT_MODEL_SIZE=${STT_MODEL_SIZE:-small}
+      - STT_DEVICE=${STT_DEVICE:-cpu}
+      - STT_COMPUTE_TYPE=${STT_COMPUTE_TYPE:-int8}
+      - STT_DEFAULT_LANGUAGE=${STT_DEFAULT_LANGUAGE:-ko}
+      - BACKEND_CALLBACK_TASK_NAME=${BACKEND_CALLBACK_TASK_NAME:-interviews.tasks.save_transcript_result_task.SaveTranscriptResultTask}
+      - BACKEND_CALLBACK_QUEUE=${BACKEND_CALLBACK_QUEUE:-celery}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    volumes:
+      - analysis_stt_models:/root/.cache/huggingface
+    networks:
+      - mefit-local
+
+volumes:
+  analysis_stt_models:
+
+networks:
+  mefit-local:
+    external: true
