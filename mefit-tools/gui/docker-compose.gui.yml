@@ -1,0 +1,35 @@
+# ========================================
+# MeFit Tools GUI - Docker Compose
+# ========================================
+# Streamlit 기반 대시보드를 Docker 컨테이너에서 실행
+#
+# Usage:
+#   docker-compose -f docker-compose.gui.yml up
+#   docker-compose -f docker-compose.gui.yml down
+#
+
+services:
+  mefit-gui:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mefit-gui
+    working_dir: /app/gui
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+      - ${HOST_PROJECT_ROOT}:${HOST_PROJECT_ROOT}
+      - ..:/app
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - IN_DOCKER=1
+      - PROJECT_ROOT=${HOST_PROJECT_ROOT}
+      - LOCALSTACK_AUTH_TOKEN=${LOCALSTACK_AUTH_TOKEN:-}
+    ports:
+      - "8501:8501"
+    networks:
+      - mefit-local
+
+networks:
+  mefit-local:
+    external: true

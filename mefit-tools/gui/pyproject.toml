@@ -1,0 +1,16 @@
+[project]
+name = "mefit-tools-gui"
+version = "0.1.0"
+description = "MeFit Tools Web GUI (Streamlit)"
+requires-python = ">=3.10"
+dependencies = [
+    "streamlit>=1.28.0",
+    "pandas>=2.0.0",
+    "plotly>=5.18.0",
+    "requests>=2.31.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+]
