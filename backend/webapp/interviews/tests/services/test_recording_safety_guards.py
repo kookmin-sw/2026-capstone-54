@@ -123,7 +123,8 @@ class RecordingSafetyGuardScenarioTests(TestCase):
     self.assertNotEqual(first_id, second_id)
 
   @patch(MOCK_INITIATE_S3)
-  def test_scenario_reconnect_does_not_abandon_completed_recording(self, mock_s3):
+  def test_scenario_reconnect_blocks_when_completed_recording_exists(self, mock_s3):
+    """1:1 정책: COMPLETED 도 active 이므로 같은 turn 에 새 INITIATED 시도 시 ConflictException + COMPLETED 보존."""
     mock_s3.return_value = self._create_mock_s3()
 
     completed_recording = InterviewRecordingFactory(
@@ -131,46 +132,19 @@ class RecordingSafetyGuardScenarioTests(TestCase):
       interview_turn=self.turn,
       user=self.user,
       status=RecordingStatus.COMPLETED,
+      s3_key=f"{self.session.pk}/{self.turn.pk}/100.webm",
     )
 
-    InitiateRecordingService(
-      interview_session=self.session,
-      interview_turn=self.turn,
-      user=self.user,
-      media_type="video",
-    ).perform()
+    with self.assertRaises(ConflictException):
+      InitiateRecordingService(
+        interview_session=self.session,
+        interview_turn=self.turn,
+        user=self.user,
+        media_type="video",
+      ).perform()
 
     completed_recording.refresh_from_db()
     self.assertEqual(completed_recording.status, RecordingStatus.COMPLETED)
-
-  @patch(MOCK_INITIATE_S3)
-  def test_scenario_reconnect_abandons_multiple_stale_recordings(self, mock_s3):
-    mock_s3.return_value = self._create_mock_s3()
-
-    stale1 = InterviewRecordingFactory(
-      interview_session=self.session,
-      interview_turn=self.turn,
-      user=self.user,
-      status=RecordingStatus.INITIATED,
-    )
-    stale2 = InterviewRecordingFactory(
-      interview_session=self.session,
-      interview_turn=self.turn,
-      user=self.user,
-      status=RecordingStatus.UPLOADING,
-    )
-
-    InitiateRecordingService(
-      interview_session=self.session,
-      interview_turn=self.turn,
-      user=self.user,
-      media_type="video",
-    ).perform()
-
-    stale1.refresh_from_db()
-    stale2.refresh_from_db()
-    self.assertEqual(stale1.status, RecordingStatus.ABANDONED)
-    self.assertEqual(stale2.status, RecordingStatus.ABANDONED)
 
     # ── Scenario 4: Cleanup task ──
 

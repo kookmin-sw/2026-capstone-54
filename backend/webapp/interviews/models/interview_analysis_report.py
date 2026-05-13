@@ -43,6 +43,19 @@ class InterviewAnalysisReport(BaseModel):
   strengths = models.JSONField(default=list, verbose_name="강점")
   improvement_areas = models.JSONField(default=list, verbose_name="개선 영역")
 
+  # 영상 분석
+  video_score = models.IntegerField(null=True, blank=True, verbose_name="영상 점수")
+  video_analysis_result = models.JSONField(default=dict, blank=True, verbose_name="영상 분석 결과")
+  video_analysis_comment = models.TextField(blank=True, default="", verbose_name="영상 분석 코멘트")
+
+  # 음성 분석
+  audio_score = models.IntegerField(null=True, blank=True, verbose_name="음성 점수")
+  audio_analysis_result = models.JSONField(default=dict, blank=True, verbose_name="음성 분석 결과")
+  audio_analysis_comment = models.TextField(blank=True, default="", verbose_name="음성 분석 코멘트")
+
+  # 텍스트 분석
+  content_score = models.IntegerField(null=True, blank=True, verbose_name="텍스트 점수")
+
   # TokenUsage 역방향 Generic Relation (토큰 사용 상세 내역)
   token_usages = GenericRelation(
     "llm_trackers.TokenUsage",

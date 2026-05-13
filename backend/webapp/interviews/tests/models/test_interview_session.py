@@ -97,13 +97,21 @@ class InterviewSessionMarkCompletedTests(TestCase):
 
   def test_mark_completed_raises_when_turn_count_below_expected(self):
     """상수 수식 기준 턴 수보다 적게 생성된 세션은 ValueError 로 거부된다."""
+    expected_total = FOLLOWUP_ANCHOR_COUNT * (1 + MAX_FOLLOWUP_PER_ANCHOR)
+    insufficient_turn_count = expected_total - 1
+    self.assertGreaterEqual(insufficient_turn_count, 1)
+
     session = InterviewSessionFactory(
       interview_session_type=InterviewSessionType.FOLLOWUP,
       interview_session_status=InterviewSessionStatus.IN_PROGRESS,
-      total_questions=2,
+      total_questions=expected_total,
     )
-    InterviewTurnFactory(interview_session=session, answer="답변1", turn_number=1)
-    InterviewTurnFactory(interview_session=session, answer="답변2", turn_number=2)
+    for turn_number in range(1, insufficient_turn_count + 1):
+      InterviewTurnFactory(
+        interview_session=session,
+        answer=f"답변{turn_number}",
+        turn_number=turn_number,
+      )
     with self.assertRaises(ValueError):
       session.mark_completed()
 
@@ -145,12 +153,20 @@ class InterviewSessionIsCompletionEligibleTests(TestCase):
 
   def test_returns_false_when_followup_turn_count_below_constants_formula(self):
     """FOLLOWUP 세션에서 상수 수식 미만의 turn 수면 종료 불가."""
+    expected_total = FOLLOWUP_ANCHOR_COUNT * (1 + MAX_FOLLOWUP_PER_ANCHOR)
+    insufficient_turn_count = expected_total - 1
+    self.assertGreaterEqual(insufficient_turn_count, 1)
+
     session = InterviewSessionFactory(
       interview_session_type=InterviewSessionType.FOLLOWUP,
-      total_questions=2,
+      total_questions=expected_total,
     )
-    InterviewTurnFactory(interview_session=session, answer="답변1", turn_number=1)
-    InterviewTurnFactory(interview_session=session, answer="답변2", turn_number=2)
+    for turn_number in range(1, insufficient_turn_count + 1):
+      InterviewTurnFactory(
+        interview_session=session,
+        answer=f"답변{turn_number}",
+        turn_number=turn_number,
+      )
     self.assertFalse(session.is_completion_eligible())
 
   def test_returns_true_when_followup_session_meets_constants_formula(self):

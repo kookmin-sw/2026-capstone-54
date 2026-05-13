@@ -14,6 +14,7 @@ from interviews.schemas.followup_generator_output import FollowUpGeneratorOutput
 from interviews.schemas.followup_question import FollowUpQuestion
 from interviews.services.llm.prompt_registry import PromptRegistry
 from interviews.services.llm.token_tracker import TokenUsageCallback
+from langchain_core.messages import HumanMessage, SystemMessage
 from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
@@ -48,10 +49,10 @@ class FollowUpQuestionGenerator:
       llm = llm.with_config(callbacks=[callback])
 
     structured_llm = llm.with_structured_output(_FollowUpOutputSchema)
-    prompt = self._build_prompt(input_data)
+    messages = self._build_messages(input_data)
 
     try:
-      result: _FollowUpOutputSchema = structured_llm.invoke(prompt)
+      result: _FollowUpOutputSchema = structured_llm.invoke(messages)
     except Exception as e:
       raise RuntimeError(f"LLM 호출 실패: {e}") from e
 
@@ -64,9 +65,12 @@ class FollowUpQuestionGenerator:
       user_answer=input_data.user_answer,
     )
 
-  def _build_prompt(self, input_data: FollowUpGeneratorInput) -> str:
+  def _build_messages(self, input_data: FollowUpGeneratorInput) -> list[SystemMessage | HumanMessage]:
+    """system/user 역할을 분리한 메시지 리스트를 생성한다."""
     system_prompt = _registry.get_followup_prompt(input_data.difficulty_level)
-    parts: list[str] = [system_prompt, "\n"]
+
+    # User message: 참고 자료 + 대화 이력 + 지시사항
+    parts: list[str] = []
 
     # 이력서·채용공고 참조
     parts.append(
@@ -96,4 +100,7 @@ class FollowUpQuestionGenerator:
       "이미 다룬 주제를 반복하지 말고, 아직 검증되지 않은 영역에 집중하세요."
     )
 
-    return "".join(parts)
+    return [
+      SystemMessage(content=system_prompt),
+      HumanMessage(content="".join(parts)),
+    ]

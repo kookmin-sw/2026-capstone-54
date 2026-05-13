@@ -1,0 +1,239 @@
+digraph model_graph {
+	graph [bb="0,0,477.5,457",
+		fontname=Roboto,
+		fontsize=8,
+		rankdir=TB,
+		splines=true
+	];
+	node [fontname=Roboto,
+		fontsize=8,
+		label="\N",
+		shape=plaintext
+	];
+	edge [fontname=Roboto,
+		fontsize=8
+	];
+	common_models_base_model_BaseModel	[height=0.79167,
+		label=<
+    <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
+    <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="#1b563f">
+    <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
+    BaseModel
+    </B></FONT></TD></TR>
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">created_at</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">DateTimeField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">updated_at</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">DateTimeField</FONT>
+    </TD></TR>
+
+
+    </TABLE>
+    >,
+		pos="85.5,28.5",
+		width=2.375];
+	terms_documents_models_terms_document_TermsDocument	[height=2.3611,
+		label=<
+    <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
+    <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="#1b563f">
+    <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
+    TermsDocument<BR/>&lt;<FONT FACE="Roboto"><I>BaseModel</I></FONT>&gt;
+    </B></FONT></TD></TR>
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><B>id</B></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><B>BigAutoField</B></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto">content</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto">TextField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>created_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">effective_at</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">DateTimeField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto">is_required</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto">BooleanField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">published_at</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">DateTimeField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto">terms_type</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto">CharField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto">title</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto">CharField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>updated_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto">version</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto">PositiveIntegerField</FONT>
+    </TD></TR>
+
+
+    </TABLE>
+    >,
+		pos="201.5,196",
+		width=2.7639];
+	terms_documents_models_terms_document_TermsDocument -> common_models_base_model_BaseModel	[arrowhead=empty,
+		arrowtail=none,
+		dir=both,
+		label=" abstract\ninheritance",
+		lp="154,84",
+		pos="e,105.03,57.357 142.48,110.8 131.37,94.943 120.31,79.163 110.93,65.781"];
+	terms_documents_models_user_consent_UserConsent	[height=1.8194,
+		label=<
+    <TABLE BGCOLOR="white" BORDER="1" CELLBORDER="0" CELLSPACING="0">
+    <TR><TD COLSPAN="2" CELLPADDING="5" ALIGN="CENTER" BGCOLOR="#1b563f">
+    <FONT FACE="Roboto" COLOR="white" POINT-SIZE="10"><B>
+    UserConsent<BR/>&lt;<FONT FACE="Roboto"><I>BaseModel</I></FONT>&gt;
+    </B></FONT></TD></TR>
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><B>id</B></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><B>BigAutoField</B></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><B>terms_document</B></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><B>ForeignKey (id)</B></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT FACE="Roboto"><B>user</B></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT FACE="Roboto"><B>ForeignKey (id)</B></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">agreed_at</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">DateTimeField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>created_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">disagreed_at</FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto">DateTimeField</FONT>
+    </TD></TR>
+
+
+
+    <TR><TD ALIGN="LEFT" BORDER="0">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>updated_at</I></FONT>
+    </TD><TD ALIGN="LEFT">
+    <FONT COLOR="#7B7B7B" FACE="Roboto"><I>DateTimeField</I></FONT>
+    </TD></TR>
+
+
+    </TABLE>
+    >,
+		pos="194.5,391.5",
+		width=2.9444];
+	terms_documents_models_user_consent_UserConsent -> common_models_base_model_BaseModel	[arrowhead=empty,
+		arrowtail=none,
+		dir=both,
+		label=" abstract\ninheritance",
+		lp="69,196",
+		pos="e,67.879,57.345 88.149,332.21 70.937,317.83 55.502,300.76 45.5,281 11.382,213.59 28.413,184.6 45.5,111 49.062,95.656 55.939,79.872 \
+63,66.33"];
+	terms_documents_models_user_consent_UserConsent -> terms_documents_models_terms_document_TermsDocument	[arrowhead=none,
+		arrowtail=dot,
+		dir=both,
+		label=" terms_document (user_consents)",
+		lp="265,303.5",
+		pos="s,194.83,325.51 194.99,317.14 195.13,311 195.29,304.89 195.5,299 195.7,293.15 195.95,287.11 196.24,281.03"];
+	users_models_user_User	[height=0.5,
+		label=<
+  <TABLE BGCOLOR="white" BORDER="0" CELLBORDER="0" CELLSPACING="0">
+  <TR><TD COLSPAN="2" CELLPADDING="4" ALIGN="CENTER" BGCOLOR="#1b563f">
+  <FONT FACE="Roboto" POINT-SIZE="12" COLOR="white">User</FONT>
+  </TD></TR>
+  </TABLE>
+  >,
+		pos="356.5,196",
+		width=0.86111];
+	terms_documents_models_user_consent_UserConsent -> users_models_user_User	[arrowhead=none,
+		arrowtail=dot,
+		dir=both,
+		label=" user (terms_document_consents)",
+		lp="408,303.5",
+		pos="s,300.6,341.71 307.16,336.61 317.51,328.18 326.93,318.67 334.5,308 354.62,279.64 357.43,237.43 357.26,214.08"];
+}

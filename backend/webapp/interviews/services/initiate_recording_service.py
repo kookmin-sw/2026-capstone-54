@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from common.exceptions import ConflictException, PermissionDeniedException
 from common.services import BaseService
 from django.conf import settings
+from django.db import IntegrityError
 from interviews.enums import InterviewSessionStatus, RecordingMediaType, RecordingStatus
 from interviews.models import InterviewRecording
 
@@ -53,16 +54,23 @@ class InitiateRecordingService(BaseService):
     )
     upload_id = response["UploadId"]
 
-    recording = InterviewRecording.objects.create(
-      interview_session=session,
-      interview_turn=turn,
-      user=self.user,
-      media_type=media_type,
-      status=RecordingStatus.INITIATED,
-      s3_bucket=bucket,
-      s3_key=s3_key,
-      upload_id=upload_id,
-    )
+    try:
+      recording = InterviewRecording.objects.create(
+        interview_session=session,
+        interview_turn=turn,
+        user=self.user,
+        media_type=media_type,
+        status=RecordingStatus.INITIATED,
+        s3_bucket=bucket,
+        s3_key=s3_key,
+        upload_id=upload_id,
+      )
+    except IntegrityError as exc:
+      s3.abort_multipart_upload(Bucket=bucket, Key=s3_key, UploadId=upload_id)
+      raise ConflictException(
+        error_code="ACTIVE_RECORDING_EXISTS",
+        detail="이 turn 에 이미 진행 중인 녹화가 있습니다. 잠시 후 다시 시도해주세요.",
+      ) from exc
 
     return {
       "recordingId": str(recording.pk),

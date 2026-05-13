@@ -29,21 +29,23 @@ four_field_strategy = st.fixed_dictionaries(
   }
 )
 
+_pg_safe_characters = st.characters(
+  blacklist_characters="\x00",
+  blacklist_categories=("Cs", ),
+)
+
 json_value_strategy = st.recursive(
   st.one_of(
     st.none(),
     st.booleans(),
     st.integers(min_value=-1_000_000, max_value=1_000_000),
     st.floats(allow_nan=False, allow_infinity=False, min_value=-1e6, max_value=1e6),
-    st.text(
-      alphabet=st.characters(blacklist_characters="\x00"),
-      max_size=50,
-    ),
+    st.text(alphabet=_pg_safe_characters, max_size=50),
   ),
   lambda children: st.one_of(
     st.lists(children, max_size=5),
     st.dictionaries(
-      st.text(alphabet=st.characters(blacklist_characters="\x00"), max_size=20),
+      st.text(alphabet=_pg_safe_characters, max_size=20),
       children,
       max_size=5,
     ),
@@ -51,7 +53,7 @@ json_value_strategy = st.recursive(
   max_leaves=20,
 )
 
-_pg_safe_text = st.text(alphabet=st.characters(blacklist_characters="\x00"), max_size=20)
+_pg_safe_text = st.text(alphabet=_pg_safe_characters, max_size=20)
 
 face_result_strategy = st.fixed_dictionaries(
   {

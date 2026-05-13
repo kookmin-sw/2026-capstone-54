@@ -1,5 +1,6 @@
 """분석 리포트 Serializer."""
 
+from djangorestframework_camel_case.util import camelize
 from interviews.models import InterviewAnalysisReport
 from rest_framework import serializers
 
@@ -13,6 +14,10 @@ class InterviewAnalysisReportSerializer(serializers.ModelSerializer):
   difficulty_level = serializers.SerializerMethodField()
   total_questions = serializers.SerializerMethodField()
   total_followup_questions = serializers.SerializerMethodField()
+  # JSONField 내부 키 camelCase 변환
+  question_feedbacks = serializers.SerializerMethodField()
+  audio_analysis_result = serializers.SerializerMethodField()
+  video_analysis_result = serializers.SerializerMethodField()
 
   class Meta:
     model = InterviewAnalysisReport
@@ -29,6 +34,16 @@ class InterviewAnalysisReportSerializer(serializers.ModelSerializer):
       "error_message",
       "created_at",
       "updated_at",
+      # 컴포넌트 점수
+      "content_score",
+      "video_score",
+      "audio_score",
+      # 영상 분석
+      "video_analysis_result",
+      "video_analysis_comment",
+      # 음성 분석
+      "audio_analysis_result",
+      "audio_analysis_comment",
       # 면접 개요
       "company_name",
       "position_title",
@@ -85,3 +100,16 @@ class InterviewAnalysisReportSerializer(serializers.ModelSerializer):
     if session:
       return session.total_followup_questions
     return 0
+
+  def get_question_feedbacks(self, obj):
+    return camelize(obj.question_feedbacks or [])
+
+  def get_audio_analysis_result(self, obj):
+    if not obj.audio_analysis_result:
+      return None
+    return camelize(obj.audio_analysis_result)
+
+  def get_video_analysis_result(self, obj):
+    if not obj.video_analysis_result:
+      return None
+    return camelize(obj.video_analysis_result)
