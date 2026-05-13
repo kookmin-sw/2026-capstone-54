@@ -137,7 +137,7 @@ function parseXhrError(xhr: XMLHttpRequest, fallback: string): Error {
       fieldErrors?: Record<string, string[]>;
     };
     const fieldMsg = body.fieldErrors
-      ? ([] as string[]).concat(...Object.values(body.fieldErrors))[0]
+      ? Object.values(body.fieldErrors).flat()[0]
       : undefined;
     const msg = fieldMsg ?? body.message ?? `${fallback}: ${xhr.status}`;
     return new Error(msg);
