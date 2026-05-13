@@ -84,6 +84,8 @@ export function InterviewSessionPage() {
     loadInterviewSession, resetInterviewSession,
   } = useInterviewSessionStore();
 
+  const isPaused = useInterviewSessionStore((s) => s.isPaused);
+
   const { ttsPlaying, ttsMuted, setTtsMuted, ttsVolume, setTtsVolume, playTtsText, skipTts, destroyTts } = useTts();
 
   const {
@@ -176,13 +178,25 @@ export function InterviewSessionPage() {
     if (!hasStarted || isFinished) return;
     if (isIdle) {
       wsClientRef.current?.sendPause("user_idle");
-    } else {
-      wsClientRef.current?.sendResume();
     }
   }, [isIdle, hasStarted, isFinished, wsClientRef]);
 
+  useEffect(() => {
+    if (!hasStarted || isFinished) return;
+    if (isPaused) {
+      recording.pauseRecording();
+      stopStt();
+    } else {
+      recording.resumeRecording();
+      if (phase === "speaking") {
+        startStt();
+      }
+    }
+  }, [isPaused, hasStarted, isFinished, recording, phase, startStt, stopStt]);
+
   const handleIdleContinue = () => {
     resetIdle();
+    wsClientRef.current?.sendResume();
   };
 
   const handleIdleFinish = () => {
@@ -210,15 +224,24 @@ export function InterviewSessionPage() {
   }, [interviewSessionUuid]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    const handler = () => {
+    const handleHardExit = () => {
       recording.abortRecording().catch(() => {});
       stopStt();
       destroyTts();
       cleanupMedia();
       video.stopVideoAnalysis();
     };
-    window.addEventListener("beforeunload", handler);
-    return () => window.removeEventListener("beforeunload", handler);
+    const handlePageHide = (event: PageTransitionEvent) => {
+      if (!event.persisted) {
+        handleHardExit();
+      }
+    };
+    window.addEventListener("beforeunload", handleHardExit);
+    window.addEventListener("pagehide", handlePageHide);
+    return () => {
+      window.removeEventListener("beforeunload", handleHardExit);
+      window.removeEventListener("pagehide", handlePageHide);
+    };
   }, [recording, stopStt, destroyTts, cleanupMedia, video]);
 
   useEffect(() => {
@@ -343,7 +366,7 @@ export function InterviewSessionPage() {
               </svg>
             </div>
             <div className="absolute top-2 right-2 z-10">
-              <RecordingIndicator isRecording={recording.isRecording} />
+              <RecordingIndicator isRecording={recording.isRecording} isPaused={isPaused} />
             </div>
             {video.isAnalyzing && (
               <div className="absolute top-2 left-2 text-[9px] font-bold text-green-400 bg-green-400/10 border border-green-400/30 rounded px-1.5 py-px flex items-center gap-1">
@@ -379,7 +402,7 @@ export function InterviewSessionPage() {
       {isTooSmall && <ScreenSizeOverlay screenWidth={screenSize.w} screenHeight={screenSize.h} onGoHome={() => navigate("/interview/results")} />}
       {permissionError && <PermissionOverlay onReload={() => window.location.reload()} onGoResults={() => navigate("/interview/results")} />}
       <SessionTakeoverModal />
-      <PausedOverlay />
+      <PausedOverlay onResume={() => wsClientRef.current?.sendResume()} />
       <IdleDetectedModal open={isIdle} onContinue={handleIdleContinue} onFinish={handleIdleFinish} />
       <SttAidNotice />
     </div>

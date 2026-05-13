@@ -1,17 +1,49 @@
+import { useEffect, useRef, useState } from "react";
+import { GRADE_BADGE, getGrade } from "./constants";
+
 export function ScoreGauge({ score }: { score: number }) {
-  const pct = Math.min(1, Math.max(0, score / 100));
-  const r = 60, cx = 80, cy = 80;
-  const circumference = Math.PI * r;
-  const dashOffset = circumference * (1 - pct);
-  const color = score >= 90 ? "#059669" : score >= 70 ? "#0991B2" : score >= 50 ? "#D97706" : "#DC2626";
+  const [animatedScore, setAnimatedScore] = useState(0);
+  const [animatedPct, setAnimatedPct] = useState(0);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    let rafId: number;
+    const start = performance.now();
+    const duration = 1100;
+    const target = Math.min(100, Math.max(0, score));
+
+    function animate(now: number) {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setAnimatedScore(Math.round(eased * target));
+      setAnimatedPct(eased * target);
+      if (progress < 1) rafId = requestAnimationFrame(animate);
+    }
+    rafId = requestAnimationFrame(animate);
+
+    return () => cancelAnimationFrame(rafId);
+  }, [score]);
+
+  const grade = getGrade(score);
+  const badge = GRADE_BADGE[grade] ?? GRADE_BADGE.Average;
 
   return (
-    <svg viewBox="0 0 160 90" className="w-full max-w-[160px] mx-auto">
-      <path d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`} fill="none" stroke="#F3F4F6" strokeWidth="12" strokeLinecap="round" />
-      <path d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`} fill="none" stroke={color} strokeWidth="12" strokeLinecap="round"
-        strokeDasharray={`${circumference}`} strokeDashoffset={dashOffset} style={{ transition: "stroke-dashoffset 0.8s ease" }} />
-      <text x={cx} y={cy - 4} textAnchor="middle" fontSize="28" fontWeight="900" fill="#0A0A0A">{score}</text>
-      <text x={cx} y={cy + 14} textAnchor="middle" fontSize="11" fill="#9CA3AF">/ 100</text>
-    </svg>
+    <div ref={ref} className="relative flex-shrink-0">
+      <div
+        className="w-[120px] h-[120px] rounded-full flex items-center justify-center"
+        style={{
+          background: `conic-gradient(#0ca8c7ff 0% ${animatedPct}%, #E5E7EB  ${animatedPct}% 100%)`,
+        }}
+      >
+        <div className="w-[92px] h-[92px] rounded-full bg-white flex flex-col items-center justify-center shadow-[0_1px_4px_rgba(0,0,0,.08)]">
+          <span className="text-[32px] font-bold text-[#0891B2] tabular-nums">{animatedScore}</span>
+          <span className="text-[12px] text-[#9CA3AF] -mt-0.5">/ 100</span>
+        </div>
+      </div>
+      <span className={`absolute -top-1 -right-2 text-[11px] font-bold px-1.5 py-0.5 rounded-full ${badge.bg} ${badge.text}`}>
+        {badge.label}
+      </span>
+    </div>
   );
 }

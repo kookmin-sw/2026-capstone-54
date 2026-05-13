@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
+import { Lock } from "lucide-react";
 import { recordingApi } from "@/features/interview-session/api/recordingApi";
 import type { BehaviorAnalysis } from "@/features/interview-session";
 import type { SpeechSegment } from "@/features/interview-session/api/types";
+import { useSubscriptionStore } from "@/features/subscription";
 
 const DBFS_MIN = -60;
 const DBFS_MAX = 0;
@@ -110,13 +113,16 @@ export function InteractiveTimeline({
   const [currentTimeMs, setCurrentTimeMs] = useState(0);
   const mediaRef = useRef<HTMLVideoElement | HTMLAudioElement>(null);
 
+  const subscriptionStatus = useSubscriptionStore((s) => s.status);
+  const canPlayback = subscriptionStatus?.policy?.features?.reportRecordingPlayback ?? false;
+
   useEffect(() => {
-    if (!recordingId) return;
+    if (!recordingId || !canPlayback) return;
     recordingApi.playbackUrl(recordingId).then(data => {
       setVideoUrl(data.scaledUrl || data.url);
       setAudioUrl(data.audioUrl || data.url);
     }).catch((err) => { console.error("Failed to load playback URL:", err); });
-  }, [recordingId]);
+  }, [recordingId, canPlayback]);
 
   if (!speechData?.summary || !speechData?.timeline) return null;
 
@@ -181,28 +187,49 @@ export function InteractiveTimeline({
         </div>
       </div>
 
-      {/* 2. Video Player (Interactive mode only) */}
-      {recordingId && (videoUrl || audioUrl) && (
-        <div className="w-full aspect-video sm:aspect-[21/9] bg-black rounded-xl overflow-hidden print:hidden shrink-0 flex items-center justify-center">
-          {mediaType === "video" ? (
-            <video
-              ref={mediaRef as React.RefObject<HTMLVideoElement>}
-              src={videoUrl || undefined}
-              controls
-              playsInline
-              className="w-full h-full object-contain"
-              onTimeUpdate={handleTimeUpdate}
-            />
-          ) : (
-            <audio
-              ref={mediaRef as React.RefObject<HTMLAudioElement>}
-              src={audioUrl || videoUrl || undefined}
-              controls
-              className="w-full h-[40px]"
-              onTimeUpdate={handleTimeUpdate}
-            />
-          )}
-        </div>
+      {/* 2. Video Player — Pro: 영상 재생 / Free: 업그레이드 안내 placeholder */}
+      {recordingId && (
+        videoUrl || audioUrl ? (
+          <div className="w-full aspect-video sm:aspect-[21/9] bg-black rounded-xl overflow-hidden print:hidden shrink-0 flex items-center justify-center">
+            {mediaType === "video" ? (
+              <video
+                ref={mediaRef as React.RefObject<HTMLVideoElement>}
+                src={videoUrl || undefined}
+                controls
+                playsInline
+                className="w-full h-full object-contain"
+                onTimeUpdate={handleTimeUpdate}
+              />
+            ) : (
+              <audio
+                ref={mediaRef as React.RefObject<HTMLAudioElement>}
+                src={audioUrl || videoUrl || undefined}
+                controls
+                className="w-full h-[40px]"
+                onTimeUpdate={handleTimeUpdate}
+              />
+            )}
+          </div>
+        ) : !canPlayback ? (
+          <div className="w-full aspect-video sm:aspect-[21/9] bg-gradient-to-br from-[#F0F9FF] via-[#E6F7FA] to-[#F0F9FF] border border-dashed border-[#06B6D4]/40 rounded-xl print:hidden shrink-0 flex flex-col items-center justify-center p-6 text-center gap-3">
+            <div className="w-12 h-12 rounded-full bg-white/80 flex items-center justify-center shadow-sm">
+              <Lock size={20} className="text-[#0991B2]" />
+            </div>
+            <div>
+              <p className="text-[13px] font-bold text-[#0E7490] mb-1">면접 다시보기는 Pro 요금제 전용</p>
+              <p className="text-[11px] text-[#6B7280] leading-relaxed">
+                Pro 요금제로 업그레이드하면 면접 영상을 다시 보면서<br />
+                답변 태도와 표정을 직접 확인할 수 있습니다.
+              </p>
+            </div>
+            <Link
+              to="/subscription"
+              className="inline-flex items-center gap-1.5 text-[11px] font-bold text-white bg-[#0991B2] hover:bg-[#0E7490] rounded-lg px-3 py-1.5 no-underline transition-colors"
+            >
+              Pro 업그레이드 →
+            </Link>
+          </div>
+        ) : null
       )}
 
       {/* 3. Waveform and Silence Bars */}

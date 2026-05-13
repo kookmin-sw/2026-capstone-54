@@ -8,13 +8,23 @@ const REASON_LABEL: Record<string, string> = {
   user_idle: "장시간 활동이 없어 일시정지했습니다",
 };
 
-export function PausedOverlay() {
+interface PausedOverlayProps {
+  onResume?: () => void;
+}
+
+export function PausedOverlay({ onResume }: PausedOverlayProps = {}) {
   const isPaused = useInterviewSessionStore((s) => s.isPaused);
   const pauseReason = useInterviewSessionStore((s) => s.pauseReason);
+  const setPaused = useInterviewSessionStore((s) => s.setPaused);
 
   if (!isPaused) return null;
 
   const reasonText = (pauseReason && REASON_LABEL[pauseReason]) || "면접이 일시정지되었습니다";
+
+  const handleResume = () => {
+    onResume?.();
+    setPaused(false, null);
+  };
 
   return (
     <div
@@ -25,7 +35,14 @@ export function PausedOverlay() {
       <div className="rounded-2xl bg-[#0b1420] border border-white/10 px-8 py-6 text-center">
         <p className="text-base font-bold">면접 일시정지 중</p>
         <p className="mt-2 text-sm text-slate-300">{reasonText}</p>
-        <p className="mt-3 text-xs text-slate-500">화면을 다시 활성화하면 자동으로 재개됩니다.</p>
+        <button
+          type="button"
+          onClick={handleResume}
+          className="mt-4 px-6 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-sm font-semibold transition-colors"
+        >
+          이어서 하기
+        </button>
+        <p className="mt-3 text-xs text-slate-500">버튼을 눌러 면접을 재개하세요.</p>
       </div>
     </div>
   );

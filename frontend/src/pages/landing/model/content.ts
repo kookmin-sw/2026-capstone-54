@@ -103,7 +103,7 @@ export const FEATURES: FeatureItem[] = [
   {
     Icon: FileText,
     title: "이력서 분석",
-    desc: "PDF·DOCX 업로드 즉시 텍스트 추출 → 임베딩 → 직무 매칭 질문을 자동 생성합니다.",
+    desc: "PDF 업로드 즉시 텍스트 추출 → 임베딩 → 직무 매칭 질문을 자동 생성합니다.",
   },
   {
     Icon: Eye,

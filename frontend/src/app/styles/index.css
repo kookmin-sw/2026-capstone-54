@@ -221,6 +221,55 @@ button {
 }
 
 /* ════════════════════════════════════════════
+   Interview Report 카드 스타일
+   ════════════════════════════════════════════ */
+.report-card {
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.02), 0 2px 10px rgba(9, 145, 178, 0.04), 0 6px 24px rgba(9, 145, 178, 0.03);
+}
+
+.report-card-hi {
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.02), 0 2px 10px rgba(9, 145, 178, 0.04), 0 6px 24px rgba(9, 145, 178, 0.03);
+}
+
+.report-page {
+  font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* ════════════════════════════════════════════
+   스크롤바 숨김 유틸리티
+   ════════════════════════════════════════════ */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* 얇은 스크롤바 */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(115, 189, 209, 0.3) transparent;
+}
+.scrollbar-thin::-webkit-scrollbar {
+  height: 4px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(9, 145, 178, 0.3);
+  border-radius: 4px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: rgba(9, 145, 178, 0.5);
+}
+
+/* ════════════════════════════════════════════
    Reveal 유틸리티 (JS 클래스 토글 방식)
    사용법: className={`reveal${revealed ? " reveal-in" : ""}`}
    ════════════════════════════════════════════ */

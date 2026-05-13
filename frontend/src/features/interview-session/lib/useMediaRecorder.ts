@@ -10,6 +10,8 @@ interface UseMediaRecorderOptions {
 interface UseMediaRecorderReturn {
   start: () => Promise<void>;
   stop: () => Promise<Blob | null>;
+  pause: () => void;
+  resume: () => void;
   stream: MediaStream | null;
   isRecording: boolean;
   error: string | null;
@@ -174,6 +176,20 @@ export function useMediaRecorder({
     });
   }, [externalStream]);
 
+  const pause = useCallback(() => {
+    if (recorderRef.current && recorderRef.current.state === "recording") {
+      recorderRef.current.pause();
+      console.info("[MediaRecorder] paused");
+    }
+  }, []);
+
+  const resume = useCallback(() => {
+    if (recorderRef.current && recorderRef.current.state === "paused") {
+      recorderRef.current.resume();
+      console.info("[MediaRecorder] resumed");
+    }
+  }, []);
+
   useEffect(() => {
     return () => {
       if (recorderRef.current && recorderRef.current.state !== "inactive") {
@@ -190,5 +206,5 @@ export function useMediaRecorder({
     };
   }, []);
 
-  return { start, stop, stream, isRecording, error };
+  return { start, stop, pause, resume, stream, isRecording, error };
 }
