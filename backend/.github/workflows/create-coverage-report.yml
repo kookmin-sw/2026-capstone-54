@@ -1,0 +1,294 @@
+name: Create Coverage Report
+
+on:
+  push:
+    branches-ignore:
+      - 'coverage-docs'
+  delete:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  SECRET_KEY: ${{ secrets.CI_DJANGO_KEY }}
+  DEBUG: "True"
+  ALLOWED_HOSTS: localhost,127.0.0.1,0.0.0.0
+  PORT: 8000
+  DJANGO_SETTINGS_MODULE: config.settings.test
+  POSTGRES_PORT: 5432
+  DATABASE_NAME: test_db
+  POSTGRES_USER: test_user
+  POSTGRES_PASSWORD: ${{ secrets.CI_POSTGRES_PASSWORD }}
+  POSTGRES_HOST: localhost
+  TEST_DATABASE_NAME: ci_test_db
+
+jobs:
+  generate-coverage:
+    runs-on: ubuntu-latest
+    if: github.event_name != 'delete'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Build custom PostgreSQL image
+        run: docker build -t custom-postgres -f environments/development/Dockerfile.postgres environments/development/
+
+      - name: Start PostgreSQL
+        run: |
+          docker run -d \
+            --name postgres \
+            -e POSTGRES_DB=${{ env.DATABASE_NAME }} \
+            -e POSTGRES_USER=${{ env.POSTGRES_USER }} \
+            -e POSTGRES_PASSWORD=${{ secrets.CI_POSTGRES_PASSWORD }} \
+            -v ${{ github.workspace }}/environments/development/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh \
+            -p 5432:5432 \
+            custom-postgres
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Cache uv dependencies
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('**/uv.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-
+
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "${HOME}/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies via uv
+        run: |
+          uv sync --frozen --group test
+
+      - name: Wait for PostgreSQL to be ready
+        run: |
+          for i in {1..10}; do
+            pg_isready -h localhost -p 5432 && break
+            sleep 5
+          done
+
+      - name: Run Django migrations
+        working-directory: webapp
+        run: uv run python manage.py migrate
+
+      - name: Generate test coverage report
+        working-directory: webapp
+        run: |
+          uv run coverage run --source='.' manage.py test --keepdb || true
+          uv run coverage report
+          uv run coverage html
+
+      - name: Commit and push coverage report to coverage-docs branch
+        run: |
+          set -e
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions@github.com"
+
+          BRANCH_NAME="${{ github.ref_name }}"
+          BRANCH_DIR_ESCAPED="${BRANCH_NAME//\//_}"
+          BRANCH_DIR_ESCAPED="${BRANCH_DIR_ESCAPED//./_}"
+
+          # Save htmlcov to temp before any branch switching
+          HTMLCOV_DIR=$(mktemp -d)
+          cp -r webapp/htmlcov/* "$HTMLCOV_DIR/"
+
+          # Fetch existing coverage-docs content (tree only, no history)
+          EXISTING_DIR=$(mktemp -d)
+          if git fetch origin coverage-docs 2>/dev/null; then
+            git archive origin/coverage-docs | tar -x -C "$EXISTING_DIR"
+          fi
+
+          # Create fresh orphan branch (always results in exactly 1 commit)
+          git checkout --orphan coverage-docs
+          git rm -rf . 2>/dev/null || true
+          git clean -fdx 2>/dev/null || true
+
+          # Restore existing reports from other branches
+          if [ "$(ls -A "$EXISTING_DIR" 2>/dev/null)" ]; then
+            cp -a "$EXISTING_DIR"/. . 2>/dev/null || true
+          fi
+          rm -rf "$EXISTING_DIR"
+
+          # Add/update current branch's coverage report
+          mkdir -p "$BRANCH_DIR_ESCAPED"
+          echo -n "$BRANCH_NAME" > "$BRANCH_DIR_ESCAPED/.branch-name"
+          cp -r "$HTMLCOV_DIR"/* "$BRANCH_DIR_ESCAPED/"
+          rm -rf "$HTMLCOV_DIR"
+
+          # Generate index.html with links to all branch reports
+          TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+
+          {
+            echo '<!DOCTYPE html>'
+            echo '<html>'
+            echo '<head>'
+            echo '  <meta charset="utf-8">'
+            echo '  <title>Coverage Reports</title>'
+            echo '  <style>'
+            echo '    body { font-family: -apple-system, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }'
+            echo '    h1 { border-bottom: 2px solid #333; padding-bottom: 10px; }'
+            echo '    .branch-list { list-style: none; padding: 0; }'
+            echo '    .branch-list li { margin: 15px 0; }'
+            echo '    .branch-list a { font-size: 18px; color: #0366d6; text-decoration: none; }'
+            echo '    .branch-list a:hover { text-decoration: underline; }'
+            echo '    .timestamp { color: #666; font-size: 14px; }'
+            echo '  </style>'
+            echo '</head>'
+            echo '<body>'
+            echo '  <h1>Coverage Reports</h1>'
+            echo "  <p class=\"timestamp\">Last updated: $TIMESTAMP</p>"
+            echo '  <ul class="branch-list">'
+
+            for dir in */; do
+              if [ -f "$dir/index.html" ]; then
+                branch="${dir%/}"
+                if [ -f "$dir/.branch-name" ]; then
+                  original_branch="$(cat "$dir/.branch-name")"
+                else
+                  original_branch="$branch"
+                fi
+                echo "    <li><a href=\"$branch/index.html\">$original_branch</a></li>"
+              fi
+            done
+
+            echo '  </ul>'
+            echo '</body>'
+            echo '</html>'
+          } > index.html
+
+          find . -name "*.pyc" -delete 2>/dev/null || true
+          find . -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
+
+          git add .
+
+          if git diff --cached --quiet; then
+            echo "No changes in coverage report. Skipping commit & push."
+            exit 0
+          fi
+
+          git commit -m "Coverage Report - ${{ github.ref_name }} - $(date '+%Y-%m-%d %H:%M:%S')"
+          git push origin coverage-docs --force
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+
+      - name: Post coverage report link
+        run: |
+          BRANCH_NAME="${{ github.ref_name }}"
+          BRANCH_DIR_ESCAPED="${BRANCH_NAME//\//_}"
+          BRANCH_DIR_ESCAPED="${BRANCH_DIR_ESCAPED//./_}"
+
+          REPO_NAME="${{ github.repository }}"
+          PAGES_URL="https://${REPO_NAME#*/}.github.io/$REPO_NAME"
+          BRANCH_REPORT_URL="${PAGES_URL}/${BRANCH_DIR_ESCAPED}/index.html"
+
+          echo "coverage_url=$BRANCH_REPORT_URL" >> $GITHUB_OUTPUT
+
+          echo "## Coverage Report" >> $GITHUB_STEP_SUMMARY
+          echo "$BRANCH_REPORT_URL" >> $GITHUB_STEP_SUMMARY
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+
+  delete-coverage:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'delete' && github.event.ref_type == 'branch'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Delete coverage report for deleted branch
+        run: |
+          set -e
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions@github.com"
+
+          DELETED_BRANCH="${{ github.event.ref }}"
+          BRANCH_DIR_ESCAPED="${DELETED_BRANCH//\//_}"
+          BRANCH_DIR_ESCAPED="${BRANCH_DIR_ESCAPED//./_}"
+
+          echo "Deleting coverage report for branch: $DELETED_BRANCH (dir: $BRANCH_DIR_ESCAPED)"
+
+          # Fetch existing coverage-docs content (tree only, no history)
+          EXISTING_DIR=$(mktemp -d)
+          if ! git fetch origin coverage-docs 2>/dev/null; then
+            echo "No coverage-docs branch exists. Nothing to delete."
+            exit 0
+          fi
+          git archive origin/coverage-docs | tar -x -C "$EXISTING_DIR"
+
+          # Check if the branch directory exists in coverage-docs
+          if [ ! -d "$EXISTING_DIR/$BRANCH_DIR_ESCAPED" ]; then
+            echo "No coverage report found for branch: $DELETED_BRANCH (tried: $BRANCH_DIR_ESCAPED)"
+            rm -rf "$EXISTING_DIR"
+            exit 0
+          fi
+
+          # Remove the deleted branch's report
+          rm -rf "$EXISTING_DIR/$BRANCH_DIR_ESCAPED"
+
+          # Create fresh orphan branch (keeps exactly 1 commit)
+          git checkout --orphan coverage-docs
+          git rm -rf . 2>/dev/null || true
+          git clean -fdx 2>/dev/null || true
+
+          # Restore remaining content
+          if [ "$(ls -A "$EXISTING_DIR" 2>/dev/null)" ]; then
+            cp -a "$EXISTING_DIR"/. . 2>/dev/null || true
+          fi
+          rm -rf "$EXISTING_DIR"
+
+          # Regenerate index.html
+          TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+          {
+            echo '<!DOCTYPE html>'
+            echo '<html>'
+            echo '<head>'
+            echo '  <meta charset="utf-8">'
+            echo '  <title>Coverage Reports</title>'
+            echo '  <style>'
+            echo '    body { font-family: -apple-system, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }'
+            echo '    h1 { border-bottom: 2px solid #333; padding-bottom: 10px; }'
+            echo '    .branch-list { list-style: none; padding: 0; }'
+            echo '    .branch-list li { margin: 15px 0; }'
+            echo '    .branch-list a { font-size: 18px; color: #0366d6; text-decoration: none; }'
+            echo '    .branch-list a:hover { text-decoration: underline; }'
+            echo '    .timestamp { color: #666; font-size: 14px; }'
+            echo '  </style>'
+            echo '</head>'
+            echo '<body>'
+            echo '  <h1>Coverage Reports</h1>'
+            echo "  <p class=\"timestamp\">Last updated: $TIMESTAMP</p>"
+            echo '  <ul class="branch-list">'
+
+            for dir in */; do
+              if [ -f "$dir/index.html" ]; then
+                branch="${dir%/}"
+                if [ -f "$dir/.branch-name" ]; then
+                  original_branch="$(cat "$dir/.branch-name")"
+                else
+                  original_branch="$branch"
+                fi
+                echo "    <li><a href=\"$branch/index.html\">$original_branch</a></li>"
+              fi
+            done
+
+            echo '  </ul>'
+            echo '</body>'
+            echo '</html>'
+          } > index.html
+
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes after deletion. Skipping."
+            exit 0
+          fi
+          git commit -m "Remove coverage: $DELETED_BRANCH - $(date '+%Y-%m-%d %H:%M:%S')"
+          git push origin coverage-docs --force
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}

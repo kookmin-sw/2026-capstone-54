@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}MeFit{% endblock %}</title>
+</head>
+<body style="margin:0; padding:0; background-color:#F3F4F6; font-family:'IBM Plex Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#F3F4F6; padding:40px 0;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="520" cellpadding="0" cellspacing="0" style="background-color:#FFFFFF; border-radius:10px; border:1px solid #E5E7EB; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);">
+          {% block header %}
+          <tr>
+            <td style="background-color:#FFFFFF; padding:12px 40px; text-align:center; border-bottom:1px solid #E5E7EB;">
+              <img src="cid:mefit-logo" alt="MeFit" width="60" height="auto" style="display:inline-block;">
+            </td>
+          </tr>
+          {% endblock %}
+          <tr>
+            <td style="padding:40px; text-align:center;">
+              {% block icon %}
+              {% endblock %}
+              {% block title_block %}
+              <h1 style="margin:0 0 20px; color:#0A0A0A; font-size:22px; font-weight:700; line-height:1.3;">
+                {% block title_text %}{% endblock %}
+              </h1>
+              {% endblock %}
+              {% block description %}
+              <p style="margin:0 0 24px; color:#6B7280; font-size:14px; line-height:1.7;">
+                {% block description_text %}{% endblock %}
+              </p>
+              {% endblock %}
+              {% block divider %}
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
+                <tr><td style="border-top:1px solid #E5E7EB;"></td></tr>
+              </table>
+              {% endblock %}
+              {% block content %}
+              {% endblock %}
+              {% block post_content %}
+              {% endblock %}
+              {% block divider_after_content %}
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
+                <tr><td style="border-top:1px solid #E5E7EB;"></td></tr>
+              </table>
+              {% endblock %}
+              {% block footer_note %}
+              <p style="margin:0; color:#9CA3AF; font-size:12px;">
+                {% block footer_note_text %}{% endblock %}
+              </p>
+              {% endblock %}
+            </td>
+          </tr>
+          {% block footer %}
+          <tr>
+            <td style="background-color:#F9FAFB; padding:20px 40px; text-align:center; border-top:1px solid #E5E7EB;">
+              <p style="margin:0 0 6px; color:#9CA3AF; font-size:11px;">
+                {% block footer_text1 %}{% endblock %}
+              </p>
+              <p style="margin:0; color:#9CA3AF; font-size:11px;">
+                {% block footer_text2 %}{% endblock %}
+              </p>
+            </td>
+          </tr>
+          {% endblock %}
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

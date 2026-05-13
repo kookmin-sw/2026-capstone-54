@@ -1,0 +1,80 @@
+# Version control metadata
+.git
+.gitignore
+
+# Editor and IDE settings
+.vscode/
+.idea/
+*.code-workspace
+
+# macOS and Windows cruft
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Python bytecode and build artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+.Python
+build/
+dist/
+develop-eggs/
+downloads/
+.eggs/
+pip-wheel-metadata/
+wheels/
+share/python-wheels/
+
+# Testing and type-check caches
+.mypy_cache/
+.pytest_cache/
+.tox/
+.nox/
+.hypothesis/
+.pybuilder/
+.pytype/
+.pyre/
+.coverage
+.coverage.*
+htmlcov/
+.ruff_cache/
+.cache/
+
+# Django runtime outputs
+media/
+staticfiles/
+*.log
+
+# Local environment files
+.env
+.envrc
+.env.development
+.env.production
+.env.local
+.env.*
+!.env.sample
+.venv/
+venv/
+ENV/
+env/
+python-env/
+__pypackages__/
+
+# Node/npm installs (if present for asset builds)
+node_modules/
+
+# Docker aux files that are not needed in build context
+Dockerfile*
+docker-compose*.yml
+
+# Tooling caches
+.claude/
+.ollama/

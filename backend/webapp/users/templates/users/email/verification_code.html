@@ -1,0 +1,41 @@
+{% extends "email/base.html" %}
+
+{% block title %}이메일 인증 코드{% endblock %}
+
+{% block icon %}
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto 24px;">
+  <tr>
+    <td style="background-color:#E6F7FA; border-radius:32px; width:64px; height:64px; text-align:center; vertical-align:middle;">
+      <img src="cid:email-icon" alt="Mail" width="32" height="32" style="display:inline-block;">
+    </td>
+  </tr>
+</table>
+{% endblock %}
+
+{% block title_text %}이메일 인증 코드{% endblock %}
+
+{% block description_text %}
+안녕하세요!<br>
+{{ user_email }}로 요청하신 이메일 인증 코드입니다.<br>
+아래 코드를 입력하여 이메일 주소를 인증해 주세요.
+{% endblock %}
+
+{% block content %}
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto 12px;">
+  <tr>
+    <td style="background-color:#F9FAFB; border:2px solid #0991B2; border-radius:12px; padding:20px 40px; text-align:center;">
+      <span style="color:#0991B2; font-size:36px; font-weight:700; letter-spacing:8px; font-family:'IBM Plex Sans KR', monospace;">
+        {{ code }}
+      </span>
+    </td>
+  </tr>
+</table>
+<p style="margin:0 0 24px; color:#9CA3AF; font-size:12px;">
+  &#x23F0; 이 코드는 10분간 유효합니다
+</p>
+{% endblock %}
+
+{% block footer_note_text %}본인이 요청하지 않으셨다면 이 이메일을 무시하셔도 됩니다.{% endblock %}
+
+{% block footer_text1 %}본 이메일은 MeFit 이메일 인증 요청 시 자동 발송됩니다.{% endblock %}
+{% block footer_text2 %}가입을 요청하지 않으셨다면 이 이메일을 무시하셔도 됩니다.{% endblock %}

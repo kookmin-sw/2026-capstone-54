@@ -1,0 +1,30 @@
+{% extends "email/base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block icon %}
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto 24px;">
+  <tr>
+    <td style="background-color:#FCE7F3; border-radius:32px; width:64px; height:64px; text-align:center; vertical-align:middle;">
+      <img src="cid:email-icon" alt="Marketing" width="32" height="32" style="display:inline-block;">
+    </td>
+  </tr>
+</table>
+{% endblock %}
+
+{% block title_text %}{{ title }}{% endblock %}
+
+{% block description_text %}
+{{ user_name }}님께 드리는 특별한 소식입니다.
+{% endblock %}
+
+{% block content %}
+<div style="text-align:left; color:#374151; font-size:14px; line-height:1.7; margin:0 0 24px;">
+  {{ body_html|safe }}
+</div>
+{% endblock %}
+
+{% block footer_note_text %}(광고) 본 메일은 마케팅 정보 수신에 동의하신 분들께 발송됩니다.{% endblock %}
+
+{% block footer_text1 %}본 이메일은 MeFit 마케팅 정보 수신 동의에 따라 발송됩니다.{% endblock %}
+{% block footer_text2 %}수신을 원하지 않으시면 설정 &gt; 알림 페이지에서 변경하실 수 있습니다.{% endblock %}

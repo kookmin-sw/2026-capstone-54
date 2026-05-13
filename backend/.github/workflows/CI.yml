@@ -1,0 +1,108 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - '**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  SECRET_KEY: ${{ secrets.CI_DJANGO_KEY }}
+  DEBUG: "True"
+  ALLOWED_HOSTS: localhost,127.0.0.1,0.0.0.0
+  PORT: 8000
+  DJANGO_SETTINGS_MODULE: config.settings.test
+  POSTGRES_PORT: 5432
+  DATABASE_NAME: test_db
+  POSTGRES_USER: test_user
+  POSTGRES_PASSWORD: ${{ secrets.CI_POSTGRES_PASSWORD }}
+  POSTGRES_HOST: localhost
+  TEST_DATABASE_NAME: ci_test_db
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Run pre-commit
+        uses: pre-commit/action@v3.0.1
+
+  test:
+    runs-on: ubuntu-latest
+    needs: lint
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Pull PostgreSQL image
+        run: docker pull teammefit/mefit-postgres-dev:latest
+
+      - name: Start PostgreSQL
+        run: |
+          docker run -d \
+            --name postgres \
+            -e POSTGRES_DB=${{ env.DATABASE_NAME }} \
+            -e POSTGRES_USER=${{ env.POSTGRES_USER }} \
+            -e POSTGRES_PASSWORD=${{ secrets.CI_POSTGRES_PASSWORD }} \
+            -v ${{ github.workspace }}/environments/development/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh \
+            -p 5432:5432 \
+            --health-cmd="pg_isready -U ${{ env.POSTGRES_USER }} -d ${{ env.DATABASE_NAME }}" \
+            --health-interval=5s \
+            --health-timeout=5s \
+            --health-retries=10 \
+            teammefit/mefit-postgres-dev:latest \
+            -c max_connections=200
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Cache uv dependencies
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('**/uv.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-
+
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "${HOME}/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Install dependencies via uv
+        run: |
+          uv sync --frozen --group test
+
+      - name: Wait for PostgreSQL to be ready
+        run: |
+          for i in {1..30}; do
+            health=$(docker inspect --format='{{.State.Health.Status}}' postgres 2>/dev/null || echo "starting")
+            if [ "$health" = "healthy" ]; then
+              echo "PostgreSQL healthy"
+              break
+            fi
+            echo "Waiting for PostgreSQL ($i/30)... status=$health"
+            sleep 2
+          done
+          pg_isready -h localhost -p 5432
+
+      - name: Run Django tests
+        working-directory: webapp
+        run: uv run python manage.py test --verbosity=2 --keepdb

@@ -1,0 +1,41 @@
+{% extends "admin/base_site.html" %}
+
+{% load i18n unfold %}
+
+{% block extrahead %}
+  {{ block.super }}
+  <script src="{% url 'admin:jsi18n' %}"></script>
+  {{ form.media }}
+{% endblock %}
+
+{% block content %}
+  <div class="border border-amber-200 dark:border-amber-800 rounded-default p-4 mb-6
+              bg-amber-50 dark:bg-amber-900/20 flex gap-3 items-start">
+    <span class="material-symbols-outlined text-amber-500 dark:text-amber-400 text-xl mt-0.5 flex-shrink-0">
+      warning
+    </span>
+    <div class="text-sm text-amber-700 dark:text-amber-300 leading-relaxed">
+      <p class="font-medium mb-1">{{ notification_label }} 단체 발송</p>
+      <p class="text-amber-600 dark:text-amber-400">
+        현재 동의 상태인 사용자에게만 발송됩니다. 발송 작업은 사용자별 Celery 태스크로 enqueue 되어 비동기 처리됩니다.
+        개발 환경에서는 콘솔로 출력되며, 실제 메일은 production 환경에서만 발송됩니다.
+      </p>
+    </div>
+  </div>
+
+  <form action="" method="post" novalidate>
+    <div class="aligned border border-base-200 mb-8 rounded-default pt-3 px-3 shadow-sm dark:border-base-800">
+      {% csrf_token %}
+
+      {% for field in form %}
+        {% include "unfold/helpers/field.html" with field=field %}
+      {% endfor %}
+    </div>
+
+    <div class="flex justify-end">
+      {% component "unfold/components/button.html" with submit=1 %}
+        {% trans "발송 큐 등록" %}
+      {% endcomponent %}
+    </div>
+  </form>
+{% endblock %}

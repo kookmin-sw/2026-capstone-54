@@ -1,0 +1,40 @@
+{% extends "email/base.html" %}
+
+{% block title %}자정까지 1시간! 스트릭이 끊기지 않도록{% endblock %}
+
+{% block icon %}
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto 24px;">
+  <tr>
+    <td style="background-color:#FEE2E2; border-radius:32px; width:64px; height:64px; text-align:center; vertical-align:middle;">
+      <img src="cid:email-icon" alt="Warning" width="32" height="32" style="display:inline-block;">
+    </td>
+  </tr>
+</table>
+{% endblock %}
+
+{% block title_text %}자정까지 1시간! 스트릭이 끊기지 않도록{% endblock %}
+
+{% block description_text %}
+{{ user_name }}님, 안녕하세요!<br>
+오늘 자정까지 면접 연습을 하지 않으면<br>
+연속 기록이 끊어질 수 있어요.
+{% endblock %}
+
+{% block content %}
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto 12px;">
+  <tr>
+    <td style="background-color:#FEF2F2; border:2px solid #EF4444; border-radius:12px; padding:20px 40px; text-align:center;">
+      <span style="color:#EF4444; font-size:14px; font-weight:600;">현재 연속 일수</span><br>
+      <span style="color:#EF4444; font-size:36px; font-weight:700;">{{ current_streak }}일</span>
+    </td>
+  </tr>
+</table>
+<p style="margin:0 0 24px; color:#9CA3AF; font-size:12px;">
+  &#x23F0; 자정까지 면접 연습을 1회 이상 완료하면 스트릭이 유지됩니다.
+</p>
+{% endblock %}
+
+{% block footer_note_text %}본 메일은 스트릭 만료 경고 알림에 동의하신 분들께 발송됩니다.{% endblock %}
+
+{% block footer_text1 %}본 이메일은 MeFit 알림 설정에 따라 자동 발송됩니다.{% endblock %}
+{% block footer_text2 %}수신을 원하지 않으시면 설정 &gt; 알림 페이지에서 변경하실 수 있습니다.{% endblock %}
