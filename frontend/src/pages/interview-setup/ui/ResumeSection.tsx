@@ -3,12 +3,7 @@ import { SetupSection } from "@/shared/ui/SetupSection";
 import { SelectableCard } from "@/shared/ui/SelectableCard";
 import { CATEGORY_STYLE } from "@/shared/ui/categoryIconStyle";
 import { inferCategoryId } from "@/shared/ui/inferCategoryId";
-
-interface ResumeJobCategory {
-  uuid: string;
-  name: string;
-  emoji: string;
-}
+import type { ResumeJobCategory } from "@/features/resume";
 
 interface Resume {
   uuid: string;

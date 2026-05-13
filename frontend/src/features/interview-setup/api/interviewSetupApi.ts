@@ -5,13 +5,9 @@ import type {
   InterviewDifficultyLevel,
   InterviewPracticeMode,
 } from "@/features/interview-session";
+import type { ResumeJobCategory } from "@/features/resume";
 
-// ── Resume Job Category ──
-export interface ResumeJobCategory {
-  uuid: string;
-  name: string;
-  emoji: string;
-}
+export type { ResumeJobCategory };
 
 // ── Resume option (matches backend ResumeSerializer) ──
 export interface ResumeOption {
