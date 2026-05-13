@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mefit-production-analysis-resume-worker
+  namespace: mefit-backend-production
+  labels:
+    app: mefit-production-analysis-resume-worker
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: mefit-production-analysis-resume-worker
+  template:
+    metadata:
+      labels:
+        app: mefit-production-analysis-resume-worker
+    spec:
+      imagePullSecrets:
+        - name: mefit-production-dockerhub
+      containers:
+        - name: analysis-resume-worker
+          image: teammefit/mefit-analysis-resume:production
+          imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+                name: mefit-production-analysis-resume-env
+            - secretRef:
+                name: mefit-production-analysis-resume-secret
+          resources:
+            requests:
+              cpu: "150m"
+              memory: "192Mi"
+            limits:
+              cpu: "500m"
+              memory: "384Mi"

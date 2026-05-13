@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mefit-production-llm-gateway
+  namespace: mefit-backend-production
+  labels:
+    app: mefit-production-llm-gateway
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: mefit-production-llm-gateway
+  template:
+    metadata:
+      labels:
+        app: mefit-production-llm-gateway
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "4000"
+        prometheus.io/path: "/metrics"
+    spec:
+      nodeSelector:
+        nodepool: heavy
+      priorityClassName: mefit-production-standard
+      containers:
+        - name: litellm
+          image: ghcr.io/berriai/litellm-database:main-stable
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 4000
+          envFrom:
+            - configMapRef:
+                name: mefit-production-llm-gateway-env
+            - secretRef:
+                name: mefit-production-llm-gateway-secret
+          volumeMounts:
+            - name: config
+              mountPath: /app/config.yaml
+              subPath: config.yaml
+          command: ["litellm"]
+          args:
+            - "--config"
+            - "/app/config.yaml"
+            - "--port"
+            - "4000"
+            - "--num_workers"
+            - "1"
+          startupProbe:
+            httpGet:
+              path: /health/liveliness
+              port: 4000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 30
+          readinessProbe:
+            httpGet:
+              path: /health/readiness
+              port: 4000
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health/liveliness
+              port: 4000
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 100m
+              memory: 512Mi
+            limits:
+              cpu: 500m
+              memory: 1536Mi
+      volumes:
+        - name: config
+          configMap:
+            name: mefit-production-llm-gateway-config

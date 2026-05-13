@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mefit-production-env
+  namespace: mefit-backend-production
+data:
+  DJANGO_SETTINGS_MODULE: "config.settings.production"
+  REDIS_HOST: "mefit-production-redis"
+  REDIS_PORT: "6379"
+  # CELERY_BROKER_URL 은 의도적으로 미주입 — Celery 의 env var fallback 동작 때문에 이 값이
+  # 환경변수로 set 되어 있으면 config.celery_sqs.app (namespace="CELERY_SQS") 의 broker_url 까지
+  # 강제로 같은 redis URL 로 덮어써져 SQS 큐 listening 이 깨진다. 대신 settings/components/celery.py
+  # 의 default `f"redis://{REDIS_HOST}:{REDIS_PORT}/0"` 를 통해 구성됨 (REDIS_HOST 위에 정의됨).
+  CELERY_RESULT_BACKEND: "django-db"
+  VIDEO_S3_BUCKET: "pj-kmucd1-04-mefit-video-files"
+  SCALED_VIDEO_S3_BUCKET: "pj-kmucd1-04-mefit-scaled-video-files"
+  FRAME_S3_BUCKET: "pj-kmucd1-04-mefit-video-frame-files"
+  AUDIO_S3_BUCKET: "pj-kmucd1-04-mefit-audio-files"
+  SCALED_AUDIO_S3_BUCKET: "pj-kmucd1-04-mefit-scaled-audio-files"
+  VIDEO_PRESIGNED_URL_EXPIRY: "3600"
+  VIDEO_STEP_COMPLETE_SQS_URL: "https://sqs.us-east-1.amazonaws.com/730335373015/pj-kmucd1-04-mefit-video-step-complete"
+  CELERY_SQS_BROKER_URL: "sqs://"
+  AWS_S3_REGION_NAME: "us-east-1"
+  # LLM Gateway 경유 (LiteLLM Proxy). 비우면 OpenAI 직통.
+  OPENAI_BASE_URL: "http://mefit-llm-gateway:4000/v1"
+  # 아래 값들은 모두 GitHub Environment secrets로 주입됩니다.
+  # ALLOWED_HOSTS, SECRET_KEY, DEBUG, PORT, BASE_URL
+  # DATABASE_*, EMAIL_* 등
+  # AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY (SQS 접근용)
+  # OPENAI_API_KEY (게이트웨이 가상키)

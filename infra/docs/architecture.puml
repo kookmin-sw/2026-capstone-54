@@ -1,0 +1,174 @@
+@startuml
+title MeFit 전체 인프라 아키텍처
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 11
+skinparam linetype polyline
+skinparam nodesep 60
+skinparam ranksep 40
+
+' ======== 사용자 / 프론트엔드 ========
+actor "사용자" as User
+rectangle "Frontend\n(Next.js)" as FE #E8F5E9
+
+User -down-> FE : HTTPS
+
+' ======== EC2 k3s ========
+rectangle "EC2 (t3.medium) — k3s cluster" as EC2 #E3F2FD {
+
+  rectangle "Traefik Ingress" as TRAEFIK #BBDEFB
+
+  rectangle "API 서비스" as API_GRP {
+    rectangle "Django API\n:8000" as API #C8E6C9
+    rectangle "Voice API\n(FastAPI) :8001" as VOICE #C8E6C9
+  }
+
+  rectangle "Workers" as BW_GRP {
+    rectangle "celery-worker\n(Redis broker)" as C_WORKER #DCEDC8
+    rectangle "celery-beat" as C_BEAT #DCEDC8
+    rectangle "sqs-celery-worker\n(SQS broker)" as SQS_WORKER #E1BEE7
+  }
+
+  rectangle "독립 서비스" as IW_GRP {
+    rectangle "analysis-resume" as W_RESUME #DCEDC8
+    rectangle "report worker" as W_REPORT #DCEDC8
+    rectangle "scraper\n(Chromium)" as W_SCRAPER #DCEDC8
+  }
+
+  rectangle "인프라" as INFRA_GRP {
+    database "Redis :6379" as REDIS #FFECB3
+    rectangle "Flower :5555" as FLOWER #FFF9C4
+  }
+}
+
+' ======== AWS — S3 ========
+rectangle "AWS S3" as S3_AREA #F5F5F5 {
+  storage "video-files\n(.webm)" as S3_V #E0E0E0
+  storage "scaled-video\n(.mp4)" as S3_SV #E0E0E0
+  storage "frames\n(.jpg)" as S3_FR #E0E0E0
+  storage "audio\n(.wav)" as S3_AU #E0E0E0
+  storage "scaled-audio\n(16kHz)" as S3_SA #E0E0E0
+  storage "be-files" as S3_BE #E0E0E0
+}
+
+' ======== AWS — 영상 처리 파이프라인 ========
+rectangle "영상 처리 파이프라인" as PIPELINE #FFF8E1 {
+
+  together {
+    rectangle "SNS\n**video-uploaded**" as SNS_UP #CE93D8
+  }
+
+  rectangle "fan-out (SNS → SQS 구독 → Lambda 이벤트 소스)" as FANOUT #FFF3E0 {
+    together {
+      queue "SQS\nvideo-converter-queue" as SQS_VC #E1BEE7
+      queue "SQS\nframe-extractor-queue" as SQS_FE #E1BEE7
+      queue "SQS\naudio-extractor-queue" as SQS_AE #E1BEE7
+    }
+
+    together {
+      rectangle "video-converter" as L_VC #FFE0B2
+      rectangle "frame-extractor" as L_FE #FFE0B2
+      rectangle "audio-extractor" as L_AE #FFE0B2
+    }
+  }
+
+  rectangle "단일 트리거 (S3 → Lambda)" as SINGLE #FFF3E0 {
+    rectangle "audio-scaler" as L_AS #FFE0B2
+  }
+
+  rectangle "온디맨드 호출 (boto3.invoke)" as ONDEMAND #FFF3E0 {
+    rectangle "voice-analyzer" as L_VA #FFE0B2
+  }
+}
+
+' ======== AWS — 메시지 큐 ========
+rectangle "AWS 메시지" as MSG_AREA #F3E5F5 {
+  rectangle "SQS\n**step-complete**" as SQS_STEP #E1BEE7
+}
+
+database "RDS\nPostgreSQL" as RDS #FFECB3
+
+' ================================================================
+'  연결
+' ================================================================
+
+' -- 유저 → EC2 --
+FE -down-> TRAEFIK : HTTPS
+FE -down-> S3_V : presigned URL 업로드
+
+TRAEFIK -down-> API
+TRAEFIK -down-> VOICE
+
+' -- EC2 내부 --
+API -down-> RDS
+API --> REDIS
+API --> S3_BE
+
+C_WORKER --> REDIS
+C_BEAT --> REDIS
+SQS_WORKER -down-> SQS_STEP : SQS poll\n(kombu)
+SQS_WORKER -down-> RDS
+
+W_RESUME --> REDIS
+W_RESUME --> RDS
+W_REPORT --> REDIS
+W_REPORT --> RDS
+W_REPORT -down-> L_VA : boto3.invoke\n(RequestResponse)
+W_SCRAPER --> REDIS
+
+FLOWER --> REDIS
+VOICE --> API : token verify
+
+' -- ① S3 → SNS (이벤트 알림) --
+S3_V -down-> SNS_UP : S3 이벤트\n(.webm ObjectCreated)
+
+' -- ② SNS → SQS (구독: 3개 큐가 토픽을 구독) --
+SNS_UP -down-> SQS_VC : 구독
+SNS_UP -down-> SQS_FE : 구독
+SNS_UP -down-> SQS_AE : 구독
+
+' -- ③ SQS → Lambda (이벤트 소스 매핑) --
+SQS_VC -down-> L_VC : 이벤트 소스
+SQS_FE -down-> L_FE : 이벤트 소스
+SQS_AE -down-> L_AE : 이벤트 소스
+
+' -- Lambda 출력 → S3 --
+L_VC -down-> S3_SV : .mp4
+L_FE -down-> S3_FR : .jpg
+L_AE -down-> S3_AU : .wav
+
+' -- 단일 S3 → Lambda --
+S3_AU -down-> L_AS : S3 이벤트\n(.wav)
+L_AS -down-> S3_SA : 16kHz .wav
+
+' -- Lambda → SQS step-complete --
+L_VC -right-> SQS_STEP : 단계 완료
+L_FE -right-> SQS_STEP
+L_AE -right-> SQS_STEP
+L_AS -right-> SQS_STEP
+
+' -- voice-analyzer → S3 --
+L_VA -down-> S3_SA : 음성 분석\n(scaled-audio 읽기)
+
+' ================================================================
+legend right
+  **이벤트 흐름**
+  ── fan-out ──
+  S3 (.webm) → SNS → 3×SQS 구독 → 3×Lambda
+  ── 단일 ──
+  S3 (.wav/.mp4) → Lambda
+  ── 온디맨드 ──
+  Django report worker → Lambda invoke
+
+  | 색상 | 의미 |
+  |<#C8E6C9> | API 서비스 |
+  |<#DCEDC8> | Celery Worker |
+  |<#E1BEE7> | SQS 큐 / Worker |
+  |<#CE93D8> | SNS 토픽 |
+  |<#FFE0B2> | Lambda 함수 |
+  |<#E0E0E0> | S3 버킷 |
+  |<#FFECB3> | 데이터 저장소 |
+endlegend
+
+@enduml

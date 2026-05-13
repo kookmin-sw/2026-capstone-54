@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mefit-production-llm-gateway-ingress
+  namespace: mefit-backend-production
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    traefik.ingress.kubernetes.io/router.tls: "true"
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - llm.mefit.kr
+      secretName: mefit-llm-tls-cert
+  rules:
+    - host: llm.mefit.kr
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: mefit-llm-gateway
+                port:
+                  number: 4000

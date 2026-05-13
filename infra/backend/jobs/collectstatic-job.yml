@@ -1,0 +1,34 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mefit-production-collectstatic
+  namespace: mefit-backend-production
+spec:
+  ttlSecondsAfterFinished: 300
+  backoffLimit: 2
+  template:
+    spec:
+      restartPolicy: Never
+      hostNetwork: true
+      nodeSelector:
+        nodepool: heavy
+      priorityClassName: mefit-production-standard
+      imagePullSecrets:
+        - name: mefit-production-dockerhub
+      containers:
+        - name: collectstatic
+          image: teammefit/mefit-backend:production
+          imagePullPolicy: Always
+          command: ["python", "manage.py", "collectstatic", "--noinput"]
+          envFrom:
+            - configMapRef:
+                name: mefit-production-env
+            - secretRef:
+                name: mefit-production-secret
+          resources:
+            requests:
+              cpu: 100m
+              memory: 192Mi
+            limits:
+              cpu: 500m
+              memory: 384Mi

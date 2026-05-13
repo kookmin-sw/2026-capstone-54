@@ -1,0 +1,182 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# k8s-monitoring helm values — MeFit production k3s
+#
+# 차트:    grafana/k8s-monitoring (>= 4.0.0, Alloy Operator 기반)
+# 목적:    Pod / Node 메모리 시계열 + OOM 이벤트 추적 (Grafana Cloud 무료 등급)
+# 노드:    m5.large (nodepool=heavy) + t3.small (라벨 없음, 기본)
+#
+# 핵심 정책:
+#   1. 무거운 컴포넌트(Alloy StatefulSet, kube-state-metrics, alloy-singleton)는
+#      m5.large 에 핀 → t3.small 에 부담 안 줌
+#   2. node-exporter 만 t3.small 에 DaemonSet 으로 들어감 (~30Mi)
+#      — 노드 레벨 메모리/swap 메트릭은 호스트별 수집이 필수이므로 불가피
+#   3. 모든 컴포넌트에 hard memory limit 설정 → 폭주 방지
+#   4. Pod logs / node logs / profiling / annotation autodiscovery 비활성
+#      → Free tier 한도 (10k active series, 50 GB logs / 월) 안에서 운영
+#
+# Free tier 안전성 (2026-05 추정):
+#   - active series ~3.5–4.5k (한도 10k의 35–45%)
+#   - host hours 2 노드 × 730h = 1,460/월 (한도 2,232 의 65%)
+#   - container hours ~22k/월 (한도 37,944 의 58%)
+#   상세 계산은 README.md §Free tier 한도 검증 참고.
+#
+# 설정 갱신 시 주의: 아래 4 개 feature 를 추가로 켜면 series 가 빠르게 폭증해서
+# 10k 한도를 넘을 수 있음 — 켜기 전에 README §Free tier active series 한도 트러블슈팅 참고.
+#   - annotationAutodiscovery
+#   - applicationObservability
+#   - profiling
+#   - podLogsViaLoki / nodeLogs (logs ingest 한도 별도 소진)
+# ─────────────────────────────────────────────────────────────────────────────
+
+cluster:
+  # Grafana Cloud 대시보드에서 클러스터 식별자로 사용됨
+  name: mefit-prod-k3s
+
+# ─── Destinations ────────────────────────────────────────────────────────────
+# Grafana Cloud Stack 의 Prometheus / Loki endpoint.
+#
+# URL + Username 수집 (Cloud Portal):
+#   grafana.com/orgs → organization → Stack 카드 → "Details" 버튼
+#     → Prometheus 카드 "Details" → URL + Username (instance ID) 복사
+#     → Loki 카드 "Details" → URL + Username (instance ID) 복사
+#
+# Token 발급 (단일 토큰으로 metrics + logs 양쪽 인증):
+#   방법 A: Connections → Add new connection → "Hosted Prometheus metrics"
+#           → §3 Set the configuration → Create token (scope: set:alloy-data-write)
+#   방법 B: Cloud Portal → Security → Access Policies → metrics:write + logs:write
+#
+# 자세한 절차는 README.md §사전 준비 참고.
+destinations:
+  grafana-cloud-metrics:
+    type: prometheus
+    # 예: https://prometheus-prod-13-prod-us-east-0.grafana.net/api/prom/push
+    url: "https://prometheus-prod-49-prod-ap-northeast-0.grafana.net/api/prom/push"  # ← Stack 의 Hosted Prometheus 페이지에서 복사
+    auth:
+      type: basic
+      usernameKey: prometheus-username
+      passwordKey: prometheus-password
+    secret:
+      create: false
+      name: grafana-cloud-credentials
+      namespace: mefit-monitoring
+
+  grafana-cloud-events:
+    type: loki
+    # 예: https://logs-prod-006.grafana.net/loki/api/v1/push
+    url: "https://logs-prod-030.grafana.net/loki/api/v1/push"  # ← Stack 의 Hosted Loki 페이지에서 복사
+    auth:
+      type: basic
+      usernameKey: loki-username
+      passwordKey: loki-password
+    secret:
+      create: false
+      name: grafana-cloud-credentials
+      namespace: mefit-monitoring
+
+# ─── Features ────────────────────────────────────────────────────────────────
+
+# Pod / 컨테이너 메모리, kube-state-metrics, kubelet cAdvisor 등 K8s 코어 메트릭
+# 차트 v4: collector 명시 필수 (없으면 helm 검증 실패).
+clusterMetrics:
+  enabled: true
+  collector: alloy-metrics
+
+# OOMKilled / Evicted / FailedScheduling 등 K8s 이벤트를 Loki 로 전송
+# → Grafana Explore 에서 {cluster="mefit-prod-k3s"} 쿼리로 확인
+# 이벤트는 중복 방지 위해 singleton collector 필수.
+clusterEvents:
+  enabled: true
+  collector: alloy-singleton
+
+# node-exporter 기반 호스트 메트릭 (node_memory_MemAvailable_bytes 등)
+# t3.small 노드 메모리 압박 추적의 핵심
+hostMetrics:
+  enabled: true
+  collector: alloy-metrics
+  linuxHosts:
+    enabled: true
+
+# 명시적으로 비활성화 (free tier ingest 절약)
+nodeLogs:
+  enabled: false
+podLogsViaLoki:
+  enabled: false
+applicationObservability:
+  enabled: false
+profiling:
+  enabled: false
+
+# ─── Collectors (Alloy 인스턴스) ─────────────────────────────────────────────
+
+collectors:
+  # 메트릭 수집 Alloy — clustered StatefulSet (replicas=1).
+  # m5.large 에 핀. 모든 메트릭을 하나의 Alloy 가 처리.
+  alloy-metrics:
+    presets: [clustered, statefulset]
+    alloy:
+      nodeSelector:
+        nodepool: heavy
+      resources:
+        requests:
+          cpu: 50m
+          memory: 128Mi
+        limits:
+          cpu: 500m
+          memory: 256Mi
+      # 단일 인스턴스로 충분 (소규모 클러스터)
+      replicaCount: 1
+
+  # 이벤트 수집 Alloy — singleton (replicas=1, 절대 2개 이상 안 됨)
+  # m5.large 에 핀.
+  alloy-singleton:
+    presets: [singleton]
+    alloy:
+      nodeSelector:
+        nodepool: heavy
+      resources:
+        requests:
+          cpu: 25m
+          memory: 64Mi
+        limits:
+          cpu: 100m
+          memory: 128Mi
+
+# ─── Telemetry Services (보조 서비스 배포) ──────────────────────────────────
+
+telemetryServices:
+  # K8s 객체 상태 메트릭 (Pod restart count, OOMKilled reason, etc.)
+  # 단일 Deployment, m5.large 에 핀.
+  kube-state-metrics:
+    deploy: true
+    nodeSelector:
+      nodepool: heavy
+    resources:
+      requests:
+        cpu: 25m
+        memory: 50Mi
+      limits:
+        cpu: 100m
+        memory: 100Mi
+
+  # 호스트 레벨 메모리/CPU/디스크 — DaemonSet (모든 노드에서 실행 필수)
+  # t3.small 에도 들어가지만 ~30Mi 로 가벼움.
+  node-exporter:
+    deploy: true
+    resources:
+      requests:
+        cpu: 25m
+        memory: 30Mi
+      limits:
+        cpu: 100m
+        memory: 50Mi
+    # 모든 taint 허용 (control-plane 등) — k3s single-node-as-control-plane 환경 대응
+    tolerations:
+      - effect: NoSchedule
+        operator: Exists
+      - effect: NoExecute
+        operator: Exists
+
+# ─── 자체 보고 (익명 사용 통계) ─────────────────────────────────────────────
+# 차트 설정 텔레메트리. 비활성화해도 무방하지만 메트릭 1개 / 60s 정도로 미미함.
+selfReporting:
+  enabled: false

@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mefit-production-flower
+  namespace: mefit-backend-production
+  labels:
+    app: mefit-production-flower
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: mefit-production-flower
+  template:
+    metadata:
+      labels:
+        app: mefit-production-flower
+    spec:
+      imagePullSecrets:
+        - name: mefit-production-dockerhub
+      containers:
+        - name: flower
+          image: mher/flower:2.0
+          command: ["celery"]
+          args:
+            - --broker=$(CELERY_BROKER_URL)
+            - flower
+            - --port=5555
+            # Django admin 프록시 경로와 일치시킵니다.
+            # Flower 내부 HTML의 모든 링크가 /admin/flower/... 형태로 생성됩니다.
+            - --url-prefix=admin/flower
+          env:
+            - name: CELERY_BROKER_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: mefit-production-scraper-env
+                  key: CELERY_BROKER_URL
+          ports:
+            - containerPort: 5555
+          resources:
+            requests:
+              cpu: 80m
+              memory: 96Mi
+            limits:
+              cpu: 250m
+              memory: 192Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mefit-production-flower
+  namespace: mefit-backend-production
+spec:
+  # ClusterIP: 클러스터 내부에서만 접근 가능
+  # 외부 노출 없이 Django 백엔드가 프록시로만 접근합니다.
+  type: ClusterIP
+  selector:
+    app: mefit-production-flower
+  ports:
+    - port: 5555
+      targetPort: 5555

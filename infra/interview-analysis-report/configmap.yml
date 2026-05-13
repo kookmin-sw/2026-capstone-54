@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mefit-production-interview-analysis-report-env
+  namespace: mefit-backend-production
+data:
+  # Celery 브로커는 기존 Redis 공유
+  CELERY_BROKER_URL: "redis://mefit-production-redis:6379/0"
+  CELERY_RESULT_BACKEND: "redis://mefit-production-redis:6379/1"
+  # Celery worker 동시 처리 수
+  ANALYSIS_CONCURRENCY: "2"
+  # LLM 모델 설정
+  OPENAI_MODEL: "gpt-4o-mini"
+  # LLM Gateway 경유 (LiteLLM Proxy). 비우면 OpenAI 직통.
+  OPENAI_BASE_URL: "http://mefit-llm-gateway:4000/v1"
+  AWS_S3_REGION_NAME: "us-east-1"
+  AWS_STORAGE_BUCKET_NAME: "pj-kmucd1-04-mefit-be-files"
+  LOG_LEVEL: "INFO"

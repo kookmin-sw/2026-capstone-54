@@ -1,0 +1,46 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mefit-production-llm-gateway-prisma-push
+  namespace: mefit-backend-production
+spec:
+  ttlSecondsAfterFinished: 300         # 완료 5분 후 자동 정리
+  backoffLimit: 2                       # 실패 시 최대 2회 재시도
+  template:
+    spec:
+      restartPolicy: Never
+      nodeSelector:
+        nodepool: heavy
+      containers:
+        - name: prisma-push
+          image: ghcr.io/berriai/litellm-database:main-stable
+          imagePullPolicy: Always
+          envFrom:
+            - secretRef:
+                name: mefit-production-llm-gateway-secret
+          # litellm-database 이미지의 entrypoint 를 우회하여 prisma push 만 실행.
+          # 정상 배포 후 runtime Deployment 는 1.5Gi limits 로 충분.
+          # 마이그레이션은 Prisma engine(Node.js) + Python schema introspection 동시 로딩으로 peak ~1.5Gi 발생.
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              set -e
+              cd /app
+              echo "▶ Prisma schema 위치 확인..."
+              find /app -name "schema.prisma" -type f 2>/dev/null | head -3
+              SCHEMA="$(find /app -name 'schema.prisma' -type f 2>/dev/null | head -1)"
+              if [ -z "$SCHEMA" ]; then
+                echo "❌ schema.prisma 를 찾을 수 없습니다."
+                exit 1
+              fi
+              echo "▶ schema 발견: $SCHEMA"
+              echo "▶ prisma db push 실행 중..."
+              prisma db push --schema "$SCHEMA" --accept-data-loss --skip-generate
+              echo "✅ Prisma schema 적용 완료"
+          resources:
+            requests:
+              cpu: 200m
+              memory: 1Gi
+            limits:
+              cpu: 1500m
+              memory: 2Gi

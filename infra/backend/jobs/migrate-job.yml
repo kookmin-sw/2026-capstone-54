@@ -1,0 +1,48 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mefit-production-migrate
+  namespace: mefit-backend-production
+spec:
+  ttlSecondsAfterFinished: 300  # 완료 후 5분 뒤 자동 삭제
+  backoffLimit: 3               # 실패 시 최대 3회 재시도
+  template:
+    spec:
+      restartPolicy: Never
+      imagePullSecrets:
+        - name: mefit-production-dockerhub
+      containers:
+        - name: migrate
+          image: teammefit/mefit-backend:production
+          imagePullPolicy: Always
+          command: 
+            - /bin/sh
+            - -c
+            - |
+              echo "Waiting for database connection..."
+              for i in $(seq 1 6); do
+                if python -c "import django; django.setup(); from django.db import connection; connection.ensure_connection(); print('connected')" 2>/dev/null; then
+                  break
+                fi
+                echo "Attempt $i/6: DB not ready, waiting 5 seconds..."
+                sleep 5
+              done
+              python manage.py migrate --noinput
+          envFrom:
+            - configMapRef:
+                name: mefit-production-env
+            - secretRef:
+                name: mefit-production-secret
+          env:
+            # Migrate job은 단일 연결만 사용하도록 설정
+            - name: CONN_MAX_AGE
+              value: "0"
+            - name: DJANGO_APPLICATION_NAME
+              value: "mefit-migrate"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 192Mi
+            limits:
+              cpu: 500m
+              memory: 384Mi

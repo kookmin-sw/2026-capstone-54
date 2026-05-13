@@ -1,0 +1,105 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mefit-production-llm-gateway-env
+  namespace: mefit-backend-production
+data:
+  # ── 운영 옵션 ──
+  STORE_MODEL_IN_DB: "True"            # 어드민 UI 에서 모델 추가/수정 가능
+  AWS_REGION_NAME: "us-east-1"
+
+  # ── 어드민 UI 노출 ──
+  # 별도 subdomain (llm.mefit.kr) 으로 직접 노출 — Ingress (ingress.yml) 가
+  # Traefik 으로 mefit-llm-gateway:4000 에 직접 forward.
+  # backend Django reverse proxy 는 사용하지 않음 (자산 forwarding 부하 + urllib 한계).
+  # SERVER_ROOT_PATH 미설정 → root path "/" 에서 모든 라우트 + 자산 자연 동작.
+  # PROXY_BASE_URL 은 LiteLLM 의 SSO/OAuth callback URL 생성 시 사용.
+  PROXY_BASE_URL: "https://llm.mefit.kr"
+
+  # 아래 값들은 GitHub Environment secrets로 주입됩니다.
+  # LITELLM_MASTER_KEY     (sk- prefix 필수)
+  # DATABASE_URL           (RDS litellm DB)
+  # OPENAI_API_KEY         (게이트웨이가 OpenAI 호출 시 사용할 실키)
+  # GEMINI_API_KEY         (Google AI Studio 발급)
+  # UI_USERNAME            (어드민 UI 로그인 ID — 1차 인증)
+  # UI_PASSWORD            (어드민 UI 로그인 비밀번호 — 1차 인증)
+  # AWS 자격증명은 EC2 IAM Role 자동 사용 (별도 키 불필요)
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mefit-production-llm-gateway-config
+  namespace: mefit-backend-production
+data:
+  config.yaml: |
+    # =====================================================================
+    # LiteLLM Proxy 설정 — production K3s
+    # =====================================================================
+    # 모델명은 코드와 1:1 일치 (gpt-4o-mini / gpt-4o / text-embedding-3-small)
+    # 1순위(order=1)는 OpenAI, 폴백은 Bedrock(IAM Role 인증) → Gemini
+    # =====================================================================
+    model_list:
+      # ── chat: gpt-4o-mini ──
+      - model_name: gpt-4o-mini
+        litellm_params:
+          model: openai/gpt-4o-mini
+          api_key: os.environ/OPENAI_API_KEY
+          order: 1
+      - model_name: gpt-4o-mini
+        litellm_params:
+          model: bedrock/us.anthropic.claude-haiku-4-5-20251001-v1:0
+          custom_llm_provider: bedrock
+          aws_region_name: os.environ/AWS_REGION_NAME
+          order: 2
+      # Gemini 폴백은 GEMINI_API_KEY 가 등록되면 활성화. 현재 미등록 → 모델 등록 보류
+      # (등록된 후 항목 추가 시 google-generativeai SDK 로딩으로 ~80-100Mi 증가 예상)
+
+      # ── chat (vision): gpt-4o ──
+      - model_name: gpt-4o
+        litellm_params:
+          model: openai/gpt-4o
+          api_key: os.environ/OPENAI_API_KEY
+          order: 1
+      - model_name: gpt-4o
+        litellm_params:
+          model: bedrock/us.anthropic.claude-sonnet-4-5-20250929-v1:0
+          custom_llm_provider: bedrock
+          aws_region_name: os.environ/AWS_REGION_NAME
+          order: 2
+
+      # ── embeddings: text-embedding-3-small ──
+      # 임베딩은 chat 과 달리 vector space 호환성 때문에 모델 간 폴백 불가:
+      # - OpenAI text-embedding-3-small: 1536 차원, OpenAI 학습 분포
+      # - Bedrock Titan embed v2: 1024 차원, Amazon 학습 분포
+      # 두 모델의 벡터는 cosine similarity 비교 자체가 무의미하고, pgvector column
+      # 차원 불일치로 INSERT 실패. 한 번이라도 다른 모델로 저장되면 검색 인덱스가
+      # 영구 오염되므로 단일 모델 (OpenAI) 만 운영. OpenAI 장애 시 임베딩 호출은
+      # 차라리 명확히 실패하도록 두는 것이 데이터 일관성 측면에서 안전.
+      - model_name: text-embedding-3-small
+        litellm_params:
+          model: openai/text-embedding-3-small
+          api_key: os.environ/OPENAI_API_KEY
+
+    router_settings:
+      routing_strategy: simple-shuffle
+      num_retries: 2
+      timeout: 60
+      allowed_fails: 3
+      cooldown_time: 30
+
+    litellm_settings:
+      drop_params: True                # 모델별 미지원 파라미터 자동 무시
+      success_callback: ["prometheus"]
+      failure_callback: ["prometheus"]
+      cache: True
+      cache_params:
+        type: redis
+        host: mefit-production-redis
+        port: 6379
+        password: ""
+
+    general_settings:
+      master_key: os.environ/LITELLM_MASTER_KEY
+      database_url: os.environ/DATABASE_URL
+      database_connection_pool_limit: 5
+      ui_access_mode: "admin_only"
