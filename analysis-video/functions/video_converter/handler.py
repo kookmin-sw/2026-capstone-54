@@ -34,22 +34,31 @@ def _process(bucket, key, context):
     ffmpeg_timeout = _get_ffmpeg_timeout(context)
     log.info("ffmpeg_timeout_calculated", timeout=ffmpeg_timeout, key=key)
 
+    # Lambda CPU 병목 최적화: ultrafast preset(=인코딩 ~3-5x), yuv420p(브라우저 호환),
+    # fast_bilinear scale, mono 96k aac(인터뷰 음성), faststart(스트리밍 재생).
+    # 변경 시 분석-video 파이프라인 지연 회귀 가능 — 벤치마크 후에 변경할 것.
     run_ffmpeg(
         [
             "-i",
             input_path,
             "-vf",
-            "scale='min(1280,iw)':'-2'",
+            "scale='min(1280,iw)':'-2':flags=fast_bilinear",
             "-c:v",
             "libx264",
             "-preset",
-            "fast",
+            "ultrafast",
             "-crf",
             "28",
+            "-pix_fmt",
+            "yuv420p",
             "-c:a",
             "aac",
             "-b:a",
-            "128k",
+            "96k",
+            "-ac",
+            "1",
+            "-movflags",
+            "+faststart",
             output_path,
         ],
         description=f"convert {key}",
