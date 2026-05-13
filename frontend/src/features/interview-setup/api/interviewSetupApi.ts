@@ -5,6 +5,9 @@ import type {
   InterviewDifficultyLevel,
   InterviewPracticeMode,
 } from "@/features/interview-session";
+import type { ResumeJobCategory } from "@/features/resume";
+
+export type { ResumeJobCategory };
 
 // ── Resume option (matches backend ResumeSerializer) ──
 export interface ResumeOption {
@@ -18,6 +21,7 @@ export interface ResumeOption {
   analyzedAt: string | null;
   createdAt: string;
   updatedAt: string;
+  resumeJobCategory: ResumeJobCategory | null;
 }
 
 // ── User job description option (future) ──

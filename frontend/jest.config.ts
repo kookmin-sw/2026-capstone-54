@@ -20,7 +20,7 @@ const config: Config = {
           types: ['jest', '@testing-library/jest-dom', 'node'],
           baseUrl: '.',
           paths: { '@/*': ['src/*'] },
-          lib: ['es2018', 'dom'],
+          lib: ['es2019', 'dom'],
         },
       },
     ],
