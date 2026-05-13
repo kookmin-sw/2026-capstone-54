@@ -1,0 +1,53 @@
+services:
+  localstack:
+    image: localstack/localstack-pro:latest
+    container_name: mefit-localstack
+    ports:
+      - "4566:4566"
+    environment:
+      LOCALSTACK_AUTH_TOKEN: ${LOCALSTACK_AUTH_TOKEN:?LOCALSTACK_AUTH_TOKEN is required - get from https://app.localstack.cloud/workspace/auth-tokens}
+      SERVICES: s3,lambda,sns,sqs
+      DEFAULT_REGION: us-east-1
+      PERSISTENCE: 1
+      LAMBDA_RUNTIME_ENVIRONMENT_TIMEOUT: 300
+      LAMBDA_DOCKER_FLAGS: -v mefit-ffmpeg-bin:/opt/ffmpeg-bin
+    volumes:
+      - "./localstack_init.sh:/etc/localstack/init/ready.d/init.sh"
+      - "../functions:/opt/mefit/functions:ro"
+      - "../layers:/opt/mefit/layers:ro"
+      - localstack_state:/var/lib/localstack
+      - mefit-ffmpeg-bin:/tmp/mefit-ffmpeg
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - default
+      - mefit-local
+
+  s3-browser:
+    image: python:3.12-slim
+    container_name: mefit-s3-browser
+    ports:
+      - "9999:9999"
+    environment:
+      S3_ENDPOINT_URL: http://mefit-localstack:4566
+      S3_PUBLIC_ENDPOINT_URL: http://localhost:4566
+      REGION: us-east-1
+      S3_BROWSER_PORT: "9999"
+    volumes:
+      - "./s3_web_browser.py:/app/s3_web_browser.py:ro"
+    working_dir: /app
+    command: sh -c "pip install -q boto3 && python s3_web_browser.py"
+    depends_on:
+      - localstack
+    networks:
+      - default
+      - mefit-local
+
+volumes:
+  localstack_state:
+  mefit-ffmpeg-bin:
+    name: mefit-ffmpeg-bin
+
+networks:
+  default:
+  mefit-local:
+    external: true
