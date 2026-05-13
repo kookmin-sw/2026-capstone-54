@@ -1,0 +1,18 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# 환경 변수 (API 키 등 민감 정보)
+.env
+.env.*
+!.env.example
+
+# 스크래핑 결과물
+output/

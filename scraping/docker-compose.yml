@@ -1,0 +1,18 @@
+services:
+  scraper-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    environment:
+      - CELERY_BROKER_URL=redis://mefit-redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://mefit-redis:6379/1
+      - SCRAPER_CONCURRENCY=1
+    shm_size: '512mb'
+    networks:
+      - mefit-local
+
+networks:
+  mefit-local:
+    external: true
