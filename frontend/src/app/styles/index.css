@@ -1,0 +1,406 @@
+@import "tailwindcss";
+@import "./tokens.css";
+
+/* ════════════════════════════════════════════
+   meFit Design Tokens
+   ════════════════════════════════════════════ */
+:root {
+  /* 색상 */
+  --canvas:    #FFFFFF;
+  --fg:        #0A0A0A;
+  --muted:     #6B7280;
+  --accent:    #0991B2;
+  --accent-mid:#06B6D4;
+  --secondary: #374151;
+  --em:        #059669;
+  --am:        #D97706;
+
+  /* 그림자 시스템 */
+  --sc:  0 1px 3px rgba(0,0,0,0.1),  0 1px 2px rgba(0,0,0,0.06);
+  --sch: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
+  --sb:  0 1px 3px rgba(0,0,0,0.1),  0 1px 2px rgba(0,0,0,0.06);
+  --sbh: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
+  --sw:  0 1px 3px rgba(0,0,0,0.08);
+  --sp:  none;
+
+  /* 타이포그래피 렌더링 */
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+
+  /* Windows ClearType 보정: 폰트가 두꺼워 보이는 현상 완화 */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ════════════════════════════════════════════
+   전역 유틸리티
+   ════════════════════════════════════════════ */
+.gradient-text {
+  background: linear-gradient(135deg, #0991B2, #06B6D4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ════════════════════════════════════════════
+   Landing 슬라이드쇼 섹션 (fluid sizing - viewport 비례)
+   ════════════════════════════════════════════ */
+main[data-landing-main] > section {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: clamp(20px, 5vh, 80px) clamp(20px, 5vw, 48px);
+}
+
+main[data-landing-main] > #hero {
+  padding-top: clamp(72px, 9vh, 120px);
+}
+
+@media (min-width: 768px) {
+  main[data-landing-main] > section {
+    min-height: 100vh;
+    padding: clamp(48px, 6vh, 96px) clamp(40px, 5vw, 80px);
+  }
+  main[data-landing-main] > #hero {
+    padding-top: clamp(72px, 8vh, 100px);
+  }
+}
+
+/* ════════════════════════════════════════════
+   전역 리셋
+   ════════════════════════════════════════════ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 56px;
+}
+
+body {
+  font-family: var(--font-family-sans);
+  background: #FFFFFF;
+  color: var(--fg);
+  min-height: 100vh;
+  min-width: 320px;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-smooth: always;
+}
+
+button {
+  font-family: inherit;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ════════════════════════════════════════════
+   전역 Keyframes
+   (tailwind.config.ts의 animation/keyframes와 동기화)
+   ════════════════════════════════════════════ */
+
+/* ── 진입 ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeUpSm {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes pop {
+  0%   { transform: scale(0.85); opacity: 0; }
+  70%  { transform: scale(1.05); }
+  100% { transform: scale(1);    opacity: 1; }
+}
+@keyframes skPop {
+  0%   { transform: scale(0.7); opacity: 0; }
+  70%  { transform: scale(1.1); }
+  100% { transform: scale(1);   opacity: 1; }
+}
+
+/* ── 반복 ── */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes pulseSoft {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: .4; }
+}
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+@keyframes bounceY {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-6px); }
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: .7; }
+}
+@keyframes breathe {
+  0%, 100% { transform: scale(1);    opacity: 1; }
+  50%       { transform: scale(1.08); opacity: .85; }
+}
+@keyframes liveDot {
+  0%, 100% { transform: scale(1);   opacity: 1; }
+  50%       { transform: scale(1.5); opacity: .6; }
+}
+@keyframes dotPulse {
+  0%, 100% { opacity: 1;   transform: scale(1); }
+  50%       { opacity: .5;  transform: scale(0.8); }
+}
+
+/* ── 상태 전환 ── */
+@keyframes fillBar {
+  from { width: 0; }
+}
+@keyframes analyzeBar {
+  0%   { width: 0; }
+  100% { width: 100%; }
+}
+@keyframes checkPulse {
+  0%   { transform: scale(0.5); opacity: 0; }
+  60%  { transform: scale(1.15); }
+  100% { transform: scale(1);    opacity: 1; }
+}
+@keyframes cardGlow {
+  0%, 100% { box-shadow: 0 1px 2px rgba(0,0,0,.03), 0 2px 8px rgba(0,0,0,.05); }
+  50%       { box-shadow: 0 0 0 3px rgba(9,145,178,.15), 0 1px 2px rgba(0,0,0,.04), 0 4px 12px rgba(0,0,0,.06); }
+}
+@keyframes breatheRing {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(9,145,178,0); }
+  50%       { box-shadow: 0 0 0 8px rgba(9,145,178,0.1); }
+}
+@keyframes marqueeLeft {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+@keyframes marqueeRight {
+  from { transform: translateX(-50%); }
+  to   { transform: translateX(0); }
+}
+@keyframes glowBlob {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.4; }
+  50%       { transform: translate3d(2%, -2%, 0) scale(1.08); opacity: 0.55; }
+}
+
+/* ════════════════════════════════════════════
+   Interview Report 카드 스타일
+   ════════════════════════════════════════════ */
+.report-card {
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.02), 0 2px 10px rgba(9, 145, 178, 0.04), 0 6px 24px rgba(9, 145, 178, 0.03);
+}
+
+.report-card-hi {
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.02), 0 2px 10px rgba(9, 145, 178, 0.04), 0 6px 24px rgba(9, 145, 178, 0.03);
+}
+
+.report-page {
+  font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* ════════════════════════════════════════════
+   스크롤바 숨김 유틸리티
+   ════════════════════════════════════════════ */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* 얇은 스크롤바 */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(115, 189, 209, 0.3) transparent;
+}
+.scrollbar-thin::-webkit-scrollbar {
+  height: 4px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(9, 145, 178, 0.3);
+  border-radius: 4px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: rgba(9, 145, 178, 0.5);
+}
+
+/* ════════════════════════════════════════════
+   Reveal 유틸리티 (JS 클래스 토글 방식)
+   사용법: className={`reveal${revealed ? " reveal-in" : ""}`}
+   ════════════════════════════════════════════ */
+.reveal,
+.hp-rv,
+.sk-rv,
+.ipc-rv,
+.isetup-rv {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.45s ease, transform 0.45s ease;
+}
+
+.reveal-in,
+.hp-rv-in,
+.sk-rv-in,
+.ipc-rv-in,
+.isetup-rv-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ════════════════════════════════════════════
+   공유 Nav (hp-nav)
+   ════════════════════════════════════════════ */
+.hp-nav {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid #e5e7eb;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  padding: 0 32px;
+  gap: 16px;
+}
+
+.hp-nav-logo {
+  font-size: 20px;
+  font-weight: 900;
+  color: #0a0a0a;
+  text-decoration: none;
+  letter-spacing: -0.4px;
+  margin-right: auto;
+}
+
+.hp-nav-link {
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b7280;
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  transition: color 0.15s, background 0.15s;
+}
+
+.hp-nav-link:hover {
+  color: #0a0a0a;
+  background: #f9fafb;
+}
+
+.hp-nav-link.active {
+  color: #0a0a0a;
+  font-weight: 600;
+}
+
+.hp-menu-btn {
+  display: none;
+  width: 36px;
+  height: 36px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.hp-menu-btn:hover {
+  background: #f3f4f6;
+}
+
+.hp-menu-icon {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hp-menu-icon span {
+  width: 18px;
+  height: 2px;
+  background: #0a0a0a;
+  border-radius: 2px;
+  transition: all 0.2s;
+}
+
+@media (max-width: 640px) {
+  .hp-nav {
+    padding: 0 16px;
+  }
+}
+
+/* 햄버거 버튼 md 기준으로 표시 */
+.hp-nav.nav-shared .hp-menu-btn {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .hp-nav.nav-shared .hp-menu-btn {
+    display: flex;
+  }
+}
+
+/* 사이드바 — 항상 오버레이로 동작 */
+.hp-sidebar.nav-sidebar {
+  position: fixed;
+  left: 0;
+  top: 60px;
+  bottom: 0;
+  width: 280px;
+  z-index: 201;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+  border-right: 1px solid #e5e7eb;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+}
+
+.hp-sidebar.nav-sidebar.open {
+  transform: translateX(0);
+}

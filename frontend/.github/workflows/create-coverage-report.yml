@@ -1,0 +1,344 @@
+name: Create Coverage Report
+
+on:
+  push:
+    branches-ignore:
+      - 'coverage-docs'
+  delete:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: coverage-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  generate-coverage:
+    runs-on: ubuntu-latest
+    if: github.event_name != 'delete'
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.10"
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Generate test coverage report
+        run: bun run test:coverage -- --ci --runInBand
+        continue-on-error: true
+        env:
+          CI: true
+
+      - name: Verify coverage output exists
+        run: |
+          if [ ! -d "coverage/lcov-report" ] || [ ! -f "coverage/lcov-report/index.html" ]; then
+            echo "::error::coverage/lcov-report/index.html not found - Jest coverage failed to generate HTML report."
+            find coverage -maxdepth 2 2>/dev/null || echo "coverage directory missing"
+            exit 1
+          fi
+          echo "Coverage report generated successfully."
+          find coverage/lcov-report -maxdepth 1 -type f -printf "%f\n" 2>/dev/null | head -20
+
+      - name: Commit and push coverage report to coverage-docs branch
+        run: |
+          set -e
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions@github.com"
+
+          BRANCH_NAME="${{ github.ref_name }}"
+          BRANCH_DIR_ESCAPED="${BRANCH_NAME//\//_}"
+          BRANCH_DIR_ESCAPED="${BRANCH_DIR_ESCAPED//./_}"
+
+          # Save lcov-report to temp before any branch switching
+          HTMLCOV_DIR=$(mktemp -d)
+          cp -r coverage/lcov-report/* "$HTMLCOV_DIR/"
+
+          # Also save lcov.info for summary parsing (optional but useful)
+          LCOV_FILE=""
+          if [ -f "coverage/lcov.info" ]; then
+            LCOV_FILE=$(mktemp)
+            cp coverage/lcov.info "$LCOV_FILE"
+          fi
+
+          # Fetch existing coverage-docs content (tree only, no history)
+          EXISTING_DIR=$(mktemp -d)
+          if git fetch origin coverage-docs 2>/dev/null; then
+            git archive origin/coverage-docs | tar -x -C "$EXISTING_DIR"
+          fi
+
+          # Create fresh orphan branch (always results in exactly 1 commit)
+          git checkout --orphan coverage-docs
+          git rm -rf . 2>/dev/null || true
+          git clean -fdx 2>/dev/null || true
+
+          # Restore existing reports from other branches
+          if [ "$(ls -A "$EXISTING_DIR" 2>/dev/null)" ]; then
+            cp -a "$EXISTING_DIR"/. . 2>/dev/null || true
+          fi
+          rm -rf "$EXISTING_DIR"
+
+          # Add/update current branch's coverage report
+          mkdir -p "$BRANCH_DIR_ESCAPED"
+          echo -n "$BRANCH_NAME" > "$BRANCH_DIR_ESCAPED/.branch-name"
+          cp -r "$HTMLCOV_DIR"/* "$BRANCH_DIR_ESCAPED/"
+          rm -rf "$HTMLCOV_DIR"
+
+          # Compute coverage percentage for this branch from lcov.info (if present)
+          BRANCH_PCT=""
+          if [ -n "$LCOV_FILE" ] && [ -f "$LCOV_FILE" ]; then
+            BRANCH_PCT=$(awk -F: '
+              /^LF:/ { lf += $2 }
+              /^LH:/ { lh += $2 }
+              END {
+                if (lf > 0) printf "%.2f", (lh / lf) * 100;
+                else printf "N/A";
+              }
+            ' "$LCOV_FILE")
+            echo -n "$BRANCH_PCT" > "$BRANCH_DIR_ESCAPED/.coverage-pct"
+            rm -f "$LCOV_FILE"
+          fi
+
+          # Generate index.html with links to all branch reports
+          TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+
+          {
+            echo '<!DOCTYPE html>'
+            echo '<html lang="en">'
+            echo '<head>'
+            echo '  <meta charset="utf-8">'
+            echo '  <meta name="viewport" content="width=device-width, initial-scale=1">'
+            echo '  <title>Frontend Coverage Reports</title>'
+            echo '  <style>'
+            echo '    * { box-sizing: border-box; }'
+            echo '    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; max-width: 900px; margin: 50px auto; padding: 20px; color: #0A0A0A; background: #FFFFFF; }'
+            echo '    h1 { border-bottom: 2px solid #0991B2; padding-bottom: 10px; margin-bottom: 8px; }'
+            echo '    .subtitle { color: #666; font-size: 14px; margin-top: 0; }'
+            echo '    .timestamp { color: #666; font-size: 13px; margin-bottom: 24px; }'
+            echo '    .branch-list { list-style: none; padding: 0; margin: 0; }'
+            echo '    .branch-list li { margin: 0; border: 1px solid #E5E7EB; border-radius: 8px; margin-bottom: 12px; background: #F9FAFB; transition: background 0.15s ease; }'
+            echo '    .branch-list li:hover { background: #E6F7FA; }'
+            echo '    .branch-list a { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; font-size: 16px; color: #0991B2; text-decoration: none; font-weight: 600; }'
+            echo '    .branch-list a:hover { text-decoration: underline; }'
+            echo '    .pct { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 14px; color: #0A0A0A; background: #FFFFFF; border: 1px solid #E5E7EB; padding: 4px 10px; border-radius: 999px; font-weight: 500; }'
+            echo '    .pct.high { color: #047857; border-color: #A7F3D0; background: #ECFDF5; }'
+            echo '    .pct.mid { color: #B45309; border-color: #FCD34D; background: #FFFBEB; }'
+            echo '    .pct.low { color: #B91C1C; border-color: #FCA5A5; background: #FEF2F2; }'
+            echo '    .empty { color: #666; font-style: italic; padding: 20px; border: 1px dashed #E5E7EB; border-radius: 8px; text-align: center; }'
+            echo '  </style>'
+            echo '</head>'
+            echo '<body>'
+            echo '  <h1>Frontend Coverage Reports</h1>'
+            echo '  <p class="subtitle">Jest unit-test coverage per branch.</p>'
+            echo "  <p class=\"timestamp\">Last updated: $TIMESTAMP</p>"
+            echo '  <ul class="branch-list">'
+
+            FOUND_ANY=0
+            for dir in */; do
+              if [ -f "$dir/index.html" ]; then
+                FOUND_ANY=1
+                branch="${dir%/}"
+                if [ -f "$dir/.branch-name" ]; then
+                  original_branch="$(cat "$dir/.branch-name")"
+                else
+                  original_branch="$branch"
+                fi
+                pct_html=""
+                if [ -f "$dir/.coverage-pct" ]; then
+                  pct_value="$(cat "$dir/.coverage-pct")"
+                  pct_class="pct"
+                  if [ "$pct_value" != "N/A" ]; then
+                    pct_int="${pct_value%.*}"
+                    if [ "$pct_int" -ge 80 ] 2>/dev/null; then
+                      pct_class="pct high"
+                    elif [ "$pct_int" -ge 50 ] 2>/dev/null; then
+                      pct_class="pct mid"
+                    else
+                      pct_class="pct low"
+                    fi
+                    pct_html="<span class=\"$pct_class\">${pct_value}%</span>"
+                  else
+                    pct_html="<span class=\"$pct_class\">N/A</span>"
+                  fi
+                fi
+                echo "    <li><a href=\"$branch/index.html\"><span>$original_branch</span>$pct_html</a></li>"
+              fi
+            done
+
+            if [ "$FOUND_ANY" -eq 0 ]; then
+              echo '    <li class="empty">No coverage reports yet.</li>'
+            fi
+
+            echo '  </ul>'
+            echo '</body>'
+            echo '</html>'
+          } > index.html
+
+          git add .
+
+          if git diff --cached --quiet; then
+            echo "No changes in coverage report. Skipping commit & push."
+            exit 0
+          fi
+
+          git commit -m "Coverage Report - ${{ github.ref_name }} - $(date '+%Y-%m-%d %H:%M:%S')"
+          git push origin coverage-docs --force
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Post coverage report link
+        run: |
+          BRANCH_NAME="${{ github.ref_name }}"
+          BRANCH_DIR_ESCAPED="${BRANCH_NAME//\//_}"
+          BRANCH_DIR_ESCAPED="${BRANCH_DIR_ESCAPED//./_}"
+
+          OWNER="${{ github.repository_owner }}"
+          REPO="${{ github.event.repository.name }}"
+          PAGES_URL="https://${OWNER}.github.io/${REPO}"
+          BRANCH_REPORT_URL="${PAGES_URL}/${BRANCH_DIR_ESCAPED}/index.html"
+
+          {
+            echo "## Coverage Report"
+            echo ""
+            echo "Branch report: $BRANCH_REPORT_URL"
+            echo ""
+            echo "Index: $PAGES_URL/"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  delete-coverage:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'delete' && github.event.ref_type == 'branch'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Delete coverage report for deleted branch
+        run: |
+          set -e
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions@github.com"
+
+          DELETED_BRANCH="${{ github.event.ref }}"
+          BRANCH_DIR_ESCAPED="${DELETED_BRANCH//\//_}"
+          BRANCH_DIR_ESCAPED="${BRANCH_DIR_ESCAPED//./_}"
+
+          echo "Deleting coverage report for branch: $DELETED_BRANCH (dir: $BRANCH_DIR_ESCAPED)"
+
+          # Fetch existing coverage-docs content (tree only, no history)
+          EXISTING_DIR=$(mktemp -d)
+          if ! git fetch origin coverage-docs 2>/dev/null; then
+            echo "No coverage-docs branch exists. Nothing to delete."
+            exit 0
+          fi
+          git archive origin/coverage-docs | tar -x -C "$EXISTING_DIR"
+
+          # Check if the branch directory exists in coverage-docs
+          if [ ! -d "$EXISTING_DIR/$BRANCH_DIR_ESCAPED" ]; then
+            echo "No coverage report found for branch: $DELETED_BRANCH (tried: $BRANCH_DIR_ESCAPED)"
+            rm -rf "$EXISTING_DIR"
+            exit 0
+          fi
+
+          rm -rf "$EXISTING_DIR/${BRANCH_DIR_ESCAPED:?branch directory name resolved to empty - aborting to avoid wiping the snapshot}"
+
+          # Create fresh orphan branch (keeps exactly 1 commit)
+          git checkout --orphan coverage-docs
+          git rm -rf . 2>/dev/null || true
+          git clean -fdx 2>/dev/null || true
+
+          # Restore remaining content
+          if [ "$(ls -A "$EXISTING_DIR" 2>/dev/null)" ]; then
+            cp -a "$EXISTING_DIR"/. . 2>/dev/null || true
+          fi
+          rm -rf "$EXISTING_DIR"
+
+          # Regenerate index.html
+          TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+          {
+            echo '<!DOCTYPE html>'
+            echo '<html lang="en">'
+            echo '<head>'
+            echo '  <meta charset="utf-8">'
+            echo '  <meta name="viewport" content="width=device-width, initial-scale=1">'
+            echo '  <title>Frontend Coverage Reports</title>'
+            echo '  <style>'
+            echo '    * { box-sizing: border-box; }'
+            echo '    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; max-width: 900px; margin: 50px auto; padding: 20px; color: #0A0A0A; background: #FFFFFF; }'
+            echo '    h1 { border-bottom: 2px solid #0991B2; padding-bottom: 10px; margin-bottom: 8px; }'
+            echo '    .subtitle { color: #666; font-size: 14px; margin-top: 0; }'
+            echo '    .timestamp { color: #666; font-size: 13px; margin-bottom: 24px; }'
+            echo '    .branch-list { list-style: none; padding: 0; margin: 0; }'
+            echo '    .branch-list li { margin: 0; border: 1px solid #E5E7EB; border-radius: 8px; margin-bottom: 12px; background: #F9FAFB; transition: background 0.15s ease; }'
+            echo '    .branch-list li:hover { background: #E6F7FA; }'
+            echo '    .branch-list a { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; font-size: 16px; color: #0991B2; text-decoration: none; font-weight: 600; }'
+            echo '    .branch-list a:hover { text-decoration: underline; }'
+            echo '    .pct { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 14px; color: #0A0A0A; background: #FFFFFF; border: 1px solid #E5E7EB; padding: 4px 10px; border-radius: 999px; font-weight: 500; }'
+            echo '    .pct.high { color: #047857; border-color: #A7F3D0; background: #ECFDF5; }'
+            echo '    .pct.mid { color: #B45309; border-color: #FCD34D; background: #FFFBEB; }'
+            echo '    .pct.low { color: #B91C1C; border-color: #FCA5A5; background: #FEF2F2; }'
+            echo '    .empty { color: #666; font-style: italic; padding: 20px; border: 1px dashed #E5E7EB; border-radius: 8px; text-align: center; }'
+            echo '  </style>'
+            echo '</head>'
+            echo '<body>'
+            echo '  <h1>Frontend Coverage Reports</h1>'
+            echo '  <p class="subtitle">Jest unit-test coverage per branch.</p>'
+            echo "  <p class=\"timestamp\">Last updated: $TIMESTAMP</p>"
+            echo '  <ul class="branch-list">'
+
+            FOUND_ANY=0
+            for dir in */; do
+              if [ -f "$dir/index.html" ]; then
+                FOUND_ANY=1
+                branch="${dir%/}"
+                if [ -f "$dir/.branch-name" ]; then
+                  original_branch="$(cat "$dir/.branch-name")"
+                else
+                  original_branch="$branch"
+                fi
+                pct_html=""
+                if [ -f "$dir/.coverage-pct" ]; then
+                  pct_value="$(cat "$dir/.coverage-pct")"
+                  pct_class="pct"
+                  if [ "$pct_value" != "N/A" ]; then
+                    pct_int="${pct_value%.*}"
+                    if [ "$pct_int" -ge 80 ] 2>/dev/null; then
+                      pct_class="pct high"
+                    elif [ "$pct_int" -ge 50 ] 2>/dev/null; then
+                      pct_class="pct mid"
+                    else
+                      pct_class="pct low"
+                    fi
+                    pct_html="<span class=\"$pct_class\">${pct_value}%</span>"
+                  else
+                    pct_html="<span class=\"$pct_class\">N/A</span>"
+                  fi
+                fi
+                echo "    <li><a href=\"$branch/index.html\"><span>$original_branch</span>$pct_html</a></li>"
+              fi
+            done
+
+            if [ "$FOUND_ANY" -eq 0 ]; then
+              echo '    <li class="empty">No coverage reports yet.</li>'
+            fi
+
+            echo '  </ul>'
+            echo '</body>'
+            echo '</html>'
+          } > index.html
+
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes after deletion. Skipping."
+            exit 0
+          fi
+          git commit -m "Remove coverage: $DELETED_BRANCH - $(date '+%Y-%m-%d %H:%M:%S')"
+          git push origin coverage-docs --force
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,148 @@
+/* ════════════════════════════════════════════
+   meFit Design Tokens (Tailwind v4 @theme)
+   토큰 수정은 이 파일에서만 관리합니다.
+   ════════════════════════════════════════════ */
+@theme {
+  /* ── 간격 ── */
+  --spacing-25: 100px;
+
+  /* ── Width ── */
+  --width-35p: 35%;
+
+  /* ── Max-width ── */
+  --max-width-container-xl: 1200px;  /* Resume 관련 페이지 */
+  --max-width-container-lg: 1140px;  /* JD 관련 페이지 */
+  --max-width-container:    1080px;  /* 메인 컨테이너 */
+  --max-width-container-md: 820px;   /* Interview precheck */
+  --max-width-container-sm: 720px;   /* JD analyzing */
+  --max-width-form:         520px;   /* 폼 카드 */
+  --max-width-content:      480px;   /* 작은 컨테이너 */
+  --max-width-text:         440px;   /* 텍스트 블록 */
+  --max-width-button-group: 320px;   /* 버튼 그룹 */
+
+  /* ── 색상 ── */
+  --color-mefit-black:  #0A0A0A;
+  --color-mefit-white:  #FFFFFF;
+  --color-mefit-canvas: #FFFFFF;
+
+  /* 주 강조색 */
+  --color-mefit-primary:           #0991B2;
+  --color-mefit-primary-mid:       #06B6D4;
+  --color-mefit-primary-light:     #E6F7FA;
+  --color-mefit-primary-ring:      rgba(9,145,178,0.1);
+  --color-mefit-primary-border:    rgba(9,145,178,0.15);
+  --color-mefit-primary-border-md: rgba(9,145,178,0.25);
+
+  /* 시맨틱 */
+  --color-mefit-success:        #059669;
+  --color-mefit-success-light:  #F0FDF4;
+  --color-mefit-success-border: #BBF7D0;
+
+  --color-mefit-warning:        #D97706;
+  --color-mefit-warning-light:  #FFF7ED;
+  --color-mefit-warning-border: #FED7AA;
+
+  --color-mefit-danger:        #DC2626;
+  --color-mefit-danger-light:  #FEF2F2;
+  --color-mefit-danger-border: #FECACA;
+  --color-mefit-danger-vivid:  #EF4444;
+  --color-mefit-danger-rose:   #E11D48;
+
+  /* 그레이 스케일 */
+  --color-mefit-gray-50:  #F9FAFB;
+  --color-mefit-gray-100: #F3F4F6;
+  --color-mefit-gray-150: #ECEEF0;
+  --color-mefit-gray-200: #E5E7EB;
+  --color-mefit-gray-300: #D1D5DB;
+  --color-mefit-gray-400: #9CA3AF;
+  --color-mefit-gray-500: #6B7280;
+  --color-mefit-gray-600: #4B5563;
+  --color-mefit-gray-700: #374151;
+  --color-mefit-gray-800: #1F2937;
+  --color-mefit-gray-900: #111827;
+
+  /* 반투명 오버레이 */
+  --color-mefit-overlay-white-92: rgba(255,255,255,0.92);
+  --color-mefit-overlay-white-95: rgba(255,255,255,0.95);
+  --color-mefit-overlay-black-35: rgba(0,0,0,0.35);
+  --color-mefit-overlay-black-40: rgba(0,0,0,0.40);
+
+  /* ── 폰트 패밀리 ── */
+  --font-family-display: 'IBM Plex Sans KR', sans-serif, 'Inter Tight', 'Pretendard Variable', 'Pretendard', system-ui, -apple-system, BlinkMacSystemFont;
+  --font-family-sans: 'IBM Plex Sans KR', sans-serif, 'Inter Tight', 'Pretendard Variable', 'Pretendard', system-ui, -apple-system, BlinkMacSystemFont;
+  --font-family-plex-sans-kr: var(--font-family-display);
+
+  /* ── 폰트 크기 ── */
+  --font-size-2xs:  11px;
+  --font-size-xs:   12px;
+  --font-size-sm:   13px;
+  --font-size-base: 14px;
+  --font-size-md:   15px;
+  --font-size-lg:   16px;
+  --font-size-xl:   18px;
+  --font-size-2xl:  20px;
+  --font-size-3xl:  22px;
+  --font-size-4xl:  24px;
+  --font-size-5xl:  26px;
+
+  --line-height-2xs:  1.45;
+  --line-height-xs:   1.5;
+  --line-height-sm:   1.5;
+  --line-height-base: 1.55;
+  --line-height-md:   1.55;
+  --line-height-lg:   1.5;
+  --line-height-xl:   1.4;
+  --line-height-2xl:  1.3;
+  --line-height-3xl:  1.3;
+  --line-height-4xl:  1.2;
+  --line-height-5xl:  1.2;
+
+  /* ── 박스 섀도우 ── */
+  --shadow-card:         var(--sc);
+  --shadow-card-hover:   var(--sch);
+  --shadow-button:       var(--sb);
+  --shadow-button-hover: var(--sbh);
+  --shadow-widget:       var(--sw);
+  --shadow-none-token:   var(--sp);
+  --shadow-xs:           0 1px 2px rgba(0,0,0,0.05);
+  --shadow-sm:           0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-md:           0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
+  --shadow-lg:           0 10px 15px rgba(0,0,0,0.1), 0 4px 6px rgba(0,0,0,0.05);
+  --shadow-lift:         0 2px 8px rgba(0,0,0,0.1), 0 8px 24px rgba(0,0,0,0.08);
+  --shadow-primary-glow: 0 2px 8px rgba(9,145,178,0.3);
+  --shadow-toggle:       0 1px 4px rgba(0,0,0,0.15);
+  --shadow-ring-primary: 0 0 0 3px rgba(9,145,178,0.1);
+
+  /* ── 테두리 반경 ── */
+  --radius-xs:  4px;
+  --radius-sm:  6px;
+  --radius-md:  8px;
+  --radius-lg:  10px;
+  --radius-xl:  12px;
+  --radius-2xl: 16px;
+  --radius-3xl: 20px;
+  --radius-4xl: 24px;
+
+  /* ── 애니메이션 ── */
+  --animate-fade-up:      fadeUp 0.4s ease both;
+  --animate-fade-up-sm:   fadeUpSm 0.3s ease both;
+  --animate-slide-up:     slideUp 0.35s cubic-bezier(0.4,0,0.2,1);
+  --animate-slide-down:   slideDown 0.3s ease both;
+  --animate-spin-slow:    spin 0.6s linear infinite;
+  --animate-spin-fast:    spin 0.4s linear infinite;
+  --animate-pulse-soft:   pulseSoft 2s ease-in-out infinite;
+  --animate-shimmer:      shimmer 1.4s infinite;
+  --animate-shimmer-slow: shimmer 1.8s infinite;
+  --animate-pop:          pop 0.35s ease both;
+  --animate-bounce-y:     bounceY 1.2s ease-in-out infinite;
+  --animate-blink:        blink 1s step-end infinite;
+  --animate-breathe:      breathe 2s ease-in-out infinite;
+  --animate-flicker:      flicker 2s ease-in-out infinite;
+  --animate-fill-bar:     fillBar 0.8s ease both;
+  --animate-live-dot:     liveDot 1.2s ease-in-out infinite;
+  --animate-dot-pulse:    dotPulse 1.2s ease-in-out infinite;
+  --animate-check-pulse:  checkPulse 0.4s ease both;
+  --animate-card-glow:    cardGlow 2s ease-in-out infinite;
+  --animate-breathe-ring: breatheRing 2s ease-in-out infinite;
+  --animate-analyze-bar:  analyzeBar 2s ease both;
+}
