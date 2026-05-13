@@ -22,6 +22,8 @@ export type {
   SubmitAnswerFullProcessResponse,
   SubmitAnswerResponse,
   BehaviorAnalysis,
+  VideoAnalysisResult,
+  AudioAnalysisResult,
 } from "./api/types";
 
 export { SESSION_TYPE_LABEL, DIFFICULTY_LABEL, DIFFICULTY_STYLE, REPORT_STATUS_BADGE } from "./constants/labels";

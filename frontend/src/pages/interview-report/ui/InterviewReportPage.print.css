@@ -1,0 +1,125 @@
+/* ════════════════════════════════════════════
+   Interview Report — Print / PDF 전용 스타일
+   ════════════════════════════════════════════ */
+
+/* 인쇄 전용 요소는 화면에서 숨김 */
+#print-category-bars,
+#print-strengths,
+#print-audio,
+#print-video,
+#print-feedbacks {
+  display: none;
+}
+
+@media print {
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* 전체 폰트/크기 축소 */
+  .report-page {
+    font-size: 10px !important;
+    background: white !important;
+  }
+
+  /* 네비게이션, 사이드바, 배경 효과 숨김 */
+  .report-page > nav,
+  .report-page aside,
+  .report-page .fixed {
+    display: none !important;
+  }
+
+  /* 비디오/오디오 플레이어 숨김 */
+  video, audio {
+    display: none !important;
+  }
+
+  /* 하단 액션 버튼 숨김 */
+  .report-page main > .flex.gap-3.justify-center {
+    display: none !important;
+  }
+
+  /* 강점/개선, 음성/영상 분석 화면 섹션 숨김 (역량 카드 안에 통합) */
+  #strengths-section,
+  #audio-section,
+  #video-section {
+    display: none !important;
+  }
+
+  /* 질문별 피드백: 화면용(탭 carousel) 숨기고 인쇄용(전체 펼침) 표시 */
+  #screen-feedbacks {
+    display: none !important;
+  }
+
+  #print-feedbacks {
+    display: block !important;
+  }
+
+  /* 각 질문 카드를 새 페이지에서 시작 (마지막 카드 제외) */
+  .print-question-card {
+    break-before: page;
+    page-break-before: always;
+    break-inside: avoid;
+  }
+
+  /* 첫 번째 질문 카드는 헤더 바로 뒤에 와야 하므로 break 제거 */
+  #print-feedbacks .print-feedbacks-header + .print-question-card {
+    break-before: auto;
+    page-break-before: auto;
+  }
+
+  /* 레이아웃 보정 */
+  .report-page .max-w-\[1280px\] {
+    padding-top: 0 !important;
+    max-width: 100% !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+
+  .report-page main {
+    padding-top: 4px !important;
+    padding-bottom: 0 !important;
+    gap: 6px !important;
+  }
+
+  /* 카드 패딩 축소, 그림자 제거, 페이지 나눔 방지 */
+  .report-card,
+  .report-card-hi {
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08) !important;
+    border-radius: 12px !important;
+    break-inside: avoid;
+    padding: 12px !important;
+  }
+
+  section {
+    break-inside: avoid;
+    margin-bottom: 0 !important;
+  }
+
+  /* SVG 차트 인쇄 보정 */
+  svg {
+    max-width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* 역량 분석: 화면용 요소 숨기고 인쇄용 표시 */
+  #screen-radar,
+  #screen-category-bars {
+    display: none !important;
+  }
+
+  #print-category-bars {
+    display: block !important;
+  }
+
+  #print-strengths {
+    display: grid !important;
+  }
+
+  #print-audio,
+  #print-video {
+    display: block !important;
+  }
+}

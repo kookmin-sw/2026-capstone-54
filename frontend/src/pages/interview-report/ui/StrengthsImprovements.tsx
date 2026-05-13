@@ -1,4 +1,4 @@
-import { TrendingUp, ChevronRight } from "lucide-react";
+import { CheckCircle2, AlertTriangle } from "lucide-react";
 import type { InterviewStrengthItem } from "@/features/interview-session";
 
 interface StrengthsImprovementsProps {
@@ -8,32 +8,41 @@ interface StrengthsImprovementsProps {
 
 export function StrengthsImprovements({ strengths, improvements }: StrengthsImprovementsProps) {
   return (
-    <div className="grid grid-cols-2 gap-4 mb-4 max-sm:grid-cols-1">
-      <div className="bg-[#F0FDF4] border border-[#BBF7D0] rounded-2xl p-5">
-        <h3 className="text-[12px] font-bold text-[#059669] mb-3 flex items-center gap-1.5">
-          <TrendingUp size={14} /> 강점
-        </h3>
-        <ul className="flex flex-col gap-3">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {/* 강점 */}
+      <div className="report-card p-7">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-7 h-7 bg-emerald-50 rounded-lg flex items-center justify-center shrink-0">
+            <CheckCircle2 size={13} className="text-emerald-500" strokeWidth={2.2} />
+          </div>
+          <h2 className="text-[13px] font-semibold text-[#111827]">강점</h2>
+        </div>
+        <div className="space-y-3">
           {strengths.map((s, i) => (
-            <li key={i} className="text-[12px] text-[#374151]">
-              <p className="font-bold text-[#059669] mb-0.5">✓ {s.title}</p>
-              <p className="text-[11px] text-[#6B7280] leading-relaxed">{s.evidence}</p>
-            </li>
+            <div key={i} className="border-l-2 border-emerald-500 pl-3">
+              <p className="text-[13px] font-semibold text-[#1F2937] mb-0.5">{s.title}</p>
+              <p className="text-[12px] text-[#6B7280] leading-relaxed">{s.evidence}</p>
+            </div>
           ))}
-        </ul>
+        </div>
       </div>
-      <div className="bg-[#FFF7ED] border border-[#FED7AA] rounded-2xl p-5">
-        <h3 className="text-[12px] font-bold text-[#D97706] mb-3 flex items-center gap-1.5">
-          <ChevronRight size={14} /> 개선 영역
-        </h3>
-        <ul className="flex flex-col gap-3">
+
+      {/* 개선 영역 */}
+      <div className="report-card p-7">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-7 h-7 bg-[#FDF6E3] rounded-lg flex items-center justify-center shrink-0">
+            <AlertTriangle size={13} className="text-[#E9B63B]" strokeWidth={2.2} />
+          </div>
+          <h2 className="text-[13px] font-semibold text-[#111827]">개선 영역</h2>
+        </div>
+        <div className="space-y-3">
           {improvements.map((s, i) => (
-            <li key={i} className="text-[12px] text-[#374151]">
-              <p className="font-bold text-[#D97706] mb-0.5">→ {s.title}</p>
-              <p className="text-[11px] text-[#6B7280] leading-relaxed">{s.evidence}</p>
-            </li>
+            <div key={i} className="border-l-2 border-[#E9B63B] pl-3">
+              <p className="text-[13px] font-semibold text-[#1F2937] mb-0.5">{s.title}</p>
+              <p className="text-[12px] text-[#6B7280] leading-relaxed">{s.evidence}</p>
+            </div>
           ))}
-        </ul>
+        </div>
       </div>
     </div>
   );

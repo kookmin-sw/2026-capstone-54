@@ -19,6 +19,8 @@ export interface UseRecordingManagerReturn {
   startRecording: (turnId: number) => Promise<void>;
   stopRecording: () => Promise<void>;
   abortRecording: () => Promise<void>;
+  pauseRecording: () => void;
+  resumeRecording: () => void;
   recordingEnabled: boolean;
 }
 
@@ -36,6 +38,10 @@ export function useRecordingManager({
   const collectedPartsRef = useRef<UploadedPart[]>([]);
   const pendingUploadsRef = useRef<Promise<UploadedPart | null>[]>([]);
   const preparedTurnIdRef = useRef<number | null>(null);
+  const preparePromiseRef = useRef<Promise<string | null> | null>(null);
+  const preparingTurnIdRef = useRef<number | null>(null);
+  const pausedDurationAccumRef = useRef<number>(0);
+  const pauseStartedAtRef = useRef<number | null>(null);
 
   const chunkUploader = useChunkUploader();
 
@@ -76,6 +82,11 @@ export function useRecordingManager({
     isInitializedRef.current = false;
     collectedPartsRef.current = [];
     pendingUploadsRef.current = [];
+    preparePromiseRef.current = null;
+    preparingTurnIdRef.current = null;
+    preparedTurnIdRef.current = null;
+    pausedDurationAccumRef.current = 0;
+    pauseStartedAtRef.current = null;
     chunkUploader.reset();
   }, [chunkUploader]);
 
@@ -89,18 +100,55 @@ export function useRecordingManager({
     resetRefs();
   }, [mediaRecorder, resetRefs]);
 
+  const pauseRecording = useCallback(() => {
+    if (!recordingEnabled) return;
+    if (pauseStartedAtRef.current === null) {
+      pauseStartedAtRef.current = Date.now();
+    }
+    mediaRecorder.pause();
+  }, [recordingEnabled, mediaRecorder]);
+
+  const resumeRecording = useCallback(() => {
+    if (!recordingEnabled) return;
+    if (pauseStartedAtRef.current !== null) {
+      pausedDurationAccumRef.current += Date.now() - pauseStartedAtRef.current;
+      pauseStartedAtRef.current = null;
+    }
+    mediaRecorder.resume();
+  }, [recordingEnabled, mediaRecorder]);
+
   const prepareRecording = useCallback(
     async (turnId: number) => {
-      if (!recordingEnabled || preparedTurnIdRef.current === turnId) return;
+      if (!recordingEnabled) return;
+      if (preparedTurnIdRef.current === turnId && recordingIdRef.current) return;
+      if (preparingTurnIdRef.current === turnId && preparePromiseRef.current) {
+        await preparePromiseRef.current;
+        return;
+      }
+
+      preparingTurnIdRef.current = turnId;
+      preparePromiseRef.current = (async () => {
+        try {
+          const initRes = await recordingApi.initiate(sessionUuid, turnId, "video");
+          recordingIdRef.current = initRes.recordingId;
+          chunkUploader.init(initRes.recordingId);
+          preparedTurnIdRef.current = turnId;
+          console.info("[RecordingManager] prepared for turnId=%d", turnId);
+          return initRes.recordingId;
+        } catch (err) {
+          console.warn("[RecordingManager] prepare failed:", err);
+          preparedTurnIdRef.current = null;
+          recordingIdRef.current = null;
+          return null;
+        } finally {
+          preparingTurnIdRef.current = null;
+        }
+      })();
+
       try {
-        const initRes = await recordingApi.initiate(sessionUuid, turnId, "video");
-        recordingIdRef.current = initRes.recordingId;
-        chunkUploader.init(initRes.recordingId);
-        preparedTurnIdRef.current = turnId;
-        console.info("[RecordingManager] prepared for turnId=%d", turnId);
-      } catch (err) {
-        console.warn("[RecordingManager] prepare failed, will init on startRecording:", err);
-        preparedTurnIdRef.current = null;
+        await preparePromiseRef.current;
+      } finally {
+        preparePromiseRef.current = null;
       }
     },
     [sessionUuid, recordingEnabled, chunkUploader],
@@ -115,12 +163,16 @@ export function useRecordingManager({
       pendingUploadsRef.current = [];
 
       try {
+        if (preparePromiseRef.current && preparingTurnIdRef.current === turnId) {
+          await preparePromiseRef.current;
+        }
+
         if (preparedTurnIdRef.current !== turnId || !recordingIdRef.current) {
           const initRes = await recordingApi.initiate(sessionUuid, turnId, "video");
           recordingIdRef.current = initRes.recordingId;
           chunkUploader.init(initRes.recordingId);
+          preparedTurnIdRef.current = turnId;
         }
-        preparedTurnIdRef.current = null;
 
         try {
           await mediaRecorder.start();
@@ -130,8 +182,11 @@ export function useRecordingManager({
         } catch (innerErr) {
           console.warn("[RecordingManager] start failed, aborting:", innerErr);
           setRecordingEnabled(false);
-          await recordingApi.abort(recordingIdRef.current).catch(() => {});
+          if (recordingIdRef.current) {
+            await recordingApi.abort(recordingIdRef.current).catch(() => {});
+          }
           recordingIdRef.current = null;
+          preparedTurnIdRef.current = null;
           throw innerErr;
         }
       } catch (err) {
@@ -176,7 +231,11 @@ export function useRecordingManager({
       }
 
       const endTime = Date.now();
-      const durationMs = endTime - startTimeRef.current;
+      if (pauseStartedAtRef.current !== null) {
+        pausedDurationAccumRef.current += endTime - pauseStartedAtRef.current;
+        pauseStartedAtRef.current = null;
+      }
+      const durationMs = endTime - startTimeRef.current - pausedDurationAccumRef.current;
       const endTimestamp = new Date(endTime).toISOString();
 
       const sortedParts = [...parts].sort((a, b) => a.partNumber - b.partNumber);
@@ -212,6 +271,8 @@ export function useRecordingManager({
     startRecording,
     stopRecording,
     abortRecording,
+    pauseRecording,
+    resumeRecording,
     recordingEnabled,
   };
 }

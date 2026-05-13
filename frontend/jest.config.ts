@@ -16,7 +16,8 @@ const config: Config = {
         tsconfig: {
           jsx: 'react-jsx',
           verbatimModuleSyntax: false,
-          types: ['jest', '@testing-library/jest-dom'],
+          esModuleInterop: true,
+          types: ['jest', '@testing-library/jest-dom', 'node'],
           baseUrl: '.',
           paths: { '@/*': ['src/*'] },
           lib: ['es2018', 'dom'],
@@ -25,6 +26,25 @@ const config: Config = {
     ],
   },
   testMatch: ['**/__tests__/**/*.{ts,tsx}', '**/*.{spec,test}.{ts,tsx}'],
+  testPathIgnorePatterns: ['/node_modules/', '/tests-e2e/', '/dist/', '/coverage/'],
+  collectCoverageFrom: [
+    'src/**/*.{ts,tsx}',
+    '!src/**/*.d.ts',
+    '!src/**/__tests__/**',
+    '!src/**/*.{spec,test}.{ts,tsx}',
+    '!src/test-utils/**',
+    '!src/__mocks__/**',
+    '!src/main.tsx',
+    '!src/vite-env.d.ts',
+    '!src/**/index.ts',
+    '!src/**/index.tsx',
+    '!src/**/types.ts',
+    '!src/**/config.ts',
+    '!src/**/constants.ts',
+    '!src/**/constants/**',
+    '!src/app/**',
+    '!src/pages/**',
+  ],
 };
 
 export default config;

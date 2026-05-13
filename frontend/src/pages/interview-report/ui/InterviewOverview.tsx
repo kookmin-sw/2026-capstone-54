@@ -25,9 +25,9 @@ interface Props {
 
 export function InterviewOverview({ report }: Props) {
   const items = [
-    { label: "면접 일시", value: formatDate(report.interviewDate) },
     { label: "지원 회사", value: report.companyName || "-" },
     { label: "채용 포지션", value: report.positionTitle || "-" },
+    { label: "면접 일시", value: formatDate(report.interviewDate) },
     { label: "소요시간", value: formatDuration(report.durationSeconds) },
     { label: "면접 난이도", value: (
       <span className={`text-[11px] font-semibold py-0.5 px-2 rounded-full border ${
@@ -52,10 +52,10 @@ export function InterviewOverview({ report }: Props) {
   ];
 
   return (
-    <div className="bg-white border border-[#E5E7EB] rounded-2xl p-6 shadow-sm mb-4">
-      <h2 className="text-[11px] font-bold tracking-[.08em] uppercase text-[#9CA3AF] mb-4">
+    <div className="report-card p-7">
+      <p className="text-[15px] font-bold text-[#374151] mb-4">
         면접 개요
-      </h2>
+      </p>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-8 gap-y-4">
         {items.map((item) => (
           <div key={item.label}>

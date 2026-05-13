@@ -17,6 +17,8 @@ const mockAbort = recordingApi.abort as jest.Mock;
 
 const mockMediaStart = jest.fn().mockResolvedValue(undefined);
 const mockMediaStop = jest.fn();
+const mockMediaPause = jest.fn();
+const mockMediaResume = jest.fn();
 const mockUploaderInit = jest.fn();
 const mockUploadChunk = jest.fn();
 const mockUploaderReset = jest.fn();
@@ -25,6 +27,8 @@ jest.mock("../useMediaRecorder", () => ({
   useMediaRecorder: () => ({
     start: mockMediaStart,
     stop: mockMediaStop,
+    pause: mockMediaPause,
+    resume: mockMediaResume,
     stream: null,
     isRecording: false,
     error: null,
@@ -146,5 +150,57 @@ describe("useRecordingManager", () => {
 
     expect(mockAbort).toHaveBeenCalledWith("rec-123");
     expect(mockComplete).not.toHaveBeenCalled();
+  });
+
+  it("pauseRecording: mediaRecorder.pause() 호출", () => {
+    const { result } = renderHook(() =>
+      useRecordingManager({ sessionUuid: "sess-1" }),
+    );
+
+    act(() => { result.current.pauseRecording(); });
+
+    expect(mockMediaPause).toHaveBeenCalledTimes(1);
+  });
+
+  it("resumeRecording: mediaRecorder.resume() 호출", () => {
+    const { result } = renderHook(() =>
+      useRecordingManager({ sessionUuid: "sess-1" }),
+    );
+
+    act(() => { result.current.resumeRecording(); });
+
+    expect(mockMediaResume).toHaveBeenCalledTimes(1);
+  });
+
+  it("stopRecording: pause/resume 사이클 동안의 paused 시간은 durationMs 에서 제외된다", async () => {
+    const finalBlob = new Blob([new ArrayBuffer(2048)]);
+    mockMediaStop.mockResolvedValue(finalBlob);
+
+    const realNow = Date.now;
+    const nowSpy = jest.spyOn(Date, "now");
+    let mockedTime = 1_000_000;
+    nowSpy.mockImplementation(() => mockedTime);
+
+    const { result } = renderHook(() =>
+      useRecordingManager({ sessionUuid: "sess-1" }),
+    );
+
+    await act(async () => { await result.current.startRecording(10); });
+
+    mockedTime += 5000;
+    act(() => { result.current.pauseRecording(); });
+
+    mockedTime += 10_000;
+    act(() => { result.current.resumeRecording(); });
+
+    mockedTime += 3000;
+    await act(async () => { await result.current.stopRecording(); });
+
+    expect(mockComplete).toHaveBeenCalled();
+    const [, , , durationMs] = mockComplete.mock.calls[0];
+    expect(durationMs).toBe(8000);
+
+    nowSpy.mockRestore();
+    void realNow;
   });
 });

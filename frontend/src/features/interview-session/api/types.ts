@@ -71,9 +71,21 @@ export interface InterviewStrengthItem {
 export interface InterviewQuestionFeedback {
   turnId: number;
   question: string;
+  answer?: string;
+  turnType?: string;
+  questionSource?: string;
   strengths: string[];
   improvements: string[];
   modelAnswer: string;
+  // 음성 지표
+  speechRateSpm?: number;
+  fillerWordCount?: number;
+  fillerWordRatio?: number;
+  fillerWordDetail?: Record<string, number>;
+  silenceRatio?: number;
+  // 영상 지표
+  gazeDeviationCount?: number;
+  gazeDeviationRatio?: number;
 }
 
 export interface InterviewAnalysisReport {
@@ -89,6 +101,16 @@ export interface InterviewAnalysisReport {
   errorMessage: string;
   createdAt: string;
   updatedAt: string;
+  // 컴포넌트 점수
+  contentScore: number | null;
+  videoScore: number | null;
+  audioScore: number | null;
+  // 영상 분석
+  videoAnalysisResult: VideoAnalysisResult | null;
+  videoAnalysisComment: string;
+  // 음성 분석
+  audioAnalysisResult: AudioAnalysisResult | null;
+  audioAnalysisComment: string;
   // 면접 개요
   companyName: string;
   positionTitle: string;
@@ -97,6 +119,51 @@ export interface InterviewAnalysisReport {
   difficultyLevel: InterviewDifficultyLevel;
   totalQuestions: number;
   totalFollowupQuestions: number;
+}
+
+export interface VideoAnalysisResult {
+  avgGazeDeviationRatio?: number;
+  totalExpressionDistribution: {
+    happy: number;
+    neutral: number;
+    negative: number;
+  };
+  negativeExpressionRatio: number;
+}
+
+export interface VideoAnalysisPerTurn {
+  turnId: number;
+  gazeDeviationRatio: number;
+  gazeDeviationCount: number;
+  expressionDistribution: {
+    happy: number;
+    neutral: number;
+    negative: number;
+  };
+}
+
+export interface AudioAnalysisPerTurn {
+  turnNumber: number;
+  speechRateSpm: number;
+  fillerWordCount: number;
+  fillerWordRatio: number;
+  fillerWordDetail: Record<string, number>;
+  silenceRatio: number;
+  avgVolumeDbfs: number | null;
+}
+
+export interface AudioAnalysisSummary {
+  avgSpeechRateSpm: number;
+  totalFillerWordCount: number;
+  totalFillerWordRatio: number;
+  totalFillerWordDetail: Record<string, number>;
+  avgSilenceRatio: number;
+  avgVolumeDbfs: number;
+}
+
+export interface AudioAnalysisResult {
+  perTurn: AudioAnalysisPerTurn[];
+  summary: AudioAnalysisSummary;
 }
 
 // ── Request / Response ──
