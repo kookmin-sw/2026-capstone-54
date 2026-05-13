@@ -1,0 +1,6 @@
+# Lambda Layer 의존성
+# pip install 후 _strip_mediapipe.py로 jax/jaxlib/scipy/opencv-contrib를 삭제한다.
+mediapipe==0.10.14
+opencv-python-headless==4.10.0.84
+numpy>=1.26,<2.0
+Pillow>=10.0

@@ -1,0 +1,23 @@
+services:
+  face-analyzer-worker:
+    container_name: mefit-face-analyzer
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - local/.env
+    volumes:
+      - ./functions:/app/functions:ro
+      - ./analyzer:/app/analyzer:ro
+      - ./models:/app/models:ro
+      - ./local:/app/local:ro
+      - ../analysis-video/layers/common/python:/app/lambda-layers/python:ro
+    networks:
+      - mefit-local
+    restart: unless-stopped
+    mem_limit: 1g
+    cpus: 1.0
+
+networks:
+  mefit-local:
+    external: true
