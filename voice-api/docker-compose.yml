@@ -1,0 +1,22 @@
+services:
+  voice-api:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./app:/app/app
+    env_file:
+      - .env
+    environment:
+      - PORT=8001
+      - BACKEND_API_URL=http://webapp:8000
+      - TOKEN_VERIFY_ENDPOINT=/api/v1/users/tokens/verify/
+    networks:
+      - mefit-local
+
+networks:
+  mefit-local:
+    external: true
