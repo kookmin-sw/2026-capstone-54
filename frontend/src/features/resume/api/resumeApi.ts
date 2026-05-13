@@ -74,7 +74,7 @@ export const resumeApi = {
           try { resolve(JSON.parse(xhr.responseText)); }
           catch { reject(new Error("invalid response")); }
         } else {
-          reject(new Error(`upload failed: ${xhr.status}`));
+          reject(parseXhrError(xhr, "upload failed"));
         }
       };
       xhr.onerror = () => reject(new Error("network error"));
@@ -116,7 +116,7 @@ export const resumeApi = {
           try { resolve(JSON.parse(xhr.responseText)); }
           catch { reject(new Error("invalid response")); }
         } else {
-          reject(new Error(`update failed: ${xhr.status}`));
+          reject(parseXhrError(xhr, "update failed"));
         }
       };
       xhr.onerror = () => reject(new Error("network error"));
@@ -128,6 +128,23 @@ export const resumeApi = {
     apiRequest<void>(`${BASE}/${uuid}/`, { method: "DELETE", auth: true }),
 };
 
+
+/** XHR 에러 응답에서 fieldErrors → message → fallback 순으로 메시지를 추출한다. */
+function parseXhrError(xhr: XMLHttpRequest, fallback: string): Error {
+  try {
+    const body = JSON.parse(xhr.responseText) as {
+      message?: string;
+      fieldErrors?: Record<string, string[]>;
+    };
+    const fieldMsg = body.fieldErrors
+      ? ([] as string[]).concat(...Object.values(body.fieldErrors))[0]
+      : undefined;
+    const msg = fieldMsg ?? body.message ?? `${fallback}: ${xhr.status}`;
+    return new Error(msg);
+  } catch {
+    return new Error(`${fallback}: ${xhr.status}`);
+  }
+}
 
 /** 프론트 flat `ParsedData` 를 backend structured-nested payload 로 변환. */
 function buildStructuredCreatePayload(

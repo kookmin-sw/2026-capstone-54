@@ -3,6 +3,17 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { resumeApi } from "@/features/resume";
+import { isApiError } from "@/shared/api/client";
+
+function parseApiError(e: unknown, fallback: string): string {
+  if (isApiError(e)) {
+    const fieldMsg = e.fieldErrors
+      ? Object.values(e.fieldErrors).flat()[0]
+      : undefined;
+    return fieldMsg ?? e.message ?? fallback;
+  }
+  return e instanceof Error ? e.message : fallback;
+}
 
 export function useResumeTextForm() {
   const navigate = useNavigate();
@@ -22,7 +33,7 @@ export function useResumeTextForm() {
       const created = await resumeApi.createText(title, content);
       navigate(`/resume/${created.uuid}`);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "생성 실패");
+      setError(parseApiError(e, "생성 실패"));
     } finally {
       setIsSubmitting(false);
     }
