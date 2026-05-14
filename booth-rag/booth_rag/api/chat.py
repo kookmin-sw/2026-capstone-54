@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import json
 import logging
+import time
 
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 from sse_starlette.sse import EventSourceResponse
 
+from booth_rag.config import get_settings
 from booth_rag.rag.chains import ChatTurn
 from booth_rag.rag.retriever import HybridContext
 
@@ -84,10 +86,30 @@ async def chat_stream(payload: ChatRequest, req: Request) -> EventSourceResponse
     await _store(req).add_message(payload.session_id, "user", user_message)
 
     chain = _rag(req).chain
-    context: HybridContext = chain._retriever.retrieve(user_message)
+    settings = get_settings()
+
+    retrieval_started = time.perf_counter()
+    if settings.rag_rewrite_query and history:
+        search_question = await chain.rewrite_query_for_retrieval(history, user_message)
+    else:
+        search_question = user_message
+    if settings.rag_expand_queries:
+        query_variants = await chain.expand_queries(search_question, n=3)
+    else:
+        query_variants = [search_question]
+    context: HybridContext = chain._retriever.retrieve(search_question, queries=query_variants)
+    retrieval_ms = (time.perf_counter() - retrieval_started) * 1000.0
 
     async def event_gen():
+        yield {
+            "event": "retrieval",
+            "data": json.dumps(
+                {"queries": list(context.queries_used), "elapsed_ms": round(retrieval_ms, 1)},
+                ensure_ascii=False,
+            ),
+        }
         full_text_parts: list[str] = []
+        llm_started = time.perf_counter()
         try:
             async for token in chain.answer_stream(history, user_message, context=context):
                 full_text_parts.append(token)
@@ -95,12 +117,20 @@ async def chat_stream(payload: ChatRequest, req: Request) -> EventSourceResponse
         except Exception as exc:
             yield {"event": "error", "data": json.dumps({"error": str(exc)})}
             return
+        llm_ms = (time.perf_counter() - llm_started) * 1000.0
+        total_ms = retrieval_ms + llm_ms
 
         final_text = "".join(full_text_parts)
         sources = _serialise_sources(context)
         citations = _citation_paths(sources)
+        metrics = {
+            "retrieval_ms": round(retrieval_ms, 1),
+            "llm_ms": round(llm_ms, 1),
+            "total_ms": round(total_ms, 1),
+            "queries_used": list(context.queries_used),
+        }
 
-        persisted_payload = {"citations": citations, "sources": sources}
+        persisted_payload = {"citations": citations, "sources": sources, "metrics": metrics}
         await _store(req).add_message(
             payload.session_id,
             "assistant",
@@ -115,7 +145,7 @@ async def chat_stream(payload: ChatRequest, req: Request) -> EventSourceResponse
         yield {
             "event": "done",
             "data": json.dumps(
-                {"citations": citations, "sources": sources},
+                {"citations": citations, "sources": sources, "metrics": metrics},
                 ensure_ascii=False,
             ),
         }

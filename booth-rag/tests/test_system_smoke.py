@@ -57,13 +57,24 @@ class _FakeChain:
     async def generate_followups(self, _question: str, _answer: str, n: int = 3) -> list[str]:
         return list(self.followups[:n])
 
+    async def rewrite_query_for_retrieval(
+        self,
+        _history: list[ChatTurn],
+        question: str,
+    ) -> str:
+        return question
+
+    async def expand_queries(self, question: str, n: int = 3) -> list[str]:
+        return [question]
+
 
 class _FakeRetriever:
-    def retrieve(self, _query: str):
+    def retrieve(self, _query: str, **_kwargs):
         @dataclass
         class _Ctx:
             chunks: list = ()
             graph_neighbors: list = ()
+            queries_used: list = ()
 
         return _Ctx()
 
