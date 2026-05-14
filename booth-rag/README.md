@@ -242,15 +242,41 @@ booth-rag/
    │     │     · outline 청크 (파일 시그니처)
    │     │     · directory_summary 청크 (README + 심볼)
    │     │     · 본문 청크 (function/class/markdown_section/docx_section)
-   │     └─ NetworkX 그래프 1-hop 확장 (관련 파일)
+   │     ├─ NetworkX 그래프 1-hop 파일 확장
+   │     ├─ defines 엣지로 심볼 이웃 추출
+   │     ├─ Personalised PageRank (벡터 seed → 그래프 점수 boost)
+   │     └─ Global PageRank Top-K 허브 파일 (구조 질문 보강)
    │
-   ├─ LangChain ChatOpenAI (시스템 프롬프트: 한국어, 인용 지시)
-   │     · history (최근 8턴) + 컨텍스트 + 질문
+   ├─ LangChain ChatOpenAI (한국어 시스템 프롬프트 + scope 가드)
+   │     · history (최근 8턴) + 그래프-증강 컨텍스트 + 질문
+   │     · 미핏 외 주제는 정중 거절 + 미핏 후속 질문 제안
    │
    ├─ SSE 스트리밍 응답
    │
    └─ SQLite 저장 (sessions / messages / citations JSON)
 ```
+
+## Graph RAG 강화 (PageRank)
+
+기존 1-hop 이웃 표시 위에 두 가지 PageRank 신호를 결합합니다 (NetworkX 만 사용, 추가 의존성 없음):
+
+| 신호 | 용도 | 설정 |
+|---|---|---|
+| **Personalised PageRank** | 벡터 검색 결과 (seed 파일들) 를 출발점으로 PPR 계산 → 그래프적 중요도를 retrieval score 에 결합 | `GRAPH_PPR_WEIGHT` (기본 0.15) |
+| **Global PageRank Top-K** | 모노레포 전체에서 가장 "중심" 파일 K개 → 구조/아키텍처 질문 시 LLM 컨텍스트에 노출 | `GRAPH_HUB_TOP_K` (기본 5) |
+| **Symbol 이웃** | 검색 결과 파일에서 `defines` 엣지로 연결된 심볼 노드 표시 | 항상 활성 |
+
+비활성화: `GRAPH_USE_PAGERANK=false`. PageRank 캐시는 그래프 변경 (merge_files / reset) 시 자동 무효화됩니다.
+
+## 적재 병렬 처리
+
+`EMBEDDING_CONCURRENCY` (기본 4) 로 파일 단위 동시 임베딩 워커 수를 조절합니다:
+
+- `1` — 직렬 (이전 동작)
+- `4~8` — 로컬 sentence-transformers 권장 (CPU/MPS 활용)
+- `16+` — 원격 임베딩 서버 (LAN) 권장
+
+내부 구현: `asyncio.Semaphore(N)` + `asyncio.to_thread(vector.add_chunks)`. 각 청크의 doc_id 는 `code::{rel_path}::{chunk_index}` 로 unique 하며 ChromaDB 는 collision 시 upsert 하므로 **재시도/중복 적재 자동 idempotent**.
 
 ## 코드 구조 RAG (Aider 영감)
 
@@ -388,12 +414,12 @@ git commit 시 자동으로 동일한 훅이 실행됩니다 (`pre-commit instal
 ### 테스트
 
 ```bash
-uv run pytest -q                       # 전체 (~15s, 35 케이스)
+uv run pytest -q                       # 전체 (~12s, 51 케이스)
 uv run pytest tests/test_secret_filter.py -v   # 단일 모듈
 uv run pytest -k smoke                 # 시스템 smoke 만
 ```
 
-테스트는 4개 레이어로 구성:
+테스트는 다음 레이어로 구성:
 
 | 파일 | 케이스 | 의도 |
 |---|---|---|
@@ -404,6 +430,9 @@ uv run pytest -k smoke                 # 시스템 smoke 만
 | `test_doc_loader_docx.py` | 3 | DOCX heading 1/2/3 hierarchical 청킹 |
 | `test_remote_embeddings.py` | 6 | httpx mock transport — 핸드셰이크 / 배칭 / 에러 |
 | `test_system_smoke.py` | 11 | FastAPI TestClient — health / sessions / chat SSE / admin guard / 임베딩 서버 contract |
+| `test_graph_pagerank.py` | 7 | NetworkX 위 PageRank / PPR / hub_files / symbol_neighbors / 캐시 무효화 |
+| `test_parallel_ingest.py` | 4 | asyncio.Semaphore 워커 풀 — exactly-once + idempotent 재실행 |
+| `test_prompt_scope.py` | 5 | 시스템 프롬프트 미핏 scope 선언 + off-topic 거절 + 정중 fallback |
 
 ## 기술 스택
 
