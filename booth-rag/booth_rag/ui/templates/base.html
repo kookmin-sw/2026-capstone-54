@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}미핏 부스 안내 — {{ booth.team_name }} (캡스톤 {{ booth.team_number }}팀){% endblock %}</title>
+  <meta name="description" content="국민대학교 캡스톤 {{ booth.team_number }}팀 — 미핏(MeFit) 프로젝트 안내 챗봇" />
+
+  <link rel="icon" type="image/png" href="/static/img/logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/app.css" />
+  {% block head_extra %}{% endblock %}
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/">
+      <img src="/static/img/logo.png" alt="미핏 로고" class="brand-logo" />
+      <div class="brand-text">
+        <div class="brand-title">미핏 부스 안내</div>
+        <div class="brand-sub">국민대 캡스톤 <span class="accent">{{ booth.team_number }}팀</span> · {{ booth.team_name }}</div>
+      </div>
+    </a>
+    <nav class="topnav">
+      <a href="/" class="nav-link">채팅</a>
+      <a href="/admin" class="nav-link">관리자</a>
+      <a href="{{ booth.team_page_url }}" target="_blank" rel="noopener" class="nav-link">팀 소개</a>
+      <a href="{{ booth.domain_url }}" target="_blank" rel="noopener" class="cta-btn">미핏 시작하기 →</a>
+    </nav>
+  </header>
+
+  <main class="page">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    <div class="footer-left">
+      <span class="footer-team">캡스톤 <strong>{{ booth.team_number }}팀</strong> · {{ booth.team_name }}</span>
+      <span class="footer-dot">·</span>
+      <a href="{{ booth.team_page_url }}" target="_blank" rel="noopener">팀 소개</a>
+      <span class="footer-dot">·</span>
+      <a href="{{ booth.domain_url }}" target="_blank" rel="noopener">{{ booth.domain_url }}</a>
+    </div>
+    <div class="footer-right">© 2026 MeFit · Kookmin University Capstone</div>
+  </footer>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

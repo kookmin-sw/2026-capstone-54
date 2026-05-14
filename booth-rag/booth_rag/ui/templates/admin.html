@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}관리자 — 미핏 부스 안내{% endblock %}
+
+{% block content %}
+<div class="admin-shell">
+  <h1>관리자 콘솔</h1>
+
+  {% if not admin_enabled %}
+  <div class="admin-disabled">
+    <p>⚠️ 관리자 기능이 비활성화되어 있습니다.</p>
+    <p>활성화하려면 <code>.env</code> 파일에 <code>ADMIN_TOKEN</code> 을 설정하고 서버를 재시작하세요.</p>
+  </div>
+  {% else %}
+
+  <section class="admin-section">
+    <h2>1. 인증</h2>
+    <input type="password" id="admin-token" placeholder="관리자 토큰" />
+    <button id="check-token" class="primary-btn">상태 확인</button>
+    <pre id="status-output" class="status-output">아직 확인 전입니다.</pre>
+  </section>
+
+  <section class="admin-section">
+    <h2>2. 코드베이스 적재</h2>
+    <p class="hint">미핏 모노레포 (<code>SOURCE_REPO_PATH</code>) 를 워킹하며 코드/문서를 벡터 + 그래프 RAG 에 적재합니다. 비밀값은 자동 마스킹됩니다.</p>
+    <label>최대 파일 수 (선택, 비우면 전체):
+      <input type="number" id="max-files" placeholder="예: 200" min="1" />
+    </label>
+    <label>대상 디렉토리 (쉼표 구분, 비우면 <code>INGEST_INCLUDE_DIRS</code> 기본):
+      <input type="text" id="dirs" placeholder="예: backend,scraping" />
+    </label>
+    <button id="ingest-codebase" class="primary-btn">코드베이스 적재 시작</button>
+    <button id="watch-progress" class="ghost-btn" style="margin-left:8px">진행 상태 모니터</button>
+    <pre id="ingest-output" class="status-output">대기 중...</pre>
+  </section>
+
+  <section class="admin-section">
+    <h2>3. 문서 업로드 (Markdown / DOCX)</h2>
+    <p class="hint">관리자가 작성한 <code>.md</code>, <code>.mdx</code>, <code>.txt</code>, <code>.docx</code> 파일을 업로드하여 지식에 추가합니다.</p>
+    <input type="file" id="doc-file" accept=".md,.mdx,.markdown,.txt,.rst,.docx" />
+    <button id="upload-doc" class="primary-btn">업로드 & 적재</button>
+    <pre id="upload-output" class="status-output">대기 중...</pre>
+  </section>
+
+  <section class="admin-section danger-section">
+    <h2>4. 인덱스 초기화</h2>
+    <p class="hint">⚠️ 모든 벡터/그래프 인덱스를 삭제합니다. 되돌릴 수 없습니다.</p>
+    <button id="reset-index" class="danger-btn">전체 인덱스 초기화</button>
+    <pre id="reset-output" class="status-output">대기 중...</pre>
+  </section>
+
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/admin.js" defer></script>
+{% endblock %}

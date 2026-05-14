@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="chat-shell">
+  <aside class="sidebar">
+    <button id="new-session" class="new-session-btn">＋ 새 대화</button>
+    <div class="session-list" id="session-list">
+      <div class="empty-hint">대화 목록을 불러오는 중...</div>
+    </div>
+
+    <div class="booth-card">
+      <div class="booth-card-title">캡스톤 <span class="accent">{{ booth.team_number }}팀</span></div>
+      <div class="booth-card-name">{{ booth.team_name }}</div>
+      <div class="booth-qr-row">
+        <a href="{{ booth.domain_url }}" target="_blank" rel="noopener" class="qr-tile" title="미핏 서비스로 이동">
+          <img src="/static/img/qr-mefit.png" alt="mefit.kr QR" />
+          <span>mefit.kr</span>
+        </a>
+        <a href="{{ booth.team_page_url }}" target="_blank" rel="noopener" class="qr-tile" title="팀 소개 페이지">
+          <img src="/static/img/qr-team.png" alt="팀 페이지 QR" />
+          <span>팀 페이지</span>
+        </a>
+      </div>
+      <div class="booth-buttons">
+        <a href="{{ booth.domain_url }}" target="_blank" rel="noopener" class="primary-btn">미핏 사이트 바로가기 →</a>
+        <a href="{{ booth.team_page_url }}" target="_blank" rel="noopener" class="ghost-btn">팀 소개 페이지</a>
+      </div>
+    </div>
+  </aside>
+
+  <section class="chat-area">
+    <div id="chat-status" class="chat-status">
+      {% if not stats.openai_chat_enabled %}
+      <span class="status-warn">⚠️ OPENAI_API_KEY 가 설정되지 않아 오프라인 fallback 모드입니다. 검색만 동작합니다.</span>
+      {% else %}
+      <span class="status-ok">● LLM 연결됨 ({{ stats.vector_count }}개 청크 · 임베딩 {{ stats.embedding_model }})</span>
+      {% endif %}
+    </div>
+
+    <div id="messages" class="messages">
+      <div class="welcome">
+        <img src="/static/img/logo-korean.png" alt="미핏" class="welcome-logo" />
+        <h1>미핏 부스 안내 봇</h1>
+        <p class="welcome-sub">未fit, meFit. 이력서 기반 AI 면접부터 표정·발화 분석까지.<br />
+          무엇이 궁금하신가요? 아래에 질문을 입력해주세요.</p>
+        <div class="suggestions">
+          <button class="suggestion" data-q="미핏 프로젝트가 어떤 서비스인지 한 문단으로 소개해줘.">미핏이 어떤 서비스인지 알려줘</button>
+          <button class="suggestion" data-q="이력서 기반 AI 면접은 어떻게 동작하나요? 백엔드와 분석 모듈 흐름까지 설명해주세요.">AI 면접 동작 원리</button>
+          <button class="suggestion" data-q="표정과 시선 분석은 어떤 기술 스택으로 구현했나요?">표정·시선 분석 기술 스택</button>
+          <button class="suggestion" data-q="캡스톤 54팀이 만든 모듈에는 어떤 것들이 있나요?">54팀 모듈 구성</button>
+        </div>
+      </div>
+    </div>
+
+    <form id="chat-form" class="chat-form" autocomplete="off">
+      <textarea
+        id="chat-input"
+        placeholder="미핏 프로젝트에 대해 무엇이든 물어보세요... (Enter 전송, Shift+Enter 줄바꿈)"
+        rows="1"
+        required
+      ></textarea>
+      <button type="submit" id="send-btn" class="send-btn" aria-label="전송">↑</button>
+    </form>
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/chat.js" defer></script>
+{% endblock %}
