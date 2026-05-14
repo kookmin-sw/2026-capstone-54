@@ -1,0 +1,111 @@
+[project]
+name = "booth-rag"
+version = "0.1.0"
+description = "미핏(MeFit) 캡스톤 부스용 RAG + LLM Agent 웹 서비스 (벡터 + 그래프 하이브리드)"
+authors = [
+    { name = "Capstone 54 / MeFit", email = "team@mefit.kr" },
+]
+requires-python = ">=3.12"
+readme = "README.md"
+dependencies = [
+    "aiosqlite>=0.22.1",
+    "chromadb>=1.5.9",
+    "fastapi>=0.136.1",
+    "httpx>=0.28.1",
+    "jinja2>=3.1.6",
+    "langchain>=1.3.0",
+    "langchain-chroma>=1.1.0",
+    "langchain-community>=0.4.1",
+    "langchain-core>=1.4.0",
+    "langchain-huggingface>=1.2.2",
+    "langchain-openai>=1.2.1",
+    "langchain-text-splitters>=1.1.2",
+    "langgraph>=1.2.0",
+    "langgraph-checkpoint-sqlite>=3.1.0",
+    "markdown>=3.10.2",
+    "networkx>=3.6.1",
+    "pillow>=12.2.0",
+    "pydantic-settings>=2.14.1",
+    "python-docx>=1.2.0",
+    "python-multipart>=0.0.28",
+    "qrcode>=8.2",
+    "sentence-transformers>=5.5.0",
+    "sse-starlette>=3.4.4",
+    "tqdm>=4.67.3",
+    "uvicorn[standard]>=0.46.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["booth_rag"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+extend-exclude = ["data", ".venv", "booth_rag/ui/static"]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "N",    # pep8-naming
+    "B",    # flake8-bugbear
+    "UP",   # pyupgrade
+    "C4",   # flake8-comprehensions
+    "SIM",  # flake8-simplify
+    "RUF",  # ruff-specific
+    "PERF", # perflint
+    "PIE",  # flake8-pie
+    "PT",   # flake8-pytest-style
+]
+ignore = [
+    "E501",   # line too long (handled by formatter)
+    "B008",   # FastAPI Depends/File defaults
+    "SIM105", # try/except/pass — explicit is sometimes clearer
+    "SIM108", # ternary — long branches read better as if/else
+    "SIM117", # nested context managers (sometimes intentional)
+    "RUF001", # ambiguous unicode in strings (Korean UI + emoji)
+    "RUF002", # ambiguous unicode in docstrings (Korean docs)
+    "RUF003", # ambiguous unicode in comments (Korean comments)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*.py" = [
+    "N802", # function names lowercase (test_X)
+    "S101", # asserts in tests
+]
+"scripts/*.py" = [
+    "N999", # script files often have hyphenated names
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["booth_rag"]
+combine-as-imports = true
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+docstring-code-format = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "-ra --strict-markers --strict-config"
+filterwarnings = [
+    "ignore::DeprecationWarning:google.protobuf.*",
+    "ignore::DeprecationWarning:pkg_resources.*",
+]
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.6.0",
+    "pytest>=9.0.3",
+    "pytest-asyncio>=1.3.0",
+    "ruff>=0.15.12",
+]
