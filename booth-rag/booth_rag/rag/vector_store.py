@@ -76,22 +76,42 @@ class VectorIndex:
 
     def search(self, query: str, k: int = 6) -> list[RetrievedChunk]:
         results = self._store.similarity_search_with_relevance_scores(query, k=k)
-        out: list[RetrievedChunk] = []
-        for doc, score in results:
-            md = doc.metadata or {}
-            out.append(
-                RetrievedChunk(
-                    rel_path=md.get("rel_path", ""),
-                    text=doc.page_content,
-                    score=float(score),
-                    kind=md.get("kind", "generic"),
-                    symbol=md.get("symbol") or None,
-                    line_start=int(md.get("line_start", 0)),
-                    line_end=int(md.get("line_end", 0)),
-                    source_kind=md.get("source_kind", "code"),
-                )
+        return [self._to_chunk(doc, float(score)) for doc, score in results]
+
+    def search_mmr(
+        self,
+        query: str,
+        k: int = 6,
+        fetch_k: int = 20,
+        lambda_mult: float = 0.7,
+    ) -> list[RetrievedChunk]:
+        """MMR search trades a fraction of relevance for diversity in the top-k.
+
+        Falls back to plain similarity search when MMR is not available on the
+        underlying Chroma version. Scores returned by Chroma's MMR helper are
+        relevance-only (no distance), so we re-attach 1/(rank+1) so downstream
+        ranking still has a usable monotonic score.
+        """
+        try:
+            docs = self._store.max_marginal_relevance_search(
+                query, k=k, fetch_k=max(fetch_k, k), lambda_mult=lambda_mult
             )
-        return out
+        except Exception:
+            return self.search(query, k=k)
+        return [self._to_chunk(doc, 1.0 / (rank + 1)) for rank, doc in enumerate(docs)]
+
+    def _to_chunk(self, doc: Document, score: float) -> RetrievedChunk:
+        md = doc.metadata or {}
+        return RetrievedChunk(
+            rel_path=md.get("rel_path", ""),
+            text=doc.page_content,
+            score=score,
+            kind=md.get("kind", "generic"),
+            symbol=md.get("symbol") or None,
+            line_start=int(md.get("line_start", 0)),
+            line_end=int(md.get("line_end", 0)),
+            source_kind=md.get("source_kind", "code"),
+        )
 
     def stats(self) -> dict[str, object]:
         try:

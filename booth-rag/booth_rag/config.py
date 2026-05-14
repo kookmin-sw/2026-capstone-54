@@ -93,6 +93,37 @@ class Settings(BaseSettings):
         description="How many global-PageRank hub files to surface in the prompt",
     )
 
+    rag_rewrite_query: bool = Field(
+        default=True,
+        description="Use LLM to rewrite follow-up questions into standalone search queries",
+    )
+    rag_expand_queries: bool = Field(
+        default=True,
+        description="Generate multi-query variants (original/code-keyword/domain-Korean) and fuse with RRF",
+    )
+    rag_use_mmr: bool = Field(
+        default=True,
+        description="Use ChromaDB max-marginal-relevance search for diversity in top-k",
+    )
+    rag_mmr_lambda: float = Field(
+        default=0.7,
+        ge=0.0,
+        le=1.0,
+        description="MMR lambda (1.0 = pure similarity, 0.0 = pure diversity)",
+    )
+    rag_fetch_k: int = Field(
+        default=20,
+        ge=4,
+        le=100,
+        description="Initial pool size before MMR / RRF re-ranking trims to top-k",
+    )
+    rag_rrf_k: int = Field(
+        default=60,
+        ge=1,
+        le=1000,
+        description="Reciprocal Rank Fusion constant (Cormack et al. recommend 60)",
+    )
+
     embedding_server_host: str = Field(
         default="0.0.0.0",
         description="Bind host for the embedding server (run_embedding_server.sh)",

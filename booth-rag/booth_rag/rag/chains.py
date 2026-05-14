@@ -182,6 +182,83 @@ class ChatChain:
             content = "".join(part.get("text", "") if isinstance(part, dict) else str(part) for part in content)
         return AnswerResult(text=str(content), citations=citations, used_offline_fallback=False)
 
+    async def rewrite_query_for_retrieval(
+        self,
+        history: list[ChatTurn],
+        question: str,
+    ) -> str:
+        """Turn a follow-up ("그건 어떻게 동작해?") into a standalone search query.
+
+        Returns the original question if there is no history or the LLM call
+        fails — retrieval still works without rewriting, just with the
+        original wording.
+        """
+        if self._llm is None or not history:
+            return question
+        recent = history[-4:]
+        history_lines = []
+        for turn in recent:
+            role = "사용자" if turn.role == "user" else "도우미"
+            snippet = (turn.content or "").strip().replace("\n", " ")[:300]
+            history_lines.append(f"{role}: {snippet}")
+        prompt = (
+            "다음은 미핏 챗봇의 최근 대화입니다. 마지막 [현재 질문] 을\n"
+            "이전 맥락을 모두 반영한 **단독으로도 의미가 통하는 검색 쿼리** 로\n"
+            "한국어 한 문장 (40단어 이내) 으로 다시 써주세요.\n"
+            "규칙: 미핏 / 캡스톤 54팀 범위만. 다른 설명 절대 금지. 쿼리만 반환.\n\n"
+            "[최근 대화]\n" + "\n".join(history_lines) + f"\n\n[현재 질문]\n{question}\n"
+        )
+        try:
+            resp = await self._llm.ainvoke([HumanMessage(content=prompt)])
+        except Exception as exc:
+            logger.warning("rewrite_query_for_retrieval failed: %s", exc)
+            return question
+        content = getattr(resp, "content", "")
+        if isinstance(content, list):
+            content = "".join(part.get("text", "") if isinstance(part, dict) else str(part) for part in content)
+        rewritten = str(content).strip().strip('"').strip()
+        if not rewritten or len(rewritten) > 400:
+            return question
+        return rewritten
+
+    async def expand_queries(self, question: str, n: int = 3) -> list[str]:
+        """Generate up to `n` complementary search queries for one user question.
+
+        Variants follow the booth-rag domain: original Korean phrasing,
+        English/code-keyword form (CamelCase / snake_case / module names),
+        and a synonym-rich Korean phrasing. RAG retrieval over Korean+code
+        corpora benefits because each variant hits different embedding regions.
+        Returns at least the original question on any parse failure.
+        """
+        if self._llm is None or n <= 1:
+            return [question]
+        prompt = (
+            f"미핏 캡스톤 RAG 검색을 위해 아래 [질문] 을 의미가 같은 {n}개 변형으로\n"
+            "확장해주세요. 각 변형은 서로 다른 어휘를 사용해 코드/문서 검색에 모두\n"
+            "잘 매칭되도록 합니다.\n"
+            "규칙:\n"
+            f"- {n}개 정확히. JSON 배열 한 줄로만 출력. 다른 텍스트 금지.\n"
+            "- 1번째: 원본 그대로 (또는 자연스러운 한국어 재서술)\n"
+            "- 2번째: 영어 키워드 / 함수명 / 모듈명 위주 (snake_case, CamelCase 허용)\n"
+            "- 3번째: 같은 의도를 다른 한국어 동의어로 표현\n"
+            '예: ["회원가입 흐름", "user signup flow auth", "로그인 가입 인증 절차"]\n\n'
+            f"[질문]\n{question}\n"
+        )
+        try:
+            resp = await self._llm.ainvoke([HumanMessage(content=prompt)])
+        except Exception as exc:
+            logger.warning("expand_queries failed: %s", exc)
+            return [question]
+        content = getattr(resp, "content", "")
+        if isinstance(content, list):
+            content = "".join(part.get("text", "") if isinstance(part, dict) else str(part) for part in content)
+        variants = _parse_query_variants(str(content), n=n)
+        if not variants:
+            return [question]
+        if question not in variants:
+            variants = [question, *variants]
+        return variants[:n]
+
     async def generate_followups(
         self,
         question: str,
@@ -220,6 +297,27 @@ class ChatChain:
 
 
 _FOLLOWUPS_OBJECT_RE = re.compile(r"\{[^{}]*\"followups\"\s*:\s*\[[^\]]*\][^{}]*\}", re.DOTALL)
+_JSON_ARRAY_RE = re.compile(r"\[[^\[\]]*\]", re.DOTALL)
+
+
+def _parse_query_variants(raw: str, n: int) -> list[str]:
+    if not raw or not raw.strip():
+        return []
+    match = _JSON_ARRAY_RE.search(raw)
+    if match:
+        try:
+            arr = json.loads(match.group(0))
+            if isinstance(arr, list):
+                cleaned = [str(x).strip().strip('"') for x in arr if str(x).strip()]
+                if len(cleaned) >= 2:
+                    return cleaned[:n]
+        except json.JSONDecodeError:
+            pass
+    lines = [line.strip().lstrip("-*0123456789.) ").strip().strip('"') for line in raw.splitlines()]
+    candidates = [line for line in lines if 3 <= len(line) <= 250]
+    if len(candidates) < 2:
+        return []
+    return candidates[:n]
 
 
 def _parse_followups(raw: str, n: int) -> list[str]:
