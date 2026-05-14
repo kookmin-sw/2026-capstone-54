@@ -5,12 +5,14 @@
   const sendBtn = document.getElementById('send-btn');
   const sessionListEl = document.getElementById('session-list');
   const newSessionBtn = document.getElementById('new-session');
+  const sessionSearchEl = document.getElementById('session-search');
   const modalEl = document.getElementById('source-modal');
   const modalBodyEl = document.getElementById('source-modal-body');
   const modalCloseEl = document.getElementById('source-modal-close');
 
   let currentSessionId = null;
   let isStreaming = false;
+  let allSessions = [];
 
   inputEl.addEventListener('input', () => {
     inputEl.style.height = 'auto';
@@ -33,6 +35,12 @@
   });
 
   newSessionBtn.addEventListener('click', () => createSession());
+
+  if (sessionSearchEl) {
+    sessionSearchEl.addEventListener('input', () => {
+      renderSessionList(allSessions, sessionSearchEl.value.trim());
+    });
+  }
 
   formEl.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -83,8 +91,7 @@
         const path = escapeHtml(s.rel_path || '');
         const lineStart = Number(s.line_start || 0);
         const lineEnd = Number(s.line_end || 0);
-        const linesLabel =
-          lineStart || lineEnd ? `L${lineStart}-${lineEnd}` : '';
+        const linesLabel = lineStart || lineEnd ? `L${lineStart}-${lineEnd}` : '';
         const kindLabel = escapeHtml(s.source_kind || s.kind || 'chunk');
         const symbolLabel = s.symbol ? `· ${escapeHtml(s.symbol)}` : '';
         const text = escapeHtml(s.text || '(빈 청크)');
@@ -111,16 +118,65 @@
     modalBodyEl.innerHTML = '';
   }
 
-  function buildMessageActions(sources) {
-    if (!sources || !sources.length) return null;
-    const wrap = document.createElement('div');
-    wrap.className = 'message-actions';
+  function buildCopyButton(getText) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'action-icon-btn';
+    btn.title = '답변 복사';
+    btn.innerHTML = '📋 <span class="copy-label">복사</span>';
+    btn.addEventListener('click', async () => {
+      const text = getText();
+      if (!text) return;
+      try {
+        await navigator.clipboard.writeText(text);
+        const label = btn.querySelector('.copy-label');
+        const original = label ? label.textContent : '';
+        if (label) label.textContent = '복사됨';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          if (label) label.textContent = original;
+        }, 1500);
+      } catch (_) {
+        btn.title = '복사 실패';
+      }
+    });
+    return btn;
+  }
+
+  function buildSourceButton(sources) {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'source-btn';
-    btn.innerHTML = `🔍 근거 확인하기 <span class="source-count">${sources.length}</span>`;
+    btn.title = '답변 근거 확인';
+    btn.innerHTML = `🔍 근거 <span class="source-count">${sources.length}</span>`;
     btn.addEventListener('click', () => openModal(sources));
-    wrap.appendChild(btn);
+    return btn;
+  }
+
+  function buildActions(getText, sources) {
+    const wrap = document.createElement('div');
+    wrap.className = 'message-actions';
+    wrap.appendChild(buildCopyButton(getText));
+    if (sources && sources.length) {
+      wrap.appendChild(buildSourceButton(sources));
+    }
+    return wrap;
+  }
+
+  function buildMeta(metrics) {
+    if (!metrics) return null;
+    const total = Number(metrics.total_ms || 0);
+    const retrieval = Number(metrics.retrieval_ms || 0);
+    if (!total && !retrieval) return null;
+    const wrap = document.createElement('div');
+    wrap.className = 'message-meta';
+    wrap.innerHTML =
+      `<span>⚡ <code>${(total / 1000).toFixed(2)}s</code> 응답</span>` +
+      `<span>· 검색 <code>${retrieval.toFixed(0)}ms</code></span>` +
+      (Array.isArray(metrics.queries_used) && metrics.queries_used.length > 1
+        ? `<span>· 쿼리 ${metrics.queries_used.length}개</span>`
+        : '');
     return wrap;
   }
 
@@ -143,37 +199,52 @@
     return wrap;
   }
 
-  function appendMessage(role, content, sources, followups) {
+  function appendMessage(role, content, sources, followups, metrics) {
     clearWelcome();
     const wrap = document.createElement('div');
     wrap.className = `message ${role}`;
-    const bubble = document.createElement('div');
-    bubble.className = 'message-bubble';
-    bubble.innerHTML = renderMarkdownLite(content);
-    wrap.appendChild(bubble);
 
-    const actions = buildMessageActions(sources);
-    if (actions) wrap.appendChild(actions);
+    if (role === 'assistant') {
+      const contentBox = document.createElement('div');
+      contentBox.className = 'message-content';
+      const bubble = document.createElement('div');
+      bubble.className = 'message-bubble';
+      bubble.innerHTML = renderMarkdownLite(content);
+      contentBox.appendChild(bubble);
+      contentBox.appendChild(buildActions(() => bubble.innerText, sources || []));
+      wrap.appendChild(contentBox);
 
-    const fu = buildFollowups(followups, wrap);
-    if (fu) wrap.appendChild(fu);
+      const meta = buildMeta(metrics);
+      if (meta) wrap.appendChild(meta);
+
+      const fu = buildFollowups(followups, wrap);
+      if (fu) wrap.appendChild(fu);
+    } else {
+      const bubble = document.createElement('div');
+      bubble.className = 'message-bubble';
+      bubble.innerHTML = renderMarkdownLite(content);
+      wrap.appendChild(bubble);
+    }
 
     messagesEl.appendChild(wrap);
     scrollToBottom();
-    return { wrap, bubble };
+    return { wrap };
   }
 
   function appendStreamingAssistant() {
     clearWelcome();
     const wrap = document.createElement('div');
     wrap.className = 'message assistant';
+    const contentBox = document.createElement('div');
+    contentBox.className = 'message-content';
     const bubble = document.createElement('div');
     bubble.className = 'message-bubble';
     bubble.innerHTML = '<span class="typing-indicator"></span>';
-    wrap.appendChild(bubble);
+    contentBox.appendChild(bubble);
+    wrap.appendChild(contentBox);
     messagesEl.appendChild(wrap);
     scrollToBottom();
-    return { wrap, bubble };
+    return { wrap, contentBox, bubble };
   }
 
   function scrollToBottom() {
@@ -183,16 +254,24 @@
   async function loadSessions() {
     const res = await fetch('/api/sessions');
     const data = await res.json();
-    renderSessionList(data.sessions || []);
+    allSessions = data.sessions || [];
+    renderSessionList(allSessions, sessionSearchEl ? sessionSearchEl.value.trim() : '');
   }
 
-  function renderSessionList(sessions) {
-    if (!sessions.length) {
-      sessionListEl.innerHTML = '<div class="empty-hint">아직 대화가 없습니다.<br />질문을 입력해보세요.</div>';
+  function renderSessionList(sessions, filter) {
+    const needle = (filter || '').toLowerCase();
+    const visible = needle
+      ? sessions.filter((s) => (s.title || '').toLowerCase().includes(needle))
+      : sessions;
+
+    if (!visible.length) {
+      sessionListEl.innerHTML = needle
+        ? `<div class="empty-hint">"${escapeHtml(filter)}" 와 일치하는 대화가 없습니다.</div>`
+        : '<div class="empty-hint">아직 대화가 없습니다.<br />질문을 입력해보세요.</div>';
       return;
     }
     sessionListEl.innerHTML = '';
-    sessions.forEach((s) => {
+    visible.forEach((s) => {
       const item = document.createElement('div');
       item.className = 'session-item' + (s.id === currentSessionId ? ' active' : '');
       item.innerHTML = `
@@ -239,25 +318,27 @@
   }
 
   function parseStoredCitations(raw) {
-    if (!raw) return { sources: [], followups: [] };
+    if (!raw) return { sources: [], followups: [], metrics: null };
     try {
       const obj = JSON.parse(raw);
       if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
         return {
           sources: Array.isArray(obj.sources) ? obj.sources : [],
           followups: Array.isArray(obj.followups) ? obj.followups : [],
+          metrics: obj.metrics || null,
         };
       }
       if (Array.isArray(obj)) {
         return {
           sources: obj.map((p) => ({ rel_path: String(p), text: '' })),
           followups: [],
+          metrics: null,
         };
       }
     } catch (_) {
       /* legacy plain string */
     }
-    return { sources: [], followups: [] };
+    return { sources: [], followups: [], metrics: null };
   }
 
   async function loadSession(sessionId) {
@@ -267,9 +348,9 @@
     const data = await res.json();
     messagesEl.innerHTML = '';
     (data.messages || []).forEach((m) => {
-      const { sources, followups } = parseStoredCitations(m.citations);
+      const { sources, followups, metrics } = parseStoredCitations(m.citations);
       const role = m.role === 'system' ? 'assistant' : m.role;
-      appendMessage(role, m.content, sources, followups);
+      appendMessage(role, m.content, sources, followups, metrics);
     });
     if (!data.messages || !data.messages.length) {
       appendWelcomeBack();
@@ -289,8 +370,10 @@
     inputEl.style.height = 'auto';
     isStreaming = true;
     sendBtn.disabled = true;
-    const { wrap, bubble } = appendStreamingAssistant();
+    const { wrap, contentBox, bubble } = appendStreamingAssistant();
     let collected = '';
+    let finalSources = [];
+    let finalMetrics = null;
 
     try {
       const res = await fetch('/api/chat', {
@@ -315,14 +398,25 @@
         buf = parts.pop();
         for (const part of parts) {
           if (!part.trim()) continue;
-          handleSseEvent(part, wrap, bubble, (chunk) => {
-            collected += chunk;
-            bubble.innerHTML = renderMarkdownLite(collected) + '<span class="typing-indicator"></span>';
-            scrollToBottom();
+          handleSseEvent(part, wrap, contentBox, bubble, {
+            onToken: (chunk) => {
+              collected += chunk;
+              bubble.innerHTML = renderMarkdownLite(collected) + '<span class="typing-indicator"></span>';
+              scrollToBottom();
+            },
+            onSources: (sources) => {
+              finalSources = sources;
+            },
+            onMetrics: (metrics) => {
+              finalMetrics = metrics;
+            },
           });
         }
       }
       bubble.innerHTML = renderMarkdownLite(collected || '(응답 없음)');
+      contentBox.appendChild(buildActions(() => bubble.innerText, finalSources));
+      const meta = buildMeta(finalMetrics);
+      if (meta) wrap.appendChild(meta);
       scrollToBottom();
     } catch (err) {
       bubble.innerHTML = `❌ 네트워크 오류: ${escapeHtml(String(err))}`;
@@ -334,7 +428,7 @@
     }
   }
 
-  function handleSseEvent(raw, wrap, bubble, onToken) {
+  function handleSseEvent(raw, wrap, contentBox, bubble, callbacks) {
     const lines = raw.split(/\r\n|\n/);
     let event = 'message';
     const dataLines = [];
@@ -351,17 +445,11 @@
       return;
     }
     if (event === 'token' && data.text) {
-      onToken(data.text);
+      callbacks.onToken(data.text);
     } else if (event === 'done') {
       const sources = Array.isArray(data.sources) ? data.sources : [];
-      if (sources.length) {
-        const actions = buildMessageActions(sources);
-        if (actions) {
-          wrap.querySelectorAll('.message-actions').forEach((n) => n.remove());
-          wrap.appendChild(actions);
-          scrollToBottom();
-        }
-      }
+      callbacks.onSources(sources);
+      if (data.metrics) callbacks.onMetrics(data.metrics);
     } else if (event === 'followups') {
       const followups = Array.isArray(data.followups) ? data.followups : [];
       if (followups.length) {
