@@ -252,9 +252,18 @@ booth-rag/
    │     · 미핏 외 주제는 정중 거절 + 미핏 후속 질문 제안
    │
    ├─ SSE 스트리밍 응답
+   │     event: token  → 답변 텍스트 청크
+   │     event: done   → 근거 sources [{rel_path, line_start, line_end, kind, text}]
+   │     event: followups → 후속 질문 3개 (별도 짧은 LLM 호출)
    │
-   └─ SQLite 저장 (sessions / messages / citations JSON)
+   └─ SQLite 저장 (sessions / messages / citations JSON에 sources + followups 포함)
 ```
+
+## 채팅 UI 인터랙션
+
+- **창 내부 스크롤** — `body` 전체가 늘어나지 않고 `.messages` 영역만 스크롤. `html, body { height: 100vh; overflow: hidden }` + `.messages { flex: 1; min-height: 0; overflow-y: auto }` 로 grid/flex 체인이 viewport 에 고정.
+- **근거 확인하기** — 각 assistant 메시지 하단의 🔍 버튼. 클릭 시 모달이 열리고 검색에 사용된 청크별 카드 (파일 경로 / 라인 범위 / kind / 본문 발췌, 최대 6개) 가 표시됨. ESC 또는 backdrop 클릭으로 닫힘.
+- **후속 질문 3개** — 답변 완료 직후 별도 LLM 호출 (`generate_followups`) 로 미핏-범위 후속 질문 3개를 받아 메시지 아래에 버튼으로 노출. 클릭하면 즉시 다음 질문으로 submit. 세션 다시 로드해도 SQLite 의 `citations` JSON 에 함께 영속화되어 복원됨.
 
 ## Graph RAG 강화 (PageRank)
 
@@ -433,6 +442,7 @@ uv run pytest -k smoke                 # 시스템 smoke 만
 | `test_graph_pagerank.py` | 7 | NetworkX 위 PageRank / PPR / hub_files / symbol_neighbors / 캐시 무효화 |
 | `test_parallel_ingest.py` | 4 | asyncio.Semaphore 워커 풀 — exactly-once + idempotent 재실행 |
 | `test_prompt_scope.py` | 5 | 시스템 프롬프트 미핏 scope 선언 + off-topic 거절 + 정중 fallback |
+| `test_followups.py` | 8 | 후속 질문 LLM 호출 + JSON / 폴백 파싱 + 중복 제거 + 에러 graceful 처리 |
 
 ## 기술 스택
 
