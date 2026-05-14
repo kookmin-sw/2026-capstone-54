@@ -63,6 +63,35 @@ class Settings(BaseSettings):
         default=32,
         description="Batch size for remote embed_documents",
     )
+    embedding_concurrency: int = Field(
+        default=4,
+        ge=1,
+        le=64,
+        description="Max files embedded in parallel during ingestion (1 = serial)",
+    )
+
+    graph_use_pagerank: bool = Field(
+        default=True,
+        description="Use personalised PageRank on the knowledge graph during retrieval",
+    )
+    graph_ppr_weight: float = Field(
+        default=0.15,
+        ge=0.0,
+        le=1.0,
+        description="Mixing weight of graph PPR score into the final retrieval score",
+    )
+    graph_ppr_alpha: float = Field(
+        default=0.85,
+        ge=0.0,
+        le=1.0,
+        description="PageRank damping factor (standard 0.85)",
+    )
+    graph_hub_top_k: int = Field(
+        default=5,
+        ge=0,
+        le=30,
+        description="How many global-PageRank hub files to surface in the prompt",
+    )
 
     embedding_server_host: str = Field(
         default="0.0.0.0",
