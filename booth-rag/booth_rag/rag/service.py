@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import asyncio
 import logging
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
+from threading import Lock
 
 from booth_rag.config import get_settings
 from booth_rag.ingestion.code_chunker import chunk_file
@@ -131,20 +133,22 @@ class RagService:
                     logger.exception("progress_callback raised")
             logger.debug("[%s] %d/%d — %s", phase, current, total, message)
 
+        concurrency = max(1, self._settings.embedding_concurrency)
         self._is_ingesting = True
         try:
             emit("scan", 0, total_files, "디렉토리 스캔 시작")
             files: list[CodeFile] = []
-            chunks_total = 0
-            outline_count = 0
             for i, code_file in enumerate(walk_repo(source_path, include_top_dirs=top_dirs), start=1):
                 if max_files is not None and i > max_files:
                     break
                 files.append(code_file)
-                chunks = chunk_file(code_file)
-                outline_count += sum(1 for c in chunks if c.kind == "outline")
-                chunks_total += self._vector.add_chunks(chunks, source_kind="code")
-                emit("files", i, total_files, code_file.rel_path)
+
+            chunks_total, outline_count = self._embed_files_parallel(
+                files,
+                concurrency=concurrency,
+                emit=emit,
+                total_files=total_files,
+            )
 
             emit("graph", len(files), len(files), "그래프 빌드 중")
             added_nodes = self._graph.merge_files(files)
@@ -167,6 +171,79 @@ class RagService:
             )
         finally:
             self._is_ingesting = False
+
+    def _embed_files_parallel(
+        self,
+        files: Sequence[CodeFile],
+        *,
+        concurrency: int,
+        emit: Callable[[str, int, int, str], None],
+        total_files: int,
+    ) -> tuple[int, int]:
+        """Fan out chunk_file + vector.add_chunks across files with a Semaphore.
+
+        Each chunk's doc_id is `code::{rel_path}::{chunk_index}` — unique per
+        (file, position) tuple. ChromaDB upserts on collision so a duplicate
+        add (e.g. retried task) is idempotent. Files are processed in input
+        order from the worker pool but emit() is serialised under a lock.
+        """
+        if not files:
+            return 0, 0
+
+        if concurrency == 1:
+            chunks_total = 0
+            outline_count = 0
+            for i, code_file in enumerate(files, start=1):
+                chunks = chunk_file(code_file)
+                outline_count += sum(1 for c in chunks if c.kind == "outline")
+                chunks_total += self._vector.add_chunks(chunks, source_kind="code")
+                emit("files", i, total_files, code_file.rel_path)
+            return chunks_total, outline_count
+
+        return asyncio.run(
+            self._embed_files_async(
+                files,
+                concurrency=concurrency,
+                emit=emit,
+                total_files=total_files,
+            )
+        )
+
+    async def _embed_files_async(
+        self,
+        files: Sequence[CodeFile],
+        *,
+        concurrency: int,
+        emit: Callable[[str, int, int, str], None],
+        total_files: int,
+    ) -> tuple[int, int]:
+        sem = asyncio.Semaphore(concurrency)
+        completed_lock = Lock()
+        completed = 0
+        chunks_total = 0
+        outline_count = 0
+        logger.info("Parallel ingest: %d files with concurrency=%d", len(files), concurrency)
+
+        async def process(code_file: CodeFile) -> None:
+            nonlocal completed, chunks_total, outline_count
+            async with sem:
+
+                def _work() -> tuple[int, int]:
+                    file_chunks = chunk_file(code_file)
+                    outline_in_file = sum(1 for c in file_chunks if c.kind == "outline")
+                    added = self._vector.add_chunks(file_chunks, source_kind="code")
+                    return added, outline_in_file
+
+                added, outline_in_file = await asyncio.to_thread(_work)
+                with completed_lock:
+                    completed += 1
+                    chunks_total += added
+                    outline_count += outline_in_file
+                    current = completed
+                emit("files", current, total_files, code_file.rel_path)
+
+        await asyncio.gather(*(process(f) for f in files))
+        return chunks_total, outline_count
 
     def ingest_document_path(
         self,
