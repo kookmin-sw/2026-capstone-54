@@ -25,8 +25,7 @@
 }
 
 html, body {
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
 }
 
 body {
@@ -36,20 +35,8 @@ body {
   -webkit-font-smoothing: antialiased;
   display: flex;
   flex-direction: column;
+  min-height: 100vh;
 }
-
-.page {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  overflow: hidden;
-}
-
-a { color: var(--mefit-cyan); text-decoration: none; }
-a:hover { text-decoration: underline; }
-
-.accent { color: var(--mefit-cyan); font-weight: 700; }
 
 .topbar {
   position: sticky;
@@ -115,6 +102,25 @@ a:hover { text-decoration: underline; }
   transition: opacity 0.2s;
 }
 .cta-btn:hover { opacity: 0.85; text-decoration: none; }
+
+.page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+body.page-chat,
+body.page-chat html {
+  height: 100vh;
+  overflow: hidden;
+}
+body.page-chat {
+  min-height: 0;
+}
+body.page-chat .page {
+  min-height: 0;
+  overflow: hidden;
+}
 
 .chat-shell {
   flex: 1;

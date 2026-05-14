@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% block body_class %}page-chat{% endblock %}
+
 {% block content %}
 <div class="chat-shell">
   <aside class="sidebar">
@@ -44,10 +46,12 @@
         <p class="welcome-sub">未fit, meFit. 이력서 기반 AI 면접부터 표정·발화 분석까지.<br />
           무엇이 궁금하신가요? 아래에 질문을 입력해주세요.</p>
         <div class="suggestions">
-          <button class="suggestion" data-q="미핏 프로젝트가 어떤 서비스인지 한 문단으로 소개해줘.">미핏이 어떤 서비스인지 알려줘</button>
-          <button class="suggestion" data-q="이력서 기반 AI 면접은 어떻게 동작하나요? 백엔드와 분석 모듈 흐름까지 설명해주세요.">AI 면접 동작 원리</button>
-          <button class="suggestion" data-q="표정과 시선 분석은 어떤 기술 스택으로 구현했나요?">표정·시선 분석 기술 스택</button>
-          <button class="suggestion" data-q="캡스톤 54팀이 만든 모듈에는 어떤 것들이 있나요?">54팀 모듈 구성</button>
+          <button class="suggestion" data-q="미핏(未fit → meFit)이 어떤 면접 준비 서비스인지, 왜 이런 이름을 가지게 됐는지 한 문단으로 소개해주세요. 다른 면접 연습 도구와의 차별점도 함께 알려주세요.">미핏이 어떤 서비스인가요?</button>
+          <button class="suggestion" data-q="이력서를 업로드하면 AI 면접이 어떤 흐름으로 진행되나요? 이력서 분석 → 맞춤 질문 생성 → 실시간 꼬리질문 → 친근·일반·압박 3단계 면접관까지 한 사이클을 설명해주세요.">이력서 기반 AI 면접 흐름</button>
+          <button class="suggestion" data-q="면접 녹화 영상에서 표정·시선·발화를 어떻게 멀티모달로 분석해서 영역별 점수와 강점·개선점 리포트를 만드나요? face-analyzer / analysis-video / analysis-stt 모듈이 어떻게 협업하나요?">표정·시선·발화 분석 파이프라인</button>
+          <button class="suggestion" data-q="미핏 모노레포의 서브 프로젝트(backend, frontend, analysis-resume, analysis-stt, analysis-video, face-analyzer, infra, interview-analysis-report, scraping, voice-api 등) 각각이 무엇을 담당하고 어떻게 연결되나요?">54팀 모노레포 구성</button>
+          <button class="suggestion" data-q="미핏의 티켓 충전 시스템과 스트릭(연속 일수) 보상은 어떻게 설계되었나요? Free 매일 10티켓 vs Pro 매일 30티켓 + 면접 보상 최대 15티켓의 흐름을 알려주세요.">티켓·스트릭 게이미피케이션</button>
+          <button class="suggestion" data-q="친근 / 일반 / 압박 3단계 면접관과 연습 / 실전 모드(5~30초 랜덤 시작)는 어떻게 다르고, 어떤 프롬프트/로직으로 구현했나요?">3단계 면접관 + 연습/실전 모드</button>
         </div>
       </div>
     </div>
