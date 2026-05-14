@@ -41,12 +41,21 @@ class _FakeChain:
         self.reply = reply
         self.last_history: list[ChatTurn] | None = None
         self.last_question: str | None = None
+        self.followups: list[str] = ["미핏 어디서 시작?", "Pro 요금 혜택?", "표정 분석 모델?"]
 
-    async def answer_stream(self, history: list[ChatTurn], question: str) -> AsyncIterator[str]:
+    async def answer_stream(
+        self,
+        history: list[ChatTurn],
+        question: str,
+        context=None,
+    ) -> AsyncIterator[str]:
         self.last_history = history
         self.last_question = question
         for token in self.reply:
             yield token
+
+    async def generate_followups(self, _question: str, _answer: str, n: int = 3) -> list[str]:
+        return list(self.followups[:n])
 
 
 class _FakeRetriever:

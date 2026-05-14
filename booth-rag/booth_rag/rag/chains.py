@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import json
+import logging
+import re
 from collections.abc import AsyncIterator
 from dataclasses import dataclass, field
 
@@ -10,6 +13,8 @@ from booth_rag.rag.embeddings import build_embeddings
 from booth_rag.rag.graph_store import KnowledgeGraph
 from booth_rag.rag.retriever import HybridContext, HybridRetriever
 from booth_rag.rag.vector_store import VectorIndex
+
+logger = logging.getLogger(__name__)
 
 _SYSTEM_PROMPT_KO = """당신은 미핏(MeFit) 캡스톤 프로젝트의 공식 안내 도우미입니다.
 
@@ -139,8 +144,14 @@ class ChatChain:
             "정식 답변을 받으려면 `OPENAI_API_KEY` 를 설정해주세요."
         )
 
-    async def answer_stream(self, history: list[ChatTurn], question: str) -> AsyncIterator[str]:
-        context = self._retriever.retrieve(question)
+    async def answer_stream(
+        self,
+        history: list[ChatTurn],
+        question: str,
+        context: HybridContext | None = None,
+    ) -> AsyncIterator[str]:
+        if context is None:
+            context = self._retriever.retrieve(question)
         if self._llm is None:
             yield self._offline_answer(question, context)
             return
@@ -152,8 +163,14 @@ class ChatChain:
             if content:
                 yield content
 
-    async def answer(self, history: list[ChatTurn], question: str) -> AnswerResult:
-        context = self._retriever.retrieve(question)
+    async def answer(
+        self,
+        history: list[ChatTurn],
+        question: str,
+        context: HybridContext | None = None,
+    ) -> AnswerResult:
+        if context is None:
+            context = self._retriever.retrieve(question)
         citations = self._citations_for(context)
         if self._llm is None:
             text = self._offline_answer(question, context)
@@ -164,6 +181,76 @@ class ChatChain:
         if isinstance(content, list):
             content = "".join(part.get("text", "") if isinstance(part, dict) else str(part) for part in content)
         return AnswerResult(text=str(content), citations=citations, used_offline_fallback=False)
+
+    async def generate_followups(
+        self,
+        question: str,
+        answer: str,
+        n: int = 3,
+    ) -> list[str]:
+        """Ask the LLM for `n` short MeFit-scoped follow-up questions.
+
+        Returns [] if LLM is unavailable or the response cannot be parsed.
+        Never raises — the chat flow continues even if this best-effort call
+        fails (network, JSON parse error, etc.).
+        """
+        if self._llm is None or n <= 0:
+            return []
+        prompt = (
+            "방금 미핏(MeFit) 캡스톤 챗봇이 아래 [질문] 에 대해 [답변] 을 했습니다.\n"
+            "부스 방문자가 이어서 자연스럽게 물어볼 만한 미핏 관련 후속 질문을\n"
+            f"정확히 {n}개 만들어 주세요.\n\n"
+            "규칙:\n"
+            "- 한국어, 각 18단어 이하, 끝에 물음표.\n"
+            "- 미핏(서비스/코드/팀/부스) 범위에서만. 다른 주제 금지.\n"
+            "- 직전 답변과 너무 똑같지 않게, 한 단계 더 깊거나 인접한 주제로.\n"
+            "- 다음 JSON 형식 그대로 출력. 다른 텍스트 절대 금지:\n"
+            '{"followups": ["...", "...", "..."]}\n\n'
+            f"[질문]\n{question}\n\n[답변]\n{answer.strip()}\n"
+        )
+        try:
+            resp = await self._llm.ainvoke([HumanMessage(content=prompt)])
+        except Exception as exc:
+            logger.warning("generate_followups LLM call failed: %s", exc)
+            return []
+        content = getattr(resp, "content", "")
+        if isinstance(content, list):
+            content = "".join(part.get("text", "") if isinstance(part, dict) else str(part) for part in content)
+        return _parse_followups(str(content), n=n)
+
+
+_FOLLOWUPS_OBJECT_RE = re.compile(r"\{[^{}]*\"followups\"\s*:\s*\[[^\]]*\][^{}]*\}", re.DOTALL)
+
+
+def _parse_followups(raw: str, n: int) -> list[str]:
+    if not raw or not raw.strip():
+        return []
+    match = _FOLLOWUPS_OBJECT_RE.search(raw)
+    candidates: list[str] = []
+    if match:
+        try:
+            obj = json.loads(match.group(0))
+            arr = obj.get("followups") if isinstance(obj, dict) else None
+            if isinstance(arr, list):
+                candidates = [str(x).strip() for x in arr if str(x).strip()]
+        except json.JSONDecodeError:
+            candidates = []
+    if not candidates:
+        for line in raw.splitlines():
+            stripped = line.strip().lstrip("-*0123456789.) ").strip().strip('"')
+            if stripped.endswith("?") and 4 <= len(stripped) <= 200:
+                candidates.append(stripped)
+    seen: set[str] = set()
+    out: list[str] = []
+    for q in candidates:
+        key = q.lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(q)
+        if len(out) >= n:
+            break
+    return out
 
 
 def build_chain(persist_chroma_dir=None, persist_graph_dir=None) -> ChatChain:

@@ -141,3 +141,12 @@ class SessionStore:
             )
             rows = await cur.fetchall()
         return [Message(**dict(row)) for row in rows]
+
+    async def update_message_citations(self, message_id: int, citations: str | None) -> bool:
+        async with aiosqlite.connect(self._db_path) as db:
+            cur = await db.execute(
+                "UPDATE messages SET citations = ? WHERE id = ?",
+                (citations, message_id),
+            )
+            await db.commit()
+            return cur.rowcount > 0
