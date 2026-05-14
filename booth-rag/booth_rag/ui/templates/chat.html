@@ -63,6 +63,16 @@
     </form>
   </section>
 </div>
+
+<div id="source-modal" class="modal-backdrop" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="source-modal-title">
+  <div class="modal">
+    <header class="modal-header">
+      <span id="source-modal-title" class="modal-title">답변 근거</span>
+      <button id="source-modal-close" class="modal-close" aria-label="닫기">×</button>
+    </header>
+    <div id="source-modal-body" class="modal-body"></div>
+  </div>
+</div>
 {% endblock %}
 
 {% block scripts %}

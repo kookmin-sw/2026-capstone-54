@@ -5,6 +5,9 @@
   const sendBtn = document.getElementById('send-btn');
   const sessionListEl = document.getElementById('session-list');
   const newSessionBtn = document.getElementById('new-session');
+  const modalEl = document.getElementById('source-modal');
+  const modalBodyEl = document.getElementById('source-modal-body');
+  const modalCloseEl = document.getElementById('source-modal-close');
 
   let currentSessionId = null;
   let isStreaming = false;
@@ -41,8 +44,16 @@
     await sendMessage(text);
   });
 
+  modalCloseEl.addEventListener('click', closeModal);
+  modalEl.addEventListener('click', (e) => {
+    if (e.target === modalEl) closeModal();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !modalEl.hasAttribute('hidden')) closeModal();
+  });
+
   function escapeHtml(s) {
-    return s
+    return String(s)
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
@@ -65,7 +76,74 @@
     if (welcome) welcome.remove();
   }
 
-  function appendMessage(role, content, citations) {
+  function openModal(sources) {
+    if (!sources || !sources.length) return;
+    modalBodyEl.innerHTML = sources
+      .map((s) => {
+        const path = escapeHtml(s.rel_path || '');
+        const lineStart = Number(s.line_start || 0);
+        const lineEnd = Number(s.line_end || 0);
+        const linesLabel =
+          lineStart || lineEnd ? `L${lineStart}-${lineEnd}` : '';
+        const kindLabel = escapeHtml(s.source_kind || s.kind || 'chunk');
+        const symbolLabel = s.symbol ? `· ${escapeHtml(s.symbol)}` : '';
+        const text = escapeHtml(s.text || '(빈 청크)');
+        return `
+          <article class="source-card">
+            <div class="source-card-head">
+              <span class="source-card-kind">${kindLabel}</span>
+              <span class="source-card-path">${path}</span>
+              ${linesLabel ? `<span class="source-card-lines">${linesLabel}</span>` : ''}
+              ${symbolLabel ? `<span class="source-card-symbol">${symbolLabel}</span>` : ''}
+            </div>
+            <pre class="source-card-body">${text}</pre>
+          </article>
+        `;
+      })
+      .join('');
+    modalEl.removeAttribute('hidden');
+    modalEl.setAttribute('aria-hidden', 'false');
+  }
+
+  function closeModal() {
+    modalEl.setAttribute('hidden', '');
+    modalEl.setAttribute('aria-hidden', 'true');
+    modalBodyEl.innerHTML = '';
+  }
+
+  function buildMessageActions(sources) {
+    if (!sources || !sources.length) return null;
+    const wrap = document.createElement('div');
+    wrap.className = 'message-actions';
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'source-btn';
+    btn.innerHTML = `🔍 근거 확인하기 <span class="source-count">${sources.length}</span>`;
+    btn.addEventListener('click', () => openModal(sources));
+    wrap.appendChild(btn);
+    return wrap;
+  }
+
+  function buildFollowups(questions, container) {
+    if (!questions || !questions.length) return null;
+    const wrap = document.createElement('div');
+    wrap.className = 'followups';
+    const label = document.createElement('div');
+    label.className = 'followups-label';
+    label.textContent = '이어서 물어보기';
+    wrap.appendChild(label);
+    questions.slice(0, 3).forEach((q) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'followup-btn';
+      btn.textContent = q;
+      btn.addEventListener('click', () => sendFollowup(q, container));
+      wrap.appendChild(btn);
+    });
+    return wrap;
+  }
+
+  function appendMessage(role, content, sources, followups) {
     clearWelcome();
     const wrap = document.createElement('div');
     wrap.className = `message ${role}`;
@@ -73,15 +151,16 @@
     bubble.className = 'message-bubble';
     bubble.innerHTML = renderMarkdownLite(content);
     wrap.appendChild(bubble);
-    if (citations && citations.length) {
-      const cit = document.createElement('div');
-      cit.className = 'message-citations';
-      cit.innerHTML = '🔗 ' + citations.map((c) => `<code>${escapeHtml(c)}</code>`).join(' · ');
-      wrap.appendChild(cit);
-    }
+
+    const actions = buildMessageActions(sources);
+    if (actions) wrap.appendChild(actions);
+
+    const fu = buildFollowups(followups, wrap);
+    if (fu) wrap.appendChild(fu);
+
     messagesEl.appendChild(wrap);
-    messagesEl.scrollTop = messagesEl.scrollHeight;
-    return bubble;
+    scrollToBottom();
+    return { wrap, bubble };
   }
 
   function appendStreamingAssistant() {
@@ -92,13 +171,13 @@
     bubble.className = 'message-bubble';
     bubble.innerHTML = '<span class="typing-indicator"></span>';
     wrap.appendChild(bubble);
-    const cit = document.createElement('div');
-    cit.className = 'message-citations';
-    cit.style.display = 'none';
-    wrap.appendChild(cit);
     messagesEl.appendChild(wrap);
+    scrollToBottom();
+    return { wrap, bubble };
+  }
+
+  function scrollToBottom() {
     messagesEl.scrollTop = messagesEl.scrollHeight;
-    return { bubble, cit, wrap };
   }
 
   async function loadSessions() {
@@ -159,6 +238,28 @@
     messagesEl.appendChild(div);
   }
 
+  function parseStoredCitations(raw) {
+    if (!raw) return { sources: [], followups: [] };
+    try {
+      const obj = JSON.parse(raw);
+      if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
+        return {
+          sources: Array.isArray(obj.sources) ? obj.sources : [],
+          followups: Array.isArray(obj.followups) ? obj.followups : [],
+        };
+      }
+      if (Array.isArray(obj)) {
+        return {
+          sources: obj.map((p) => ({ rel_path: String(p), text: '' })),
+          followups: [],
+        };
+      }
+    } catch (_) {
+      /* legacy plain string */
+    }
+    return { sources: [], followups: [] };
+  }
+
   async function loadSession(sessionId) {
     if (isStreaming) return;
     currentSessionId = sessionId;
@@ -166,16 +267,20 @@
     const data = await res.json();
     messagesEl.innerHTML = '';
     (data.messages || []).forEach((m) => {
-      let citations = null;
-      if (m.citations) {
-        try { citations = JSON.parse(m.citations); } catch (_) { citations = null; }
-      }
-      appendMessage(m.role === 'system' ? 'assistant' : m.role, m.content, citations);
+      const { sources, followups } = parseStoredCitations(m.citations);
+      const role = m.role === 'system' ? 'assistant' : m.role;
+      appendMessage(role, m.content, sources, followups);
     });
     if (!data.messages || !data.messages.length) {
       appendWelcomeBack();
     }
     await loadSessions();
+  }
+
+  async function sendFollowup(text, sourceWrap) {
+    if (isStreaming || !text) return;
+    sourceWrap.querySelectorAll('.followup-btn').forEach((b) => (b.disabled = true));
+    await sendMessage(text);
   }
 
   async function sendMessage(text) {
@@ -184,13 +289,13 @@
     inputEl.style.height = 'auto';
     isStreaming = true;
     sendBtn.disabled = true;
-    const { bubble, cit } = appendStreamingAssistant();
+    const { wrap, bubble } = appendStreamingAssistant();
     let collected = '';
 
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'text/event-stream' },
+        headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream' },
         body: JSON.stringify({ session_id: currentSessionId, message: text }),
       });
       if (!res.ok) {
@@ -210,14 +315,15 @@
         buf = parts.pop();
         for (const part of parts) {
           if (!part.trim()) continue;
-          handleSseEvent(part, bubble, cit, (chunk) => {
+          handleSseEvent(part, wrap, bubble, (chunk) => {
             collected += chunk;
             bubble.innerHTML = renderMarkdownLite(collected) + '<span class="typing-indicator"></span>';
-            messagesEl.scrollTop = messagesEl.scrollHeight;
+            scrollToBottom();
           });
         }
       }
       bubble.innerHTML = renderMarkdownLite(collected || '(응답 없음)');
+      scrollToBottom();
     } catch (err) {
       bubble.innerHTML = `❌ 네트워크 오류: ${escapeHtml(String(err))}`;
     } finally {
@@ -228,10 +334,10 @@
     }
   }
 
-  function handleSseEvent(raw, bubble, cit, onToken) {
+  function handleSseEvent(raw, wrap, bubble, onToken) {
     const lines = raw.split(/\r\n|\n/);
     let event = 'message';
-    let dataLines = [];
+    const dataLines = [];
     for (const line of lines) {
       if (line.startsWith('event:')) event = line.slice(6).trim();
       else if (line.startsWith('data:')) dataLines.push(line.slice(5).trim());
@@ -239,13 +345,32 @@
     const dataStr = dataLines.join('\n');
     if (!dataStr) return;
     let data;
-    try { data = JSON.parse(dataStr); } catch (_) { return; }
+    try {
+      data = JSON.parse(dataStr);
+    } catch (_) {
+      return;
+    }
     if (event === 'token' && data.text) {
       onToken(data.text);
     } else if (event === 'done') {
-      if (data.citations && data.citations.length) {
-        cit.style.display = '';
-        cit.innerHTML = '🔗 ' + data.citations.map((c) => `<code>${escapeHtml(c)}</code>`).join(' · ');
+      const sources = Array.isArray(data.sources) ? data.sources : [];
+      if (sources.length) {
+        const actions = buildMessageActions(sources);
+        if (actions) {
+          wrap.querySelectorAll('.message-actions').forEach((n) => n.remove());
+          wrap.appendChild(actions);
+          scrollToBottom();
+        }
+      }
+    } else if (event === 'followups') {
+      const followups = Array.isArray(data.followups) ? data.followups : [];
+      if (followups.length) {
+        wrap.querySelectorAll('.followups').forEach((n) => n.remove());
+        const fu = buildFollowups(followups, wrap);
+        if (fu) {
+          wrap.appendChild(fu);
+          scrollToBottom();
+        }
       }
     } else if (event === 'error') {
       bubble.innerHTML = `❌ ${escapeHtml(data.error || 'unknown error')}`;
