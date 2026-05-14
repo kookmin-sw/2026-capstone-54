@@ -261,9 +261,28 @@ booth-rag/
 
 ## 채팅 UI 인터랙션
 
-- **창 내부 스크롤** — `body` 전체가 늘어나지 않고 `.messages` 영역만 스크롤. `html, body { height: 100vh; overflow: hidden }` + `.messages { flex: 1; min-height: 0; overflow-y: auto }` 로 grid/flex 체인이 viewport 에 고정.
-- **근거 확인하기** — 각 assistant 메시지 하단의 🔍 버튼. 클릭 시 모달이 열리고 검색에 사용된 청크별 카드 (파일 경로 / 라인 범위 / kind / 본문 발췌, 최대 6개) 가 표시됨. ESC 또는 backdrop 클릭으로 닫힘.
-- **후속 질문 3개** — 답변 완료 직후 별도 LLM 호출 (`generate_followups`) 로 미핏-범위 후속 질문 3개를 받아 메시지 아래에 버튼으로 노출. 클릭하면 즉시 다음 질문으로 submit. 세션 다시 로드해도 SQLite 의 `citations` JSON 에 함께 영속화되어 복원됨.
+- **창 내부 스크롤** — `body` 전체가 늘어나지 않고 `.messages` 영역만 스크롤. `body.page-chat` 클래스에만 viewport 락이 적용되어 admin / 다른 페이지는 자연 페이지 스크롤.
+- **답변 복사** — 각 assistant bubble 우측 하단의 `📋 복사` 버튼. `navigator.clipboard.writeText` 로 답변 텍스트 복사. 성공 시 1.5초간 `복사됨` 표시.
+- **근거 확인하기** — bubble 우측 하단의 `🔍 근거 N` pill. 클릭 시 모달이 열리고 검색에 사용된 청크별 카드 (파일 경로 / 라인 범위 / kind / 본문 발췌, 최대 6개) 가 표시됨. ESC 또는 backdrop 클릭으로 닫힘. 두 버튼은 absolute 배치라 답변 텍스트와 겹치지 않음.
+- **응답 메타** — bubble 외부 아래 작은 텍스트로 `⚡ 9.5s 응답 · 검색 3153ms · 쿼리 3개`. 멀티 쿼리 RRF 가 동작 중일 때 쿼리 개수 표시.
+- **이어서 물어보기 3개** — 답변 완료 직후 별도 LLM 호출 (`generate_followups`) 로 미핏-범위 후속 질문 3개를 받아 bubble 아래 점선 카드 안에 버튼으로 노출. 클릭하면 즉시 다음 질문으로 submit. 세션 다시 로드해도 SQLite 의 `citations` JSON 에 함께 영속화되어 복원됨.
+- **사이드바 세션 검색** — 좌측 사이드바 상단 `🔎 대화 검색...` 입력란. 제목 substring 매칭으로 클라이언트 측 즉시 필터링.
+
+## RAG 강화 — 멀티턴 / 멀티 쿼리 / 다양성
+
+부스 운영 중 자주 발생하는 세 가지 검색 실패를 막기 위한 3중 강화 — 모두 `.env` 스위치로 켜고 끌 수 있습니다.
+
+| 강화 | 효과 | 동작 |
+|---|---|---|
+| **`RAG_REWRITE_QUERY`** | "그건 어떻게 동작해?" 같은 follow-up 이 standalone 으로 임베딩되어 미스되던 문제 해결 | 짧은 LLM 호출로 최근 4턴 히스토리를 반영한 검색 쿼리 생성. 첫 턴 / 에러 시 원본 그대로 사용. |
+| **`RAG_EXPAND_QUERIES`** | "회원가입 어떻게?" 같은 한국어 → 영어 코드 매칭 약한 문제 해결 | LLM 으로 3개 변형 생성 (원본 한국어 / 영어·CamelCase·snake_case / 한국어 동의어). 각 변형으로 검색 후 RRF 융합. |
+| **`RAG_USE_MMR`** | 비슷한 청크가 top-k 를 잠식하던 다양성 부족 | ChromaDB `max_marginal_relevance_search` (lambda=0.7, fetch_k=20). 사용 불가 시 plain similarity 로 fallback. |
+
+**Reciprocal Rank Fusion**: 변형별 결과를 `score = Σ 1/(RRF_K + rank)` 로 합산. dedup key 는 `(rel_path, line_start, line_end, symbol)`. `RAG_RRF_K=60` 기본 (Cormack et al. 2009).
+
+검증된 효과 (실제 부스 데이터 2397 청크, "이력서 분석 모듈은 어떻게 작동하나요?"):
+- 멀티 쿼리 3개 융합 → `검색 3153ms · 쿼리 3개`
+- 응답 latency 메타가 UI 에 표시되어 운영자 즉시 확인 가능
 
 ## Graph RAG 강화 (PageRank)
 
