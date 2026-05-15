@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block body_class %}page-chat{% endblock %}
+
+{% block content %}
+<div class="chat-shell">
+  <aside class="sidebar">
+    <button id="new-session" class="new-session-btn">＋ 새 대화</button>
+    <input id="session-search" class="session-search" type="search" placeholder="🔎 대화 검색..." aria-label="대화 검색" />
+    <div class="session-list" id="session-list">
+      <div class="empty-hint">대화 목록을 불러오는 중...</div>
+    </div>
+
+    <div class="booth-card">
+      <div class="booth-card-title">캡스톤 <span class="accent">{{ booth.team_number }}팀</span></div>
+      <div class="booth-card-name">{{ booth.team_name }}</div>
+      <div class="booth-qr-row">
+        <a href="{{ booth.domain_url }}" target="_blank" rel="noopener" class="qr-tile" title="미핏 서비스로 이동">
+          <img src="/static/img/qr-mefit.png" alt="mefit.kr QR" />
+          <span>mefit.kr</span>
+        </a>
+        <a href="{{ booth.team_page_url }}" target="_blank" rel="noopener" class="qr-tile" title="팀 소개 페이지">
+          <img src="/static/img/qr-team.png" alt="팀 페이지 QR" />
+          <span>팀 페이지</span>
+        </a>
+      </div>
+      <div class="booth-buttons">
+        <a href="{{ booth.domain_url }}" target="_blank" rel="noopener" class="primary-btn">미핏 사이트 바로가기 →</a>
+        <a href="{{ booth.team_page_url }}" target="_blank" rel="noopener" class="ghost-btn">팀 소개 페이지</a>
+      </div>
+    </div>
+  </aside>
+
+  <section class="chat-area">
+    <div id="chat-status" class="chat-status">
+      {% if not stats.openai_chat_enabled %}
+      <span class="status-warn">⚠️ OPENAI_API_KEY 가 설정되지 않아 오프라인 fallback 모드입니다. 검색만 동작합니다.</span>
+      {% else %}
+      <span class="status-ok">● LLM 연결됨 ({{ stats.vector_count }}개 청크 · 임베딩 {{ stats.embedding_model }})</span>
+      {% endif %}
+    </div>
+
+    <div id="messages" class="messages">
+      <div class="welcome">
+        <img src="/static/img/logo-korean.png" alt="미핏" class="welcome-logo" />
+        <h1>미핏 부스 안내 봇</h1>
+        <p class="welcome-sub">未fit, meFit. 이력서 기반 AI 면접부터 표정·발화 분석까지.<br />
+          무엇이 궁금하신가요? 아래에 질문을 입력해주세요.</p>
+        <div class="suggestions">
+          <button class="suggestion" data-q="미핏(未fit → meFit)이 어떤 면접 준비 서비스인지, 왜 이런 이름을 가지게 됐는지 한 문단으로 소개해주세요. 다른 면접 연습 도구와의 차별점도 함께 알려주세요.">미핏이 어떤 서비스인가요?</button>
+          <button class="suggestion" data-q="이력서를 업로드하면 AI 면접이 어떤 흐름으로 진행되나요? 이력서 분석 → 맞춤 질문 생성 → 실시간 꼬리질문 → 친근·일반·압박 3단계 면접관까지 한 사이클을 설명해주세요.">이력서 기반 AI 면접 흐름</button>
+          <button class="suggestion" data-q="면접 녹화 영상에서 표정·시선·발화를 어떻게 멀티모달로 분석해서 영역별 점수와 강점·개선점 리포트를 만드나요? face-analyzer / analysis-video / analysis-stt 모듈이 어떻게 협업하나요?">표정·시선·발화 분석 파이프라인</button>
+          <button class="suggestion" data-q="미핏 모노레포의 서브 프로젝트(backend, frontend, analysis-resume, analysis-stt, analysis-video, face-analyzer, infra, interview-analysis-report, scraping, voice-api 등) 각각이 무엇을 담당하고 어떻게 연결되나요?">54팀 모노레포 구성</button>
+          <button class="suggestion" data-q="미핏의 티켓 충전 시스템과 스트릭(연속 일수) 보상은 어떻게 설계되었나요? Free 매일 10티켓 vs Pro 매일 30티켓 + 면접 보상 최대 15티켓의 흐름을 알려주세요.">티켓·스트릭 게이미피케이션</button>
+          <button class="suggestion" data-q="친근 / 일반 / 압박 3단계 면접관과 연습 / 실전 모드(5~30초 랜덤 시작)는 어떻게 다르고, 어떤 프롬프트/로직으로 구현했나요?">3단계 면접관 + 연습/실전 모드</button>
+        </div>
+      </div>
+    </div>
+
+    <form id="chat-form" class="chat-form" autocomplete="off">
+      <textarea
+        id="chat-input"
+        placeholder="미핏 프로젝트에 대해 무엇이든 물어보세요... (Enter 전송, Shift+Enter 줄바꿈)"
+        rows="1"
+        required
+      ></textarea>
+      <button type="submit" id="send-btn" class="send-btn" aria-label="전송">↑</button>
+    </form>
+  </section>
+</div>
+
+<div id="source-modal" class="modal-backdrop" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="source-modal-title">
+  <div class="modal">
+    <header class="modal-header">
+      <span id="source-modal-title" class="modal-title">답변 근거</span>
+      <button id="source-modal-close" class="modal-close" aria-label="닫기">×</button>
+    </header>
+    <div id="source-modal-body" class="modal-body"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/chat.js" defer></script>
+{% endblock %}

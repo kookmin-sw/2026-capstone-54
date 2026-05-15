@@ -1,0 +1,12 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: booth-rag-certificate
+  namespace: booth-rag
+spec:
+  secretName: booth-rag-certificate
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+    - question.mefit.kr

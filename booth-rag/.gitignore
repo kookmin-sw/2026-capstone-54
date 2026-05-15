@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Secrets
+.env
+.env.local
+.env.*.local
+*.secret
+*.key
+*.pem
+
+# Persistent RAG data, DBs, uploads — runtime-generated, never committed
+data/*
+!data/.gitkeep
+*.sqlite
+*.sqlite3
+
+# Logs / OS / IDE
+*.log
+logs/
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Generated QR codes (regenerate via scripts/generate_qr.py)
+booth_rag/ui/static/img/qr-*.png
