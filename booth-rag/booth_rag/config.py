@@ -106,6 +106,12 @@ class Settings(BaseSettings):
         le=30,
         description="How many global-PageRank hub files to surface in the prompt",
     )
+    graph_radius: int = Field(
+        default=1,
+        ge=0,
+        le=3,
+        description="Hops to expand the graph from seed files. 0 = disabled, 1 = direct neighbors, 2-3 = multi-hop.",
+    )
 
     rag_rewrite_query: bool = Field(
         default=True,
@@ -156,6 +162,16 @@ class Settings(BaseSettings):
         ge=1,
         le=50,
         description="How many BM25 hits to fetch per probe query before RRF",
+    )
+    rag_use_iterative: bool = Field(
+        default=False,
+        description="Iterative retrieval: if first answer signals 'not found', re-retrieve with a broader query and answer again. Applies to non-streaming answer() only.",
+    )
+    rag_iterative_max_attempts: int = Field(
+        default=2,
+        ge=1,
+        le=4,
+        description="Max retrieval+answer attempts when iterative is on. 1 = no re-try.",
     )
     rag_use_reranker: bool = Field(
         default=True,

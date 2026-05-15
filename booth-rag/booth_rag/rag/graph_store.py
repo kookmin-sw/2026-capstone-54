@@ -108,6 +108,26 @@ class KnowledgeGraph:
             if data.get("kind") == "inherits_from"
         ]
 
+    def callees_of(self, symbol_node: str) -> list[str]:
+        """Local same-file symbols this symbol calls (via `calls` edges)."""
+        if symbol_node not in self._graph:
+            return []
+        return [
+            nbr
+            for _, nbr, data in self._graph.out_edges(symbol_node, data=True)
+            if data.get("kind") == "calls"
+        ]
+
+    def callers_of(self, symbol_node: str) -> list[str]:
+        """Inverse of callees_of: local symbols that call into this one."""
+        if symbol_node not in self._graph:
+            return []
+        return [
+            src
+            for src, _, data in self._graph.in_edges(symbol_node, data=True)
+            if data.get("kind") == "calls"
+        ]
+
     def symbol_info(self, symbol_node: str) -> dict[str, object]:
         """Return the per-symbol metadata stored on the graph node (lines, async, class flag)."""
         if symbol_node not in self._graph:

@@ -88,6 +88,21 @@ def test_intent_boost_handles_empty_inputs():
     assert _intent_boost_factor("어떻게 동작?", "generic") == 1.0
 
 
+def test_low_confidence_detects_common_failure_phrases():
+    assert chains_module.is_low_confidence("죄송하지만 구체적인 정보가 없습니다.")
+    assert chains_module.is_low_confidence("아직 인덱싱되지 않은 영역이에요.")
+    assert chains_module.is_low_confidence("자료가 부족해서 정확히 답하기 어렵습니다.")
+    assert chains_module.is_low_confidence("관련 청크를 찾을 수 없습니다.")
+    assert chains_module.is_low_confidence("인덱스에 없는 내용입니다.")
+
+
+def test_low_confidence_negative_on_normal_answer():
+    assert not chains_module.is_low_confidence("미핏은 캡스톤 54팀의 면접 준비 플랫폼입니다.")
+    assert not chains_module.is_low_confidence("backend/main.py 에서 처리합니다.")
+    assert not chains_module.is_low_confidence("")
+    assert not chains_module.is_low_confidence("그래프 신호는 PageRank 로 결합됩니다.")
+
+
 def test_parse_query_variants_json_array():
     out = chains_module._parse_query_variants('["원본", "english code", "한국어 동의어"]', n=3)
     assert out == ["원본", "english code", "한국어 동의어"]

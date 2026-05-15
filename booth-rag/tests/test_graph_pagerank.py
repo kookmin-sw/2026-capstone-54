@@ -129,3 +129,110 @@ def test_siblings_in_module_excludes_self(kg: KnowledgeGraph):
     assert "backend/util.py" in sibs
     assert "backend/core.py" not in sibs
     assert "frontend/app.tsx" not in sibs
+
+
+def test_calls_edge_links_caller_to_local_callee(tmp_path: Path):
+    kg = KnowledgeGraph(persist_dir=tmp_path)
+    kg.merge_files(
+        [
+            _file(
+                "backend/svc.py",
+                "def helper():\n    return 1\n\n\ndef boot():\n    return helper() + 1\n",
+            ),
+        ]
+    )
+    callees = kg.callees_of("backend/svc.py::boot")
+    assert "backend/svc.py::helper" in callees
+
+
+def test_callers_of_reverse_finds_caller(tmp_path: Path):
+    kg = KnowledgeGraph(persist_dir=tmp_path)
+    kg.merge_files(
+        [
+            _file(
+                "backend/svc.py",
+                "def helper():\n    return 1\n\n\ndef boot():\n    return helper()\n",
+            ),
+        ]
+    )
+    callers = kg.callers_of("backend/svc.py::helper")
+    assert "backend/svc.py::boot" in callers
+
+
+def test_calls_skips_self_recursion(tmp_path: Path):
+    kg = KnowledgeGraph(persist_dir=tmp_path)
+    kg.merge_files(
+        [
+            _file(
+                "backend/svc.py",
+                "def fact(n):\n    return 1 if n <= 1 else n * fact(n - 1)\n",
+            ),
+        ]
+    )
+    callees = kg.callees_of("backend/svc.py::fact")
+    assert "backend/svc.py::fact" not in callees
+
+
+def test_calls_ignores_unresolved_external(tmp_path: Path):
+    kg = KnowledgeGraph(persist_dir=tmp_path)
+    kg.merge_files(
+        [
+            _file(
+                "backend/svc.py",
+                "import os\n\ndef boot():\n    return os.getcwd()\n",
+            ),
+        ]
+    )
+    callees = kg.callees_of("backend/svc.py::boot")
+    assert all(not c.endswith("::getcwd") for c in callees) or callees == []
+
+
+def test_method_call_inside_class_body_recorded(tmp_path: Path):
+    kg = KnowledgeGraph(persist_dir=tmp_path)
+    kg.merge_files(
+        [
+            _file(
+                "backend/svc.py",
+                "def util():\n    return 1\n\n\nclass Worker:\n    def run(self):\n        return util()\n",
+            ),
+        ]
+    )
+    callees = kg.callees_of("backend/svc.py::Worker")
+    assert "backend/svc.py::util" in callees
+
+
+def test_typescript_exports_become_symbol_nodes(tmp_path: Path):
+    kg = KnowledgeGraph(persist_dir=tmp_path)
+    kg.merge_files(
+        [
+            _file(
+                "frontend/api.ts",
+                "import { foo } from 'lib'\n"
+                "export const TOKEN = 'x'\n"
+                "export function login(user) { return foo(user) }\n"
+                "export class AuthService {}\n"
+                "export interface User { id: string }\n",
+            ),
+        ]
+    )
+    syms = kg.symbol_neighbors(["frontend/api.ts"])
+    assert "frontend/api.ts::TOKEN" in syms
+    assert "frontend/api.ts::login" in syms
+    assert "frontend/api.ts::AuthService" in syms
+    assert "frontend/api.ts::User" in syms
+
+
+def test_typescript_symbol_info_carries_ts_kind(tmp_path: Path):
+    kg = KnowledgeGraph(persist_dir=tmp_path)
+    kg.merge_files(
+        [
+            _file(
+                "frontend/api.ts",
+                "export class AuthService {}\nexport interface User {}\n",
+            ),
+        ]
+    )
+    auth = kg.symbol_info("frontend/api.ts::AuthService")
+    assert auth.get("is_class") is True
+    user = kg.symbol_info("frontend/api.ts::User")
+    assert user.get("is_class") is False

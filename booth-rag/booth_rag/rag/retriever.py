@@ -178,12 +178,13 @@ class HybridRetriever:
         self,
         query: str,
         k: int = 6,
-        graph_radius: int = 1,
+        graph_radius: int | None = None,
         queries: Sequence[str] | None = None,
     ) -> HybridContext:
         query_list = [q for q in (queries or [query]) if q and q.strip()]
         if not query_list:
             query_list = [query]
+        effective_radius = graph_radius if graph_radius is not None else self._settings.graph_radius
 
         per_query_k = max(k, self._settings.rag_fetch_k // max(len(query_list), 1))
         bm25_k = self._settings.rag_bm25_k
@@ -216,7 +217,7 @@ class HybridRetriever:
         seed_files = [c.rel_path for c in chunks if c.rel_path]
         seed_set = set(seed_files)
 
-        neighbors = sorted(self._graph.neighbors(seed_files, radius=graph_radius))
+        neighbors = sorted(self._graph.neighbors(seed_files, radius=effective_radius))
         related_symbols = self._graph.symbol_neighbors(seed_files)
 
         ppr_scores: dict[str, float] = {}
