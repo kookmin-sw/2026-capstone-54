@@ -3,7 +3,7 @@
 <div align="center">
 
 <a href="https://mefit.kr">
-  <img src="frontend/mefit_logo_blue.png" alt="meFit · 미핏" width="400" />
+  <img src="frontend/mefit_logo_blue.png" alt="meFit · 미핏" width="800" />
 </a>
 
 <br/>
