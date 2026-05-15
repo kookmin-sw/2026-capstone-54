@@ -145,6 +145,20 @@ class Settings(BaseSettings):
         le=50,
         description="How many BM25 hits to fetch per probe query before RRF",
     )
+    rag_use_reranker: bool = Field(
+        default=True,
+        description="Use a local cross-encoder to rerank fused candidates before final top-k",
+    )
+    rag_reranker_model: str = Field(
+        default="BAAI/bge-reranker-v2-m3",
+        description="HuggingFace cross-encoder model id (multilingual, MIT, MPS-friendly)",
+    )
+    rag_rerank_input_k: int = Field(
+        default=20,
+        ge=4,
+        le=100,
+        description="How many fused candidates feed into the cross-encoder before truncation",
+    )
 
     embedding_server_host: str = Field(
         default="0.0.0.0",

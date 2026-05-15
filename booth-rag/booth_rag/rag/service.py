@@ -19,6 +19,7 @@ from booth_rag.rag.bm25_store import BM25Index
 from booth_rag.rag.chains import ChatChain
 from booth_rag.rag.embeddings import build_embeddings
 from booth_rag.rag.graph_store import KnowledgeGraph
+from booth_rag.rag.reranker import CrossEncoderReranker
 from booth_rag.rag.retriever import HybridRetriever
 from booth_rag.rag.vector_store import VectorIndex
 
@@ -57,19 +58,31 @@ class RagService:
         self._vector = VectorIndex(self._embeddings)
         self._graph = KnowledgeGraph()
         self._bm25 = BM25Index()
-        self._retriever = HybridRetriever(self._vector, self._graph, bm25=self._bm25)
+        self._reranker: CrossEncoderReranker | None = None
+        if self._settings.rag_use_reranker:
+            self._reranker = CrossEncoderReranker(
+                model_name=self._settings.rag_reranker_model,
+                device_pref=self._settings.embedding_device,
+            )
+        self._retriever = HybridRetriever(
+            self._vector,
+            self._graph,
+            bm25=self._bm25,
+            reranker=self._reranker,
+        )
         self._chain = ChatChain(self._retriever)
         self._last_progress: IngestionProgress | None = None
         self._is_ingesting = False
         info = self._vector.info
         bm25_size = self._rebuild_bm25_safely()
         logger.info(
-            "RagService ready: model=%s device=%s dim=%d collection=%s bm25=%d",
+            "RagService ready: model=%s device=%s dim=%d collection=%s bm25=%d reranker=%s",
             info.model,
             info.device,
             info.dimension,
             self._vector.collection_name,
             bm25_size,
+            self._settings.rag_reranker_model if self._reranker else "off",
         )
 
     def _rebuild_bm25_safely(self) -> int:
@@ -104,6 +117,8 @@ class RagService:
             "is_ingesting": self._is_ingesting,
             "bm25_enabled": self._settings.rag_use_bm25,
             "bm25_size": self._bm25.size,
+            "reranker_enabled": self._settings.rag_use_reranker and self._reranker is not None,
+            "reranker_model": self._settings.rag_reranker_model if self._reranker else None,
         }
         out.update(self._vector.stats())
         out.update(self._graph.stats())
@@ -298,7 +313,12 @@ class RagService:
         self._vector.reset()
         self._graph.reset()
         self._bm25 = BM25Index()
-        self._retriever = HybridRetriever(self._vector, self._graph, bm25=self._bm25)
+        self._retriever = HybridRetriever(
+            self._vector,
+            self._graph,
+            bm25=self._bm25,
+            reranker=self._reranker,
+        )
         self._chain = ChatChain(self._retriever)
         logger.info("Index cleared (vector + graph + BM25). Next ingest will re-build from scratch.")
 

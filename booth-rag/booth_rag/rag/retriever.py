@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 from booth_rag.config import get_settings
 from booth_rag.rag.bm25_store import BM25Hit, BM25Index
 from booth_rag.rag.graph_store import KnowledgeGraph
+from booth_rag.rag.reranker import CrossEncoderReranker
 from booth_rag.rag.vector_store import RetrievedChunk, VectorIndex
 
 _MAX_FINAL = 8
@@ -149,10 +150,12 @@ class HybridRetriever:
         vector_index: VectorIndex,
         graph: KnowledgeGraph,
         bm25: BM25Index | None = None,
+        reranker: CrossEncoderReranker | None = None,
     ):
         self._vector = vector_index
         self._graph = graph
         self._bm25 = bm25
+        self._reranker = reranker
         self._settings = get_settings()
 
     def _dense_search(self, query: str, k: int) -> list[RetrievedChunk]:
@@ -202,6 +205,13 @@ class HybridRetriever:
             )
 
         chunks = [c for c in chunks if not _is_low_value_chunk(c)]
+
+        if self._reranker is not None and self._settings.rag_use_reranker and chunks:
+            chunks = self._reranker.rerank(
+                query,
+                chunks,
+                top_k=self._settings.rag_rerank_input_k,
+            )
 
         seed_files = [c.rel_path for c in chunks if c.rel_path]
         seed_set = set(seed_files)
