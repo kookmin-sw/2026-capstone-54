@@ -449,11 +449,6 @@ body.page-chat .page {
   max-width: 100%;
 }
 
-.message.assistant {
-  flex-direction: column;
-  align-items: stretch;
-}
-
 .message-content {
   position: relative;
   display: inline-block;
@@ -914,4 +909,51 @@ body.page-chat .page {
   word-break: break-word;
   max-height: 240px;
   overflow-y: auto;
+}
+
+.message.assistant {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  column-gap: 14px;
+  row-gap: 6px;
+  align-items: start;
+}
+
+.message-avatar {
+  grid-column: 1;
+  grid-row: 1;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--mefit-card);
+  border: 1px solid var(--mefit-line);
+  box-shadow: var(--shadow-sm);
+  display: block;
+  align-self: start;
+  margin-top: 2px;
+}
+
+.message.assistant > .message-content {
+  grid-column: 2;
+  grid-row: 1;
+  display: block;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.message.assistant > .message-meta,
+.message.assistant > .followups {
+  grid-column: 2;
+}
+
+@media (max-width: 600px) {
+  .message.assistant {
+    grid-template-columns: 56px 1fr;
+    column-gap: 10px;
+  }
+  .message-avatar {
+    width: 56px;
+    height: 56px;
+  }
 }
