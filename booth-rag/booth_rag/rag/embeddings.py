@@ -32,7 +32,12 @@ def _resolve_device(pref: str) -> str:
     return "cpu"
 
 
-def _build_local_embeddings() -> Embeddings:
+def _build_local_embeddings(
+    *,
+    model_name: str | None = None,
+    trust_remote_code: bool = False,
+    role: str = "doc",
+) -> Embeddings:
     settings = get_settings()
     try:
         from langchain_huggingface import HuggingFaceEmbeddings
@@ -43,20 +48,23 @@ def _build_local_embeddings() -> Embeddings:
         ) from exc
 
     device = _resolve_device(settings.embedding_device.lower())
-    model_name = settings.embedding_local_model
+    resolved_name = model_name or settings.embedding_local_model
+    model_kwargs: dict[str, object] = {"device": device}
+    if trust_remote_code:
+        model_kwargs["trust_remote_code"] = True
     try:
         emb = HuggingFaceEmbeddings(
-            model_name=model_name,
-            model_kwargs={"device": device},
+            model_name=resolved_name,
+            model_kwargs=model_kwargs,
             encode_kwargs={"normalize_embeddings": True, "batch_size": 32},
         )
     except Exception as exc:
         raise RuntimeError(
-            f"로컬 임베딩 모델 로드 실패: model={model_name} device={device}\n"
+            f"로컬 임베딩 모델 로드 실패: model={resolved_name} device={device} role={role}\n"
             f"네트워크가 막혀 있거나 모델 ID 가 잘못된 경우입니다. 원인: {exc}"
         ) from exc
 
-    logger.info("Local embeddings ready: model=%s device=%s", model_name, device)
+    logger.info("Local embeddings ready: model=%s device=%s role=%s", resolved_name, device, role)
     return emb
 
 
@@ -142,8 +150,23 @@ def build_embeddings(force_local: bool = False) -> Embeddings:
             batch_size=settings.remote_embedding_batch_size,
         )
     if backend == "local":
-        return _build_local_embeddings()
+        return _build_local_embeddings(role="doc")
     raise RuntimeError(f"Unknown EMBEDDING_BACKEND: {backend!r} (expected local | remote)")
+
+
+def build_code_embeddings() -> Embeddings:
+    """Local code-specialised embedder for the dual-index path.
+
+    Always local — the remote backend is for the primary (multilingual)
+    model only. CodeRankEmbed and similar models require trust_remote_code,
+    so we forward the toggle explicitly.
+    """
+    settings = get_settings()
+    return _build_local_embeddings(
+        model_name=settings.embedding_code_model,
+        trust_remote_code=settings.embedding_code_trust_remote_code,
+        role="code",
+    )
 
 
 def describe_embeddings(emb: Embeddings) -> EmbeddingInfo:

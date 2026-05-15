@@ -13,6 +13,10 @@ from booth_rag.ingestion.code_chunker import CodeChunk
 from booth_rag.rag.embeddings import EmbeddingInfo, describe_embeddings
 
 COLLECTION_NAME = "booth_rag_chunks"
+CODE_COLLECTION_NAME = "booth_rag_code"
+DOCS_COLLECTION_NAME = "booth_rag_docs"
+
+_CODE_SOURCE_KINDS: frozenset[str] = frozenset({"code", "structure"})
 
 
 @dataclass(frozen=True)
@@ -28,15 +32,21 @@ class RetrievedChunk:
 
 
 class VectorIndex:
-    def __init__(self, embeddings: Embeddings, persist_dir: Path | None = None):
+    def __init__(
+        self,
+        embeddings: Embeddings,
+        persist_dir: Path | None = None,
+        collection_name: str = COLLECTION_NAME,
+    ):
         self._persist_dir = persist_dir or get_settings().chroma_dir
         self._embeddings = embeddings
+        self._collection_name = collection_name
         self._info: EmbeddingInfo = describe_embeddings(embeddings)
         self._store = self._open()
 
     def _open(self) -> Chroma:
         return Chroma(
-            collection_name=COLLECTION_NAME,
+            collection_name=self._collection_name,
             embedding_function=self._embeddings,
             persist_directory=str(self._persist_dir),
             collection_metadata={
@@ -52,7 +62,7 @@ class VectorIndex:
 
     @property
     def collection_name(self) -> str:
-        return COLLECTION_NAME
+        return self._collection_name
 
     @property
     def raw_store(self) -> Chroma:
@@ -129,7 +139,7 @@ class VectorIndex:
             count = 0
         return {
             "vector_count": count,
-            "collection": COLLECTION_NAME,
+            "collection": self._collection_name,
             "embedding_model": self._info.model,
             "embedding_device": self._info.device,
             "embedding_dimension": self._info.dimension,
@@ -141,3 +151,108 @@ class VectorIndex:
         except Exception:
             pass
         self._store = self._open()
+
+
+def _is_code_chunk(source_kind: str) -> bool:
+    return source_kind in _CODE_SOURCE_KINDS
+
+
+class DualVectorIndex:
+    """Two underlying VectorIndex collections, dispatched by source_kind.
+
+    Code-side chunks (source_kind ∈ {"code", "structure"}) embed with the
+    code-specialised model; everything else (admin uploads, markdown,
+    docx) embeds with the multilingual document model. Search fans out to
+    both and fuses via RRF — score scales differ across models, so a
+    rank-based fusion is the right blend.
+
+    Exposes the same surface as VectorIndex (add_chunks / search /
+    search_mmr / stats / reset / collection_name / info / raw_store) so
+    HybridRetriever / BM25 callers don't need to know whether they're
+    talking to a single- or dual-backend.
+    """
+
+    def __init__(
+        self,
+        code_embeddings: Embeddings,
+        doc_embeddings: Embeddings,
+        persist_dir: Path | None = None,
+    ):
+        self._code = VectorIndex(
+            code_embeddings,
+            persist_dir=persist_dir,
+            collection_name=CODE_COLLECTION_NAME,
+        )
+        self._doc = VectorIndex(
+            doc_embeddings,
+            persist_dir=persist_dir,
+            collection_name=DOCS_COLLECTION_NAME,
+        )
+
+    @property
+    def info(self) -> EmbeddingInfo:
+        return self._doc.info
+
+    @property
+    def code_info(self) -> EmbeddingInfo:
+        return self._code.info
+
+    @property
+    def collection_name(self) -> str:
+        return f"{self._code.collection_name}+{self._doc.collection_name}"
+
+    @property
+    def raw_store(self) -> Chroma:
+        return self._doc.raw_store
+
+    @property
+    def raw_stores(self) -> list[Chroma]:
+        return [self._code.raw_store, self._doc.raw_store]
+
+    def add_chunks(self, chunks: Iterable[CodeChunk], source_kind: str) -> int:
+        target = self._code if _is_code_chunk(source_kind) else self._doc
+        return target.add_chunks(chunks, source_kind=source_kind)
+
+    def _fuse(self, lists: list[list[RetrievedChunk]], k: int) -> list[RetrievedChunk]:
+        from booth_rag.rag.retriever import reciprocal_rank_fusion
+
+        return reciprocal_rank_fusion(lists, rrf_k=60, top_k=k)
+
+    def search(self, query: str, k: int = 6) -> list[RetrievedChunk]:
+        code_hits = self._code.search(query, k=k)
+        doc_hits = self._doc.search(query, k=k)
+        return self._fuse([code_hits, doc_hits], k=k)
+
+    def search_mmr(
+        self,
+        query: str,
+        k: int = 6,
+        fetch_k: int = 20,
+        lambda_mult: float = 0.7,
+    ) -> list[RetrievedChunk]:
+        code_hits = self._code.search_mmr(query, k=k, fetch_k=fetch_k, lambda_mult=lambda_mult)
+        doc_hits = self._doc.search_mmr(query, k=k, fetch_k=fetch_k, lambda_mult=lambda_mult)
+        return self._fuse([code_hits, doc_hits], k=k)
+
+    def stats(self) -> dict[str, object]:
+        code_stats = self._code.stats()
+        doc_stats = self._doc.stats()
+        try:
+            vec_count = int(code_stats.get("vector_count", 0)) + int(doc_stats.get("vector_count", 0))
+        except (TypeError, ValueError):
+            vec_count = 0
+        return {
+            "vector_count": vec_count,
+            "vector_count_code": code_stats.get("vector_count", 0),
+            "vector_count_docs": doc_stats.get("vector_count", 0),
+            "collection": self.collection_name,
+            "embedding_model": self._doc.info.model,
+            "embedding_code_model": self._code.info.model,
+            "embedding_device": self._doc.info.device,
+            "embedding_dimension": self._doc.info.dimension,
+            "embedding_code_dimension": self._code.info.dimension,
+        }
+
+    def reset(self) -> None:
+        self._code.reset()
+        self._doc.reset()

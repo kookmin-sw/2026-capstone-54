@@ -46,11 +46,23 @@ class Settings(BaseSettings):
     )
     embedding_local_model: str = Field(
         default="BAAI/bge-m3",
-        description="HuggingFace model id (used by local backend and by the embedding server)",
+        description="Primary (document) embedding model. Strong multilingual incl. Korean.",
     )
     embedding_device: str = Field(
         default="auto",
         description="auto | cpu | mps | cuda (local backend / server only)",
+    )
+    rag_dual_embedding: bool = Field(
+        default=False,
+        description="Split index into two collections: code chunks → embedding_code_model, doc chunks → embedding_local_model",
+    )
+    embedding_code_model: str = Field(
+        default="nomic-ai/CodeRankEmbed",
+        description="Secondary code-specialised embedding model (MIT, 137M, 768d). Active only when rag_dual_embedding=True.",
+    )
+    embedding_code_trust_remote_code: bool = Field(
+        default=True,
+        description="CodeRankEmbed and a few others require trust_remote_code=True for SentenceTransformers loading.",
     )
 
     remote_embedding_url: str = Field(

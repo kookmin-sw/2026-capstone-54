@@ -81,44 +81,48 @@ class BM25Index:
         return len(self._corpus)
 
     def rebuild_from_chroma(self, chroma_store: Any) -> int:
-        try:
-            collection = chroma_store._collection
-            payload = collection.get(include=["documents", "metadatas"])
-        except Exception as exc:
-            logger.warning("BM25 rebuild skipped — chroma get() failed: %s", exc)
-            return 0
-        ids = payload.get("ids") or []
-        docs = payload.get("documents") or []
-        metas = payload.get("metadatas") or []
-        if not docs:
+        return self.rebuild_from_chroma_stores([chroma_store])
+
+    def rebuild_from_chroma_stores(self, chroma_stores: list[Any]) -> int:
+        corpus: list[BM25Hit] = []
+        tokenized: list[list[str]] = []
+        for store in chroma_stores:
+            try:
+                collection = store._collection
+                payload = collection.get(include=["documents", "metadatas"])
+            except Exception as exc:
+                logger.warning("BM25 rebuild skipped one store — chroma get() failed: %s", exc)
+                continue
+            ids = payload.get("ids") or []
+            docs = payload.get("documents") or []
+            metas = payload.get("metadatas") or []
+            for i, doc in enumerate(docs):
+                md = metas[i] if i < len(metas) and metas[i] else {}
+                chunk_id = str(ids[i]) if i < len(ids) else f"_anon_{i}"
+                text = doc or ""
+                corpus.append(
+                    BM25Hit(
+                        chunk_id=chunk_id,
+                        rel_path=str(md.get("rel_path", "")),
+                        text=text,
+                        score=0.0,
+                        kind=str(md.get("kind", "generic")),
+                        symbol=(md.get("symbol") or None),
+                        line_start=int(md.get("line_start", 0)),
+                        line_end=int(md.get("line_end", 0)),
+                        source_kind=str(md.get("source_kind", "code")),
+                    )
+                )
+                tokens = tokenize(text)
+                if not tokens:
+                    tokens = ["__empty__"]
+                tokenized.append(tokens)
+
+        if not corpus:
             with self._lock:
                 self._corpus = []
                 self._bm25 = None
             return 0
-
-        corpus: list[BM25Hit] = []
-        tokenized: list[list[str]] = []
-        for i, doc in enumerate(docs):
-            md = metas[i] if i < len(metas) and metas[i] else {}
-            chunk_id = str(ids[i]) if i < len(ids) else f"_anon_{i}"
-            text = doc or ""
-            corpus.append(
-                BM25Hit(
-                    chunk_id=chunk_id,
-                    rel_path=str(md.get("rel_path", "")),
-                    text=text,
-                    score=0.0,
-                    kind=str(md.get("kind", "generic")),
-                    symbol=(md.get("symbol") or None),
-                    line_start=int(md.get("line_start", 0)),
-                    line_end=int(md.get("line_end", 0)),
-                    source_kind=str(md.get("source_kind", "code")),
-                )
-            )
-            tokens = tokenize(text)
-            if not tokens:
-                tokens = ["__empty__"]
-            tokenized.append(tokens)
 
         from rank_bm25 import BM25Okapi
 
@@ -126,7 +130,7 @@ class BM25Index:
         with self._lock:
             self._corpus = corpus
             self._bm25 = bm25
-        logger.info("BM25 index built: %d documents", len(corpus))
+        logger.info("BM25 index built: %d documents from %d store(s)", len(corpus), len(chroma_stores))
         return len(corpus)
 
     def search(self, query: str, k: int = 6) -> list[BM25Hit]:
