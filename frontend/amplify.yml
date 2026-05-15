@@ -5,10 +5,15 @@ frontend:
       commands:
         - nvm install 20
         - nvm use 20
-        - npm ci
+        - curl -fsSL https://bun.sh/install | bash
+        - export BUN_INSTALL="$HOME/.bun"
+        - export PATH="$BUN_INSTALL/bin:$PATH"
+        - bun install --frozen-lockfile
     build:
       commands:
-        - npm run build
+        - export BUN_INSTALL="$HOME/.bun"
+        - export PATH="$BUN_INSTALL/bin:$PATH"
+        - bun run build
   artifacts:
     baseDirectory: dist
     files:
@@ -16,3 +21,4 @@ frontend:
   cache:
     paths:
       - node_modules/**/*
+      - ~/.bun/install/cache/**/*
