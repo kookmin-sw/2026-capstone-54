@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import subprocess
+import time
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -14,8 +16,27 @@ from booth_rag.rag.service import get_rag_service
 from booth_rag.utils.qr_generator import ensure_booth_qrs
 
 PACKAGE_DIR = Path(__file__).resolve().parent
+REPO_DIR = PACKAGE_DIR.parent
 TEMPLATES_DIR = PACKAGE_DIR / "ui" / "templates"
 STATIC_DIR = PACKAGE_DIR / "ui" / "static"
+
+
+def _compute_build_id() -> str:
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--short=12", "HEAD"],
+            cwd=REPO_DIR,
+            capture_output=True,
+            text=True,
+            timeout=2,
+            check=True,
+        )
+        sha = result.stdout.strip()
+        if sha:
+            return sha
+    except (subprocess.SubprocessError, FileNotFoundError, OSError):
+        pass
+    return str(int(time.time()))
 
 
 @asynccontextmanager
@@ -29,9 +50,13 @@ async def _lifespan(app: FastAPI):
         mefit_url=settings.booth_domain_url,
         team_page_url=settings.booth_team_page_url,
     )
+    build_id = _compute_build_id()
+    templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
+    templates.env.globals["build_id"] = build_id
     app.state.session_store = store
     app.state.rag_service = rag_service
-    app.state.templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
+    app.state.templates = templates
+    app.state.build_id = build_id
     yield
 
 
