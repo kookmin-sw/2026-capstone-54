@@ -128,3 +128,78 @@ def test_handshake_failure_raises_helpful_error():
     msg = str(exc.value)
     assert "원격 임베딩 서버 연결 실패" in msg
     assert "run_embedding_server" in msg
+
+
+def test_build_code_embeddings_uses_remote_when_url_set(monkeypatch):
+    from booth_rag.config import get_settings
+    from booth_rag.rag import embeddings as embeddings_module
+
+    get_settings.cache_clear()
+    monkeypatch.setenv("EMBEDDING_BACKEND", "remote")
+    monkeypatch.setenv("REMOTE_EMBEDDING_CODE_URL", "http://stub-code:8081")
+
+    constructed: list[dict[str, Any]] = []
+
+    def _stub_remote(base_url, *, timeout, batch_size):
+        constructed.append({"base_url": base_url, "timeout": timeout, "batch_size": batch_size})
+        return "REMOTE_STUB"
+
+    monkeypatch.setattr(embeddings_module, "RemoteHuggingFaceEmbeddings", _stub_remote)
+    monkeypatch.setattr(
+        embeddings_module,
+        "_build_local_embeddings",
+        lambda **_: pytest.fail("must not fall back to local when code URL is set"),
+    )
+
+    out = embeddings_module.build_code_embeddings()
+    assert out == "REMOTE_STUB"
+    assert len(constructed) == 1
+    assert constructed[0]["base_url"] == "http://stub-code:8081"
+    get_settings.cache_clear()
+
+
+def test_build_code_embeddings_falls_back_to_local_when_url_empty(monkeypatch):
+    from booth_rag.config import get_settings
+    from booth_rag.rag import embeddings as embeddings_module
+
+    get_settings.cache_clear()
+    monkeypatch.setenv("EMBEDDING_BACKEND", "remote")
+    monkeypatch.setenv("REMOTE_EMBEDDING_CODE_URL", "")
+
+    local_calls: list[dict[str, Any]] = []
+
+    def _stub_local(*, model_name=None, trust_remote_code=None, role="doc"):
+        local_calls.append({"model_name": model_name, "trust_remote_code": trust_remote_code, "role": role})
+        return "LOCAL_STUB"
+
+    monkeypatch.setattr(embeddings_module, "_build_local_embeddings", _stub_local)
+    monkeypatch.setattr(
+        embeddings_module,
+        "RemoteHuggingFaceEmbeddings",
+        lambda *_a, **_kw: pytest.fail("must not use remote when code URL is empty"),
+    )
+
+    out = embeddings_module.build_code_embeddings()
+    assert out == "LOCAL_STUB"
+    assert local_calls[0]["role"] == "code"
+    get_settings.cache_clear()
+
+
+def test_build_code_embeddings_uses_local_when_backend_local(monkeypatch):
+    from booth_rag.config import get_settings
+    from booth_rag.rag import embeddings as embeddings_module
+
+    get_settings.cache_clear()
+    monkeypatch.setenv("EMBEDDING_BACKEND", "local")
+    monkeypatch.setenv("REMOTE_EMBEDDING_CODE_URL", "http://should-not-matter:8081")
+
+    monkeypatch.setattr(embeddings_module, "_build_local_embeddings", lambda **_: "LOCAL_STUB")
+    monkeypatch.setattr(
+        embeddings_module,
+        "RemoteHuggingFaceEmbeddings",
+        lambda *_a, **_kw: pytest.fail("local backend must never hit remote"),
+    )
+
+    out = embeddings_module.build_code_embeddings()
+    assert out == "LOCAL_STUB"
+    get_settings.cache_clear()

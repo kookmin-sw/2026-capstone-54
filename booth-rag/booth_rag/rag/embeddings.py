@@ -35,7 +35,7 @@ def _resolve_device(pref: str) -> str:
 def _build_local_embeddings(
     *,
     model_name: str | None = None,
-    trust_remote_code: bool = False,
+    trust_remote_code: bool | None = None,
     role: str = "doc",
 ) -> Embeddings:
     settings = get_settings()
@@ -49,8 +49,9 @@ def _build_local_embeddings(
 
     device = _resolve_device(settings.embedding_device.lower())
     resolved_name = model_name or settings.embedding_local_model
+    effective_trust = trust_remote_code if trust_remote_code is not None else settings.embedding_trust_remote_code
     model_kwargs: dict[str, object] = {"device": device}
-    if trust_remote_code:
+    if effective_trust:
         model_kwargs["trust_remote_code"] = True
     try:
         emb = HuggingFaceEmbeddings(
@@ -60,11 +61,17 @@ def _build_local_embeddings(
         )
     except Exception as exc:
         raise RuntimeError(
-            f"로컬 임베딩 모델 로드 실패: model={resolved_name} device={device} role={role}\n"
+            f"로컬 임베딩 모델 로드 실패: model={resolved_name} device={device} role={role} trust_remote_code={effective_trust}\n"
             f"네트워크가 막혀 있거나 모델 ID 가 잘못된 경우입니다. 원인: {exc}"
         ) from exc
 
-    logger.info("Local embeddings ready: model=%s device=%s role=%s", resolved_name, device, role)
+    logger.info(
+        "Local embeddings ready: model=%s device=%s role=%s trust_remote_code=%s",
+        resolved_name,
+        device,
+        role,
+        effective_trust,
+    )
     return emb
 
 
@@ -155,13 +162,23 @@ def build_embeddings(force_local: bool = False) -> Embeddings:
 
 
 def build_code_embeddings() -> Embeddings:
-    """Local code-specialised embedder for the dual-index path.
+    """Code-specialised embedder for the dual-index path.
 
-    Always local — the remote backend is for the primary (multilingual)
-    model only. CodeRankEmbed and similar models require trust_remote_code,
-    so we forward the toggle explicitly.
+    Routing rule:
+      * embedding_backend == "remote" AND remote_embedding_code_url is set
+        → call that URL (separate code embedding server, operator runs a
+          second instance of run_embedding_server.sh on a different port).
+      * Otherwise → local sentence-transformers with trust_remote_code
+        forwarded from embedding_code_trust_remote_code (CodeRankEmbed
+        and similar require it).
     """
     settings = get_settings()
+    if settings.embedding_backend.lower() == "remote" and settings.remote_embedding_code_url.strip():
+        return RemoteHuggingFaceEmbeddings(
+            base_url=settings.remote_embedding_code_url,
+            timeout=settings.remote_embedding_timeout,
+            batch_size=settings.remote_embedding_batch_size,
+        )
     return _build_local_embeddings(
         model_name=settings.embedding_code_model,
         trust_remote_code=settings.embedding_code_trust_remote_code,

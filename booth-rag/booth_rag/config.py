@@ -67,7 +67,11 @@ class Settings(BaseSettings):
 
     remote_embedding_url: str = Field(
         default="http://192.168.0.6:8080",
-        description="Base URL of the embedding server (when embedding_backend=remote)",
+        description="Base URL of the doc embedding server (when embedding_backend=remote)",
+    )
+    remote_embedding_code_url: str = Field(
+        default="",
+        description="Optional separate URL for the code embedding server. Active when embedding_backend=remote AND rag_dual_embedding=true. Empty = code path falls back to local.",
     )
     remote_embedding_timeout: float = Field(
         default=60.0,
@@ -76,6 +80,10 @@ class Settings(BaseSettings):
     remote_embedding_batch_size: int = Field(
         default=32,
         description="Batch size for remote embed_documents",
+    )
+    embedding_trust_remote_code: bool = Field(
+        default=False,
+        description="Pass trust_remote_code=True to the PRIMARY local embedding model. Set true when run_embedding_server.sh serves a model like nomic-ai/CodeRankEmbed.",
     )
     embedding_concurrency: int = Field(
         default=4,
