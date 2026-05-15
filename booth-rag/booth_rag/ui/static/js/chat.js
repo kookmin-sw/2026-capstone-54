@@ -14,6 +14,17 @@
   let isStreaming = false;
   let allSessions = [];
 
+  const AVATAR_KINDS = ['friendly', 'normal', 'pressure'];
+  function buildAvatar() {
+    const kind = AVATAR_KINDS[Math.floor(Math.random() * AVATAR_KINDS.length)];
+    const img = document.createElement('img');
+    img.className = 'message-avatar';
+    img.alt = '';
+    img.src = `/static/img/avatar-${kind}.png`;
+    img.dataset.kind = kind;
+    return img;
+  }
+
   inputEl.addEventListener('input', () => {
     inputEl.style.height = 'auto';
     inputEl.style.height = Math.min(inputEl.scrollHeight, 160) + 'px';
@@ -205,6 +216,7 @@
     wrap.className = `message ${role}`;
 
     if (role === 'assistant') {
+      wrap.appendChild(buildAvatar());
       const contentBox = document.createElement('div');
       contentBox.className = 'message-content';
       const bubble = document.createElement('div');
@@ -235,6 +247,7 @@
     clearWelcome();
     const wrap = document.createElement('div');
     wrap.className = 'message assistant';
+    wrap.appendChild(buildAvatar());
     const contentBox = document.createElement('div');
     contentBox.className = 'message-content';
     const bubble = document.createElement('div');
