@@ -147,9 +147,9 @@ class ReportGeneratorService:
 
             # overall_score: content 50% + audio 25% + video 25%
             overall_score = round(
-                content_score * 0.50
-                + audio_score * 0.25
-                + video_score * 0.25
+                content_score * 0.7
+                + audio_score * 0.15
+                + video_score * 0.15
             )
             overall_score = max(0, min(100, overall_score))
             overall_grade = self._analyzer.score_to_grade(overall_score)
