@@ -27,3 +27,18 @@ def test_prompt_keeps_korean_language_rule():
 def test_prompt_mentions_pagerank_hub_section():
     assert "허브 파일" in _SYSTEM_PROMPT_KO
     assert "PageRank" in _SYSTEM_PROMPT_KO
+
+
+def test_prompt_allows_team_member_role_questions():
+    for keyword in ["팀 구성", "팀원", "역할", "담당자", "조직도"]:
+        assert keyword in _SYSTEM_PROMPT_KO, f"team scope keyword missing: {keyword}"
+
+
+def test_prompt_separates_no_data_from_refusal():
+    assert "아직 인덱싱되지 않은 영역" in _SYSTEM_PROMPT_KO
+    assert "거절하지" in _SYSTEM_PROMPT_KO or "거절은 아닙니다" in _SYSTEM_PROMPT_KO
+
+
+def test_prompt_forbids_circular_followup_suggestions():
+    assert "방금 물어본 주제" in _SYSTEM_PROMPT_KO
+    assert "다른 주제" in _SYSTEM_PROMPT_KO

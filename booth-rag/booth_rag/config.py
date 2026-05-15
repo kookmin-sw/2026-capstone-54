@@ -25,6 +25,8 @@ DEFAULT_INCLUDE_DIRS: tuple[str, ...] = (
     "mefit-tools",
     "scraping",
     "voice-api",
+    "presentation-docs",
+    "docs",
 )
 
 
