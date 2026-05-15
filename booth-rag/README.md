@@ -268,9 +268,9 @@ booth-rag/
 - **이어서 물어보기 3개** — 답변 완료 직후 별도 LLM 호출 (`generate_followups`) 로 미핏-범위 후속 질문 3개를 받아 bubble 아래 점선 카드 안에 버튼으로 노출. 클릭하면 즉시 다음 질문으로 submit. 세션 다시 로드해도 SQLite 의 `citations` JSON 에 함께 영속화되어 복원됨.
 - **사이드바 세션 검색** — 좌측 사이드바 상단 `🔎 대화 검색...` 입력란. 제목 substring 매칭으로 클라이언트 측 즉시 필터링.
 
-## RAG 강화 — 멀티턴 / 멀티 쿼리 / 다양성
+## RAG 강화 — 멀티턴 / 멀티 쿼리 / 다양성 / 키워드 매칭
 
-부스 운영 중 자주 발생하는 세 가지 검색 실패를 막기 위한 3중 강화 — 모두 `.env` 스위치로 켜고 끌 수 있습니다.
+부스 운영 중 자주 발생하는 검색 실패를 막기 위한 5중 강화 — 모두 `.env` 스위치로 켜고 끌 수 있습니다.
 
 | 강화 | 효과 | 동작 |
 |---|---|---|
@@ -278,13 +278,27 @@ booth-rag/
 | **`RAG_EXPAND_QUERIES`** | "회원가입 어떻게?" 같은 한국어 → 영어 코드 매칭 약한 문제 해결 | LLM 으로 3개 변형 생성 (원본 한국어 / 영어·CamelCase·snake_case / 한국어 동의어). 각 변형으로 검색 후 RRF 융합. |
 | **`RAG_USE_MMR`** | 비슷한 청크가 top-k 를 잠식하던 다양성 부족 | ChromaDB `max_marginal_relevance_search` (lambda=0.7, fetch_k=20). 사용 불가 시 plain similarity 로 fallback. |
 | **`RAG_HYDE_ENABLED`** (HyDE) | "팀원 구성" 같은 짧은 한국어 쿼리가 긴 corpus 와 어휘 거리가 커서 미스되던 문제 | LLM 으로 가상 답변 본문 N 개 생성 (`RAG_HYDE_N=2`) → 그 본문을 임베딩해서 추가 검색 → RRF 에 합산. 가상 본문의 사실성은 무관 (LLM 은 진짜 corpus 청크로 답변). |
+| **`RAG_USE_BM25`** (Dense + Sparse hybrid) | "회원가입", "STT", "ProtocolTypeRouter" 처럼 corpus 에 토큰이 그대로 박혀있는데 dense 임베딩이 의미적 거리 때문에 놓치던 문제 | 같은 ChromaDB 청크에 BM25Okapi 키워드 인덱스를 in-memory 로 빌드 (~2400 청크 < 1초). 모든 probe 쿼리에 대해 dense + BM25 를 각각 검색, 그 결과 lists 를 RRF 로 융합. CamelCase / snake_case 분해 토크나이저로 `getUserProfile` → `get user profile` 까지 잡힘. |
 
 **Reciprocal Rank Fusion**: 변형별 결과를 `score = Σ 1/(RRF_K + rank)` 로 합산. dedup key 는 `(rel_path, line_start, line_end, symbol)`. `RAG_RRF_K=60` 기본 (Cormack et al. 2009).
 
-검증된 효과 (실제 부스 데이터 2397 청크):
-- "이력서 분석 모듈은 어떻게 작동하나요?" → `검색 3153ms · 쿼리 3개`
-- "팀원 구성에 대해 알려주세요" (짧고 모호) → HyDE 적용 후 5개 쿼리 (3 paraphrase + 2 가상 답변 본문) 융합, 거절 대신 정직한 안내
+**5중 강화 결과 — 한 질문이 실제로 검색되는 모습**:
+1. 사용자 입력 → `rewrite_query_for_retrieval` 이 history 반영해 standalone 쿼리로 변환
+2. `expand_queries` 가 3개 paraphrase 생성 (원본 / 영어 코드 / 한국어 동의어)
+3. `hypothetical_passages` 가 LLM 으로 가상 답변 본문 2개 추가 (HyDE)
+4. → 총 5개 probe 마다 (a) ChromaDB MMR dense + (b) BM25 sparse 두 가지 결과 list
+5. 최대 10개 list 를 RRF 로 융합 → `_is_low_value_chunk` 필터 → 그래프 PPR boost → top-8
+
+검증된 효과 (실제 부스 데이터 2397 청크, BM25 build < 1s):
+- **"이력서 분석 모듈"** → 답변이 `report.docx::2.2.1.4 analysis-resume (이력서 분석 Worker)` 섹션을 정확히 인용 (이전 dense-only 는 generic consumer 코드로 미스)
+- **"STT 처리 흐름"** → top source 가 `analysis-stt (음성 인식 Worker)` 섹션 (BM25 가 `STT` 키워드 정확 매칭)
+- **"결제"** → `Ticket 시스템 도입` 섹션 인용 — 미핏의 실제 결제 모델 (dense 는 무관한 slack-setup.md 만 반환했었음)
+- **"API 라우터"** → `ProtocolTypeRouter` 섹션 + 3-Layer/DDD 아키텍처 설명 (BM25 가 코드 식별자 정확 매칭)
+- **"표정 추적"** → face-analyzer Lambda + MediaPipe Blendshape 디테일까지 답변
+- **"팀원 구성"** → 거절 대신 정직한 "구체적 정보 없음" + 미핏 컨텍스트 안내
 - 응답 latency 메타가 UI 에 표시되어 운영자 즉시 확인 가능
+
+`/health` 에 `bm25_enabled` / `bm25_size` 필드가 노출되어 sparse 인덱스 상태도 같이 확인할 수 있습니다.
 
 ## Graph RAG 강화 (PageRank)
 
@@ -444,7 +458,7 @@ git commit 시 자동으로 동일한 훅이 실행됩니다 (`pre-commit instal
 ### 테스트
 
 ```bash
-uv run pytest -q                       # 전체 (~12s, 51 케이스)
+uv run pytest -q                       # 전체 (~20s, 93 케이스)
 uv run pytest tests/test_secret_filter.py -v   # 단일 모듈
 uv run pytest -k smoke                 # 시스템 smoke 만
 ```
@@ -464,6 +478,8 @@ uv run pytest -k smoke                 # 시스템 smoke 만
 | `test_parallel_ingest.py` | 4 | asyncio.Semaphore 워커 풀 — exactly-once + idempotent 재실행 |
 | `test_prompt_scope.py` | 5 | 시스템 프롬프트 미핏 scope 선언 + off-topic 거절 + 정중 fallback |
 | `test_followups.py` | 8 | 후속 질문 LLM 호출 + JSON / 폴백 파싱 + 중복 제거 + 에러 graceful 처리 |
+| `test_rag_enhancements.py` | 18 | RRF 융합 / 멀티턴 rewrite / 멀티쿼리 expand / HyDE 가상 답변 본문 파싱 |
+| `test_bm25_store.py` | 11 | BM25 한국어+CamelCase 토크나이저 / 빈 인덱스 fallback / Chroma rebuild / HybridRetriever 통합 |
 
 ## 기술 스택
 
