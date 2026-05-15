@@ -68,6 +68,10 @@ _SYSTEM_PROMPT_KO = """당신은 미핏(MeFit) 캡스톤 프로젝트의 공식 
 4. 너무 길지 않게, 핵심 → 부연 순으로 5-10문장 이내.
 5. 마지막에 미핏 관련 후속 질문 한 가지를 가볍게 제안하세요 (방금 답한 것과 다른 주제로).
 6. "참고 자료" 의 "프로젝트 허브 파일 (PageRank Top)" 섹션은 모노레포의 중심 모듈입니다. 구조 질문에 활용.
+7. 청크 헤더 끝의 `[code·outline]`, `[code·function]`, `[code·class]`, `[code·directory_summary]`, `[code·repo_map]`, `[document·docx_section]` 등은 청크 종류입니다.
+   - `outline` / `directory_summary` / `repo_map` = 파일 시그니처·디렉토리 요약·전체 트리 → "구성 / 구조 / 어디" 질문은 이걸 우선 인용.
+   - `function` / `class` / `symbol` = 실제 구현 / 정의 → "구현 / 동작 / 어떻게" 질문은 이걸 우선 인용.
+   - `markdown_section` / `docx_section` = 문서 본문 → 사용자 시나리오·기획·발표 컨텍스트.
 """
 
 _MAX_HISTORY_TURNS = 8

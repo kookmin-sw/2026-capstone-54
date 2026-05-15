@@ -72,6 +72,57 @@ class KnowledgeGraph:
             )
         return out
 
+    def siblings_in_module(self, file_path: str) -> list[str]:
+        """Files sharing the same module as `file_path` (excluding self).
+
+        Walks `module -> contains -> files` via the file's parent module node.
+        """
+        if file_path not in self._graph:
+            return []
+        module = self._graph.nodes[file_path].get("module")
+        if not module or module not in self._graph:
+            return []
+        return [
+            nbr
+            for nbr in self._graph.successors(module)
+            if nbr != file_path and self._graph.nodes.get(nbr, {}).get("kind") == _FILE_KIND
+        ]
+
+    def bases_of(self, symbol_node: str) -> list[str]:
+        """Returns nodes this symbol inherits from (local symbols or external:*)."""
+        if symbol_node not in self._graph:
+            return []
+        return [
+            nbr
+            for _, nbr, data in self._graph.out_edges(symbol_node, data=True)
+            if data.get("kind") == "inherits_from"
+        ]
+
+    def derived_of(self, symbol_node: str) -> list[str]:
+        """Inverse of bases_of: classes that inherit from this one."""
+        if symbol_node not in self._graph:
+            return []
+        return [
+            src
+            for src, _, data in self._graph.in_edges(symbol_node, data=True)
+            if data.get("kind") == "inherits_from"
+        ]
+
+    def symbol_info(self, symbol_node: str) -> dict[str, object]:
+        """Return the per-symbol metadata stored on the graph node (lines, async, class flag)."""
+        if symbol_node not in self._graph:
+            return {}
+        data = self._graph.nodes[symbol_node]
+        if data.get("kind") != _SYMBOL_KIND:
+            return {}
+        return {
+            "parent": data.get("parent"),
+            "line_start": data.get("line_start"),
+            "line_end": data.get("line_end"),
+            "is_async": data.get("is_async", False),
+            "is_class": data.get("is_class", False),
+        }
+
     def global_pagerank(self, alpha: float = 0.85) -> dict[str, float]:
         if self._pagerank is not None:
             return self._pagerank

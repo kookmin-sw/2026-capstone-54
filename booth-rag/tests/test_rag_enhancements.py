@@ -6,7 +6,7 @@ import pytest
 
 from booth_rag.rag import chains as chains_module
 from booth_rag.rag.chains import ChatChain, ChatTurn
-from booth_rag.rag.retriever import reciprocal_rank_fusion
+from booth_rag.rag.retriever import _intent_boost_factor, reciprocal_rank_fusion
 from booth_rag.rag.vector_store import RetrievedChunk
 
 
@@ -61,6 +61,31 @@ def test_rrf_respects_top_k_cap():
     lists = [[_chunk(f"f{i}.py") for i in range(10)]]
     fused = reciprocal_rank_fusion(lists, rrf_k=60, top_k=3)
     assert len(fused) == 3
+
+
+def test_intent_boost_structure_query_prefers_outline_and_summary():
+    assert _intent_boost_factor("백엔드 모듈 구성?", "outline") > 1.0
+    assert _intent_boost_factor("어디서 돌아가나요?", "directory_summary") > 1.0
+    assert _intent_boost_factor("아키텍처 어떻게 됐어?", "repo_map") >= _intent_boost_factor(
+        "아키텍처 어떻게 됐어?", "outline"
+    )
+
+
+def test_intent_boost_implementation_query_prefers_function_and_class():
+    assert _intent_boost_factor("이력서 분석 어떻게 동작?", "function") > 1.0
+    assert _intent_boost_factor("STT 처리 로직?", "function") > 1.0
+    assert _intent_boost_factor("face-analyzer 구현?", "class") > 1.0
+
+
+def test_intent_boost_neutral_query_returns_one():
+    assert _intent_boost_factor("미핏 소개", "function") == 1.0
+    assert _intent_boost_factor("팀원 누구야", "outline") == 1.0
+
+
+def test_intent_boost_handles_empty_inputs():
+    assert _intent_boost_factor("", "function") == 1.0
+    assert _intent_boost_factor("어떻게 동작?", "") == 1.0
+    assert _intent_boost_factor("어떻게 동작?", "generic") == 1.0
 
 
 def test_parse_query_variants_json_array():

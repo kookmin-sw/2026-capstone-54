@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 
@@ -12,6 +13,35 @@ _MAX_FINAL = 8
 _MAX_SYMBOLS_IN_PROMPT = 8
 _MAX_NEIGHBORS_IN_PROMPT = 10
 _EMPTY_CHUNK_THRESHOLD = 80
+
+_INTENT_PATTERNS: tuple[tuple[re.Pattern[str], dict[str, float]], ...] = (
+    (
+        re.compile(r"구성|구조|모듈|아키텍처|어디.*있|어디서.*돌|폴더|디렉토리"),
+        {"outline": 1.5, "directory_summary": 1.9, "repo_map": 2.0},
+    ),
+    (
+        re.compile(r"구현|동작|처리|어떻게.*돌|어떻게.*동작|로직|알고리즘"),
+        {"function": 1.4, "class": 1.3, "symbol": 1.4},
+    ),
+    (
+        re.compile(r"호출|불러|쓰이|사용.*되|어디서.*쓰|caller|callee"),
+        {"function": 1.3, "symbol": 1.4, "class": 1.2},
+    ),
+    (
+        re.compile(r"무엇|뭔지|정의|시그니처|API|signature|interface"),
+        {"outline": 1.4, "function": 1.2, "class": 1.2},
+    ),
+)
+
+
+def _intent_boost_factor(query: str, chunk_kind: str) -> float:
+    if not query or not chunk_kind:
+        return 1.0
+    boost = 1.0
+    for pattern, kind_boosts in _INTENT_PATTERNS:
+        if pattern.search(query):
+            boost = max(boost, kind_boosts.get(chunk_kind, 1.0))
+    return boost
 
 
 def _bm25_to_retrieved(hit: BM25Hit, fallback_rank: int) -> RetrievedChunk:
@@ -96,7 +126,8 @@ class HybridContext:
                 header += f"::{c.symbol}"
             if c.line_start:
                 header += f" (L{c.line_start}-{c.line_end})"
-            header += f"  [{c.source_kind}]"
+            kind_label = f"{c.source_kind}·{c.kind}" if c.kind and c.kind != c.source_kind else c.source_kind
+            header += f"  [{kind_label}]"
             lines.append(header)
             lines.append(c.text.strip())
             lines.append("")
@@ -187,7 +218,7 @@ class HybridRetriever:
 
         boosted: list[RetrievedChunk] = []
         for c in chunks:
-            score = c.score
+            score = c.score * _intent_boost_factor(query, c.kind)
             normalised_ppr = ppr_scores.get(c.rel_path, 0.0) / max_ppr
             score += ppr_weight * normalised_ppr
             boosted.append(

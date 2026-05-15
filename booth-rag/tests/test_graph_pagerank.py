@@ -80,3 +80,52 @@ def test_caches_reset_after_merge(kg: KnowledgeGraph):
     refreshed = kg.global_pagerank()
     assert refreshed
     assert "backend/new.py" in refreshed
+
+
+def test_symbol_info_carries_line_range_and_async_flag(tmp_path: Path):
+    kg = KnowledgeGraph(persist_dir=tmp_path)
+    kg.merge_files(
+        [
+            _file(
+                "backend/core.py",
+                "async def fetch():\n    return 1\n\n\nclass Core:\n    def m(self): pass\n",
+            ),
+        ]
+    )
+    fetch = kg.symbol_info("backend/core.py::fetch")
+    assert fetch["is_async"] is True
+    assert fetch["is_class"] is False
+    assert fetch["line_start"] == 1
+    assert fetch["line_end"] >= 2
+
+    core = kg.symbol_info("backend/core.py::Core")
+    assert core["is_class"] is True
+    assert core["is_async"] is False
+    assert core["line_start"] == 5
+
+
+def test_inherits_from_edge_links_class_to_base(kg: KnowledgeGraph):
+    bases = kg.bases_of("backend/api.py::Api")
+    assert any(b == "backend/api.py::Core" or b.startswith("external:Core") for b in bases), bases
+
+
+def test_derived_of_finds_subclasses_locally(tmp_path: Path):
+    kg = KnowledgeGraph(persist_dir=tmp_path)
+    kg.merge_files(
+        [
+            _file(
+                "backend/core.py",
+                "class Base:\n    pass\n\nclass Child(Base):\n    pass\n",
+            ),
+        ]
+    )
+    derived = kg.derived_of("backend/core.py::Base")
+    assert "backend/core.py::Child" in derived
+
+
+def test_siblings_in_module_excludes_self(kg: KnowledgeGraph):
+    sibs = kg.siblings_in_module("backend/core.py")
+    assert "backend/api.py" in sibs
+    assert "backend/util.py" in sibs
+    assert "backend/core.py" not in sibs
+    assert "frontend/app.tsx" not in sibs
