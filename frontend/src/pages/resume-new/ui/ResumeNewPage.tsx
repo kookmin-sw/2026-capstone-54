@@ -27,7 +27,7 @@ export function ResumeNewPage() {
           <div>
             <div className="inline-flex items-center gap-1.5 text-[11px] font-bold tracking-[1.4px] uppercase text-[#0991B2] bg-[#E6F7FA] py-1 px-3 rounded-full mb-2.5"><FilePlus size={12} /> 이력서 추가</div>
             <h1 className="text-[clamp(24px,3vw,36px)] font-black tracking-[-0.8px] text-[#0A0A0A] leading-[1.1]">새 이력서</h1>
-            <p className="text-sm text-[#6B7280] mt-1.5">작성 방식을 선택하세요. 어떤 방식이든 결과는 동일한 정규화 형식으로 저장됩니다.</p>
+            <p className="text-sm text-[#6B7280] mt-1.5">작성 방식을 선택하고 이력서를 작성해보세요.</p>
           </div>
           <button
             onClick={() => navigate("/resume")}
