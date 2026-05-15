@@ -203,3 +203,77 @@ def test_build_code_embeddings_uses_local_when_backend_local(monkeypatch):
     out = embeddings_module.build_code_embeddings()
     assert out == "LOCAL_STUB"
     get_settings.cache_clear()
+
+
+def test_build_code_embeddings_calls_prewarm_on_local_path(monkeypatch):
+    from booth_rag.config import get_settings
+    from booth_rag.rag import embeddings as embeddings_module
+
+    get_settings.cache_clear()
+    monkeypatch.setenv("EMBEDDING_BACKEND", "local")
+
+    class _FakeEmb:
+        def __init__(self):
+            self.embed_query_calls: list[str] = []
+
+        def embed_query(self, text: str) -> list[float]:
+            self.embed_query_calls.append(text)
+            return [0.0]
+
+    fake = _FakeEmb()
+    monkeypatch.setattr(embeddings_module, "_build_local_embeddings", lambda **_: fake)
+
+    out = embeddings_module.build_code_embeddings()
+    assert out is fake
+    assert len(fake.embed_query_calls) == 1
+    assert len(fake.embed_query_calls[0]) > 1000
+    get_settings.cache_clear()
+
+
+def test_build_code_embeddings_prewarm_failure_is_non_fatal(monkeypatch):
+    from booth_rag.config import get_settings
+    from booth_rag.rag import embeddings as embeddings_module
+
+    get_settings.cache_clear()
+    monkeypatch.setenv("EMBEDDING_BACKEND", "local")
+
+    class _BadEmb:
+        def embed_query(self, text: str) -> list[float]:
+            raise RuntimeError("prewarm boom")
+
+    bad = _BadEmb()
+    monkeypatch.setattr(embeddings_module, "_build_local_embeddings", lambda **_: bad)
+
+    out = embeddings_module.build_code_embeddings()
+    assert out is bad
+    get_settings.cache_clear()
+
+
+def test_build_code_embeddings_remote_path_skips_prewarm(monkeypatch):
+    from booth_rag.config import get_settings
+    from booth_rag.rag import embeddings as embeddings_module
+
+    get_settings.cache_clear()
+    monkeypatch.setenv("EMBEDDING_BACKEND", "remote")
+    monkeypatch.setenv("REMOTE_EMBEDDING_CODE_URL", "http://stub:8081")
+
+    class _RemoteStub:
+        def __init__(self, *a, **kw):
+            self.embed_query_calls: list[str] = []
+
+        def embed_query(self, text: str) -> list[float]:
+            self.embed_query_calls.append(text)
+            return [0.0]
+
+    stub = _RemoteStub()
+    monkeypatch.setattr(embeddings_module, "RemoteHuggingFaceEmbeddings", lambda *a, **kw: stub)
+    monkeypatch.setattr(
+        embeddings_module,
+        "_build_local_embeddings",
+        lambda **_: pytest.fail("remote path must not build local"),
+    )
+
+    out = embeddings_module.build_code_embeddings()
+    assert out is stub
+    assert stub.embed_query_calls == []
+    get_settings.cache_clear()

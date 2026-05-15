@@ -161,6 +161,33 @@ def build_embeddings(force_local: bool = False) -> Embeddings:
     raise RuntimeError(f"Unknown EMBEDDING_BACKEND: {backend!r} (expected local | remote)")
 
 
+def _prewarm_rotary_cache(emb: Embeddings) -> None:
+    """Force one long-sequence forward pass to allocate the rotary cache.
+
+    nomic-bert family (CodeRankEmbed, nomic-embed-text, etc.) caches cos/sin
+    rotary embedding tables lazily in `_update_cos_sin_cache`, and that path
+    is NOT thread-safe. Our ingest pipeline runs parallel embed calls
+    (EMBEDDING_CONCURRENCY default 4) which races the cache update and
+    crashes with shape mismatches like:
+
+      RuntimeError: The size of tensor a (523) must match the size of
+      tensor b (4) at non-singleton dimension 1
+
+    See https://huggingface.co/nomic-ai/nomic-bert-2048/discussions/21
+
+    Sending one long string at init time populates the cache to the model's
+    max_seq_length. From then on, every concurrent forward only READS the
+    cache, so the race never fires. Best-effort — failures here are logged
+    but don't block startup.
+    """
+    try:
+        long_text = "x " * 16000
+        emb.embed_query(long_text)
+        logger.info("Rotary cache prewarmed (thread-safety guard for nomic-bert family)")
+    except Exception as exc:
+        logger.warning("Rotary cache prewarm failed (non-fatal, continuing): %s", exc)
+
+
 def build_code_embeddings() -> Embeddings:
     """Code-specialised embedder for the dual-index path.
 
@@ -171,6 +198,9 @@ def build_code_embeddings() -> Embeddings:
       * Otherwise → local sentence-transformers with trust_remote_code
         forwarded from embedding_code_trust_remote_code (CodeRankEmbed
         and similar require it).
+
+    For the local path we additionally prewarm the rotary embedding cache
+    because nomic-bert family models are thread-unsafe on first forward.
     """
     settings = get_settings()
     if settings.embedding_backend.lower() == "remote" and settings.remote_embedding_code_url.strip():
@@ -179,11 +209,13 @@ def build_code_embeddings() -> Embeddings:
             timeout=settings.remote_embedding_timeout,
             batch_size=settings.remote_embedding_batch_size,
         )
-    return _build_local_embeddings(
+    emb = _build_local_embeddings(
         model_name=settings.embedding_code_model,
         trust_remote_code=settings.embedding_code_trust_remote_code,
         role="code",
     )
+    _prewarm_rotary_cache(emb)
+    return emb
 
 
 def describe_embeddings(emb: Embeddings) -> EmbeddingInfo:
