@@ -1,6 +1,7 @@
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
 import Overview from "./components/Overview";
+import Demo from "./components/Demo";
 import Features from "./components/Features";
 import HowTo from "./components/HowTo";
 import WhySection from "./components/WhySection";
@@ -21,6 +22,7 @@ export default function App() {
       <main id="main">
         <Hero />
         <Overview />
+        <Demo />
         <Features />
         <HowTo />
         <WhySection />
