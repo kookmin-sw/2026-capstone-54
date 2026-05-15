@@ -4,12 +4,35 @@ from collections.abc import Sequence
 from dataclasses import dataclass, field
 
 from booth_rag.config import get_settings
+from booth_rag.rag.bm25_store import BM25Hit, BM25Index
 from booth_rag.rag.graph_store import KnowledgeGraph
 from booth_rag.rag.vector_store import RetrievedChunk, VectorIndex
 
 _MAX_FINAL = 8
 _MAX_SYMBOLS_IN_PROMPT = 8
 _MAX_NEIGHBORS_IN_PROMPT = 10
+_EMPTY_CHUNK_THRESHOLD = 80
+
+
+def _bm25_to_retrieved(hit: BM25Hit, fallback_rank: int) -> RetrievedChunk:
+    return RetrievedChunk(
+        rel_path=hit.rel_path,
+        text=hit.text,
+        score=hit.score if hit.score > 0 else 1.0 / (fallback_rank + 1),
+        kind=hit.kind,
+        symbol=hit.symbol,
+        line_start=hit.line_start,
+        line_end=hit.line_end,
+        source_kind=hit.source_kind,
+    )
+
+
+def _is_low_value_chunk(chunk: RetrievedChunk) -> bool:
+    text = (chunk.text or "").strip()
+    if len(text) < _EMPTY_CHUNK_THRESHOLD:
+        return True
+    rel = chunk.rel_path.lower()
+    return rel.endswith("__init__.py") and len(text) < 200
 
 
 def _chunk_key(c: RetrievedChunk) -> tuple[str, int, int, str | None]:
@@ -90,12 +113,18 @@ class HybridContext:
 
 
 class HybridRetriever:
-    def __init__(self, vector_index: VectorIndex, graph: KnowledgeGraph):
+    def __init__(
+        self,
+        vector_index: VectorIndex,
+        graph: KnowledgeGraph,
+        bm25: BM25Index | None = None,
+    ):
         self._vector = vector_index
         self._graph = graph
+        self._bm25 = bm25
         self._settings = get_settings()
 
-    def _single_search(self, query: str, k: int) -> list[RetrievedChunk]:
+    def _dense_search(self, query: str, k: int) -> list[RetrievedChunk]:
         if self._settings.rag_use_mmr:
             return self._vector.search_mmr(
                 query,
@@ -104,6 +133,12 @@ class HybridRetriever:
                 lambda_mult=self._settings.rag_mmr_lambda,
             )
         return self._vector.search(query, k=k)
+
+    def _bm25_search(self, query: str, k: int) -> list[RetrievedChunk]:
+        if not (self._settings.rag_use_bm25 and self._bm25 and self._bm25.size):
+            return []
+        hits = self._bm25.search(query, k=k)
+        return [_bm25_to_retrieved(h, rank) for rank, h in enumerate(hits)]
 
     def retrieve(
         self,
@@ -116,16 +151,26 @@ class HybridRetriever:
         if not query_list:
             query_list = [query]
 
-        if len(query_list) == 1:
-            chunks = self._single_search(query_list[0], k=k)
+        per_query_k = max(k, self._settings.rag_fetch_k // max(len(query_list), 1))
+        bm25_k = self._settings.rag_bm25_k
+
+        result_lists: list[list[RetrievedChunk]] = []
+        for q in query_list:
+            result_lists.append(self._dense_search(q, k=per_query_k))
+            sparse = self._bm25_search(q, k=bm25_k)
+            if sparse:
+                result_lists.append(sparse)
+
+        if len(result_lists) == 1:
+            chunks = result_lists[0]
         else:
-            per_query_k = max(k, self._settings.rag_fetch_k // max(len(query_list), 1))
-            results = [self._single_search(q, k=per_query_k) for q in query_list]
             chunks = reciprocal_rank_fusion(
-                results,
+                result_lists,
                 rrf_k=self._settings.rag_rrf_k,
-                top_k=max(k, _MAX_FINAL),
+                top_k=max(k, _MAX_FINAL) * 2,
             )
+
+        chunks = [c for c in chunks if not _is_low_value_chunk(c)]
 
         seed_files = [c.rel_path for c in chunks if c.rel_path]
         seed_set = set(seed_files)

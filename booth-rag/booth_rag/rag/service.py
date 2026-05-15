@@ -15,6 +15,7 @@ from booth_rag.ingestion.structure_indexer import (
     build_directory_summary_chunks,
     build_repo_map_chunk,
 )
+from booth_rag.rag.bm25_store import BM25Index
 from booth_rag.rag.chains import ChatChain
 from booth_rag.rag.embeddings import build_embeddings
 from booth_rag.rag.graph_store import KnowledgeGraph
@@ -55,18 +56,30 @@ class RagService:
         self._embeddings = build_embeddings()
         self._vector = VectorIndex(self._embeddings)
         self._graph = KnowledgeGraph()
-        self._retriever = HybridRetriever(self._vector, self._graph)
+        self._bm25 = BM25Index()
+        self._retriever = HybridRetriever(self._vector, self._graph, bm25=self._bm25)
         self._chain = ChatChain(self._retriever)
         self._last_progress: IngestionProgress | None = None
         self._is_ingesting = False
         info = self._vector.info
+        bm25_size = self._rebuild_bm25_safely()
         logger.info(
-            "RagService ready: model=%s device=%s dim=%d collection=%s",
+            "RagService ready: model=%s device=%s dim=%d collection=%s bm25=%d",
             info.model,
             info.device,
             info.dimension,
             self._vector.collection_name,
+            bm25_size,
         )
+
+    def _rebuild_bm25_safely(self) -> int:
+        if not self._settings.rag_use_bm25:
+            return 0
+        try:
+            return self._bm25.rebuild_from_chroma(self._vector.raw_store)
+        except Exception:
+            logger.exception("BM25 rebuild failed; sparse retrieval disabled until next ingest")
+            return 0
 
     @property
     def chain(self) -> ChatChain:
@@ -89,6 +102,8 @@ class RagService:
         out: dict[str, object] = {
             "openai_chat_enabled": self._settings.has_openai,
             "is_ingesting": self._is_ingesting,
+            "bm25_enabled": self._settings.rag_use_bm25,
+            "bm25_size": self._bm25.size,
         }
         out.update(self._vector.stats())
         out.update(self._graph.stats())
@@ -159,6 +174,9 @@ class RagService:
             repo_map = build_repo_map_chunk(source_path, top_dirs)
             structure_added = self._vector.add_chunks([repo_map, *dir_chunks], source_kind="structure")
             chunks_total += structure_added
+
+            emit("bm25", 0, 1, "BM25 키워드 인덱스 재구축")
+            self._rebuild_bm25_safely()
 
             emit("done", len(files), max(total_files, len(files)), "완료")
             return IngestionStats(
@@ -263,6 +281,9 @@ class RagService:
             progress_callback(IngestionProgress("embed", 0, len(chunks), "임베딩 + 저장"))
         added = self._vector.add_chunks(chunks, source_kind="admin_doc")
         if progress_callback is not None:
+            progress_callback(IngestionProgress("bm25", 0, 1, "BM25 키워드 인덱스 재구축"))
+        self._rebuild_bm25_safely()
+        if progress_callback is not None:
             progress_callback(IngestionProgress("done", added, added, "완료"))
         return IngestionStats(
             files_indexed=1,
@@ -276,7 +297,10 @@ class RagService:
     def reset_index(self) -> None:
         self._vector.reset()
         self._graph.reset()
-        logger.info("Index cleared (vector + graph). Next ingest will re-build from scratch.")
+        self._bm25 = BM25Index()
+        self._retriever = HybridRetriever(self._vector, self._graph, bm25=self._bm25)
+        self._chain = ChatChain(self._retriever)
+        logger.info("Index cleared (vector + graph + BM25). Next ingest will re-build from scratch.")
 
 
 _singleton: RagService | None = None

@@ -135,6 +135,16 @@ class Settings(BaseSettings):
         le=5,
         description="Number of hypothetical passages to generate per query",
     )
+    rag_use_bm25: bool = Field(
+        default=True,
+        description="Add BM25 keyword retrieval alongside dense embeddings, fused via RRF",
+    )
+    rag_bm25_k: int = Field(
+        default=10,
+        ge=1,
+        le=50,
+        description="How many BM25 hits to fetch per probe query before RRF",
+    )
 
     embedding_server_host: str = Field(
         default="0.0.0.0",

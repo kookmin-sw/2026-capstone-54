@@ -54,6 +54,15 @@ class VectorIndex:
     def collection_name(self) -> str:
         return COLLECTION_NAME
 
+    @property
+    def raw_store(self) -> Chroma:
+        """Underlying LangChain Chroma handle.
+
+        Exposed so sparse indices (e.g. BM25) can iterate the same corpus
+        without re-ingesting. Read-only contract from callers' perspective.
+        """
+        return self._store
+
     def add_chunks(self, chunks: Iterable[CodeChunk], source_kind: str) -> int:
         docs: list[Document] = []
         ids: list[str] = []
