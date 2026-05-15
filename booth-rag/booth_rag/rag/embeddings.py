@@ -134,16 +134,41 @@ class RemoteHuggingFaceEmbeddings(Embeddings):
         out: list[list[float]] = []
         for i in range(0, len(texts), self._batch_size):
             batch = texts[i : i + self._batch_size]
-            r = self._client.post("/embed/documents", json={"texts": batch})
-            r.raise_for_status()
-            payload = r.json()
+            payload = self._post_with_retry("/embed/documents", {"texts": batch})
             out.extend(payload["embeddings"])
         return out
 
     def embed_query(self, text: str) -> list[float]:
-        r = self._client.post("/embed/query", json={"text": text})
-        r.raise_for_status()
-        return r.json()["embedding"]
+        payload = self._post_with_retry("/embed/query", {"text": text})
+        return payload["embedding"]
+
+    def _post_with_retry(self, path: str, body: dict, max_attempts: int = 3) -> dict:
+        import time as _time
+
+        last_exc: Exception | None = None
+        for attempt in range(1, max_attempts + 1):
+            try:
+                r = self._client.post(path, json=body)
+                r.raise_for_status()
+                return r.json()
+            except (httpx.ReadError, httpx.RemoteProtocolError, httpx.ConnectError, httpx.ReadTimeout) as exc:
+                last_exc = exc
+                if attempt >= max_attempts:
+                    break
+                wait = 0.5 * (2 ** (attempt - 1))
+                logger.warning(
+                    "Remote embedding %s attempt %d/%d failed (%s) — retrying in %.1fs",
+                    path,
+                    attempt,
+                    max_attempts,
+                    exc.__class__.__name__,
+                    wait,
+                )
+                _time.sleep(wait)
+        raise RuntimeError(
+            f"원격 임베딩 서버 {path} 호출 {max_attempts}회 모두 실패 ({last_exc.__class__.__name__ if last_exc else 'unknown'}). "
+            f"서버가 동시 요청에 충돌했을 가능성. EMBEDDING_CONCURRENCY=1 로 직렬화하거나 서버 재시작 필요."
+        ) from last_exc
 
 
 def build_embeddings(force_local: bool = False) -> Embeddings:
