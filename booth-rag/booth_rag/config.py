@@ -125,6 +125,16 @@ class Settings(BaseSettings):
         le=1000,
         description="Reciprocal Rank Fusion constant (Cormack et al. recommend 60)",
     )
+    rag_hyde_enabled: bool = Field(
+        default=True,
+        description="Use LLM-generated hypothetical answer passages (HyDE) as extra retrieval probes",
+    )
+    rag_hyde_n: int = Field(
+        default=2,
+        ge=0,
+        le=5,
+        description="Number of hypothetical passages to generate per query",
+    )
 
     embedding_server_host: str = Field(
         default="0.0.0.0",

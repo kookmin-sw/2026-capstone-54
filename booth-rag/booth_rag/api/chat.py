@@ -97,7 +97,11 @@ async def chat_stream(payload: ChatRequest, req: Request) -> EventSourceResponse
         query_variants = await chain.expand_queries(search_question, n=3)
     else:
         query_variants = [search_question]
-    context: HybridContext = chain._retriever.retrieve(search_question, queries=query_variants)
+    hypothetical: list[str] = []
+    if settings.rag_hyde_enabled and settings.rag_hyde_n > 0:
+        hypothetical = await chain.hypothetical_passages(search_question, n=settings.rag_hyde_n)
+    all_probes = [*query_variants, *hypothetical]
+    context: HybridContext = chain._retriever.retrieve(search_question, queries=all_probes)
     retrieval_ms = (time.perf_counter() - retrieval_started) * 1000.0
 
     async def event_gen():

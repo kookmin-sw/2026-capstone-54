@@ -154,3 +154,40 @@ async def test_expand_queries_falls_back_on_parse_failure():
     chain = _chain_with_llm("그냥 자연어 응답, JSON 없음")
     out = await chain.expand_queries("원본", n=3)
     assert out == ["원본"]
+
+
+@pytest.mark.asyncio
+async def test_hypothetical_passages_parses_json_array():
+    chain = _chain_with_llm(
+        '["미핏 팀은 4명의 멤버로 구성되며 백엔드/분석/프론트/QA 역할을 분담합니다.", '
+        '"캡스톤 54팀의 김신건은 팀장으로 시스템 구조를 설계했습니다."]'
+    )
+    out = await chain.hypothetical_passages("팀원 구성", n=2)
+    assert len(out) == 2
+    assert all("미핏" in p or "캡스톤" in p or "팀" in p for p in out)
+
+
+@pytest.mark.asyncio
+async def test_hypothetical_passages_empty_when_no_llm():
+    chain = ChatChain.__new__(ChatChain)
+    chain._retriever = None  # type: ignore[attr-defined]
+    chain._settings = None  # type: ignore[attr-defined]
+    chain._llm = None
+    assert await chain.hypothetical_passages("팀원 구성", n=2) == []
+
+
+@pytest.mark.asyncio
+async def test_hypothetical_passages_empty_when_n_zero():
+    chain = _chain_with_llm('["p1", "p2"]')
+    assert await chain.hypothetical_passages("질문", n=0) == []
+    chain._llm.ainvoke.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_hypothetical_passages_graceful_on_exception():
+    chain = ChatChain.__new__(ChatChain)
+    chain._retriever = None  # type: ignore[attr-defined]
+    chain._settings = None  # type: ignore[attr-defined]
+    chain._llm = AsyncMock()
+    chain._llm.ainvoke = AsyncMock(side_effect=RuntimeError("rate limit"))
+    assert await chain.hypothetical_passages("팀원 구성", n=2) == []

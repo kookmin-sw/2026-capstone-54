@@ -67,6 +67,9 @@ class _FakeChain:
     async def expand_queries(self, question: str, n: int = 3) -> list[str]:
         return [question]
 
+    async def hypothetical_passages(self, _question: str, n: int = 2) -> list[str]:
+        return []
+
 
 class _FakeRetriever:
     def retrieve(self, _query: str, **_kwargs):

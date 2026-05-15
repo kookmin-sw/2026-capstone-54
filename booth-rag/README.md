@@ -277,11 +277,13 @@ booth-rag/
 | **`RAG_REWRITE_QUERY`** | "그건 어떻게 동작해?" 같은 follow-up 이 standalone 으로 임베딩되어 미스되던 문제 해결 | 짧은 LLM 호출로 최근 4턴 히스토리를 반영한 검색 쿼리 생성. 첫 턴 / 에러 시 원본 그대로 사용. |
 | **`RAG_EXPAND_QUERIES`** | "회원가입 어떻게?" 같은 한국어 → 영어 코드 매칭 약한 문제 해결 | LLM 으로 3개 변형 생성 (원본 한국어 / 영어·CamelCase·snake_case / 한국어 동의어). 각 변형으로 검색 후 RRF 융합. |
 | **`RAG_USE_MMR`** | 비슷한 청크가 top-k 를 잠식하던 다양성 부족 | ChromaDB `max_marginal_relevance_search` (lambda=0.7, fetch_k=20). 사용 불가 시 plain similarity 로 fallback. |
+| **`RAG_HYDE_ENABLED`** (HyDE) | "팀원 구성" 같은 짧은 한국어 쿼리가 긴 corpus 와 어휘 거리가 커서 미스되던 문제 | LLM 으로 가상 답변 본문 N 개 생성 (`RAG_HYDE_N=2`) → 그 본문을 임베딩해서 추가 검색 → RRF 에 합산. 가상 본문의 사실성은 무관 (LLM 은 진짜 corpus 청크로 답변). |
 
 **Reciprocal Rank Fusion**: 변형별 결과를 `score = Σ 1/(RRF_K + rank)` 로 합산. dedup key 는 `(rel_path, line_start, line_end, symbol)`. `RAG_RRF_K=60` 기본 (Cormack et al. 2009).
 
-검증된 효과 (실제 부스 데이터 2397 청크, "이력서 분석 모듈은 어떻게 작동하나요?"):
-- 멀티 쿼리 3개 융합 → `검색 3153ms · 쿼리 3개`
+검증된 효과 (실제 부스 데이터 2397 청크):
+- "이력서 분석 모듈은 어떻게 작동하나요?" → `검색 3153ms · 쿼리 3개`
+- "팀원 구성에 대해 알려주세요" (짧고 모호) → HyDE 적용 후 5개 쿼리 (3 paraphrase + 2 가상 답변 본문) 융합, 거절 대신 정직한 안내
 - 응답 latency 메타가 UI 에 표시되어 운영자 즉시 확인 가능
 
 ## Graph RAG 강화 (PageRank)

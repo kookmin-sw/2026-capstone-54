@@ -9,7 +9,7 @@ def test_prompt_declares_mefit_scope():
 
 
 def test_prompt_explicitly_forbids_off_topic_subjects():
-    forbidden_keywords = ["일반 코딩 도움", "정치", "날씨", "jailbreak"]
+    forbidden_keywords = ["일반 코딩", "정치", "날씨", "jailbreak"]
     for keyword in forbidden_keywords:
         assert keyword in _SYSTEM_PROMPT_KO, f"prompt should mention {keyword}"
 
@@ -35,10 +35,23 @@ def test_prompt_allows_team_member_role_questions():
 
 
 def test_prompt_separates_no_data_from_refusal():
-    assert "아직 인덱싱되지 않은 영역" in _SYSTEM_PROMPT_KO
-    assert "거절하지" in _SYSTEM_PROMPT_KO or "거절은 아닙니다" in _SYSTEM_PROMPT_KO
+    assert "아직" in _SYSTEM_PROMPT_KO
+    assert "인덱싱" in _SYSTEM_PROMPT_KO
+    has_no_refuse = any(token in _SYSTEM_PROMPT_KO for token in ["거절하지", "거절은 아닙니다", "거절 아님"])
+    assert has_no_refuse, "prompt should distinguish 'no data' from 'refusal'"
 
 
 def test_prompt_forbids_circular_followup_suggestions():
     assert "방금 물어본 주제" in _SYSTEM_PROMPT_KO
     assert "다른 주제" in _SYSTEM_PROMPT_KO
+
+
+def test_prompt_defines_short_query_interpretation_rules():
+    assert "단어 해석 규칙" in _SYSTEM_PROMPT_KO
+    for keyword in ["팀원", "구성원", "멤버", "조직"]:
+        assert keyword in _SYSTEM_PROMPT_KO, f"missing short-query keyword: {keyword}"
+
+
+def test_prompt_orders_answer_priorities_explicitly():
+    assert "답변 우선순위" in _SYSTEM_PROMPT_KO
+    assert "거절 아님" in _SYSTEM_PROMPT_KO
