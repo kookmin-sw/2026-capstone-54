@@ -120,6 +120,47 @@ class VectorIndex:
             return self.search(query, k=k)
         return [self._to_chunk(doc, 1.0 / (rank + 1)) for rank, doc in enumerate(docs)]
 
+    def search_batch(self, queries: list[str], k: int = 6) -> list[list[RetrievedChunk]]:
+        """Embed all queries in one HTTP call then run N local vector searches.
+
+        For remote embedding backends this collapses N round-trips into 1 batched
+        forward pass on the server (the model itself is batch-aware so 5
+        sequences in one batch is much faster than 5 separate calls).
+        """
+        if not queries:
+            return []
+        embeddings = self._embeddings.embed_documents(queries)
+        out: list[list[RetrievedChunk]] = []
+        for embedding in embeddings:
+            pairs = self._store.similarity_search_by_vector_with_relevance_scores(embedding, k=k)
+            out.append([self._to_chunk(doc, float(score)) for doc, score in pairs])
+        return out
+
+    def search_mmr_batch(
+        self,
+        queries: list[str],
+        k: int = 6,
+        fetch_k: int = 20,
+        lambda_mult: float = 0.7,
+    ) -> list[list[RetrievedChunk]]:
+        if not queries:
+            return []
+        embeddings = self._embeddings.embed_documents(queries)
+        out: list[list[RetrievedChunk]] = []
+        for embedding in embeddings:
+            try:
+                docs = self._store.max_marginal_relevance_search_by_vector(
+                    embedding=embedding,
+                    k=k,
+                    fetch_k=max(fetch_k, k),
+                    lambda_mult=lambda_mult,
+                )
+                out.append([self._to_chunk(doc, 1.0 / (rank + 1)) for rank, doc in enumerate(docs)])
+            except Exception:
+                pairs = self._store.similarity_search_by_vector_with_relevance_scores(embedding, k=k)
+                out.append([self._to_chunk(doc, float(score)) for doc, score in pairs])
+        return out
+
     def _to_chunk(self, doc: Document, score: float) -> RetrievedChunk:
         md = doc.metadata or {}
         return RetrievedChunk(
@@ -244,6 +285,36 @@ class DualVectorIndex:
         code_fut = ex.submit(self._code.search_mmr, query, k=k, fetch_k=fetch_k, lambda_mult=lambda_mult)
         doc_fut = ex.submit(self._doc.search_mmr, query, k=k, fetch_k=fetch_k, lambda_mult=lambda_mult)
         return self._fuse([code_fut.result(), doc_fut.result()], k=k)
+
+    def search_batch(self, queries: list[str], k: int = 6) -> list[list[RetrievedChunk]]:
+        if not queries:
+            return []
+        ex = self._get_executor()
+        code_fut = ex.submit(self._code.search_batch, queries, k=k)
+        doc_fut = ex.submit(self._doc.search_batch, queries, k=k)
+        code_results = code_fut.result()
+        doc_results = doc_fut.result()
+        return [self._fuse([c, d], k=k) for c, d in zip(code_results, doc_results, strict=False)]
+
+    def search_mmr_batch(
+        self,
+        queries: list[str],
+        k: int = 6,
+        fetch_k: int = 20,
+        lambda_mult: float = 0.7,
+    ) -> list[list[RetrievedChunk]]:
+        if not queries:
+            return []
+        ex = self._get_executor()
+        code_fut = ex.submit(
+            self._code.search_mmr_batch, queries, k=k, fetch_k=fetch_k, lambda_mult=lambda_mult
+        )
+        doc_fut = ex.submit(
+            self._doc.search_mmr_batch, queries, k=k, fetch_k=fetch_k, lambda_mult=lambda_mult
+        )
+        code_results = code_fut.result()
+        doc_results = doc_fut.result()
+        return [self._fuse([c, d], k=k) for c, d in zip(code_results, doc_results, strict=False)]
 
     def stats(self) -> dict[str, object]:
         code_stats = self._code.stats()

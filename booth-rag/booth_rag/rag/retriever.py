@@ -191,6 +191,18 @@ class HybridRetriever:
             out.append(sparse)
         return out
 
+    def _dense_batch(self, queries: list[str], k: int) -> list[list[RetrievedChunk]]:
+        if self._settings.rag_use_mmr and hasattr(self._vector, "search_mmr_batch"):
+            return self._vector.search_mmr_batch(
+                queries,
+                k=k,
+                fetch_k=self._settings.rag_fetch_k,
+                lambda_mult=self._settings.rag_mmr_lambda,
+            )
+        if hasattr(self._vector, "search_batch"):
+            return self._vector.search_batch(queries, k=k)
+        return [self._dense_search(q, k=k) for q in queries]
+
     def retrieve(
         self,
         query: str,
@@ -207,13 +219,14 @@ class HybridRetriever:
         bm25_k = self._settings.rag_bm25_k
 
         result_lists: list[list[RetrievedChunk]] = []
-        if len(query_list) == 1:
-            result_lists.extend(self._probe_one(query_list[0], per_query_k, bm25_k))
-        else:
-            ex = self._get_executor()
-            futures = [ex.submit(self._probe_one, q, per_query_k, bm25_k) for q in query_list]
-            for f in futures:
-                result_lists.extend(f.result())
+        ex = self._get_executor()
+        dense_fut = ex.submit(self._dense_batch, query_list, per_query_k)
+        bm25_futures = [ex.submit(self._bm25_search, q, bm25_k) for q in query_list]
+        result_lists.extend(dense_fut.result())
+        for bf in bm25_futures:
+            sparse = bf.result()
+            if sparse:
+                result_lists.append(sparse)
 
         if len(result_lists) == 1:
             chunks = result_lists[0]
