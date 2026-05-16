@@ -3,6 +3,9 @@
 # Intended for a beefier machine on the LAN (e.g. a Mac Studio) so the
 # booth-rag laptop can offload sentence-transformers inference.
 #
+# Env template for this script: .env.server.sample  (cp to .env on this machine).
+# The booth-rag client uses .env.example instead.
+#
 # Single-model design — to serve two models (e.g. dual embedding: bge-m3
 # for docs + CodeRankEmbed for code), launch this script TWICE with
 # different EMBEDDING_LOCAL_MODEL and EMBEDDING_SERVER_PORT values.
