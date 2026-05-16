@@ -24,10 +24,12 @@ os.environ.setdefault("EMBEDDING_BACKEND", "local")
 
 
 def _build_server_embeddings() -> Embeddings:
+    from booth_rag.config import get_settings
     from booth_rag.rag.embeddings import _prewarm_rotary_cache, build_embeddings
 
     emb = build_embeddings(force_local=True)
-    _prewarm_rotary_cache(emb)
+    if get_settings().embedding_trust_remote_code:
+        _prewarm_rotary_cache(emb)
     return emb
 
 

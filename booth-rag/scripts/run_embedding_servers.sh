@@ -56,14 +56,10 @@ CODE_LOG="$LOG_DIR/embedding-code.log"
 
 DOCS_PID=""
 CODE_PID=""
-TAIL_PID=""
 
 cleanup() {
     echo
     echo "🛑 종료 — 두 임베딩 서버 정리 중..."
-    if [[ -n "$TAIL_PID" ]] && kill -0 "$TAIL_PID" 2>/dev/null; then
-        kill -TERM "$TAIL_PID" 2>/dev/null || true
-    fi
     if [[ -n "$DOCS_PID" ]] && kill -0 "$DOCS_PID" 2>/dev/null; then
         kill -TERM "$DOCS_PID" 2>/dev/null || true
     fi
@@ -127,17 +123,18 @@ if ! kill -0 "$CODE_PID" 2>/dev/null; then
     exit 1
 fi
 
-echo "✅ 두 프로세스 살아있음. 아래부터 두 로그가 prefix 와 함께 합쳐 흐릅니다."
-echo "   각 서버가 'Embedding service ready' 찍으면 ready (모델 로드 ~30-60s)."
-echo "   동작 확인: curl http://localhost:$DOCS_PORT/info  /  curl http://localhost:$CODE_PORT/info"
-echo "   Ctrl-C 한 번으로 둘 다 종료됩니다."
-echo "─────────────────────────────────────────────────────────────────"
+echo "✅ 두 프로세스 살아있음. 첫 부팅이라 모델 로드 + (nomic-bert 인 경우) prewarm"
+echo "   까지 ~30-60s 더 걸립니다. 다음 로그가 보이면 ready:"
+echo "     [docs] INFO  Embedding service ready: ... bge-m3"
+echo "     [code] INFO  Embedding service ready: ... CodeRankEmbed"
+echo
+echo "   다른 터미널에서 로그 보기:"
+echo "     tail -F $DOCS_LOG $CODE_LOG"
+echo "   동작 확인:"
+echo "     curl http://localhost:$DOCS_PORT/info"
+echo "     curl http://localhost:$CODE_PORT/info"
+echo
+echo "   Ctrl-C 한 번으로 두 서버 모두 종료됩니다."
 
-# Foreground 으로 두 로그를 합쳐 보여줌. tail -F 가 파일을 따라가서
-# uvicorn 이 추가 출력을 내면 바로 보임.
-tail -F -q --pid="$DOCS_PID" "$DOCS_LOG" "$CODE_LOG" &
-TAIL_PID=$!
-
-# 두 서버 중 하나라도 살아있는 동안 계속 wait.
-# wait $PID 는 그 자식이 끝날 때까지 block.
+# 두 서버 중 하나라도 끝나면 wait 가 return → cleanup trap 으로 둘 다 정리.
 wait "$DOCS_PID" "$CODE_PID"
