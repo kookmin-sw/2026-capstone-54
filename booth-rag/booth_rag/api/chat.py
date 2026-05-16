@@ -94,21 +94,24 @@ async def chat_stream(payload: ChatRequest, req: Request) -> EventSourceResponse
     settings = get_settings()
 
     retrieval_started = time.perf_counter()
-    if settings.rag_rewrite_query and history:
-        search_question = await chain.rewrite_query_for_retrieval(history, user_message)
-    else:
-        search_question = user_message
+    rewrite_coro: object = (
+        chain.rewrite_query_for_retrieval(history, user_message)
+        if settings.rag_rewrite_query and history
+        else _passthrough(user_message)
+    )
     expand_coro: object = (
-        chain.expand_queries(search_question, n=3)
+        chain.expand_queries(user_message, n=3)
         if settings.rag_expand_queries
-        else _passthrough([search_question])
+        else _passthrough([user_message])
     )
     hyde_coro: object = (
-        chain.hypothetical_passages(search_question, n=settings.rag_hyde_n)
+        chain.hypothetical_passages(user_message, n=settings.rag_hyde_n)
         if settings.rag_hyde_enabled and settings.rag_hyde_n > 0
         else _passthrough([])
     )
-    query_variants, hypothetical = await asyncio.gather(expand_coro, hyde_coro)
+    search_question, query_variants, hypothetical = await asyncio.gather(
+        rewrite_coro, expand_coro, hyde_coro
+    )
     all_probes = [*query_variants, *hypothetical]
     context: HybridContext = await asyncio.to_thread(
         chain._retriever.retrieve, search_question, queries=all_probes
