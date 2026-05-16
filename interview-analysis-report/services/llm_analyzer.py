@@ -154,6 +154,11 @@ class LLMAnalyzer:
 - question_source가 "job_posting"인 질문: 채용공고 기반 질문이므로 직무 적합성을 중점 평가
 - question_purpose가 있는 꼬리질문: 해당 목적(예: "해결 과정 파악", "팀 협업 능력 검증")을 기준으로 답변 적절성 평가
 
+### 불성실하거나 모호한 답변 처리
+- "잘 모르겠습니다", "모르겠어요", "넘어가겠습니다", "패스할게요" 등 실질적 내용이 없는 답변은 strengths를 억지로 만들지 마세요.
+- 이런 경우 strengths는 빈 배열 []로 반환하고, improvements에 "답변을 제공하지 않았습니다. 해당 주제에 대한 본인의 경험이나 생각을 구체적으로 표현하는 연습이 필요합니다."를 포함하세요.
+- 답변 길이가 10자 미만이거나 실질적 내용이 없다고 판단되면 동일하게 처리하세요.
+
 ## 응답 형식
 
 반드시 아래 JSON 형식으로만 응답하세요. 다른 텍스트를 포함하지 마세요.
@@ -340,8 +345,8 @@ strengths와 improvement_areas는 각각 최소 2개 이상 생성하세요.
         for ex in exchanges:
             item = raw_by_id.get(ex.turn_id, {})
             strengths = item.get("strengths", [])
-            if not isinstance(strengths, list) or len(strengths) < 1:
-                strengths = ["피드백이 제공되지 않았습니다."]
+            if not isinstance(strengths, list):
+                strengths = []
             improvements = item.get("improvements", [])
             if not isinstance(improvements, list) or len(improvements) < 1:
                 improvements = ["피드백이 제공되지 않았습니다."]

@@ -209,10 +209,22 @@ class VideoAnalysisAggregator:
         gaze_ratio: float, positive_ratio: float, neutral_ratio: float
     ) -> str:
         """rule-based 영상 분석 코멘트 (기획 REQ-2-7 템플릿)."""
-        gaze_pct = (1 - gaze_ratio) * 100
-        face_pct = (neutral_ratio + positive_ratio) * 100
+        # 시선 멘트
+        if gaze_ratio <= 0.1:
+            gaze_comment = "시선이 안정적으로 정면을 유지했습니다."
+        elif gaze_ratio <= 0.3:
+            gaze_comment = "시선이 대체로 정면을 유지했으나 간헐적으로 이탈이 있었습니다."
+        else:
+            gaze_comment = "시선 이탈이 잦아 시선 처리에 주의가 필요합니다."
 
-        return (
-            f"시선이 정면을 유지한 비율이 {gaze_pct:.0f}%입니다. "
-            f"표정은 대체로 중립적이며 긍정 표현 비율은 {face_pct:.0f}%입니다."
-        )
+        # 표정 멘트
+        if neutral_ratio >= 0.8:
+            face_comment = "표정은 전반적으로 중립적이며 안정적인 인상을 주었습니다."
+        elif positive_ratio >= 0.3:
+            face_comment = "긍정적인 표정이 자주 나타나 밝은 인상을 주었습니다."
+        elif (neutral_ratio + positive_ratio) >= 0.6:
+            face_comment = "표정은 대체로 안정적이었습니다."
+        else:
+            face_comment = "부정적인 표정이 다소 나타나 표정 관리에 신경 쓰면 좋겠습니다."
+
+        return f"{gaze_comment} {face_comment}"
