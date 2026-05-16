@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import concurrent.futures as _cf
 from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
@@ -172,6 +173,14 @@ class DualVectorIndex:
     talking to a single- or dual-backend.
     """
 
+    _executor: _cf.ThreadPoolExecutor | None = None
+
+    @classmethod
+    def _get_executor(cls) -> _cf.ThreadPoolExecutor:
+        if cls._executor is None:
+            cls._executor = _cf.ThreadPoolExecutor(max_workers=4, thread_name_prefix="dual-vec")
+        return cls._executor
+
     def __init__(
         self,
         code_embeddings: Embeddings,
@@ -219,9 +228,10 @@ class DualVectorIndex:
         return reciprocal_rank_fusion(lists, rrf_k=60, top_k=k)
 
     def search(self, query: str, k: int = 6) -> list[RetrievedChunk]:
-        code_hits = self._code.search(query, k=k)
-        doc_hits = self._doc.search(query, k=k)
-        return self._fuse([code_hits, doc_hits], k=k)
+        ex = self._get_executor()
+        code_fut = ex.submit(self._code.search, query, k=k)
+        doc_fut = ex.submit(self._doc.search, query, k=k)
+        return self._fuse([code_fut.result(), doc_fut.result()], k=k)
 
     def search_mmr(
         self,
@@ -230,9 +240,10 @@ class DualVectorIndex:
         fetch_k: int = 20,
         lambda_mult: float = 0.7,
     ) -> list[RetrievedChunk]:
-        code_hits = self._code.search_mmr(query, k=k, fetch_k=fetch_k, lambda_mult=lambda_mult)
-        doc_hits = self._doc.search_mmr(query, k=k, fetch_k=fetch_k, lambda_mult=lambda_mult)
-        return self._fuse([code_hits, doc_hits], k=k)
+        ex = self._get_executor()
+        code_fut = ex.submit(self._code.search_mmr, query, k=k, fetch_k=fetch_k, lambda_mult=lambda_mult)
+        doc_fut = ex.submit(self._doc.search_mmr, query, k=k, fetch_k=fetch_k, lambda_mult=lambda_mult)
+        return self._fuse([code_fut.result(), doc_fut.result()], k=k)
 
     def stats(self) -> dict[str, object]:
         code_stats = self._code.stats()

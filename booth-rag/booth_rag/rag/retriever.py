@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import concurrent.futures as _cf
 import re
 from collections.abc import Sequence
 from dataclasses import dataclass, field
@@ -145,6 +146,14 @@ class HybridContext:
 
 
 class HybridRetriever:
+    _executor: _cf.ThreadPoolExecutor | None = None
+
+    @classmethod
+    def _get_executor(cls) -> _cf.ThreadPoolExecutor:
+        if cls._executor is None:
+            cls._executor = _cf.ThreadPoolExecutor(max_workers=16, thread_name_prefix="retr-probe")
+        return cls._executor
+
     def __init__(
         self,
         vector_index: VectorIndex,
@@ -174,6 +183,14 @@ class HybridRetriever:
         hits = self._bm25.search(query, k=k)
         return [_bm25_to_retrieved(h, rank) for rank, h in enumerate(hits)]
 
+    def _probe_one(self, q: str, per_query_k: int, bm25_k: int) -> list[list[RetrievedChunk]]:
+        out: list[list[RetrievedChunk]] = []
+        out.append(self._dense_search(q, k=per_query_k))
+        sparse = self._bm25_search(q, k=bm25_k)
+        if sparse:
+            out.append(sparse)
+        return out
+
     def retrieve(
         self,
         query: str,
@@ -190,11 +207,13 @@ class HybridRetriever:
         bm25_k = self._settings.rag_bm25_k
 
         result_lists: list[list[RetrievedChunk]] = []
-        for q in query_list:
-            result_lists.append(self._dense_search(q, k=per_query_k))
-            sparse = self._bm25_search(q, k=bm25_k)
-            if sparse:
-                result_lists.append(sparse)
+        if len(query_list) == 1:
+            result_lists.extend(self._probe_one(query_list[0], per_query_k, bm25_k))
+        else:
+            ex = self._get_executor()
+            futures = [ex.submit(self._probe_one, q, per_query_k, bm25_k) for q in query_list]
+            for f in futures:
+                result_lists.extend(f.result())
 
         if len(result_lists) == 1:
             chunks = result_lists[0]

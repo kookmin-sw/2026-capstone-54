@@ -72,6 +72,10 @@ class RagService:
                 model_name=self._settings.rag_reranker_model,
                 device_pref=self._settings.embedding_device,
             )
+            try:
+                self._reranker._ensure_loaded()
+            except Exception:
+                logger.exception("Reranker eager load failed; will retry lazily on first call")
         self._retriever = HybridRetriever(
             self._vector,
             self._graph,
