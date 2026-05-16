@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import time
@@ -31,6 +32,10 @@ def _store(req: Request):
 
 def _rag(req: Request):
     return req.app.state.rag_service
+
+
+async def _passthrough(value):
+    return value
 
 
 def _serialise_sources(context: HybridContext) -> list[dict[str, object]]:
@@ -93,15 +98,21 @@ async def chat_stream(payload: ChatRequest, req: Request) -> EventSourceResponse
         search_question = await chain.rewrite_query_for_retrieval(history, user_message)
     else:
         search_question = user_message
-    if settings.rag_expand_queries:
-        query_variants = await chain.expand_queries(search_question, n=3)
-    else:
-        query_variants = [search_question]
-    hypothetical: list[str] = []
-    if settings.rag_hyde_enabled and settings.rag_hyde_n > 0:
-        hypothetical = await chain.hypothetical_passages(search_question, n=settings.rag_hyde_n)
+    expand_coro: object = (
+        chain.expand_queries(search_question, n=3)
+        if settings.rag_expand_queries
+        else _passthrough([search_question])
+    )
+    hyde_coro: object = (
+        chain.hypothetical_passages(search_question, n=settings.rag_hyde_n)
+        if settings.rag_hyde_enabled and settings.rag_hyde_n > 0
+        else _passthrough([])
+    )
+    query_variants, hypothetical = await asyncio.gather(expand_coro, hyde_coro)
     all_probes = [*query_variants, *hypothetical]
-    context: HybridContext = chain._retriever.retrieve(search_question, queries=all_probes)
+    context: HybridContext = await asyncio.to_thread(
+        chain._retriever.retrieve, search_question, queries=all_probes
+    )
     retrieval_ms = (time.perf_counter() - retrieval_started) * 1000.0
 
     async def event_gen():

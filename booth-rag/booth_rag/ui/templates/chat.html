@@ -16,11 +16,11 @@
       <div class="booth-card-name">{{ booth.team_name }}</div>
       <div class="booth-qr-row">
         <a href="{{ booth.domain_url }}" target="_blank" rel="noopener" class="qr-tile" title="미핏 서비스로 이동">
-          <img src="/static/img/qr-mefit.png" alt="mefit.kr QR" />
+          <img src="/static/img/qr-mefit.png?v={{ build_id }}" alt="mefit.kr QR" />
           <span>mefit.kr</span>
         </a>
         <a href="{{ booth.team_page_url }}" target="_blank" rel="noopener" class="qr-tile" title="팀 소개 페이지">
-          <img src="/static/img/qr-team.png" alt="팀 페이지 QR" />
+          <img src="/static/img/qr-team.png?v={{ build_id }}" alt="팀 페이지 QR" />
           <span>팀 페이지</span>
         </a>
       </div>
@@ -42,7 +42,7 @@
 
     <div id="messages" class="messages">
       <div class="welcome">
-        <img src="/static/img/logo-korean.png" alt="미핏" class="welcome-logo" />
+        <img src="/static/img/logo-korean.png?v={{ build_id }}" alt="미핏" class="welcome-logo" />
         <h1>미핏 부스 안내 봇</h1>
         <p class="welcome-sub">未fit, meFit. 이력서 기반 AI 면접부터 표정·발화 분석까지.<br />
           무엇이 궁금하신가요? 아래에 질문을 입력해주세요.</p>
@@ -81,5 +81,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="/static/js/chat.js" defer></script>
+<script src="/static/js/chat.js?v={{ build_id }}" defer></script>
 {% endblock %}

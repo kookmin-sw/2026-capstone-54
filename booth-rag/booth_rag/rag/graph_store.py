@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import pickle
+from collections import OrderedDict
 from collections.abc import Iterable, Mapping
 from pathlib import Path
 
@@ -18,6 +19,9 @@ _FILE_KIND = "file"
 _SYMBOL_KIND = "symbol"
 
 
+_PPR_CACHE_MAX = 64
+
+
 class KnowledgeGraph:
     def __init__(self, persist_dir: Path | None = None):
         self._persist_dir = persist_dir or get_settings().graph_dir
@@ -25,6 +29,7 @@ class KnowledgeGraph:
         self._graph: nx.MultiDiGraph = self._load()
         self._pagerank: dict[str, float] | None = None
         self._undirected_cache: nx.Graph | None = None
+        self._ppr_cache: OrderedDict[tuple, dict[str, float]] = OrderedDict()
 
     def _load(self) -> nx.MultiDiGraph:
         if self._path.exists():
@@ -40,6 +45,7 @@ class KnowledgeGraph:
     def _invalidate_caches(self) -> None:
         self._pagerank = None
         self._undirected_cache = None
+        self._ppr_cache.clear()
 
     def _undirected(self) -> nx.Graph:
         if self._undirected_cache is None:
@@ -72,6 +78,77 @@ class KnowledgeGraph:
             )
         return out
 
+    def siblings_in_module(self, file_path: str) -> list[str]:
+        """Files sharing the same module as `file_path` (excluding self).
+
+        Walks `module -> contains -> files` via the file's parent module node.
+        """
+        if file_path not in self._graph:
+            return []
+        module = self._graph.nodes[file_path].get("module")
+        if not module or module not in self._graph:
+            return []
+        return [
+            nbr
+            for nbr in self._graph.successors(module)
+            if nbr != file_path and self._graph.nodes.get(nbr, {}).get("kind") == _FILE_KIND
+        ]
+
+    def bases_of(self, symbol_node: str) -> list[str]:
+        """Returns nodes this symbol inherits from (local symbols or external:*)."""
+        if symbol_node not in self._graph:
+            return []
+        return [
+            nbr
+            for _, nbr, data in self._graph.out_edges(symbol_node, data=True)
+            if data.get("kind") == "inherits_from"
+        ]
+
+    def derived_of(self, symbol_node: str) -> list[str]:
+        """Inverse of bases_of: classes that inherit from this one."""
+        if symbol_node not in self._graph:
+            return []
+        return [
+            src
+            for src, _, data in self._graph.in_edges(symbol_node, data=True)
+            if data.get("kind") == "inherits_from"
+        ]
+
+    def callees_of(self, symbol_node: str) -> list[str]:
+        """Local same-file symbols this symbol calls (via `calls` edges)."""
+        if symbol_node not in self._graph:
+            return []
+        return [
+            nbr
+            for _, nbr, data in self._graph.out_edges(symbol_node, data=True)
+            if data.get("kind") == "calls"
+        ]
+
+    def callers_of(self, symbol_node: str) -> list[str]:
+        """Inverse of callees_of: local symbols that call into this one."""
+        if symbol_node not in self._graph:
+            return []
+        return [
+            src
+            for src, _, data in self._graph.in_edges(symbol_node, data=True)
+            if data.get("kind") == "calls"
+        ]
+
+    def symbol_info(self, symbol_node: str) -> dict[str, object]:
+        """Return the per-symbol metadata stored on the graph node (lines, async, class flag)."""
+        if symbol_node not in self._graph:
+            return {}
+        data = self._graph.nodes[symbol_node]
+        if data.get("kind") != _SYMBOL_KIND:
+            return {}
+        return {
+            "parent": data.get("parent"),
+            "line_start": data.get("line_start"),
+            "line_end": data.get("line_end"),
+            "is_async": data.get("is_async", False),
+            "is_class": data.get("is_class", False),
+        }
+
     def global_pagerank(self, alpha: float = 0.85) -> dict[str, float]:
         if self._pagerank is not None:
             return self._pagerank
@@ -90,16 +167,30 @@ class KnowledgeGraph:
         seeds: Iterable[str],
         alpha: float = 0.85,
     ) -> dict[str, float]:
-        """PPR with the seed nodes as the teleport set. Returns {} if no seeds hit."""
+        """PPR with the seed nodes as the teleport set. Returns {} if no seeds hit.
+
+        Results are cached by (frozenset of seeds, alpha) — same seed set on a
+        repeat query (e.g. follow-up that hits the same files) reuses the
+        computed distribution. Invalidated when the graph changes.
+        """
         present = [s for s in seeds if s in self._graph]
         if not present or self._graph.number_of_nodes() == 0:
             return {}
+        cache_key = (frozenset(present), alpha)
+        hit = self._ppr_cache.get(cache_key)
+        if hit is not None:
+            self._ppr_cache.move_to_end(cache_key)
+            return hit
         personalization = dict.fromkeys(present, 1.0 / len(present))
         try:
-            return nx.pagerank(self._undirected(), alpha=alpha, personalization=personalization)
+            result = nx.pagerank(self._undirected(), alpha=alpha, personalization=personalization)
         except Exception as exc:
             logger.warning("PPR failed: %s", exc)
             return {}
+        self._ppr_cache[cache_key] = result
+        if len(self._ppr_cache) > _PPR_CACHE_MAX:
+            self._ppr_cache.popitem(last=False)
+        return result
 
     def hub_files(self, top_k: int, alpha: float = 0.85) -> list[tuple[str, float]]:
         """Return the top-K most central file nodes by global PageRank."""

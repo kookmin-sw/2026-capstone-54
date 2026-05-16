@@ -17,10 +17,11 @@ from booth_rag.ingestion.structure_indexer import (
 )
 from booth_rag.rag.bm25_store import BM25Index
 from booth_rag.rag.chains import ChatChain
-from booth_rag.rag.embeddings import build_embeddings
+from booth_rag.rag.embeddings import build_code_embeddings, build_embeddings
 from booth_rag.rag.graph_store import KnowledgeGraph
+from booth_rag.rag.reranker import CrossEncoderReranker
 from booth_rag.rag.retriever import HybridRetriever
-from booth_rag.rag.vector_store import VectorIndex
+from booth_rag.rag.vector_store import DualVectorIndex, VectorIndex
 
 logger = logging.getLogger(__name__)
 
@@ -54,28 +55,68 @@ class RagService:
     def __init__(self) -> None:
         self._settings = get_settings()
         self._embeddings = build_embeddings()
-        self._vector = VectorIndex(self._embeddings)
+        self._vector: VectorIndex | DualVectorIndex
+        if self._settings.rag_dual_embedding:
+            code_embeddings = build_code_embeddings()
+            self._vector = DualVectorIndex(
+                code_embeddings=code_embeddings,
+                doc_embeddings=self._embeddings,
+            )
+        else:
+            self._vector = VectorIndex(self._embeddings)
         self._graph = KnowledgeGraph()
         self._bm25 = BM25Index()
-        self._retriever = HybridRetriever(self._vector, self._graph, bm25=self._bm25)
+        self._reranker: CrossEncoderReranker | None = None
+        if self._settings.rag_use_reranker:
+            self._reranker = CrossEncoderReranker(
+                model_name=self._settings.rag_reranker_model,
+                device_pref=self._settings.embedding_device,
+            )
+            try:
+                self._reranker._ensure_loaded()
+            except Exception:
+                logger.exception("Reranker eager load failed; will retry lazily on first call")
+        self._retriever = HybridRetriever(
+            self._vector,
+            self._graph,
+            bm25=self._bm25,
+            reranker=self._reranker,
+        )
         self._chain = ChatChain(self._retriever)
         self._last_progress: IngestionProgress | None = None
         self._is_ingesting = False
         info = self._vector.info
         bm25_size = self._rebuild_bm25_safely()
-        logger.info(
-            "RagService ready: model=%s device=%s dim=%d collection=%s bm25=%d",
-            info.model,
-            info.device,
-            info.dimension,
-            self._vector.collection_name,
-            bm25_size,
-        )
+        if isinstance(self._vector, DualVectorIndex):
+            code_info = self._vector.code_info
+            logger.info(
+                "RagService ready (DUAL): doc=%s(%dd) code=%s(%dd) device=%s collections=%s bm25=%d reranker=%s",
+                info.model,
+                info.dimension,
+                code_info.model,
+                code_info.dimension,
+                info.device,
+                self._vector.collection_name,
+                bm25_size,
+                self._settings.rag_reranker_model if self._reranker else "off",
+            )
+        else:
+            logger.info(
+                "RagService ready: model=%s device=%s dim=%d collection=%s bm25=%d reranker=%s",
+                info.model,
+                info.device,
+                info.dimension,
+                self._vector.collection_name,
+                bm25_size,
+                self._settings.rag_reranker_model if self._reranker else "off",
+            )
 
     def _rebuild_bm25_safely(self) -> int:
         if not self._settings.rag_use_bm25:
             return 0
         try:
+            if isinstance(self._vector, DualVectorIndex):
+                return self._bm25.rebuild_from_chroma_stores(self._vector.raw_stores)
             return self._bm25.rebuild_from_chroma(self._vector.raw_store)
         except Exception:
             logger.exception("BM25 rebuild failed; sparse retrieval disabled until next ingest")
@@ -96,7 +137,13 @@ class RagService:
     @property
     def embedding_info(self) -> dict[str, object]:
         info = self._vector.info
-        return {"model": info.model, "device": info.device, "dimension": info.dimension}
+        out: dict[str, object] = {"model": info.model, "device": info.device, "dimension": info.dimension}
+        if isinstance(self._vector, DualVectorIndex):
+            code_info = self._vector.code_info
+            out["code_model"] = code_info.model
+            out["code_dimension"] = code_info.dimension
+            out["dual"] = True
+        return out
 
     def stats(self) -> dict[str, object]:
         out: dict[str, object] = {
@@ -104,6 +151,8 @@ class RagService:
             "is_ingesting": self._is_ingesting,
             "bm25_enabled": self._settings.rag_use_bm25,
             "bm25_size": self._bm25.size,
+            "reranker_enabled": self._settings.rag_use_reranker and self._reranker is not None,
+            "reranker_model": self._settings.rag_reranker_model if self._reranker else None,
         }
         out.update(self._vector.stats())
         out.update(self._graph.stats())
@@ -298,7 +347,12 @@ class RagService:
         self._vector.reset()
         self._graph.reset()
         self._bm25 = BM25Index()
-        self._retriever = HybridRetriever(self._vector, self._graph, bm25=self._bm25)
+        self._retriever = HybridRetriever(
+            self._vector,
+            self._graph,
+            bm25=self._bm25,
+            reranker=self._reranker,
+        )
         self._chain = ChatChain(self._retriever)
         logger.info("Index cleared (vector + graph + BM25). Next ingest will re-build from scratch.")
 

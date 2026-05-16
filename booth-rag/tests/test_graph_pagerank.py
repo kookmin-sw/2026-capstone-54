@@ -80,3 +80,173 @@ def test_caches_reset_after_merge(kg: KnowledgeGraph):
     refreshed = kg.global_pagerank()
     assert refreshed
     assert "backend/new.py" in refreshed
+
+
+def test_symbol_info_carries_line_range_and_async_flag(tmp_path: Path):
+    kg = KnowledgeGraph(persist_dir=tmp_path)
+    kg.merge_files(
+        [
+            _file(
+                "backend/core.py",
+                "async def fetch():\n    return 1\n\n\nclass Core:\n    def m(self): pass\n",
+            ),
+        ]
+    )
+    fetch = kg.symbol_info("backend/core.py::fetch")
+    assert fetch["is_async"] is True
+    assert fetch["is_class"] is False
+    assert fetch["line_start"] == 1
+    assert fetch["line_end"] >= 2
+
+    core = kg.symbol_info("backend/core.py::Core")
+    assert core["is_class"] is True
+    assert core["is_async"] is False
+    assert core["line_start"] == 5
+
+
+def test_inherits_from_edge_links_class_to_base(kg: KnowledgeGraph):
+    bases = kg.bases_of("backend/api.py::Api")
+    assert any(b == "backend/api.py::Core" or b.startswith("external:Core") for b in bases), bases
+
+
+def test_derived_of_finds_subclasses_locally(tmp_path: Path):
+    kg = KnowledgeGraph(persist_dir=tmp_path)
+    kg.merge_files(
+        [
+            _file(
+                "backend/core.py",
+                "class Base:\n    pass\n\nclass Child(Base):\n    pass\n",
+            ),
+        ]
+    )
+    derived = kg.derived_of("backend/core.py::Base")
+    assert "backend/core.py::Child" in derived
+
+
+def test_siblings_in_module_excludes_self(kg: KnowledgeGraph):
+    sibs = kg.siblings_in_module("backend/core.py")
+    assert "backend/api.py" in sibs
+    assert "backend/util.py" in sibs
+    assert "backend/core.py" not in sibs
+    assert "frontend/app.tsx" not in sibs
+
+
+def test_calls_edge_links_caller_to_local_callee(tmp_path: Path):
+    kg = KnowledgeGraph(persist_dir=tmp_path)
+    kg.merge_files(
+        [
+            _file(
+                "backend/svc.py",
+                "def helper():\n    return 1\n\n\ndef boot():\n    return helper() + 1\n",
+            ),
+        ]
+    )
+    callees = kg.callees_of("backend/svc.py::boot")
+    assert "backend/svc.py::helper" in callees
+
+
+def test_callers_of_reverse_finds_caller(tmp_path: Path):
+    kg = KnowledgeGraph(persist_dir=tmp_path)
+    kg.merge_files(
+        [
+            _file(
+                "backend/svc.py",
+                "def helper():\n    return 1\n\n\ndef boot():\n    return helper()\n",
+            ),
+        ]
+    )
+    callers = kg.callers_of("backend/svc.py::helper")
+    assert "backend/svc.py::boot" in callers
+
+
+def test_calls_skips_self_recursion(tmp_path: Path):
+    kg = KnowledgeGraph(persist_dir=tmp_path)
+    kg.merge_files(
+        [
+            _file(
+                "backend/svc.py",
+                "def fact(n):\n    return 1 if n <= 1 else n * fact(n - 1)\n",
+            ),
+        ]
+    )
+    callees = kg.callees_of("backend/svc.py::fact")
+    assert "backend/svc.py::fact" not in callees
+
+
+def test_calls_ignores_unresolved_external(tmp_path: Path):
+    kg = KnowledgeGraph(persist_dir=tmp_path)
+    kg.merge_files(
+        [
+            _file(
+                "backend/svc.py",
+                "import os\n\ndef boot():\n    return os.getcwd()\n",
+            ),
+        ]
+    )
+    callees = kg.callees_of("backend/svc.py::boot")
+    assert all(not c.endswith("::getcwd") for c in callees) or callees == []
+
+
+def test_method_call_inside_class_body_recorded(tmp_path: Path):
+    kg = KnowledgeGraph(persist_dir=tmp_path)
+    kg.merge_files(
+        [
+            _file(
+                "backend/svc.py",
+                "def util():\n    return 1\n\n\nclass Worker:\n    def run(self):\n        return util()\n",
+            ),
+        ]
+    )
+    callees = kg.callees_of("backend/svc.py::Worker")
+    assert "backend/svc.py::util" in callees
+
+
+def test_typescript_exports_become_symbol_nodes(tmp_path: Path):
+    kg = KnowledgeGraph(persist_dir=tmp_path)
+    kg.merge_files(
+        [
+            _file(
+                "frontend/api.ts",
+                "import { foo } from 'lib'\n"
+                "export const TOKEN = 'x'\n"
+                "export function login(user) { return foo(user) }\n"
+                "export class AuthService {}\n"
+                "export interface User { id: string }\n",
+            ),
+        ]
+    )
+    syms = kg.symbol_neighbors(["frontend/api.ts"])
+    assert "frontend/api.ts::TOKEN" in syms
+    assert "frontend/api.ts::login" in syms
+    assert "frontend/api.ts::AuthService" in syms
+    assert "frontend/api.ts::User" in syms
+
+
+def test_typescript_symbol_info_carries_ts_kind(tmp_path: Path):
+    kg = KnowledgeGraph(persist_dir=tmp_path)
+    kg.merge_files(
+        [
+            _file(
+                "frontend/api.ts",
+                "export class AuthService {}\nexport interface User {}\n",
+            ),
+        ]
+    )
+    auth = kg.symbol_info("frontend/api.ts::AuthService")
+    assert auth.get("is_class") is True
+    user = kg.symbol_info("frontend/api.ts::User")
+    assert user.get("is_class") is False
+
+
+def test_ppr_cache_reuses_same_seed_set(kg: KnowledgeGraph):
+    first = kg.personalised_pagerank(["backend/core.py"])
+    second = kg.personalised_pagerank(["backend/core.py"])
+    assert first is second
+
+
+def test_ppr_cache_invalidated_after_merge(kg: KnowledgeGraph):
+    first = kg.personalised_pagerank(["backend/core.py"])
+    kg.merge_files([_file("backend/extra.py", "def added(): return 1\n")])
+    second = kg.personalised_pagerank(["backend/core.py"])
+    assert first is not second
+    assert "backend/extra.py" in second

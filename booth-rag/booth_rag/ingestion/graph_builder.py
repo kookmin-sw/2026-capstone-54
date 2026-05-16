@@ -3,6 +3,7 @@ from __future__ import annotations
 import ast
 import re
 from collections.abc import Iterable
+from dataclasses import dataclass, field
 
 import networkx as nx
 
@@ -14,6 +15,12 @@ _TS_IMPORT_PATTERN = re.compile(
     [^'"\n]*?
     ['"]([^'"\n]+)['"]
     """,
+)
+
+_TS_EXPORT_PATTERN = re.compile(
+    r"^\s*export\s+(?:default\s+)?(?:async\s+)?"
+    r"(function|class|interface|type|const|let|var|enum)\s+([A-Za-z_$][A-Za-z0-9_$]*)",
+    re.MULTILINE,
 )
 
 _TOP_LEVEL_DIRS_OF_INTEREST: frozenset[str] = frozenset(
@@ -62,16 +69,100 @@ def _python_imports(text: str) -> list[str]:
     return out
 
 
-def _python_symbols(text: str) -> list[str]:
+@dataclass(frozen=True)
+class PythonSymbol:
+    name: str
+    line_start: int
+    line_end: int
+    is_async: bool
+    is_class: bool
+    bases: tuple[str, ...] = field(default_factory=tuple)
+    calls: tuple[str, ...] = field(default_factory=tuple)
+
+
+def _base_name(node: ast.expr) -> str | None:
+    if isinstance(node, ast.Name):
+        return node.id
+    if isinstance(node, ast.Attribute):
+        return node.attr
+    return None
+
+
+def _callee_name(func: ast.expr) -> str | None:
+    if isinstance(func, ast.Name):
+        return func.id
+    if isinstance(func, ast.Attribute):
+        return func.attr
+    return None
+
+
+def _python_calls_in(node: ast.AST) -> tuple[str, ...]:
+    seen: set[str] = set()
+    for child in ast.walk(node):
+        if isinstance(child, ast.Call):
+            name = _callee_name(child.func)
+            if name:
+                seen.add(name)
+    return tuple(sorted(seen))
+
+
+def _python_symbols(text: str) -> list[PythonSymbol]:
     try:
         tree = ast.parse(text)
     except SyntaxError:
         return []
-    return [node.name for node in tree.body if isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef)]
+    out: list[PythonSymbol] = []
+    for node in tree.body:
+        if isinstance(node, ast.ClassDef):
+            bases = tuple(b for b in (_base_name(b) for b in node.bases) if b)
+            out.append(
+                PythonSymbol(
+                    name=node.name,
+                    line_start=node.lineno,
+                    line_end=node.end_lineno or node.lineno,
+                    is_async=False,
+                    is_class=True,
+                    bases=bases,
+                    calls=_python_calls_in(node),
+                )
+            )
+        elif isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef):
+            out.append(
+                PythonSymbol(
+                    name=node.name,
+                    line_start=node.lineno,
+                    line_end=node.end_lineno or node.lineno,
+                    is_async=isinstance(node, ast.AsyncFunctionDef),
+                    is_class=False,
+                    calls=_python_calls_in(node),
+                )
+            )
+    return out
 
 
 def _ts_imports(text: str) -> list[str]:
     return list({m.group(1) for m in _TS_IMPORT_PATTERN.finditer(text)})
+
+
+@dataclass(frozen=True)
+class TsSymbol:
+    name: str
+    kind: str
+    line_start: int
+
+
+def _ts_symbols(text: str) -> list[TsSymbol]:
+    out: list[TsSymbol] = []
+    seen: set[str] = set()
+    for match in _TS_EXPORT_PATTERN.finditer(text):
+        kind = match.group(1)
+        name = match.group(2)
+        if name in seen:
+            continue
+        seen.add(name)
+        line_no = text.count("\n", 0, match.start()) + 1
+        out.append(TsSymbol(name=name, kind=kind, line_start=line_no))
+    return out
 
 
 def build_graph(files: Iterable[CodeFile]) -> nx.MultiDiGraph:
@@ -83,15 +174,53 @@ def build_graph(files: Iterable[CodeFile]) -> nx.MultiDiGraph:
         g.add_edge(module, file.rel_path, kind="contains")
 
         if file.suffix in {".py", ".pyi"}:
-            for sym in _python_symbols(file.text):
-                node_id = f"{file.rel_path}::{sym}"
-                g.add_node(node_id, kind="symbol", parent=file.rel_path)
+            symbols = _python_symbols(file.text)
+            local_names = {s.name for s in symbols}
+            for sym in symbols:
+                node_id = f"{file.rel_path}::{sym.name}"
+                g.add_node(
+                    node_id,
+                    kind="symbol",
+                    parent=file.rel_path,
+                    line_start=sym.line_start,
+                    line_end=sym.line_end,
+                    is_async=sym.is_async,
+                    is_class=sym.is_class,
+                )
                 g.add_edge(file.rel_path, node_id, kind="defines")
+                if sym.is_class:
+                    for base in sym.bases:
+                        if base in local_names:
+                            base_id = f"{file.rel_path}::{base}"
+                            g.add_edge(node_id, base_id, kind="inherits_from")
+                        else:
+                            base_id = f"external:{base}"
+                            g.add_node(base_id, kind="external_symbol")
+                            g.add_edge(node_id, base_id, kind="inherits_from")
+                for callee in sym.calls:
+                    if callee == sym.name:
+                        continue
+                    if callee in local_names:
+                        callee_id = f"{file.rel_path}::{callee}"
+                        g.add_edge(node_id, callee_id, kind="calls")
             for imp in _python_imports(file.text):
                 target = f"py:{imp}"
                 g.add_node(target, kind="import_target")
                 g.add_edge(file.rel_path, target, kind="imports")
         elif file.suffix in {".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs"}:
+            for sym in _ts_symbols(file.text):
+                node_id = f"{file.rel_path}::{sym.name}"
+                g.add_node(
+                    node_id,
+                    kind="symbol",
+                    parent=file.rel_path,
+                    line_start=sym.line_start,
+                    line_end=sym.line_start,
+                    is_async=False,
+                    is_class=(sym.kind == "class"),
+                    ts_kind=sym.kind,
+                )
+                g.add_edge(file.rel_path, node_id, kind="defines")
             for imp in _ts_imports(file.text):
                 target = f"js:{imp}"
                 g.add_node(target, kind="import_target")

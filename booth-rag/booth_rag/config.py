@@ -46,16 +46,32 @@ class Settings(BaseSettings):
     )
     embedding_local_model: str = Field(
         default="BAAI/bge-m3",
-        description="HuggingFace model id (used by local backend and by the embedding server)",
+        description="Primary (document) embedding model. Strong multilingual incl. Korean.",
     )
     embedding_device: str = Field(
         default="auto",
         description="auto | cpu | mps | cuda (local backend / server only)",
     )
+    rag_dual_embedding: bool = Field(
+        default=False,
+        description="Split index into two collections: code chunks → embedding_code_model, doc chunks → embedding_local_model",
+    )
+    embedding_code_model: str = Field(
+        default="nomic-ai/CodeRankEmbed",
+        description="Secondary code-specialised embedding model (MIT, 137M, 768d). Active only when rag_dual_embedding=True.",
+    )
+    embedding_code_trust_remote_code: bool = Field(
+        default=True,
+        description="CodeRankEmbed and a few others require trust_remote_code=True for SentenceTransformers loading.",
+    )
 
     remote_embedding_url: str = Field(
         default="http://192.168.0.6:8080",
-        description="Base URL of the embedding server (when embedding_backend=remote)",
+        description="Base URL of the doc embedding server (when embedding_backend=remote)",
+    )
+    remote_embedding_code_url: str = Field(
+        default="",
+        description="Optional separate URL for the code embedding server. Active when embedding_backend=remote AND rag_dual_embedding=true. Empty = code path falls back to local.",
     )
     remote_embedding_timeout: float = Field(
         default=60.0,
@@ -64,6 +80,10 @@ class Settings(BaseSettings):
     remote_embedding_batch_size: int = Field(
         default=32,
         description="Batch size for remote embed_documents",
+    )
+    embedding_trust_remote_code: bool = Field(
+        default=False,
+        description="Pass trust_remote_code=True to the PRIMARY local embedding model. Set true when run_embedding_server.sh serves a model like nomic-ai/CodeRankEmbed.",
     )
     embedding_concurrency: int = Field(
         default=4,
@@ -93,6 +113,12 @@ class Settings(BaseSettings):
         ge=0,
         le=30,
         description="How many global-PageRank hub files to surface in the prompt",
+    )
+    graph_radius: int = Field(
+        default=1,
+        ge=0,
+        le=3,
+        description="Hops to expand the graph from seed files. 0 = disabled, 1 = direct neighbors, 2-3 = multi-hop.",
     )
 
     rag_rewrite_query: bool = Field(
@@ -144,6 +170,30 @@ class Settings(BaseSettings):
         ge=1,
         le=50,
         description="How many BM25 hits to fetch per probe query before RRF",
+    )
+    rag_use_iterative: bool = Field(
+        default=False,
+        description="Iterative retrieval: if first answer signals 'not found', re-retrieve with a broader query and answer again. Applies to non-streaming answer() only.",
+    )
+    rag_iterative_max_attempts: int = Field(
+        default=2,
+        ge=1,
+        le=4,
+        description="Max retrieval+answer attempts when iterative is on. 1 = no re-try.",
+    )
+    rag_use_reranker: bool = Field(
+        default=True,
+        description="Use a local cross-encoder to rerank fused candidates before final top-k",
+    )
+    rag_reranker_model: str = Field(
+        default="BAAI/bge-reranker-v2-m3",
+        description="HuggingFace cross-encoder model id (multilingual, MIT, MPS-friendly)",
+    )
+    rag_rerank_input_k: int = Field(
+        default=20,
+        ge=4,
+        le=100,
+        description="How many fused candidates feed into the cross-encoder before truncation",
     )
 
     embedding_server_host: str = Field(

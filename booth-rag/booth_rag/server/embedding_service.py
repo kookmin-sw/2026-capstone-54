@@ -24,9 +24,11 @@ os.environ.setdefault("EMBEDDING_BACKEND", "local")
 
 
 def _build_server_embeddings() -> Embeddings:
-    from booth_rag.rag.embeddings import build_embeddings
+    from booth_rag.rag.embeddings import _prewarm_rotary_cache, build_embeddings
 
-    return build_embeddings(force_local=True)
+    emb = build_embeddings(force_local=True)
+    _prewarm_rotary_cache(emb)
+    return emb
 
 
 class DocsRequest(BaseModel):

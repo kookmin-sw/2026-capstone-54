@@ -68,6 +68,10 @@ _SYSTEM_PROMPT_KO = """당신은 미핏(MeFit) 캡스톤 프로젝트의 공식 
 4. 너무 길지 않게, 핵심 → 부연 순으로 5-10문장 이내.
 5. 마지막에 미핏 관련 후속 질문 한 가지를 가볍게 제안하세요 (방금 답한 것과 다른 주제로).
 6. "참고 자료" 의 "프로젝트 허브 파일 (PageRank Top)" 섹션은 모노레포의 중심 모듈입니다. 구조 질문에 활용.
+7. 청크 헤더 끝의 `[code·outline]`, `[code·function]`, `[code·class]`, `[code·directory_summary]`, `[code·repo_map]`, `[document·docx_section]` 등은 청크 종류입니다.
+   - `outline` / `directory_summary` / `repo_map` = 파일 시그니처·디렉토리 요약·전체 트리 → "구성 / 구조 / 어디" 질문은 이걸 우선 인용.
+   - `function` / `class` / `symbol` = 실제 구현 / 정의 → "구현 / 동작 / 어떻게" 질문은 이걸 우선 인용.
+   - `markdown_section` / `docx_section` = 문서 본문 → 사용자 시나리오·기획·발표 컨텍스트.
 """
 
 _MAX_HISTORY_TURNS = 8
@@ -213,12 +217,61 @@ class ChatChain:
         if self._llm is None:
             text = self._offline_answer(question, context)
             return AnswerResult(text=text, citations=citations, used_offline_fallback=True)
+
+        result = await self._answer_once(history, question, context)
+        if not self._settings.rag_use_iterative:
+            return result
+
+        max_attempts = max(1, self._settings.rag_iterative_max_attempts)
+        if max_attempts <= 1 or not is_low_confidence(result.text):
+            return result
+
+        accumulated = list(context.chunks)
+        seen_keys = {(c.rel_path, c.line_start, c.line_end) for c in context.chunks}
+
+        for attempt in range(1, max_attempts):
+            broader_probe = f"{question}\n\n{result.text[:500]}"
+            new_ctx = self._retriever.retrieve(broader_probe)
+            for c in new_ctx.chunks:
+                key = (c.rel_path, c.line_start, c.line_end)
+                if key not in seen_keys:
+                    accumulated.append(c)
+                    seen_keys.add(key)
+            merged = HybridContext(
+                chunks=accumulated[:8],
+                graph_neighbors=new_ctx.graph_neighbors,
+                related_symbols=new_ctx.related_symbols,
+                hub_files=new_ctx.hub_files,
+                queries_used=new_ctx.queries_used,
+            )
+            result = await self._answer_once(history, question, merged)
+            logger.info(
+                "Iterative retrieval attempt=%d/%d low_conf=%s",
+                attempt + 1,
+                max_attempts,
+                is_low_confidence(result.text),
+            )
+            if not is_low_confidence(result.text):
+                citations = self._citations_for(merged)
+                return AnswerResult(text=result.text, citations=citations, used_offline_fallback=False)
+
+        citations = self._citations_for(
+            HybridContext(chunks=accumulated[:8], queries_used=list(context.queries_used))
+        )
+        return AnswerResult(text=result.text, citations=citations, used_offline_fallback=False)
+
+    async def _answer_once(
+        self,
+        history: list[ChatTurn],
+        question: str,
+        context: HybridContext,
+    ) -> AnswerResult:
         msgs = self._build_messages(history, question, context)
         resp = await self._llm.ainvoke(msgs)
         content = getattr(resp, "content", "")
         if isinstance(content, list):
             content = "".join(part.get("text", "") if isinstance(part, dict) else str(part) for part in content)
-        return AnswerResult(text=str(content), citations=citations, used_offline_fallback=False)
+        return AnswerResult(text=str(content), citations=[], used_offline_fallback=False)
 
     async def rewrite_query_for_retrieval(
         self,
@@ -373,6 +426,19 @@ class ChatChain:
 
 _FOLLOWUPS_OBJECT_RE = re.compile(r"\{[^{}]*\"followups\"\s*:\s*\[[^\]]*\][^{}]*\}", re.DOTALL)
 _JSON_ARRAY_RE = re.compile(r"\[[^\[\]]*\]", re.DOTALL)
+_LOW_CONFIDENCE_RE = re.compile(
+    r"정보\s*(?:가|는|이)?\s*(?:없|부족|불충분|미흡)"
+    r"|찾을\s*수\s*없"
+    r"|확인할\s*수\s*없"
+    r"|아직.*인덱싱"
+    r"|인덱스(?:에)?\s*(?:는|이)?\s*없"
+    r"|자료(?:가|는)?\s*(?:부족|없)"
+    r"|구체적인?\s*(?:정보|내용)\s*(?:는|이)?\s*없"
+)
+
+
+def is_low_confidence(text: str) -> bool:
+    return bool(text) and bool(_LOW_CONFIDENCE_RE.search(text))
 
 
 def _parse_query_variants(raw: str, n: int) -> list[str]:

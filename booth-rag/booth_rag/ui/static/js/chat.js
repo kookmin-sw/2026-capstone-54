@@ -14,13 +14,24 @@
   let isStreaming = false;
   let allSessions = [];
 
+  const BUILD_ID = document.querySelector('meta[name="build-id"]')?.content || '';
   const AVATAR_KINDS = ['friendly', 'normal', 'pressure'];
+  function pickAvatarForSession(sessionId) {
+    if (!sessionId) {
+      return AVATAR_KINDS[Math.floor(Math.random() * AVATAR_KINDS.length)];
+    }
+    let h = 0;
+    for (let i = 0; i < sessionId.length; i++) {
+      h = ((h << 5) - h + sessionId.charCodeAt(i)) | 0;
+    }
+    return AVATAR_KINDS[Math.abs(h) % AVATAR_KINDS.length];
+  }
   function buildAvatar() {
-    const kind = AVATAR_KINDS[Math.floor(Math.random() * AVATAR_KINDS.length)];
+    const kind = pickAvatarForSession(currentSessionId);
     const img = document.createElement('img');
     img.className = 'message-avatar';
     img.alt = '';
-    img.src = `/static/img/avatar-${kind}.png`;
+    img.src = `/static/img/avatar-${kind}.png${BUILD_ID ? `?v=${BUILD_ID}` : ''}`;
     img.dataset.kind = kind;
     return img;
   }
