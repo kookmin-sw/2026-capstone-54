@@ -236,3 +236,17 @@ def test_typescript_symbol_info_carries_ts_kind(tmp_path: Path):
     assert auth.get("is_class") is True
     user = kg.symbol_info("frontend/api.ts::User")
     assert user.get("is_class") is False
+
+
+def test_ppr_cache_reuses_same_seed_set(kg: KnowledgeGraph):
+    first = kg.personalised_pagerank(["backend/core.py"])
+    second = kg.personalised_pagerank(["backend/core.py"])
+    assert first is second
+
+
+def test_ppr_cache_invalidated_after_merge(kg: KnowledgeGraph):
+    first = kg.personalised_pagerank(["backend/core.py"])
+    kg.merge_files([_file("backend/extra.py", "def added(): return 1\n")])
+    second = kg.personalised_pagerank(["backend/core.py"])
+    assert first is not second
+    assert "backend/extra.py" in second

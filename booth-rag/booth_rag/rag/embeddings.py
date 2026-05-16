@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import logging
+import threading
+from collections import OrderedDict
 from dataclasses import dataclass
 
 import httpx
@@ -9,6 +11,33 @@ from langchain_core.embeddings import Embeddings
 from booth_rag.config import get_settings
 
 logger = logging.getLogger(__name__)
+
+_EMBEDDING_CACHE_MAX = 512
+
+
+class _LruEmbeddingCache:
+    """Thread-safe text→embedding LRU. Same text never re-embedded twice."""
+
+    def __init__(self, max_size: int = _EMBEDDING_CACHE_MAX) -> None:
+        self._max = max_size
+        self._data: OrderedDict[str, list[float]] = OrderedDict()
+        self._lock = threading.Lock()
+
+    def get(self, key: str) -> list[float] | None:
+        with self._lock:
+            hit = self._data.get(key)
+            if hit is not None:
+                self._data.move_to_end(key)
+            return hit
+
+    def put(self, key: str, value: list[float]) -> None:
+        with self._lock:
+            if key in self._data:
+                self._data.move_to_end(key)
+                return
+            self._data[key] = value
+            if len(self._data) > self._max:
+                self._data.popitem(last=False)
 
 
 @dataclass(frozen=True)
@@ -94,7 +123,16 @@ class RemoteHuggingFaceEmbeddings(Embeddings):
     ):
         self._base_url = base_url.rstrip("/")
         self._batch_size = max(1, batch_size)
-        self._client = httpx.Client(base_url=self._base_url, timeout=timeout)
+        self._client = httpx.Client(
+            base_url=self._base_url,
+            timeout=timeout,
+            limits=httpx.Limits(
+                max_keepalive_connections=4,
+                max_connections=10,
+                keepalive_expiry=120.0,
+            ),
+        )
+        self._cache = _LruEmbeddingCache()
         info = self._handshake()
         self.model_name: str = str(info["model"])
         self._dimension: int = int(info["dimension"])
@@ -131,16 +169,33 @@ class RemoteHuggingFaceEmbeddings(Embeddings):
     def embed_documents(self, texts: list[str]) -> list[list[float]]:
         if not texts:
             return []
-        out: list[list[float]] = []
-        for i in range(0, len(texts), self._batch_size):
-            batch = texts[i : i + self._batch_size]
+        results: list[list[float] | None] = [None] * len(texts)
+        missing_idxs: list[int] = []
+        missing_texts: list[str] = []
+        for i, text in enumerate(texts):
+            cached = self._cache.get(text)
+            if cached is not None:
+                results[i] = cached
+            else:
+                missing_idxs.append(i)
+                missing_texts.append(text)
+        for batch_start in range(0, len(missing_texts), self._batch_size):
+            batch = missing_texts[batch_start : batch_start + self._batch_size]
             payload = self._post_with_retry("/embed/documents", {"texts": batch})
-            out.extend(payload["embeddings"])
-        return out
+            for rel_idx, vec in enumerate(payload["embeddings"]):
+                absolute = missing_idxs[batch_start + rel_idx]
+                results[absolute] = vec
+                self._cache.put(texts[absolute], vec)
+        return [r for r in results if r is not None]
 
     def embed_query(self, text: str) -> list[float]:
+        cached = self._cache.get(text)
+        if cached is not None:
+            return cached
         payload = self._post_with_retry("/embed/query", {"text": text})
-        return payload["embedding"]
+        vec: list[float] = payload["embedding"]
+        self._cache.put(text, vec)
+        return vec
 
     def _post_with_retry(self, path: str, body: dict, max_attempts: int = 3) -> dict:
         import time as _time

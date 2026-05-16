@@ -54,10 +54,13 @@ class _MockTransport(httpx.BaseTransport):
 
 
 def _make_client(transport: _MockTransport) -> RemoteHuggingFaceEmbeddings:
+    from booth_rag.rag.embeddings import _LruEmbeddingCache
+
     emb = RemoteHuggingFaceEmbeddings.__new__(RemoteHuggingFaceEmbeddings)
     emb._base_url = "http://stub"
     emb._batch_size = 3
     emb._client = httpx.Client(transport=transport, base_url="http://stub")
+    emb._cache = _LruEmbeddingCache()
     info = emb._handshake()
     emb.model_name = str(info["model"])
     emb._dimension = int(info["dimension"])
@@ -101,6 +104,28 @@ def test_embed_documents_empty_no_http_call():
     transport.calls.clear()
     assert emb.embed_documents([]) == []
     assert transport.calls == []
+
+
+def test_embed_query_cache_hit_skips_http():
+    transport = _MockTransport(dim=4)
+    emb = _make_client(transport)
+    emb.embed_query("hello")
+    before = len(transport.calls)
+    again = emb.embed_query("hello")
+    assert again == [0.9, 0.9, 0.9, 0.9]
+    assert len(transport.calls) == before
+
+
+def test_embed_documents_cache_hit_skips_already_seen():
+    transport = _MockTransport(dim=4)
+    emb = _make_client(transport)
+    emb.embed_documents(["x", "y"])
+    transport.calls.clear()
+    vectors = emb.embed_documents(["x", "z", "y"])
+    assert len(vectors) == 3
+    doc_calls = [c for c in transport.calls if c["path"] == "/embed/documents"]
+    assert len(doc_calls) == 1
+    assert doc_calls[0]["body"]["texts"] == ["z"]
 
 
 def test_describe_embeddings_uses_remote_metadata():
