@@ -56,6 +56,10 @@ class Settings(BaseSettings):
         default=False,
         description="Split index into two collections: code chunks → embedding_code_model, doc chunks → embedding_local_model",
     )
+    rag_dual_intent_routing: bool = Field(
+        default=True,
+        description="When dual is on, route obvious code/doc-only queries to a single server. Both servers used for ambiguous queries (default behavior).",
+    )
     embedding_code_model: str = Field(
         default="nomic-ai/CodeRankEmbed",
         description="Secondary code-specialised embedding model (MIT, 137M, 768d). Active only when rag_dual_embedding=True.",
@@ -186,8 +190,8 @@ class Settings(BaseSettings):
         description="Use a local cross-encoder to rerank fused candidates before final top-k",
     )
     rag_reranker_model: str = Field(
-        default="BAAI/bge-reranker-v2-m3",
-        description="HuggingFace cross-encoder model id (multilingual, MIT, MPS-friendly)",
+        default="BAAI/bge-reranker-base",
+        description="HuggingFace cross-encoder model id. base (278M) is ~2x faster than v2-m3 (568M) with minor quality drop.",
     )
     rag_rerank_input_k: int = Field(
         default=20,

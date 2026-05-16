@@ -8,8 +8,9 @@ from dataclasses import dataclass, field
 from booth_rag.config import get_settings
 from booth_rag.rag.bm25_store import BM25Hit, BM25Index
 from booth_rag.rag.graph_store import KnowledgeGraph
+from booth_rag.rag.query_intent import classify_queries
 from booth_rag.rag.reranker import CrossEncoderReranker
-from booth_rag.rag.vector_store import RetrievedChunk, VectorIndex
+from booth_rag.rag.vector_store import DualVectorIndex, RetrievedChunk, VectorIndex
 
 _MAX_FINAL = 8
 _MAX_SYMBOLS_IN_PROMPT = 8
@@ -192,14 +193,28 @@ class HybridRetriever:
         return out
 
     def _dense_batch(self, queries: list[str], k: int) -> list[list[RetrievedChunk]]:
+        skip_code = False
+        skip_docs = False
+        if isinstance(self._vector, DualVectorIndex) and self._settings.rag_dual_intent_routing:
+            routing = classify_queries(list(queries))
+            skip_code = not routing.use_code
+            skip_docs = not routing.use_docs
         if self._settings.rag_use_mmr and hasattr(self._vector, "search_mmr_batch"):
-            return self._vector.search_mmr_batch(
-                queries,
-                k=k,
-                fetch_k=self._settings.rag_fetch_k,
-                lambda_mult=self._settings.rag_mmr_lambda,
-            )
+            kwargs = {
+                "k": k,
+                "fetch_k": self._settings.rag_fetch_k,
+                "lambda_mult": self._settings.rag_mmr_lambda,
+            }
+            if isinstance(self._vector, DualVectorIndex):
+                return self._vector.search_mmr_batch(
+                    queries, skip_code=skip_code, skip_docs=skip_docs, **kwargs
+                )
+            return self._vector.search_mmr_batch(queries, **kwargs)
         if hasattr(self._vector, "search_batch"):
+            if isinstance(self._vector, DualVectorIndex):
+                return self._vector.search_batch(
+                    queries, k=k, skip_code=skip_code, skip_docs=skip_docs
+                )
             return self._vector.search_batch(queries, k=k)
         return [self._dense_search(q, k=k) for q in queries]
 

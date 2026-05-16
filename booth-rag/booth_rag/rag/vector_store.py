@@ -286,9 +286,19 @@ class DualVectorIndex:
         doc_fut = ex.submit(self._doc.search_mmr, query, k=k, fetch_k=fetch_k, lambda_mult=lambda_mult)
         return self._fuse([code_fut.result(), doc_fut.result()], k=k)
 
-    def search_batch(self, queries: list[str], k: int = 6) -> list[list[RetrievedChunk]]:
+    def search_batch(
+        self,
+        queries: list[str],
+        k: int = 6,
+        skip_code: bool = False,
+        skip_docs: bool = False,
+    ) -> list[list[RetrievedChunk]]:
         if not queries:
             return []
+        if skip_code and not skip_docs:
+            return self._doc.search_batch(queries, k=k)
+        if skip_docs and not skip_code:
+            return self._code.search_batch(queries, k=k)
         ex = self._get_executor()
         code_fut = ex.submit(self._code.search_batch, queries, k=k)
         doc_fut = ex.submit(self._doc.search_batch, queries, k=k)
@@ -302,9 +312,15 @@ class DualVectorIndex:
         k: int = 6,
         fetch_k: int = 20,
         lambda_mult: float = 0.7,
+        skip_code: bool = False,
+        skip_docs: bool = False,
     ) -> list[list[RetrievedChunk]]:
         if not queries:
             return []
+        if skip_code and not skip_docs:
+            return self._doc.search_mmr_batch(queries, k=k, fetch_k=fetch_k, lambda_mult=lambda_mult)
+        if skip_docs and not skip_code:
+            return self._code.search_mmr_batch(queries, k=k, fetch_k=fetch_k, lambda_mult=lambda_mult)
         ex = self._get_executor()
         code_fut = ex.submit(
             self._code.search_mmr_batch, queries, k=k, fetch_k=fetch_k, lambda_mult=lambda_mult
