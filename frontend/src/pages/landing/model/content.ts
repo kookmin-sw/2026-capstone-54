@@ -23,7 +23,7 @@ export interface FeatureItem {
   title: string;
   desc: string;
   badge?: string;
-  demoVideoUrl?: string | null;
+  demoYoutubeId?: string | null;
 }
 
 export interface HowToStep {
@@ -98,7 +98,7 @@ export const FEATURES: FeatureItem[] = [
     title: "AI 화상 면접",
     desc: "꼬리질문형 5티켓 · 전체 프로세스 8티켓. 친근/일반/압박 3단계 면접관 + 연습/실전 모드.",
     badge: "Pro 전체 프로세스",
-    demoVideoUrl: null,
+    demoYoutubeId: "IRrJmqBDQqc",
   },
   {
     Icon: FileText,

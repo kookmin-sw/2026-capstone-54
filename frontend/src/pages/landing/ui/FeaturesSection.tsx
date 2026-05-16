@@ -153,13 +153,14 @@ export function FeaturesSection() {
         size="lg"
         heightMode="fixed"
       >
-        {featured.demoVideoUrl ? (
-          <video
-            src={featured.demoVideoUrl}
-            controls
-            playsInline
-            autoPlay
-            className="w-full aspect-video object-contain bg-black rounded-lg"
+        {featured.demoYoutubeId ? (
+          <iframe
+            src={`https://www.youtube-nocookie.com/embed/${featured.demoYoutubeId}?autoplay=1&rel=0&modestbranding=1&playsinline=1`}
+            title={`${featured.title} 시연 영상`}
+            className="w-full aspect-video bg-black rounded-lg border-0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerPolicy="strict-origin-when-cross-origin"
+            allowFullScreen
           />
         ) : (
           <div className="w-full aspect-video bg-[#0A0A0A] rounded-lg flex flex-col items-center justify-center text-center px-6 relative overflow-hidden">
